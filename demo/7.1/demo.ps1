@@ -1,3 +1,4 @@
+& $PSScriptRoot\addToModulePath.ps1
 
 $obj = Get-Content ..\input2.json | ConvertFrom-Json
 
@@ -13,5 +14,14 @@ foreach ($package in $obj.packages)
         }
     }
     
+    Write-Verbose -Verbose 'Set'
     Invoke-DscResource @resource -Method Set
+
+    Write-Verbose -Verbose 'Test'
+    # Force is needed with Format-Table to show the result as PS tries to be too smart and sees a different type
+    # of object coming to the pipeline (after the set above) and thus doesn't render it
+    Invoke-DscResource @resource -Method Test | Format-Table -Force
+
+    Write-Verbose -Verbose 'Get'
+    Invoke-DscResource @resource -Method Get | Format-Table -Force
 }

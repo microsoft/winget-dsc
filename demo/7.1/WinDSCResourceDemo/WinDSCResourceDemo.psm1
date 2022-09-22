@@ -84,11 +84,11 @@ function WinDSCResourceSetHelper
     try
     {
         # We write to "HKLM:\SOFTWARE\SOFTWARE\WinDSCDemo\publisher\package\version for proff of concept.
-        $registryKey = "HKLM:\SOFTWARE\WinDSCDemo";
+        $registryKey = "HKCU:\SOFTWARE\WinDSCDemo";
 
         if (-Not (Test-Path $registryKey))
         {
-            New-Item -Path "HKLM:\SOFTWARE" -Name "WinDSCDemo"
+            New-Item -Path "HKCU:\SOFTWARE" -Name "WinDSCDemo" -Force
         }
 
         $parts = $packageId.Split('.');
@@ -102,7 +102,7 @@ function WinDSCResourceSetHelper
             $registryKey = $tmpRegistryKey;
         }
 
-        New-Item -Path $registryKey -Name $version
+        New-Item -Path $registryKey -Name $version -Force
     }
     catch
     {
@@ -115,7 +115,7 @@ function GetRegistryKey
     [CmdletBinding()]
     param([string]$packageId, [string]$version)
 
-    $registryKey = "HKLM:\SOFTWARE\WinDSCDemo";
+    $registryKey = "HKCU:\SOFTWARE\WinDSCDemo";
 
     $parts = $packageId.Split('.');
     foreach ($part in $parts)
