@@ -1,5 +1,5 @@
 
-$obj = Get-Content ..\input.json | ConvertFrom-Json
+$obj = Get-Content ..\input2.json | ConvertFrom-Json
 
 foreach ($package in $obj.packages)
 {
@@ -13,5 +13,5 @@ foreach ($package in $obj.packages)
         }
     }
     
-    Invoke-DscResource @resource -Method Test
+    Invoke-DscResource @resource -Method Set
 }
