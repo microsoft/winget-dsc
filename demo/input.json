@@ -1,0 +1,20 @@
+{
+    "packages": [
+        {
+            "packageIdentifier": "Tequila.DonJulio",
+            "version": "70"
+        },
+        {
+            "packageIdentifier": "Tequila.Herradura",
+            "version": "2.4"
+        },
+        {
+            "packageIdentifier": "Beer.Indio",
+            "version": "12"
+        },
+        {
+            "packageIdentifier": "Rum.CaptainMorgan",
+            "version": "0.1"
+        }
+    ]
+}
