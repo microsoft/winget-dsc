@@ -1,10 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Management.Automation;
-using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 
 try
 {
@@ -22,17 +20,13 @@ try
         Environment.SetEnvironmentVariable(psModulePathEnv, psModulePathEnvValue);
     }
 
-    var psModulePathEnvValue2 = Environment.GetEnvironmentVariable(psModulePathEnv);
-    Console.WriteLine($"Module Path: {psModulePathEnvValue2}");
-
-    VerifyLoadedAssemblies();
+    //VerifyLoadedAssemblies();
     VerifyFiles();
 
-    var modules = GetModulesToLoad();
-    
     var initialSessionState = InitialSessionState.CreateDefault();
-    
-    // Here import our future module?
+
+    // Here import our future module
+    var modules = GetModulesToLoad();
     //initialSessionState.ImportPSModule(modules.ToArray());
     var runspace = RunspaceFactory.CreateRunspace(initialSessionState);
     runspace.Open();
@@ -44,6 +38,17 @@ try
        .AddArgument("Unrestricted")
        .AddParameter("Force")
        .Invoke();
+
+    ClearStreamAndStopIfError(powerShell);
+
+    ////powerShell.AddScript(@"PowerShell\helpers\DscResourceInfo.ps1")
+    ////    .Invoke();
+    ////
+    ////ClearStreamAndStopIfError(powerShell);
+
+    ////powerShell.AddCommand(@"Import-Module")
+    ////    .AddParameter("Name", "DscResourceInfo")
+    ////    .Invoke();
 
     ClearStreamAndStopIfError(powerShell);
 
@@ -71,8 +76,8 @@ try
     // System.Management.Automation.RuntimeException: Cannot find type
     // Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify
     // that the assembly containing this type is loaded.
-    //ps.AddScript(@"PowerShell\demo.ps1", true)
-    //  .Invoke();
+    ////powerShell.AddScript(@"PowerShell\demo.ps1")
+    ////    .Invoke();
 
     ClearStreamAndStopIfError(powerShell);
 }
@@ -99,9 +104,10 @@ static string GetPowerShellPath()
 
 static IReadOnlyList<string> GetModulesToLoad()
 {
-    var exePath = GetExecutionPath();
+    var powerShellPath = GetPowerShellPath();
     var modules = new List<string>()
     {
+        $"{powerShellPath}DscResourceInfo.psm1",
     };
 
     return modules;
@@ -116,6 +122,8 @@ static void VerifyFiles()
         $"{powerShellPath}\\WinDSCResourceDemo\\WinDSCResourceDemo.psm1",
         $"{powerShellPath}\\addToModulePath.ps1",
         $"{powerShellPath}\\demo.ps1",
+        $"{powerShellPath}\\DscResourceInfo.psm1",
+        $"{powerShellPath}\\helpers\\DscResourceInfo.ps1"
     };
 
     foreach (var file in files)

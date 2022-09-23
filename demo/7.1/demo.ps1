@@ -43,7 +43,7 @@ $morganResource = @{
 Write-Verbose -Verbose 'Test Rum.CaptainMorgan 0.1'
 Invoke-DscResource @morganResource -Method Test | Format-Table -Force
 
-# rRn Invoke-DscResource with set again.
+# Run Invoke-DscResource with set again.
 Write-Verbose -Verbose 'Set'
 Invoke-DscResource @morganResource -Method Set
 

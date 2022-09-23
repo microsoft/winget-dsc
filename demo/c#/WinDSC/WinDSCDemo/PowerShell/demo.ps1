@@ -1,6 +1,5 @@
 ﻿& $PSScriptRoot\addToModulePath.ps1
-
-Get-InstalledModule -Name PSDesiredStateConfiguration
+Import-Module $PSScriptRoot\DscResourceInfo.psm1
 
 $obj = Get-Content Powershell\input.json | ConvertFrom-Json
 
