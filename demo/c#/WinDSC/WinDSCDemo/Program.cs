@@ -1,8 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Management.Automation;
+using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 
 try
 {
@@ -23,7 +25,7 @@ try
     var psModulePathEnvValue2 = Environment.GetEnvironmentVariable(psModulePathEnv);
     Console.WriteLine($"Module Path: {psModulePathEnvValue2}");
 
-    GetLoadedAssemblies();
+    VerifyLoadedAssemblies();
     VerifyFiles();
 
     var modules = GetModulesToLoad();
@@ -185,30 +187,27 @@ static void ClearStreamAndStopIfError(PowerShell ps)
     ps.Streams.ClearStreams();
 }
 
-static void GetLoadedAssemblies()
+static void VerifyLoadedAssemblies()
 {
-    Console.WriteLine("Loaded Modules");
     foreach (var assemblyName in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
     {
-        Console.WriteLine($"\t{assemblyName}");
-        ////var assembly = Assembly.Load(assemblyName.ToString());
-        ////foreach (var type in assembly.GetTypes())
-        ////{
-        ////    // get properties
-        ////    foreach (var propertyInfo in type.GetProperties())
-        ////    {
-        ////        if (propertyInfo.CanRead)
-        ////        {
-        ////            Console.WriteLine($"\tType {assembly}.{type}.{propertyInfo.Name}");
-        ////        }
-        ////    }
-        ////
-        ////    // get methods
-        ////    var methods = type.GetMethods();
-        ////    foreach (var methodInfo in methods)
-        ////    {
-        ////        Console.WriteLine($"\tMethod {assembly}.{type}.{methodInfo.Name}");
-        ////    }
-        ////}
+        if (assemblyName.Name == "System.Management.Automation")
+        {
+            Console.WriteLine($"{assemblyName} is loaded");
+
+            var assembly = Assembly.Load(assemblyName.ToString());
+            Console.WriteLine($"Location: {assembly.Location}");
+
+            // $asm.GetTypes() | select Name, Namespace | sort Namespace | ft -groupby Namespace
+
+            foreach (var type in assembly.GetTypes())
+            {
+                if (type.Namespace == "System.Management.Automation" &&
+                    type.Name == "DscResourceInfo")
+                {
+                    Console.WriteLine("Found System.Management.Automation.DscResourceInfo");
+                }
+            }
+        }
     }
 }
