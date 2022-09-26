@@ -1,38 +1,45 @@
 ﻿using System.Collections.ObjectModel;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using WinDSCDemo.Helpers;
 
 try
 {
+    //DemoWithScript();
+    DemoWithCommand();
+}
+catch (Exception e)
+{
+    Console.WriteLine(e);
+}
+
+// Add custom module path to PSModulePath.
+// Sets execution policies to unrestricted.
+// Reads json input file.
+// Calls Invoke-DscResource per package.
+// This fails with the same  Cannot find type [Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo] error
+// if Helpers\DscResourceInfo.cs is not compiled.
+static void DemoWithCommand()
+{
     string psModulePathEnv = "PSModulePath";
-    var powerShellPath = GetPowerShellPath();
+    var powerShellModulePath = GetPowerShellCustomModulePath();
 
     var psModulePathEnvValue = Environment.GetEnvironmentVariable(psModulePathEnv);
     if (psModulePathEnvValue is null)
     {
-        Environment.SetEnvironmentVariable(psModulePathEnv, powerShellPath);
+        Environment.SetEnvironmentVariable(psModulePathEnv, powerShellModulePath);
     }
-    else if (!psModulePathEnvValue.Contains(powerShellPath))
+    else if (!psModulePathEnvValue.Contains(powerShellModulePath))
     {
-        psModulePathEnvValue += $";{powerShellPath}";
+        psModulePathEnvValue += $";{powerShellModulePath}";
         Environment.SetEnvironmentVariable(psModulePathEnv, psModulePathEnvValue);
     }
 
-    //VerifyLoadedAssemblies();
     VerifyFiles();
 
-    var initialSessionState = InitialSessionState.CreateDefault();
-
-    // Here import our future module
-    var modules = GetModulesToLoad();
-    //initialSessionState.ImportPSModule(modules.ToArray());
-    var runspace = RunspaceFactory.CreateRunspace(initialSessionState);
-    runspace.Open();
-
     PowerShell powerShell = PowerShell.Create();
-    powerShell.Runspace = runspace;
 
     powerShell.AddCommand("Set-ExecutionPolicy")
        .AddArgument("Unrestricted")
@@ -41,49 +48,65 @@ try
 
     ClearStreamAndStopIfError(powerShell);
 
-    ////powerShell.AddScript(@"PowerShell\helpers\DscResourceInfo.ps1")
-    ////    .Invoke();
-    ////
-    ////ClearStreamAndStopIfError(powerShell);
-
-    ////powerShell.AddCommand(@"Import-Module")
-    ////    .AddParameter("Name", "DscResourceInfo")
-    ////    .Invoke();
-
-    ClearStreamAndStopIfError(powerShell);
-
-    var properties = new Dictionary<string, string>()
+    var packagesFile = GetPackagesFile();
+    foreach (var package in packagesFile.Packages)
     {
-        {"PackageId", "test.test"},
-        {"Version", "1.0"},
-    };
+        var properties = package.GetProperties();
+        var response = powerShell.AddCommand("Invoke-DscResource")
+                  .AddParameter("Name", "WinDSCResourceDemo")
+                  .AddParameter("ModuleName", "WinDSCResourceDemo")
+                  .AddParameter("Method", "Set")
+                  .AddParameter("Property", properties)
+                  .Invoke();
+    }
+}
 
-    // Without editing PSModulePath
-    // System.Management.Automation.RuntimeException: unexpected state - no
-    // resources found - get-dscresource should have thrown without adding the module path
-    //
-    // Adding the module path.
-    // System.Management.Automation.RuntimeException: Cannot find type
-    // Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify
-    // that the assembly containing this type is loaded.
-    var response = powerShell.AddCommand("Invoke-DscResource")
-              .AddParameter("Name", "WinDSCResourceDemo")
-              .AddParameter("ModuleName", "WinDSCResourceDemo")
-              .AddParameter("Method", "Set")
-              .AddParameter("Property", properties)
-              .Invoke();
+// Adds custom module path to PSModulePath.
+// Sets execution policies to unrestricted.
+// Runs PowerShell\demo.ps1
+// Fails:
+// System.Management.Automation.RuntimeException: Cannot find type [Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify that the assembly containing this type is loaded.
+//  ---> System.Management.Automation.PSArgumentException: Cannot find type [Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify that the assembly containing this type is loaded.
+//    at System.Management.Automation.MshCommandRuntime.ThrowTerminatingError(ErrorRecord errorRecord)
+//    ---End of inner exception stack trace ---
+//    at System.Management.Automation.Runspaces.PipelineBase.Invoke(IEnumerable input)
+//    at System.Management.Automation.PowerShell.Worker.ConstructPipelineAndDoWork(Runspace rs, Boolean performSyncInvoke)
+//    at System.Management.Automation.PowerShell.Worker.CreateRunspaceIfNeededAndDoWork(Runspace rsToUse, Boolean isSync)
+//    at System.Management.Automation.PowerShell.CoreInvokeHelper[TInput, TOutput] (PSDataCollection`1 input, PSDataCollection`1 output, PSInvocationSettings settings)
+//    at System.Management.Automation.PowerShell.CoreInvoke[TInput, TOutput] (PSDataCollection`1 input, PSDataCollection`1 output, PSInvocationSettings settings)
+//    at System.Management.Automation.PowerShell.Invoke()
+//    at Program.<Main>$(String[] args) in C:\Dev\windsc\demo\c#\WinDSC\WinDSCDemo\Program.cs:line 73
+static void DemoWithScript()
+{
+    string psModulePathEnv = "PSModulePath";
+    var powerShellModulePath = GetPowerShellCustomModulePath();
 
-    // System.Management.Automation.RuntimeException: Cannot find type
-    // Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify
-    // that the assembly containing this type is loaded.
-    ////powerShell.AddScript(@"PowerShell\demo.ps1")
-    ////    .Invoke();
+    var psModulePathEnvValue = Environment.GetEnvironmentVariable(psModulePathEnv);
+    if (psModulePathEnvValue is null)
+    {
+        Environment.SetEnvironmentVariable(psModulePathEnv, powerShellModulePath);
+    }
+    else if (!psModulePathEnvValue.Contains(powerShellModulePath))
+    {
+        psModulePathEnvValue += $";{powerShellModulePath}";
+        Environment.SetEnvironmentVariable(psModulePathEnv, psModulePathEnvValue);
+    }
+
+    VerifyFiles();
+
+    PowerShell powerShell = PowerShell.Create();
+
+    powerShell.AddCommand("Set-ExecutionPolicy")
+       .AddArgument("Unrestricted")
+       .AddParameter("Force")
+       .Invoke();
 
     ClearStreamAndStopIfError(powerShell);
-}
-catch (Exception e)
-{
-    Console.WriteLine(e);
+
+    powerShell.AddScript(@"PowerShell\demo.ps1")
+        .Invoke();
+
+    ClearStreamAndStopIfError(powerShell);
 }
 
 static string? GetExecutionPath()
@@ -102,28 +125,22 @@ static string GetPowerShellPath()
     return "PowerShell";
 }
 
-static IReadOnlyList<string> GetModulesToLoad()
+static string GetPowerShellCustomModulePath()
 {
-    var powerShellPath = GetPowerShellPath();
-    var modules = new List<string>()
-    {
-        $"{powerShellPath}DscResourceInfo.psm1",
-    };
-
-    return modules;
+    return Path.Combine(GetPowerShellPath(), "Modules");
 }
 
 static void VerifyFiles()
 {
     var powerShellPath = GetPowerShellPath();
+    var powerShellModulePath = GetPowerShellCustomModulePath();
     var files = new List<string>()
     {
-        $"{powerShellPath}\\WinDSCResourceDemo\\WinDSCResourceDemo.psd1",
-        $"{powerShellPath}\\WinDSCResourceDemo\\WinDSCResourceDemo.psm1",
-        $"{powerShellPath}\\addToModulePath.ps1",
-        $"{powerShellPath}\\demo.ps1",
-        $"{powerShellPath}\\DscResourceInfo.psm1",
-        $"{powerShellPath}\\helpers\\DscResourceInfo.ps1"
+        $"{powerShellModulePath}\\WinDSCResourceDemo\\WinDSCResourceDemo.psd1",
+        $"{powerShellModulePath}\\WinDSCResourceDemo\\WinDSCResourceDemo.psm1",
+        $"{powerShellModulePath}\\DscResourceInfo\\DscResourceInfo.psm1",
+        $"{powerShellPath}\\input.json",
+
     };
 
     foreach (var file in files)
@@ -133,6 +150,18 @@ static void VerifyFiles()
             throw new FileNotFoundException(file);
         }
     }
+}
+
+static PackagesFile GetPackagesFile()
+{
+    string fileName = $"{GetPowerShellPath()}\\input.json";
+    string jsonString = File.ReadAllText(fileName);
+    return JsonSerializer.Deserialize<PackagesFile>(
+        jsonString,
+        new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
 }
 
 static void PrintProperties(Collection<PSObject> objs)
@@ -193,29 +222,4 @@ static void ClearStreamAndStopIfError(PowerShell ps)
     }
 
     ps.Streams.ClearStreams();
-}
-
-static void VerifyLoadedAssemblies()
-{
-    foreach (var assemblyName in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
-    {
-        if (assemblyName.Name == "System.Management.Automation")
-        {
-            Console.WriteLine($"{assemblyName} is loaded");
-
-            var assembly = Assembly.Load(assemblyName.ToString());
-            Console.WriteLine($"Location: {assembly.Location}");
-
-            // $asm.GetTypes() | select Name, Namespace | sort Namespace | ft -groupby Namespace
-
-            foreach (var type in assembly.GetTypes())
-            {
-                if (type.Namespace == "System.Management.Automation" &&
-                    type.Name == "DscResourceInfo")
-                {
-                    Console.WriteLine("Found System.Management.Automation.DscResourceInfo");
-                }
-            }
-        }
-    }
 }

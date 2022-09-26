@@ -23,22 +23,16 @@
     <None Update="PowerShell\demo.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="PowerShell\DscResourceInfo.psm1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="PowerShell\helpers\DscResourceInfo.ps1">
+    <None Update="PowerShell\Modules\DscResourceInfo\DscResourceInfo.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="PowerShell\input.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="PowerShell\loadModules.ps1">
+    <None Update="PowerShell\Modules\WinDSCResourceDemo\WinDSCResourceDemo.psd1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="PowerShell\WinDSCResourceDemo\WinDSCResourceDemo.psd1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="PowerShell\WinDSCResourceDemo\WinDSCResourceDemo.psm1">
+    <None Update="PowerShell\Modules\WinDSCResourceDemo\WinDSCResourceDemo.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

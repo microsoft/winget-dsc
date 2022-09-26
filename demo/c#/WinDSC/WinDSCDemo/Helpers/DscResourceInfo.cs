@@ -1,8 +1,4 @@
-﻿Set-StrictMode -Version latest
-$ErrorActionPreference = 'Stop'
-
-$AddDscResourceInfoTypeScript = @"
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="DscResourceInfo.cs" company="Microsoft Corporation">
 //     Copyright (C) 2013 Microsoft Corporation
 // </copyright>
@@ -171,9 +167,4 @@ namespace Microsoft.PowerShell.DesiredStateConfiguration
         /// </summary>
         public List<string> Values { get; private set; }
     }
-}
-"@
-
-if(-not ([System.Management.Automation.PSTypeName]'Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo').Type) {
-    Add-Type -TypeDefinition $AddDscResourceInfoTypeScript
 }

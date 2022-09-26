@@ -8,7 +8,7 @@
 class WinDSCResourceDemo
 {
     [DscProperty(Key)]
-    [string]$PackageId
+    [string]$PackageIdentifier
 
     [DscProperty(Key)]
     [string]$Version
@@ -18,22 +18,22 @@ class WinDSCResourceDemo
 
     [WinDSCResourceDemo] Get()
     {
-        Write-Verbose "Getting current state of $($this.PackageId) $($this.Version)"
-        $result = WinDSCResourceGetHelper -packageId $this.PackageId -version $this.Version
+        Write-Verbose "Getting current state of $($this.PackageIdentifier) $($this.Version)"
+        $result = WinDSCResourceGetHelper -PackageIdentifier $this.PackageIdentifier -version $this.Version
         return $result
     }
 
     [bool] Test()
     {
-        Write-Verbose "Testing $($this.PackageId) $($this.Version)"
-        $test = WinDSCResourceTestHelper -packageId $this.PackageId -version $this.Version
+        Write-Verbose "Testing $($this.PackageIdentifier) $($this.Version)"
+        $test = WinDSCResourceTestHelper -PackageIdentifier $this.PackageIdentifier -version $this.Version
         return $test
 
     }
 
     [void] Set() {
-        Write-Verbose "Setting $($this.PackageId) $($this.Version)"
-        WinDSCResourceSetHelper -packageId $this.packageId -version $this.Version
+        Write-Verbose "Setting $($this.PackageIdentifier) $($this.Version)"
+        WinDSCResourceSetHelper -PackageIdentifier $this.PackageIdentifier -version $this.Version
     }
 
 }
@@ -41,13 +41,13 @@ class WinDSCResourceDemo
 function WinDSCResourceGetHelper
 {
     [CmdletBinding()]
-    param([string]$packageId, [string]$version)
+    param([string]$PackageIdentifier, [string]$version)
 
     try
     {
-        $state = IsRegistryKeyPresent -packageId $packageId -version $version
+        $state = IsRegistryKeyPresent -PackageIdentifier $PackageIdentifier -version $version
         $result = @{
-            PackageId = $packageId
+            PackageIdentifier = $PackageIdentifier
             Version = $version
             PackageState = $state
         }
@@ -63,11 +63,11 @@ function WinDSCResourceGetHelper
 function WinDSCResourceTestHelper
 {
     [CmdletBinding()]
-    param([string]$packageId, [string]$version)
+    param([string]$PackageIdentifier, [string]$version)
 
     try
     {
-        $state = IsRegistryKeyPresent -packageId $packageId -version $version
+        $state = IsRegistryKeyPresent -PackageIdentifier $PackageIdentifier -version $version
         return $state -eq [PackageState]::Installed
     }
     catch
@@ -79,7 +79,7 @@ function WinDSCResourceTestHelper
 function WinDSCResourceSetHelper
 {
     [CmdletBinding()]
-    param([string]$packageId, [string]$version)
+    param([string]$PackageIdentifier, [string]$version)
 
     try
     {
@@ -91,7 +91,7 @@ function WinDSCResourceSetHelper
             New-Item -Path "HKCU:\SOFTWARE" -Name "WinDSCDemo" -Force
         }
 
-        $parts = $packageId.Split('.');
+        $parts = $PackageIdentifier.Split('.');
         foreach ($part in $parts)
         {
             $tmpRegistryKey = $registryKey + '\' + $part;
@@ -113,11 +113,11 @@ function WinDSCResourceSetHelper
 function GetRegistryKey
 {
     [CmdletBinding()]
-    param([string]$packageId, [string]$version)
+    param([string]$PackageIdentifier, [string]$version)
 
     $registryKey = "HKCU:\SOFTWARE\WinDSCDemo";
 
-    $parts = $packageId.Split('.');
+    $parts = $PackageIdentifier.Split('.');
     foreach ($part in $parts)
     {
         $registryKey += '\' + $part;
@@ -130,11 +130,11 @@ function GetRegistryKey
 function IsRegistryKeyPresent
 {
     [CmdletBinding()]
-    param([string]$packageId, [string]$version)
+    param([string]$PackageIdentifier, [string]$version)
 
     try
     {
-        $registryKey = GetRegistryKey -packageId $packageId -version $version
+        $registryKey = GetRegistryKey -PackageIdentifier $PackageIdentifier -version $version
 
         if (Test-Path $registryKey)
         {

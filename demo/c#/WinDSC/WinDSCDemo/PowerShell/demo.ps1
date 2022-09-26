@@ -1,7 +1,6 @@
-﻿& $PSScriptRoot\addToModulePath.ps1
-Import-Module $PSScriptRoot\DscResourceInfo.psm1
+﻿#& $PSScriptRoot\addToModulePath.ps1
 
-$obj = Get-Content Powershell\input.json | ConvertFrom-Json
+$obj = Get-Content PowerShell\input.json | ConvertFrom-Json
 
 foreach ($package in $obj.packages)
 {
