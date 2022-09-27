@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.PowerShell.Commands.Diagnostics" Version="7.2.6" />
+    <PackageReference Include="Microsoft.PowerShell.Commands.Management" Version="7.2.6" />
+    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.2.6" />
+    <PackageReference Include="Microsoft.PowerShell.ConsoleHost" Version="7.2.6" />
+    <PackageReference Include="Microsoft.WSMan.Management" Version="7.2.6" />
+    <PackageReference Include="System.Management.Automation" Version="7.2.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="PowerShell\Modules\WinDSCResourceDemo\WinDSCResourceDemo.psd1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PowerShell\Modules\WinDSCResourceDemo\WinDSCResourceDemo.psm1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

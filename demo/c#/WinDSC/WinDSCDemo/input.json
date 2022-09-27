@@ -2,19 +2,19 @@
   "packages": [
     {
       "packageIdentifier": "Tequila.DonJulio",
-      "version": "70"
+      "version": "170"
     },
     {
       "packageIdentifier": "Tequila.Herradura",
-      "version": "2.4"
+      "version": "3.5"
     },
     {
-      "packageIdentifier": "Beer.Indio",
-      "version": "12"
+      "packageIdentifier": "Beer.DosEquis",
+      "version": "0.5"
     },
     {
       "packageIdentifier": "Rum.CaptainMorgan",
-      "version": "0.1"
+      "version": "1.1"
     }
   ]
 }

@@ -1,8 +1,4 @@
-﻿Set-StrictMode -Version latest
-$ErrorActionPreference = 'Stop'
-
-$AddDscResourceInfoTypeScript = @"
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="DscResourceInfo.cs" company="Microsoft Corporation">
 //     Copyright (C) 2013 Microsoft Corporation
 // </copyright>
@@ -17,6 +13,19 @@ namespace Microsoft.PowerShell.DesiredStateConfiguration
 {
     /// <summary>
     /// Enumerated values for DSC resource implementation type
+    /// This class is based on https://github.com/PowerShell/PSDesiredStateConfiguration/blob/master/src/PSDesiredStateConfiguration/helpers/DscResourceInfo.psm1
+    /// Without it calling Invoke-DscResource will fail with
+    /// System.Management.Automation.RuntimeException: Cannot find type [Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify that the assembly containing this type is loaded.
+    ///  ---> System.Management.Automation.PSArgumentException: Cannot find type [Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify that the assembly containing this type is loaded.
+    ///    at System.Management.Automation.MshCommandRuntime.ThrowTerminatingError(ErrorRecord errorRecord)
+    ///    ---End of inner exception stack trace ---
+    ///    at System.Management.Automation.Runspaces.PipelineBase.Invoke(IEnumerable input)
+    ///    at System.Management.Automation.PowerShell.Worker.ConstructPipelineAndDoWork(Runspace rs, Boolean performSyncInvoke)
+    ///    at System.Management.Automation.PowerShell.Worker.CreateRunspaceIfNeededAndDoWork(Runspace rsToUse, Boolean isSync)
+    ///    at System.Management.Automation.PowerShell.CoreInvokeHelper[TInput, TOutput] (PSDataCollection`1 input, PSDataCollection`1 output, PSInvocationSettings settings)
+    ///    at System.Management.Automation.PowerShell.CoreInvoke[TInput, TOutput] (PSDataCollection`1 input, PSDataCollection`1 output, PSInvocationSettings settings)
+    ///    at System.Management.Automation.PowerShell.Invoke()
+    ///    at Program.<Main>$(String[] args) in C:\Dev\windsc\demo\c#\WinDSC\WinDSCDemo\Program.cs:line 73
     /// </summary>
     public enum ImplementedAsType
     {
@@ -171,9 +180,4 @@ namespace Microsoft.PowerShell.DesiredStateConfiguration
         /// </summary>
         public List<string> Values { get; private set; }
     }
-}
-"@
-
-if(-not ([System.Management.Automation.PSTypeName]'Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo').Type) {
-    Add-Type -TypeDefinition $AddDscResourceInfoTypeScript
 }
