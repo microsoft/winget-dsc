@@ -74,7 +74,6 @@
                         PowerShellConstants.Parameters.Property,
                         package.GetProperties())
                     .Invoke();
-                this.ClearStreamAndStopIfError();
             }
         }
 
@@ -174,7 +173,7 @@
                     message.AppendLine(err.ToString());
                 }
 
-                Console.WriteLine(message.ToString());
+                throw new Exception($"Error message\n{message}");
             }
 
             this.powerShell.Streams.ClearStreams();
