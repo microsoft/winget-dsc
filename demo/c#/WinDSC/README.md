@@ -1,4 +1,23 @@
-# PackagedDemo
+## WinDSC.Core
+Core functionality. WinDSCModule.cs adds WinDSC module to the runspace and calls its function with the given input json file. WinDSCInstaller.cs is the same, but calls Invoke-DSCResource directly.
+
+### DscResourceInfo.cs
+This class is based on https://github.com/PowerShell/PSDesiredStateConfiguration/blob/master/src/PSDesiredStateConfiguration/helpers/DscResourceInfo.psm1
+Without it, calling Invoke-DscResource will fail with
+```
+System.Management.Automation.RuntimeException: Cannot find type [Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify that the assembly containing this type is loaded.
+  ---> System.Management.Automation.PSArgumentException: Cannot find type [Microsoft.PowerShell.DesiredStateConfiguration.DscResourceInfo]: verify that the assembly containing this type is loaded.
+    at System.Management.Automation.MshCommandRuntime.ThrowTerminatingError(ErrorRecord errorRecord)
+    ---End of inner exception stack trace ---
+    at System.Management.Automation.Runspaces.PipelineBase.Invoke(IEnumerable input)
+    at System.Management.Automation.PowerShell.Worker.ConstructPipelineAndDoWork(Runspace rs, Boolean performSyncInvoke)
+    at System.Management.Automation.PowerShell.Worker.CreateRunspaceIfNeededAndDoWork(Runspace rsToUse, Boolean isSync)
+    at System.Management.Automation.PowerShell.CoreInvokeHelper[TInput, TOutput] (PSDataCollection`1 input, PSDataCollection`1 output, PSInvocationSettings settings)
+    at System.Management.Automation.PowerShell.CoreInvoke[TInput, TOutput] (PSDataCollection`1 input, PSDataCollection`1 output, PSInvocationSettings settings)
+    at System.Management.Automation.PowerShell.Invoke()
+```
+
+## PackagedDemo
 PackagedDemo uses PowerShell Host in a package. It uses the same code as WinDSCDemo but it fails when the modules are not signed.
 
 Error:
@@ -40,12 +59,12 @@ To make it work:
 4. In Visual Studio change the properties of the new signed files to "Copy if newer".
 5. Run it in the packaged context.
 
-# WinDSCDemo
+An alternative to skip signing is to manually copy PSDiagnostics.psm1 but lets not do that. :)
+
+## WinDSCDemo
 Basically the same as PackagedDemo without running in the package context. Signing the modules is not required.
 
 To make it work:
 1. Copy WinDSC.Core\PowerShell\Unsigned\*.psm1 to their respective directory in WinDSC.Core\PowerShell\Modules\ModuleName\ModuleName.psm1
 2. In Visual Studio change the properties of the new signed files to "Copy if newer".
 3. Run it in the packaged context.
-
-
