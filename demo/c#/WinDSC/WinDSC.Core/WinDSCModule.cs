@@ -4,10 +4,9 @@
     using System.Management.Automation.Runspaces;
     using System.Reflection;
     using System.Text;
-    using System.Text.Json;
     using Constants;
     using Microsoft.PowerShell;
-    using Model;
+    using WinDSC.Core.Helpers;
 
     public class WinDSCModule : IDisposable
     {
@@ -34,7 +33,7 @@
 
         ~WinDSCModule() => Dispose(false);
 
-        public void InvokeWinDSCResource(string filePath)
+        public PSStreamOutputHelper InvokeWinDSCResource(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -45,7 +44,9 @@
                 .AddParameter("inputFile", filePath)
                 .Invoke();
 
-            this.ClearStreamAndStopIfError();
+            PSStreamOutputHelper psStreamOutput = new(this.powerShell);
+
+            return psStreamOutput;
         }
 
         // Public implementation of Dispose pattern callable by consumers.
@@ -89,49 +90,6 @@
         private string GetPowerShellCustomModulePath()
         {
             return Path.Combine(this.GetPowerShellPath(), PowerShellConstants.ModulesPath);
-        }
-
-        private void ClearStreamAndStopIfError()
-        {
-            // TODO: don't print and add to logs.
-            var verboseMessageBuilder = new StringBuilder();
-            foreach (var info in this.powerShell.Streams.Verbose)
-            {
-                verboseMessageBuilder.AppendLine(info.ToString());
-            }
-
-            var verboseMessage = verboseMessageBuilder.ToString();
-            if (!string.IsNullOrEmpty(verboseMessage))
-            {
-                Console.WriteLine("Verbose message:");
-                Console.WriteLine(verboseMessage);
-            }
-
-            var infoMessageBuilder = new StringBuilder();
-            foreach (var info in this.powerShell.Streams.Information)
-            {
-                infoMessageBuilder.AppendLine(info.ToString());
-            }
-
-            var infoMessage = infoMessageBuilder.ToString();
-            if (!string.IsNullOrEmpty(infoMessage))
-            {
-                Console.WriteLine("Info message:");
-                Console.WriteLine(infoMessage);
-            }
-
-            if (this.powerShell.HadErrors)
-            {
-                var message = new StringBuilder();
-                foreach (var err in this.powerShell.Streams.Error)
-                {
-                    message.AppendLine(err.ToString());
-                }
-
-                Console.WriteLine(message.ToString());
-            }
-
-            this.powerShell.Streams.ClearStreams();
         }
     }
 }

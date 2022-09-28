@@ -36,9 +36,13 @@ namespace PackagedDemo
             if (file is not null)
             {
                 using WinDSCModule winDSCModule = new();
-                winDSCModule.InvokeWinDSCResource(file.Path);
+                var psStreamOutputHelper = winDSCModule.InvokeWinDSCResource(file.Path);
 
-                myButton.Content = "Done";
+                psOutput.Text = "Done";
+                if (psStreamOutputHelper.HadErrors)
+                {
+                    psOutput.Text += Environment.NewLine + psStreamOutputHelper.Error;
+                }
             }
         }
     }

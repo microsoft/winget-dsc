@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinDSCDemo", "WinDSCDemo\Wi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinDSC.Core", "WinDSC.Core\WinDSC.Core.csproj", "{71397CD8-AB29-4330-8AFB-442FEBAE0B09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackagedDemo", "PackagedDemo\PackagedDemo.csproj", "{7AF86D45-EB91-409A-A853-8C4D27774CB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PackagedDemo", "PackagedDemo\PackagedDemo.csproj", "{7AF86D45-EB91-409A-A853-8C4D27774CB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
