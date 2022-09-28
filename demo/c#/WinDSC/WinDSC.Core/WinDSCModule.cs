@@ -1,33 +1,38 @@
 ﻿namespace WinDSC.Core
 {
     using System.Management.Automation;
+    using System.Management.Automation.Runspaces;
     using System.Reflection;
     using System.Text;
     using System.Text.Json;
     using Constants;
+    using Microsoft.PowerShell;
     using Model;
 
-    public class WinDSCInstaller : IDisposable
+    public class WinDSCModule : IDisposable
     {
         private bool disposed = false;
 
         private readonly PowerShell powerShell;
+        private readonly Runspace runspace;
 
-        public WinDSCInstaller()
+        public WinDSCModule()
         {
-            this.SetModulePath();
+            var winDscModulePath = Path.Combine(GetPowerShellCustomModulePath(), "WinDSC", "WinDSC.psm1");
 
-            this.powerShell = PowerShell.Create();
+            InitialSessionState initialSessionState = InitialSessionState.CreateDefault();
+            initialSessionState.ExecutionPolicy = ExecutionPolicy.Unrestricted;
+            initialSessionState.ImportPSModule(new string[]
+            {
+                winDscModulePath,
+            });
+            this.runspace = RunspaceFactory.CreateRunspace(initialSessionState);
+            this.runspace.Open();
 
-            this.powerShell.AddCommand(PowerShellConstants.Commands.SetExecutionPolicy)
-               .AddArgument(PowerShellConstants.Arguments.Unrestricted)
-               .AddParameter(PowerShellConstants.Parameters.Force)
-               .Invoke();
-            this.ClearStreamAndStopIfError();
-
+            this.powerShell = PowerShell.Create(this.runspace);
         }
 
-        ~WinDSCInstaller() => Dispose(false);
+        ~WinDSCModule() => Dispose(false);
 
         public void InvokeWinDSCResource(string filePath)
         {
@@ -36,45 +41,11 @@
                 throw new FileNotFoundException(filePath);
             }
 
-            string jsonString = File.ReadAllText(filePath);
-            var packagesFile = JsonSerializer.Deserialize<PackagesFile>(
-                jsonString,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                    
-                });
+            this.powerShell.AddCommand("Start-WinDSC")
+                .AddParameter("inputFile", filePath)
+                .Invoke();
 
-            if (packagesFile is not null)
-            {
-                this.InvokeWinDSCResource((PackagesFile)packagesFile);
-            }
-            else
-            {
-                throw new ArgumentException();
-            }
-        }
-
-        public void InvokeWinDSCResource(PackagesFile packagesFile)
-        {
-            foreach (var package in packagesFile.Packages)
-            {
-                Console.WriteLine(package.PackageIdentifier + " " + package.Version);
-                _ = this.powerShell.AddCommand(PowerShellConstants.Commands.InvokeDscResource)
-                    .AddParameter(
-                        PowerShellConstants.Parameters.Name,
-                        PowerShellConstants.Modules.WinDSCResourceDemo)
-                    .AddParameter(
-                        PowerShellConstants.Parameters.ModuleName,
-                        PowerShellConstants.Modules.WinDSCResourceDemo)
-                    .AddParameter(
-                        PowerShellConstants.Parameters.Method,
-                        PowerShellConstants.DscResourceMethods.Set)
-                    .AddParameter(
-                        PowerShellConstants.Parameters.Property,
-                        package.GetProperties())
-                    .Invoke();
-            }
+            this.ClearStreamAndStopIfError();
         }
 
         // Public implementation of Dispose pattern callable by consumers.
@@ -92,26 +63,10 @@
                 if (disposing)
                 {
                     this.powerShell.Dispose();
+                    this.runspace.Dispose();
                 }
 
                 disposed = true;
-            }
-        }
-
-        private void SetModulePath()
-        {
-            string psModulePathEnv = PowerShellConstants.PSModulePath;
-            var powerShellModulePath = this.GetPowerShellCustomModulePath();
-
-            var psModulePathEnvValue = Environment.GetEnvironmentVariable(psModulePathEnv);
-            if (psModulePathEnvValue is null)
-            {
-                Environment.SetEnvironmentVariable(psModulePathEnv, powerShellModulePath);
-            }
-            else if (!psModulePathEnvValue.Contains(powerShellModulePath))
-            {
-                psModulePathEnvValue += $";{powerShellModulePath}";
-                Environment.SetEnvironmentVariable(psModulePathEnv, psModulePathEnvValue);
             }
         }
 
@@ -173,10 +128,11 @@
                     message.AppendLine(err.ToString());
                 }
 
-                throw new Exception($"Error message\n{message}");
+                Console.WriteLine(message.ToString());
             }
 
             this.powerShell.Streams.ClearStreams();
         }
     }
 }
+

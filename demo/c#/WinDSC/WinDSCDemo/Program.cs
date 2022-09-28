@@ -7,9 +7,11 @@ try
         Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
         "input.json");
 
-    using WinDSCInstaller winDscInstaller = new();
+    //using WinDSCInstaller winDscInstaller = new();
+    //winDscInstaller.InvokeWinDSCResource(inputFile);
 
-    winDscInstaller.InvokeWinDSCResource(inputFile);
+    using WinDSCModule winDscModule = new();
+    winDscModule.InvokeWinDSCResource(inputFile);
 }
 catch (Exception e)
 {

@@ -22,6 +22,12 @@
     <None Update="PowerShell\Modules\WinDSCResourceDemo\WinDSCResourceDemo.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="PowerShell\Modules\WinDSC\WinDSC.psd1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PowerShell\Modules\WinDSC\WinDSC.psm1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

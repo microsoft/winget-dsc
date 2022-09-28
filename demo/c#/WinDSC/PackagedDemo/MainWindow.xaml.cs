@@ -29,14 +29,14 @@ namespace PackagedDemo
             };
             openPicker.FileTypeFilter.Add(".json");
 
-            var hwnd = WindowNative.GetWindowHandle(this);  // App.m_window?
+            var hwnd = WindowNative.GetWindowHandle(this);
             InitializeWithWindow.Initialize(openPicker, hwnd);
 
             StorageFile file = await openPicker.PickSingleFileAsync();
             if (file is not null)
             {
-                using WinDSCInstaller winDscInstaller = new();
-                winDscInstaller.InvokeWinDSCResource(file.Path);
+                using WinDSCModule winDSCModule = new();
+                winDSCModule.InvokeWinDSCResource(file.Path);
 
                 myButton.Content = "Done";
             }

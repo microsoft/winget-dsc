@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WinDSC.Core.Constants
+﻿namespace WinDSC.Core.Constants
 {
     internal static class PowerShellConstants
     {
@@ -33,6 +27,7 @@ namespace WinDSC.Core.Constants
         internal static class Modules
         {
             public const string WinDSCResourceDemo = "WinDSCResourceDemo";
+            public const string WinDSC = "WinDSC";
         }
 
         internal static class Parameters

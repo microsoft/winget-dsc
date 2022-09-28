@@ -1,4 +1,4 @@
-function Start-WinDSC {
+﻿function Start-WinDSC {
     param(
         [Parameter(Mandatory=$true)]
         [string]
@@ -7,7 +7,6 @@ function Start-WinDSC {
 
     # This is a hack
     $parent = (Get-Item $PSScriptRoot).parent
-    Write-Host $parent
     if ($env:PSModulePath -notlike $parent) {
         $env:PSModulePath += ";$parent"
     }
