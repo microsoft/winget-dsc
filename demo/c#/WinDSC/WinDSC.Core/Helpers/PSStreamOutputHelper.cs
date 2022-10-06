@@ -74,5 +74,38 @@
         public string Error { get; private set; } = string.Empty;
 
         public bool HadErrors { get; private set; }
+
+        public void PrintAll()
+        {
+            if (!string.IsNullOrEmpty(this.Verbose))
+            {
+                Console.WriteLine("Verbose:");
+                Console.WriteLine(this.Verbose);
+            }
+
+            if (!string.IsNullOrEmpty(this.Information))
+            {
+                Console.WriteLine("Information:");
+                Console.WriteLine(this.Information);
+            }
+
+            if (!string.IsNullOrEmpty(this.Progress))
+            {
+                Console.WriteLine("Progress:");
+                Console.WriteLine(this.Progress);
+            }
+
+            if (!string.IsNullOrEmpty(this.Warning))
+            {
+                Console.WriteLine("Warning:");
+                Console.WriteLine(this.Warning);
+            }
+
+            if (!string.IsNullOrEmpty(this.Error))
+            {
+                Console.WriteLine("Error:");
+                Console.WriteLine(this.Error);
+            }
+        }
     }
 }
