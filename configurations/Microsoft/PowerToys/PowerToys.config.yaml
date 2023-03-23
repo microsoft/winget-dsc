@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.1.0
+# Reference: https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md#compiling-powertoys
+properties:
+  resources:
+    - resource: WinGetPackage
+      id: vsPackage
+      directives:
+        description: Install Visual Studio 2022 (any edition is OK)
+        module: Microsoft.WinGet.DSC
+      settings:
+        id: Microsoft.VisualStudio.2022.Community
+        source: winget
+    - resource: VisualStudioComponents
+      dependsOn:
+        - vsPackage
+      directives:
+        description: Install required VS workloads
+        module: Microsoft.VisualStudio.DSC
+      settings:
+        productId: Microsoft.VisualStudio.Product.Community
+        channelId: VisualStudio.17.Release                  
+        components:
+          - Microsoft.VisualStudio.Workload.NativeDesktop
+          - Microsoft.VisualStudio.Component.VC.ATL.ARM64
+          - Microsoft.VisualStudio.Component.VC.ATL.ARM64.Spectre
+          - Microsoft.VisualStudio.Component.VC.ATL.Spectre
+          - Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre
+          - Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre
+          - Microsoft.VisualStudio.Component.Windows10SDK.19041
+          - Microsoft.VisualStudio.Component.Windows10SDK.20348
+  configurationVersion: 0.1
+
+  # Next steps:
+  # Open a terminal
+  # Navigate to the folder you cloned PowerToys to.
+  # Run git submodule update --init --recursive
