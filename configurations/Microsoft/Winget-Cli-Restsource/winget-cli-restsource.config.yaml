@@ -1,0 +1,34 @@
+# Configuration yaml for building winget-cli-restsource
+# Reference: https://github.com/microsoft/winget-cli-restsource#building-the-client
+properties:
+  resources:
+    - resource: WinGetPackage
+      id: gitLFSPackage
+      directives:
+        description: Install Git Large File Storage (LFS)
+        module: Microsoft.WinGet.DSC
+      settings:
+        id: GitHub.GitLFS
+        source: winget
+    - resource: WinGetPackage
+      id: vsPackage
+      directives:
+        description: Install Visual Studio 2022 (any edition is OK)
+        module: Microsoft.WinGet.DSC
+      settings:
+        id: Microsoft.VisualStudio.2022.Community
+        source: winget
+    - resource: VisualStudioComponents
+      dependsOn:
+        - vsPackage
+      directives:
+        description: Install required VS workloads
+        module: Microsoft.VisualStudio.DSC
+      settings:
+        productId: Microsoft.VisualStudio.Product.Community
+        channelId: VisualStudio.17.Release                  
+        components:
+          - Microsoft.VisualStudio.Workload.ManagedDesktop
+          - Microsoft.VisualStudio.Workload.Azure
+          - Microsoft.VisualStudio.Workload.NetWeb
+  configurationVersion: 0.1
