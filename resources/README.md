@@ -26,7 +26,14 @@ Invoke-DscResource -Name VisualStudioComponents -Method Get -ModuleName Microsof
 
 ### Troubleshooting:
 If you don't see your DSC Resource loaded, try the following:
-1. Restarting your shell.
-2. Verifying that your syntax in the module is correct. No warning is shown to the user if your PowerShell module file is invalid.
-3. Verifying the `$env:PSModulePath` contains the folder path where your module is located.
+1. Try importing the module using `Import-Module`. If the module cannot be imported, then it cannot load the DSC resource.
+
+```pwsh
+ipmo <path to DSC module .psd1 file>
+```
+
+2. Restarting your shell.
+3. Verifying that your syntax in the module is correct. No warning is shown to the user if your PowerShell module file is invalid.
+4. Verifying the `$env:PSModulePath` contains the folder path where your module is located.
+
 
