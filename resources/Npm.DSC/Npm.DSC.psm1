@@ -3,75 +3,166 @@
 
 using namespace System.Collections.Generic
 
-#region DSCResources
+# Assert once that NPM is already installed on the system.
+Assert-Npm
 
+$global:useNpmCmd = $false
+$global:npmCmdPath = "$env:ProgramFiles\nodejs\npm.cmd"
+
+#region DSCResources
 [DSCResource()]
-class NpmInstall
+class InstallNpm
 {
+    # DSCResource requires a key. Do not set.
     [DscProperty(Key)]
-    [string]$packageName
+    [string]$SID
+
+    [DscProperty()]
+    [string]$packageDirectory
 
     [DscProperty()]
     [string]$arguments
 
+    [DscProperty()]
+    [bool]$global
+
+    [DscProperty(NotConfigurable)]
+    [bool]$installAvailable
+
+    [InstallNpm] Get()
+    {
+        if (-not ([string]::IsNullOrEmpty($this.packageDirectory)))
+        {
+            VerifyDirectoryAndSetLocation -directoryPath $this.packageDirectory
+        }
+
+        # `npm list` returns a nonzero exit code if there are missing packages to install.
+        $listResult = Invoke-NpmList
+        $this.installAvailable = $listResult.ExitCode -ne 0
+
+        return @{
+            packageDirectory = $this.packageDirectory
+            arguments = $this.arguments
+            global = $this.global
+            installAvailable = $this.installAvailable
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.installAvailable -eq $false
+    }
+
+    [void] Set()
+    {
+        if ($this.Test() -eq $false)
+        {
+            Invoke-NpmInstall -Arguments $this.arguments -Global $this.global
+        }
+    }
+}
+
+[DSCResource()]
+class InstallNpmPackage
+{
+    # DSCResource requires a key. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty(Mandatory)]
+    [string[]]$packages
+
+    [DscProperty()]
+    [string]$packageDirectory
+
+    [DscProperty()]
+    [string]$arguments
+
+    [DscProperty()]
+    [bool]$global
+
     [DscProperty(NotConfigurable)]
     [bool]$installedStatus
 
-    [DscProperty(NotConfigurable)]
-    [bool]$installedStatusGlobal
-
-    [NpmInstall] Get()
+    [InstallNpmPackage] Get()
     {
-        $localResult = Invoke-NpmList -PackageName $this.packageName
-        $this.installedStatus = $localResult.ExitCode -eq 0
+        if (-not ([string]::IsNullOrEmpty($this.packageDirectory)))
+        {
+            VerifyDirectoryAndSetLocation -directoryPath $this.packageDirectory
+        }
 
-        $globalResult = Invoke-NpmList -PackageName $this.packageName -Arguments '-g'
-        $this.installedStatusGlobal = $globalResult.ExitCode -eq 0
+        # Set initial value of installedStatus to true so that if any of the packages are not installed, it returns false.
+        $this.installedStatus = $true
+        foreach ($package in $this.packages)
+        {
+            $localResult = Invoke-NpmList -PackageName $package -Global $this.global
+            $this.installedStatus = $this.installedStatus -and ($localResult.ExitCode -eq 0) 
+        }
 
         return @{
-            packageName = $this.packageName
+            SID = $this.SID
+            packageDirectory = $this.packageDirectory
+            packages = $this.packages
             arguments = $this.arguments
             installedStatus = $this.installedStatus
-            installedStatusGlobal = $this.installedStatusGlobal
         }       
     }
 
     [bool] Test()
     {
-        $this.Get()
-        if ($this.arguments -contains "-g" -or $this.arguments -contains "--global")
-        {
-            return $this.installedStatusGlobal
-        }
-        else
-        {
-            return $this.installedStatus
-        }
+        $currentState = $this.Get()
+        return $currentState.installedStatus
     }
 
     [void] Set()
     {
-        if ($this.Test())
+        if ($this.Test() -eq $false)
         {
-            return
+            foreach ($package in $this.packages)
+            {
+                Invoke-NpmInstall -PackageName $package -Arguments $this.arguments -Global $this.global
+            }
         }
-
-        Invoke-NpmInstall -PackageName $this.packageName -Arguments $this.arguments
     }
 }
 
 #endregion DSCResources
 
 #region Functions
+function Assert-Npm
+{
+    # Try invoking npm help with the alias. If it fails, switch to calling npm.cmd directly.
+    # This may occur if npm is installed in the same shell window and the alias is not updated until the shell window is restarted.
+    try
+    {
+        Invoke-Npm -command 'help'
+        return
+    }
+    catch {}
+
+    if (Test-Path -Path $global:npmCmdPath)
+    {
+        $global:useNpmCmd = $true;
+        Write-Host "Calling npm.cmd directly located at: $global:useNpmCmd"
+    }
+    else
+    {
+        throw "NodeJS is not installed"
+    }
+}
 
 function Invoke-NpmInstall
 {
     param (
-        [Parameter(Mandatory)]
+        [Parameter()]
         [string]$PackageName,
 
         [Parameter()]
-        [string]$Arguments
+        [string]$Arguments,
+
+        [Parameter()]
+        [bool]$Global
     )
 
     $command = [List[string]]::new()
@@ -79,24 +170,36 @@ function Invoke-NpmInstall
     $command.Add($PackageName)
     $command.Add($Arguments)
 
+    if ($Global)
+    {
+        $command.Add("-g")
+    }
+
     return Invoke-Npm -command $command
 }
-
 
 function Invoke-NpmList
 {
     param (
-        [Parameter(Mandatory)]
+        [Parameter()]
         [string]$PackageName,
 
         [Parameter()]
-        [string]$Arguments
+        [string]$Arguments,
+
+        [Parameter()]
+        [bool]$Global
     )
 
     $command = [List[string]]::new()
     $command.Add("list")
     $command.Add($PackageName)
     $command.Add($Arguments)
+
+    if ($Global)
+    {
+        $command.Add("-g")
+    }
 
     return Invoke-Npm -command $command
 }
@@ -124,10 +227,33 @@ function Invoke-Npm
     param (
         [Parameter(Mandatory)]
         [string]$command 
-    ) 
+    )
 
-    return Start-Process -FilePath npm -ArgumentList $command -Wait -PassThru
+    if ($global:useNpmCmd)
+    {
+        return Start-Process -FilePath $global:npmCmdPath -ArgumentList $command -Wait -PassThru -WindowStyle hidden
+    }
+    else
+    {
+        return Start-Process -FilePath npm -ArgumentList $command -Wait -PassThru -WindowStyle hidden
+    }
 }
 
+function VerifyDirectoryAndSetLocation
+{
+    param (
+        [Parameter(Mandatory)]
+        [string]$directoryPath 
+    )
+
+    if (Test-Path -Path $directoryPath -PathType Container)
+    {
+        Set-Location -Path $directoryPath
+    }
+    else
+    {
+        throw "Path does not point to a valid directory."
+    }
+}
 
 #endregion Functions

@@ -12,7 +12,7 @@
 RootModule = 'Npm.DSC.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.1'
+ModuleVersion = '0.1.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'Microsoft Corporation'
 Copyright = '(c) Microsoft Corporation. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'DSC Resource for NPM'
 
 # Minimum version of the PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -82,7 +82,8 @@ Copyright = '(c) Microsoft Corporation. All rights reserved.'
 
 # DSC resources to export from this module
 DscResourcesToExport = @(
-    'NpmInstall'
+    'InstallNpm',
+    'InstallNpmPackage'
 )
 
 # List of all modules packaged with this module
@@ -97,7 +98,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('PSDscResource_DSC_InstallNpm', 'PSDscResource_DSC_InstallNpmPackage')
 
         # A URL to the license for this module.
         # LicenseUri = ''
