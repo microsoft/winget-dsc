@@ -12,7 +12,7 @@
 RootModule = 'Microsoft.VisualStudio.DSC.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.1'
+ModuleVersion = '0.1.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -82,8 +82,9 @@ Copyright = '(c) Microsoft Corporation. All rights reserved.'
 
 # DSC resources to export from this module
 DscResourcesToExport = @(
-    'VisualStudioComponents'
-    'VisualStudioExtension'
+    'InstallVSComponent'
+    'InstallVSConfig'
+    'InstallVSExtension'
 )
 
 # List of all modules packaged with this module
@@ -98,7 +99,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('PSDscResource_DSC_InstallVSComponent', 'PSDscResource_DSC_InstallVSConfig', 'PSDscResource_DSC_InstallVSComponent')
 
         # A URL to the license for this module.
         # LicenseUri = ''

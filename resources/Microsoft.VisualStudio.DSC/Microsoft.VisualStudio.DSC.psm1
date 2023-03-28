@@ -7,7 +7,7 @@ using namespace System.Diagnostics
 #region DSCResources
 
 [DSCResource()]
-class VisualStudioComponents
+class InstallVSComponent
 {
     [DscProperty(Key)]
     [string]$productId
@@ -15,47 +15,27 @@ class VisualStudioComponents
     [DscProperty(Key)]
     [string]$channelId
 
-    [DscProperty()]
-    [string]$vsconfigFile
-
-    [DscProperty()]
+    [DscProperty(Mandatory)]
     [string[]]$components
 
     [DscProperty(NotConfigurable)]
     [string[]]$installedComponents
 
-    [VisualStudioComponents] Get()
+    [InstallVSComponent] Get()
     {
-        if (-not [string]::IsNullOrEmpty($this.vsconfigFile) -and -not [string]::IsNullOrEmpty($this.components))
-        {
-            throw "The parameters for vsconfigFile and components cannot both be specified."
-        }
-
         $this.installedComponents = Get-VsComponents -ProductId $this.productId
 
         return @{
             productId = $this.productId
             channelId = $this.channelId
-            vsconfigFile = $this.vsconfigFile
             components = $this.components
             installedComponents = $this.installedComponents
-        }       
+        }
     }
 
     [bool] Test()
     {
-        # Call get to set the installedComponents property and verify parameters.
         $this.Get()
-
-        if (-not [string]::IsNullOrEmpty($this.vsconfigFile))
-        {
-            if (-not (Test-Path -Path $this.vsconfigFile))
-            {
-                throw "vsconfig file does not exist"
-            }
-
-            $this.components = Get-Content $this.vsconfigFile | Out-String | ConvertFrom-Json
-        }
 
         foreach ($component in $this.components)
         {
@@ -75,26 +55,68 @@ class VisualStudioComponents
             return
         }
 
-        if (-not [string]::IsNullOrEmpty($this.vsconfigFile))
-        {
-            Install-VsConfigFile -ProductId $this.productId -ChannelId $this.channelId -vsconfigFile $this.vsconfigFile
-        }
-        else
-        {
-            if ([string]::IsNullOrEmpty($this.components))
-            {
-                throw "No components specified."
-            }
+        Install-VsComponents -ProductId $this.productId -ChannelId $this.channelId -Components $this.components
+    }
+}
 
-            Install-VsComponents -ProductId $this.productId -ChannelId $this.channelId -Components $this.components
+[DSCResource()]
+class InstallVSConfig
+{
+    [DscProperty(Key)]
+    [string]$productId
+
+    [DscProperty(Key)]
+    [string]$channelId
+
+    [DscProperty(Mandatory)]
+    [string]$vsconfigFile
+
+    [DscProperty(NotConfigurable)]
+    [string[]]$installedComponents
+
+    [InstallVSConfig] Get()
+    {
+        $this.installedComponents = Get-VsComponents -ProductId $this.productId
+
+        return @{
+            productId = $this.productId
+            channelId = $this.channelId
+            vsconfigFile = $this.vsconfigFile
+            installedComponents = $this.installedComponents
         }
+    }
+
+    [bool] Test()
+    {
+        $this.Get()
+        $components = Get-Content $this.vsconfigFile | Out-String | ConvertFrom-Json
+
+        foreach ($component in $components)
+        {
+            if ($this.installedComponents -notcontains $component)
+            {
+                return $false
+            }
+        }  
+
+        return $true
+    }
+
+    [void] Set()
+    {
+        if ($this.Test())
+        {
+            return
+        }
+
+        Install-VsConfigFile -ProductId $this.productId -ChannelId $this.channelId -vsconfigFile $this.vsconfigFile
     }
 }
 
 # VisualStudioExtension installs a vsix extension using setup.exe. We can make it such as it takes the Publisher, Name
 # and Version or the URL of the vsix extension (we use the former to construct the URL). If Version is null we use latest.
 [DSCResource()]
-class VisualStudioExtension
+class InstallVSExtension
 {
     # TODO: figure out what's the best. Having ProductId and ChannelId as key when we can have multiple of them sounds weird.
     # If we end up having a VsixUrl then is a conditional key?
@@ -110,7 +132,7 @@ class VisualStudioExtension
     [DscProperty()]
     [string]$Version
 
-    [VisualStudioExtension] Get()
+    [InstallVSExtension] Get()
     {
         # TODO: Currently there is no way to determine which VS extensions are installed.
         return @{
@@ -137,8 +159,6 @@ class VisualStudioExtension
 
 #region Functions
 
-# Not used. If we end up having a list of components we can call this, but we need to be careful with how many of them
-# are added on the commands. It sounds easiert that this function will create a temporary .vsconfig file and then use that.
 function Install-VsComponents
 {
     param
@@ -290,7 +310,7 @@ function Invoke-VsWhere
         [List[string]]$Arguments
     )
 
-    $vsWherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+    $vsWherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     if (-not (Test-Path -Path $vswherePath))
     {
         throw "vswhere.exe not found"
@@ -328,7 +348,7 @@ function Invoke-VsixInstaller
         default { throw "Visual Studio product does not exist." }
     }
 
-    $vsixInstallerPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019\$product\Common7\IDE\vsixinstaller.exe"
+    $vsixInstallerPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\$product\Common7\IDE\vsixinstaller.exe"
     if (-not (Test-Path -Path $vsixInstallerPath))
     {
         throw "VSIXInstaller.exe not found"
@@ -353,7 +373,7 @@ function Invoke-VsInstaller
     # setup.exe call with --passive or --quiet requires admin.
     Assert-IsAdministrator
 
-    $vsInstallerPath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"
+    $vsInstallerPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"
     if (-not (Test-Path -Path $vsInstallerPath))
     {
         throw "setup.exe not found"
