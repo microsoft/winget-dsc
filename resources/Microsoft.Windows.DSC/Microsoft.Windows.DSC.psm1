@@ -49,7 +49,7 @@ class DeveloperMode
         
             if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))
             {
-                throw "This resource must be run as an Administrator."
+                throw "Toggling Developer Mode requires this resource to be run as an Administrator."
             }
 
             $shouldEnable = $this.Ensure -eq [Ensure]::Present
@@ -70,6 +70,12 @@ class OsVersion
 
     [OsVersion] Get()
     {
+        $parsedVersion = $null
+        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion))
+        {
+            throw "'$($this.MinVersion)' is not a valid Version string."
+        }
+
         $this.OsVersion = (Get-ComputerInfo | Select-Object OsVersion).OsVersion
 
         return @{
