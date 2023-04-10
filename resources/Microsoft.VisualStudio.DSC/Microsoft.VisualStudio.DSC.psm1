@@ -55,7 +55,13 @@ class InstallVSComponent
             return
         }
 
-        Install-VsComponents -ProductId $this.productId -ChannelId $this.channelId -Components $this.components
+        $vsConfigFilePath = CreateVSConfigFile -Version "1.0" -Components $this.components
+        if (-not (Test-Path -Path $vsConfigFilePath))
+        {
+            throw "Failed to generate .vsconfig file."
+        }
+
+        Install-VsConfigFile -ProductId $this.productId -ChannelId $this.channelId -vsconfigFile $vsConfigFilePath
     }
 }
 
@@ -158,36 +164,25 @@ class InstallVSExtension
 #endregion DSCResources
 
 #region Functions
-
-function Install-VsComponents
+function CreateVSConfigFile
 {
     param
     (
         [Parameter(Mandatory)]
-        [string]$ProductId,
+        [string]$Version,
 
         [Parameter(Mandatory)]
-        [string]$ChannelId,
-
-        [Parameter(Mandatory)]
-        [List[string]]$Components
+        [string[]]$Components
     )
-    $arguments = [List[string]]::new()
-    $arguments.Add("modify")
-    $arguments.Add("--productId")
-    $arguments.Add($ProductId)
-    $arguments.Add("--channelId")
-    $arguments.Add($ChannelId)
 
-    foreach ($component in $Components)
-    {
-        $arguments.Add("--add")
-        $arguments.Add($component)
-    }
+    $componentList = [System.Collections.ArrayList]$Components
+    $vsConfig = @{}
+    $vsConfig.Add("components", $componentList)
+    $vsConfig.Add("version", $Version)
 
-    $arguments.Add("--passive")
-
-    Invoke-VsInstaller -Arguments $arguments
+    $vsConfigFilePath = "$env:temp\.vsconfig"
+    $vsConfig | ConvertTo-Json| Out-File $vsConfigFilePath -Force
+    return $vsConfigFilePath
 }
 
 # Call setup.exe with the config file.
