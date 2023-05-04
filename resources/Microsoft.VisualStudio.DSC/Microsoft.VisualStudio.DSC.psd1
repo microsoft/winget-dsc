@@ -12,7 +12,7 @@
 RootModule = 'Microsoft.VisualStudio.DSC.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1.1'
+ModuleVersion = '0.0.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'Microsoft Corporation'
 Copyright = '(c) Microsoft Corporation. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'A DSC resource for managing Visual Studio components and extensions'
+Description = 'A DSC resource for managing Visual Studio components.'
 
 # Minimum version of the PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -84,7 +84,6 @@ Description = 'A DSC resource for managing Visual Studio components and extensio
 DscResourcesToExport = @(
     'InstallVSComponent'
     'InstallVSConfig'
-    'InstallVSExtension'
 )
 
 # List of all modules packaged with this module
@@ -99,7 +98,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('PSDscResource_DSC_InstallVSComponent', 'PSDscResource_DSC_InstallVSConfig', 'PSDscResource_DSC_InstallVSComponent')
+        Tags = @('PSDscResource_InstallVSComponent', 'PSDscResource_InstallVSConfig')
 
         # A URL to the license for this module.
         # LicenseUri = ''
@@ -114,7 +113,7 @@ PrivateData = @{
         # ReleaseNotes = ''
 
         # Prerelease string of this module
-        # Prerelease = ''
+        Prerelease = 'alpha'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
@@ -131,6 +130,4 @@ PrivateData = @{
 
 # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
 # DefaultCommandPrefix = ''
-
 }
-
