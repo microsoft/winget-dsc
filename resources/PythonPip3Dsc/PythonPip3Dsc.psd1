@@ -21,13 +21,13 @@ ModuleVersion = '0.1.0'
 GUID = 'bc1cab01-7e6f-4bba-a6ec-d77d0ffe91c7'
 
 # Author of this module
-Author = 'Microsoft Corporation'
+Author = 'DscSamples'
 
 # Company or vendor of this module
-CompanyName = 'Microsoft Corporation'
+# CompanyName = ''
 
 # Copyright statement for this module
-Copyright = '(c) Microsoft Corporation. All rights reserved.'
+# Copyright = ''
 
 # Description of the functionality provided by this module
 Description = 'DSC Resource for Python pip3'
@@ -112,7 +112,7 @@ PrivateData = @{
         # ReleaseNotes = ''
 
         # Prerelease string of this module
-        # Prerelease = ''
+        Prerelease = 'alpha'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
