@@ -24,7 +24,7 @@ class DeveloperMode
         return @{
             Ensure = $this.Ensure
             IsEnabled = $this.IsEnabled
-        }       
+        }
     }
 
     [bool] Test()
