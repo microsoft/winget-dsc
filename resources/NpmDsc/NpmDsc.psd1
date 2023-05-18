@@ -82,8 +82,8 @@ Description = 'DSC Resource for Npm'
 
 # DSC resources to export from this module
 DscResourcesToExport = @(
-    'InstallNpm',
-    'InstallNpmPackage'
+    'NpmPackage',
+    'NpmInstall'
 )
 
 # List of all modules packaged with this module
@@ -98,7 +98,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('PSDscResource_DSC_InstallNpm', 'PSDscResource_DSC_InstallNpmPackage')
+        Tags = @('PSDscResource_DSC_NpmPackage', 'PSDscResource_DSC_NpmInstall')
 
         # A URL to the license for this module.
         # LicenseUri = ''
