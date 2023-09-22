@@ -87,7 +87,7 @@ class OsVersion
     [bool] Test()
     {
         $currentState = $this.Get()
-        return [System.Version]$currentState.OsVersion -gt [System.Version]$currentState.MinVersion
+        return [System.Version]$currentState.OsVersion -ge [System.Version]$currentState.MinVersion
     }
 
     [void] Set()
