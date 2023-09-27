@@ -7,6 +7,22 @@ enum Ensure
     Present
 }
 
+enum Alignment
+{
+    Left = 0
+    Middle = 1
+}
+
+enum HideTaskBarLabelsBehavior
+{
+    Always = 0
+    WhenFull = 1
+    Never = 2
+}
+
+$global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
+$global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
+
 #region DSCResources
 [DSCResource()]
 class DeveloperMode
@@ -97,6 +113,217 @@ class OsVersion
 
 }
 
+[DSCResource()]
+class TaskBarAlignment
+{
+    [DscProperty(Key)]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [DscProperty()]
+    [Alignment] $Alignment
+
+    [TaskBarAlignment] Get()
+    {
+        $alignmentValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name TaskbarAl
+        return @{
+            Ensure = [Ensure]::Present
+            Alignment = [Alignment]$alignmentValue
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Alignment -eq $this.Alignment
+    }
+
+    [void] Set()
+    {
+        $desiredAlignment = [int]$this.Alignment
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name TaskbarAl -Value $desiredAlignment
+    }
+}
+
+[DSCResource()]
+class ShowSecondsInClock
+{
+    [DscProperty(Key)]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [ShowSecondsInClock] Get()
+    {
+        $isEnabled = (Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name ShowSecondsInSystemClock) ? [Ensure]::Present : [Ensure]::Absent
+        
+        return @{
+            Ensure = $isEnabled
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set()
+    {
+        $value = if ($this.Ensure -eq [Ensure]::Present) {1} else {0}
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name ShowSecondsInSystemClock -Value $value
+    }
+}
+
+[DSCResource()]
+class HideFileExtensions
+{
+    [DscProperty(Key)]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [HideFileExtensions] Get()
+    {
+        $isEnabled = (Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name HideFileExt) ? [Ensure]::Present : [Ensure]::Absent
+        
+        return @{
+            Ensure = $isEnabled
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set()
+    {
+        $value = if ($this.Ensure -eq [Ensure]::Present) {1} else {0}
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name HideFileExt -Value $value
+    }
+}
+
+[DSCResource()]
+class ShowTaskViewButton
+{
+    [DscProperty(Key)]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [ShowTaskViewButton] Get()
+    {
+        $isEnabled = (Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name ShowTaskViewButton) ? [Ensure]::Present : [Ensure]::Absent
+        
+        return @{
+            Ensure = $isEnabled
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set()
+    {
+        $value = if ($this.Ensure -eq [Ensure]::Present) {1} else {0}
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name ShowTaskViewButton -Value $value
+    }
+}
+
+[DSCResource()]
+class ShowHiddenFiles
+{
+    [DscProperty(Key)]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [ShowHiddenFiles] Get()
+    {
+        $isEnabled = (Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name 'Hidden') ? [Ensure]::Present : [Ensure]::Absent
+        
+        return @{
+            Ensure = $isEnabled
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set()
+    {
+        $value = if ($this.Ensure -eq [Ensure]::Present) {1} else {0}
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name 'Hidden' -Value $value
+    }
+}
+
+[DSCResource()]
+class HideTaskBarLabels
+{
+    [DscProperty(Key)]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [DscProperty()]
+    [HideTaskBarLabelsBehavior] $HideLabels
+
+    [HideTaskBarLabels] Get()
+    {
+        $hideLabelsValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name TaskbarGlomLevel
+        return @{
+            Ensure = [Ensure]::Present
+            HideLabels = [HideTaskBarLabelsBehavior]$hideLabelsValue
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.HideLabels -eq $this.HideLabels
+    }
+
+    [void] Set()
+    {
+        $desiredHideLabelsBehavior = [int]$this.HideLabels
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name TaskbarGlomLevel -Value $desiredHideLabelsBehavior
+
+        # When setting the hide labels behavior from the registry, explorer needs to be restarted to enact the changes.
+        Stop-Process -ProcessName Explorer
+    }
+}
+
+[DSCResource()]
+class EnableDarkMode
+{
+    [DscProperty(Key)]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [EnableDarkMode] Get()
+    {
+        $appsUseLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name AppsUseLightTheme
+        $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name SystemUsesLightTheme
+
+        $isDarkModeEnabled = if ($appsUseLightModeValue -eq 0 -and $systemUsesLightModeValue -eq 0) {[Ensure]::Present} else {[Ensure]::Absent}
+        
+        return @{
+            Ensure = $isDarkModeEnabled
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set()
+    {
+        $value = if ($this.Ensure -eq [Ensure]::Present) {0} else {1}
+        Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name AppsUseLightTheme -Value $value
+        Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name SystemUsesLightTheme -Value $value
+
+        # When enabling dark mode them from the registry, explorer needs to be restarted to enact the changes.
+        Stop-Process -ProcessName Explorer
+    }
+}
 #endregion DSCResources
 
 #region Functions
