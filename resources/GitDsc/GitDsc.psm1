@@ -19,127 +19,70 @@ class GitClone
     [DscProperty()]
     [Ensure]$Ensure = [Ensure]::Present
 
-    # DSCResource requires a key. Do not set.
     [DscProperty(Key)]
-    [string]$SID
-
-    # if not, then current directory is used.
-    [DscProperty()]
-    [string]$WorkingDirectory
-
-    # If the root directory is not provided, then
-    [DscProperty()]
-    [bool]$RootDirectory
-
-    [DscProperty(Mandatory)]
     [string]$HttpsUrl
+
+    # The root directory where the project will be cloned to. (i.e. the directory where you expect to run `git clone`)
+    [DscProperty(Mandatory)]
+    [string]$RootDirectory
 
     [GitClone] Get()
     {
         $currentState = [GitClone]::new()
+        $currentState.HttpsUrl = $this.HttpsUrl
+        $currentState.RootDirectory = $this.RootDirectory
 
-        if (-not([string]::IsNullOrEmpty($this.RootDirectory)))
+        if (-not(Test-Path -Path $this.RootDirectory))
         {
-            if (Test-Path -Path $this.RootDirectory -PathType Container)
-            {
-                Set-Location -Path $this.RootDirectory
+            $currentState.Ensure = [Ensure]::Absent
+            return $currentState
+        }
 
-                if (IsFolderWorkingTree)
-                {
-                    $currentState.Ensure = [Ensure]::Present
-                }
-                else
-                {
-                    $currentState.Ensure = [Ensure]::Absent
-                }
+        Set-Location $this.RootDirectory
+        $projectName = GetGitProjectName($this.HttpsUrl)
+        $expectedDirectory = Join-Path -Path $this.RootDirectory -ChildPath $projectName
+
+        if (Test-Path $expectedDirectory)
+        {
+            Set-Location -Path $expectedDirectory
+            try 
+            {
+                $gitRemoteValue = Invoke-GitRemote("get-url origin")
+                $currentState.Ensure = ($gitRemoteValue -like $this.HttpsUrl) ? [Ensure]::Present : [Ensure]::Absent
             }
-            else
+            catch
             {
                 $currentState.Ensure = [Ensure]::Absent
             }
         }
-
-        if (-not([string]::IsNullOrEmpty($this.WorkingDirectory)))
+        else
         {
-            if (Test-Path -Path $this.WorkingDirectory -PathType Container)
-            {
-                Set-Location -Path $this.WorkingDirectory
-
-                $projectName = GetGitProjectName($this.HttpsUrl)
-                $expectedProjectDir = Join-Path -Path $this.WorkingDirectory -ChildPath $projectName
-
-                if (Test-Path -Path $expectedProjectDir -PathType Container)
-                {
-                    Set-Location -Path $expectedProjectDir
-                    if (IsFolderWorkingTree)
-                    {
-                        $currentState.Ensure = [Ensure]::Present
-                    }        
-                    else
-                    {
-                        $currentState.Ensure = [Ensure]::Absent
-                    }
-                }
-                else
-                {
-                    $currentState.Ensure = [Ensure]::Absent
-                }
-            }
-            else
-            {
-                throw exception
-            }
-        }
-        # if the root directory does not exist then ensure is absent
-
-        # if the root directory does exist, check using git is working tree and see if it returns true or false.
-
-        # If no root directory is provided, use the current working directory, check if the folder exists based on the provided httpsurl
-
-        # if the folder exists, then cd and check if it is a git working tree
-        # if not, then return absent
-
-        # if the folder does not exist then return absent.
-
-
-        if (-not([string]::IsNullOrEmpty($this.WorkingDirectory)))
-        {
-            if (Test-Path -Path $this.WorkingDirectory -PathType Container)
-            {
-                Set-Location -Path $this.WorkingDirectory
-            }
-            elseif ($this.CreateWorkingDirectory)
-            {
-                New-Item -Path $this.WorkingDirectory -ItemType Directory
-            }
-            else
-            {
-                throw "$($this.WorkingDirectory) does not point to a valid working directory."
-            }
+            $currentState.Ensure = [Ensure]::Absent
         }
 
-        
-        $currentState = [Ensure]::Present
-
-
-
-        $currentState.WorkingDirectory = $this.WorkingDirectory
-        $currentState.Arguments = $this.Arguments
-        $currentState.PackageDirectory = $this.PackageDirectory
         return $currentState;
     }
 
     [bool] Test()
     {
-        # check if the folder already exists
-        # Yarn install is inherently idempotent as it will also resolve package dependencies. Set to $false
-        return $false
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
     }
 
     [void] Set()
     {
-        $currentState = $this.Get()
-        Invoke-YarnInstall -Arguments $currentState.Arguments
+        if ($this.Ensure -eq [Ensure]::Absent)
+        {
+            throw "This resource does not support removing a cloned repository."
+        }
+
+        if (-not(Test-Path $this.RootDirectory))
+        {
+            New-Item -ItemType Directory -Path $this.RootDirectory
+        }
+
+        Set-Location $this.RootDirectory
+        Invoke-GitClone($this.HttpsUrl)
     }
 }
 
@@ -172,18 +115,17 @@ function GetGitProjectName
     return $projectName
 }
 
-function IsFolderWorkingTree
+function Invoke-GitRemote
 {
-    $command = [List[string]]::new()
-    $command.Add("rev-parse --is-inside-work-tree")
-    try {
-        return (Invoke-Git -Command) -eq 'true'
-    }
-    catch {
-        # do nothing
-    }
+    param(
+        [Parameter()]
+        [string]$Arguments       
+    )
 
-    return false
+    $command = [List[string]]::new()
+    $command.Add("remote")
+    $command.Add($Arguments)
+    return Invoke-Git -Command $command 
 }
 
 function Invoke-GitClone
