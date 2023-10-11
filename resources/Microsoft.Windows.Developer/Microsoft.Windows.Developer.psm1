@@ -24,7 +24,11 @@ enum HideTaskBarLabelsBehavior
 [DSCResource()]
 class DeveloperMode
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
     [Ensure] $Ensure = [Ensure]::Present
 
     [DscProperty(NotConfigurable)]
@@ -75,7 +79,11 @@ class DeveloperMode
 [DSCResource()]
 class OsVersion
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty(Mandatory)]
     [string] $MinVersion
 
     [DscProperty(NotConfigurable)]
@@ -116,17 +124,27 @@ $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersi
 [DSCResource()]
 class TaskBarAlignment
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
-    [Ensure] $Ensure = [Ensure]::Present
+    [string]$SID
 
     [DscProperty()]
     [Alignment] $Alignment
 
+    hidden [string] $TaskbarAl = 'TaskbarAl'
+
     [TaskBarAlignment] Get()
     {
-        $alignmentValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name 'TaskbarAl'
+        $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl
+        if (-not($exists))
+        {
+            return @{
+                Alignment = [Alignment]::Middle
+            }
+        }
+
+        $alignmentValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.TaskbarAl
         return @{
-            Ensure = [Ensure]::Present
             Alignment = [Alignment]$alignmentValue
         }
     }
@@ -140,19 +158,33 @@ class TaskBarAlignment
     [void] Set()
     {
         $desiredAlignment = [int]$this.Alignment
-        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name 'TaskbarAl' -Value $desiredAlignment
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl -Value $desiredAlignment
     }
 }
 
 [DSCResource()]
 class ShowSecondsInClock
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
     [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $ShowSecondsInSystemClock = 'ShowSecondsInSystemClock'
 
     [ShowSecondsInClock] Get()
     {
-        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name 'ShowSecondsInSystemClock'
+        $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock
+        if (-not($exists))
+        {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.ShowSecondsInSystemClock
         
         return @{
             Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
@@ -168,19 +200,33 @@ class ShowSecondsInClock
     [void] Set()
     {
         $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
-        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name 'ShowSecondsInSystemClock' -Value $value
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock -Value $value
     }
 }
 
 [DSCResource()]
 class HideFileExtensions
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
+    [string]$SID    
+
+    [DscProperty()]
     [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $HideFileExt = 'HideFileExt'
 
     [HideFileExtensions] Get()
     {
-        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name 'HideFileExt'
+        $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.HideFileExt
+        if (-not($exists))
+        {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.HideFileExt
         
         return @{
             Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
@@ -196,19 +242,33 @@ class HideFileExtensions
     [void] Set()
     {
         $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
-        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name 'HideFileExt' -Value $value
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HideFileExt -Value $value
     }
 }
 
 [DSCResource()]
 class ShowTaskViewButton
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
     [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $ShowTaskViewButton = 'ShowTaskViewButton'
 
     [ShowTaskViewButton] Get()
     {
-        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name 'ShowTaskViewButton'
+        $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton
+        if (-not($exists))
+        {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.ShowTaskViewButton
 
         return @{
             Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
@@ -224,19 +284,33 @@ class ShowTaskViewButton
     [void] Set()
     {
         $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
-        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name 'ShowTaskViewButton' -Value $value
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton -Value $value
     }
 }
 
 [DSCResource()]
 class ShowHiddenFiles
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
     [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $Hidden = 'Hidden'
 
     [ShowHiddenFiles] Get()
     {
-        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name 'Hidden'
+        $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.Hidden
+        if (-not($exists))
+        {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.Hidden
         
         return @{
             Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
@@ -252,22 +326,36 @@ class ShowHiddenFiles
     [void] Set()
     {
         $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
-        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name 'Hidden' -Value $value
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.Hidden -Value $value
     }
 }
 
 [DSCResource()]
 class HideTaskBarLabels
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty(Mandatory)]
     [HideTaskBarLabelsBehavior] $HideLabels
 
     [DscProperty()]
     [bool] $RestartExplorer = $false
 
+    hidden [string] $TaskbarGlomLevel = 'TaskbarGlomLevel'
+
     [HideTaskBarLabels] Get()
     {
-        $hideLabelsValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name 'TaskbarGlomLevel'
+        $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel
+        if (-not($exists))
+        {
+            return @{
+                HideLabels = [HideTaskBarLabelsBehavior]::Always
+            }
+        }
+
+        $hideLabelsValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.TaskbarGlomLevel
 
         return @{
             HideLabels = [HideTaskBarLabelsBehavior]$hideLabelsValue
@@ -283,7 +371,7 @@ class HideTaskBarLabels
     [void] Set()
     {
         $desiredHideLabelsBehavior = [int]$this.HideLabels
-        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name 'TaskbarGlomLevel' -Value $desiredHideLabelsBehavior
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel -Value $desiredHideLabelsBehavior
 
         if ($this.RestartExplorer)
         {
@@ -296,16 +384,31 @@ class HideTaskBarLabels
 [DSCResource()]
 class EnableDarkMode
 {
+    # Key required. Do not set.
     [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
     [Ensure] $Ensure = [Ensure]::Present
 
     [DscProperty()]
     [bool] $RestartExplorer = $false
 
+    hidden [string] $AppsUseLightTheme = 'AppsUseLightTheme'
+    hidden [string] $SystemUsesLightTheme = 'SystemUsesLightTheme'
+
     [EnableDarkMode] Get()
     {
-        $appsUseLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name 'AppsUseLightTheme'
-        $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name 'SystemUsesLightTheme'
+        $exists = (DoesRegistryKeyPropertyExist -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme) -and (DoesRegistryKeyPropertyExist -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme)
+        if (-not($exists))
+        {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $appsUseLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name $this.AppsUseLightTheme
+        $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name $this.SystemUsesLightTheme
 
         $isDarkModeEnabled = if ($appsUseLightModeValue -eq 0 -and $systemUsesLightModeValue -eq 0) {[Ensure]::Present} else {[Ensure]::Absent}
         
@@ -323,8 +426,8 @@ class EnableDarkMode
     [void] Set()
     {
         $value = if ($this.Ensure -eq [Ensure]::Present) {0} else {1}
-        Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name 'AppsUseLightTheme' -Value $value
-        Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name 'SystemUsesLightTheme' -Value $value
+        Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme -Value $value
+        Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme -Value $value
 
         if ($this.RestartExplorer)
         {
@@ -367,6 +470,21 @@ function SetDeveloperMode
 
     $developerModeValue = [int]$Enable
     New-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName -Value $developerModeValue -PropertyType DWORD -Force | Out-Null
+}
+
+function DoesRegistryKeyPropertyExist
+{
+    param (
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [Parameter(Mandatory)]
+        [string]$Name
+    )
+
+    # Get-ItemProperty will return $null if the registry key property does not exist.
+    $itemProperty = Get-ItemProperty -Path $Path  -Name $Name -ErrorAction SilentlyContinue
+    return $null -ne $itemProperty
 }
 
 #endregion Functions
