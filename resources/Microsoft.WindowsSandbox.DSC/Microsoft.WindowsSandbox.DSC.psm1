@@ -56,8 +56,6 @@ class WindowsSandbox
     [DscProperty()]
     [nullable[bool]]$VideoInput
 
-# Constants
-
     [WindowsSandbox] Get()
     {
         $currentState = [WindowsSandbox]::new()
@@ -100,8 +98,31 @@ class WindowsSandbox
             $root = $xml.CreateElement("Configuration")
             $xml.AppendChild($root)
         }
+        
+        <# Example Windows Sandbox configuration file (xml):
+            <Configuration>
+            <VGpu>Disable</VGpu>
+            <Networking>Disable</Networking>
+            <MappedFolders>
+                <MappedFolder>
+                <HostFolder>C:\Users\Public\Downloads</HostFolder>
+                <SandboxFolder>C:\Users\WDAGUtilityAccount\Downloads</SandboxFolder>
+                <ReadOnly>true</ReadOnly>
+                </MappedFolder>
+            </MappedFolders>
+            <LogonCommand>
+                <Command>explorer.exe C:\users\WDAGUtilityAccount\Downloads</Command>
+            </LogonCommand>
+            <AudioInput>Enable</AudioInput>
+            <VideoInput>Enable</VideoInput>
+            <ProtectedClient>Enable</ProtectedClient>
+            <PrinterRedirection>Disable</PrinterRedirection>
+            <ClipboardRedirection>Enable</ClipboardRedirection>
+            <MemoryInMB>2048</MemoryInMB>
+            </Configuration>            
+        #>
 
-        # Configuration overrides.
+        # Override existing configurations if exists.
         if ($this.HostFolder)
         {
             if (-not(Test-Path -Path $this.HostFolder))
