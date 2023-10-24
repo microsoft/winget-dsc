@@ -8,13 +8,30 @@ Copyright = '(c) Microsoft Corporation. All rights reserved.'
 Description = 'DSC Resource for Windows'
 PowerShellVersion = '7.2'
 DscResourcesToExport = @(
-    'DeveloperMode'
-    'OsVersion'
+    'DeveloperMode',
+    'OsVersion',
+    'TaskBarAlignment',
+    'ShowSecondsInClock',
+    'HideFileExtensions',
+    'ShowTaskViewButton',
+    'ShowHiddenFiles',
+    'HideTaskBarLabels',
+    'EnableDarkMode'
 )
 PrivateData = @{
     PSData = @{
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('PSDscResource_DeveloperMode', 'PSDscResource_OsVersion')
+        Tags = @(
+            'PSDscResource_DeveloperMode',
+            'PSDscResource_OsVersion',
+            'PSDscResource_TaskBarAlignment',
+            'PSDscResource_ShowSecondsInClock',
+            'PSDscResource_HideFileExtensions',
+            'PSDscResource_ShowTaskViewButton',
+            'PSDscResource_ShowHiddenFiles',
+            'PSDscResource_HideTaskBarLabels',
+            'PSDscResource_EnableDarkMode'
+            )
 
         # Prerelease string of this module
         Prerelease = 'alpha'
