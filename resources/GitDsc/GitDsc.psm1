@@ -22,6 +22,9 @@ class GitClone
     [DscProperty(Key)]
     [string]$HttpsUrl
 
+    [DscProperty()]
+    [string]$RemoteName
+
     # The root directory where the project will be cloned to. (i.e. the directory where you expect to run `git clone`)
     [DscProperty(Mandatory)]
     [string]$RootDirectory
@@ -31,10 +34,11 @@ class GitClone
         $currentState = [GitClone]::new()
         $currentState.HttpsUrl = $this.HttpsUrl
         $currentState.RootDirectory = $this.RootDirectory
+        $currentState.Ensure = [Ensure]::Absent
+        $currentState.RemoteName = ($null -eq $this.RemoteName) ? "origin" : $this.RemoteName
 
         if (-not(Test-Path -Path $this.RootDirectory))
         {
-            $currentState.Ensure = [Ensure]::Absent
             return $currentState
         }
 
@@ -47,17 +51,16 @@ class GitClone
             Set-Location -Path $expectedDirectory
             try 
             {
-                $gitRemoteValue = Invoke-GitRemote("get-url origin")
-                $currentState.Ensure = ($gitRemoteValue -like $this.HttpsUrl) ? [Ensure]::Present : [Ensure]::Absent
+                $gitRemoteValue = Invoke-GitRemote("get-url $($currentState.RemoteName)")
+                if ($gitRemoteValue -like $this.HttpsUrl)
+                {
+                    $currentState.Ensure = [Ensure]::Present
+                }
             }
             catch
             {
-                $currentState.Ensure = [Ensure]::Absent
+                # Failed to execute `git remote`. Ensure state is `absent`
             }
-        }
-        else
-        {
-            $currentState.Ensure = [Ensure]::Absent
         }
 
         return $currentState;
@@ -83,6 +86,83 @@ class GitClone
 
         Set-Location $this.RootDirectory
         Invoke-GitClone($this.HttpsUrl)
+    }
+}
+
+[DSCResource()]
+class GitRemote
+{
+    [DscProperty()]
+    [Ensure]$Ensure = [Ensure]::Present
+
+    [DscProperty(Key)]
+    [string]$RemoteName
+
+    [DscProperty(Key)]
+    [string]$RemoteUrl
+
+    # The root directory where the project will be cloned to. (i.e. the directory where you expect to run `git clone`)
+    [DscProperty(Mandatory)]
+    [string]$ProjectDirectory
+
+    [GitRemote] Get()
+    {
+        $currentState = [GitRemote]::new()
+        $currentState.RemoteName = $this.RemoteName
+        $currentState.RemoteUrl = $this.RemoteUrl
+        $currentState.ProjectDirectory = $this.ProjectDirectory
+
+        if (-not(Test-Path -Path $this.ProjectDirectory))
+        {
+            throw "Project directory does not exist."
+        } 
+
+        Set-Location $this.ProjectDirectory
+        try
+        {
+            $gitRemoteValue = Invoke-GitRemote("get-url $($this.RemoteName)")
+            $currentState.Ensure = ($gitRemoteValue -like $this.RemoteUrl) ? [Ensure]::Present : [Ensure]::Absent
+        }
+        catch
+        {
+            $currentState.Ensure = [Ensure]::Absent
+        }
+
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set()
+    {
+        Set-Location $this.ProjectDirectory
+
+        if ($this.Ensure -eq [Ensure]::Present)
+        {
+            try
+            {
+                Invoke-GitRemote("add $($this.RemoteName) $($this.RemoteUrl)")
+            }
+            catch
+            {
+                throw "Failed to add remote repository."
+            }
+        }
+        else
+        {
+            try
+            {
+                Invoke-GitRemote("remove $($this.RemoteName)")
+            }
+            catch
+            {
+                throw "Failed to remove remote repository."
+            }
+        }
     }
 }
 

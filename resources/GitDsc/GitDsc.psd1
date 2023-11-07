@@ -82,7 +82,8 @@ Description = 'DSC Resource for Git'
 
 # DSC resources to export from this module
 DscResourcesToExport = @(
-    'GitClone'
+    'GitClone',
+    'GitRemote'
 )
 
 # List of all modules packaged with this module
@@ -97,7 +98,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('PSDscResource_GitClone')
+        Tags = @('PSDscResource_GitClone', 'PSDscResource_GitRemote')
 
         # A URL to the license for this module.
         # LicenseUri = ''
