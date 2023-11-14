@@ -9,6 +9,14 @@ enum Ensure
     Present
 }
 
+enum Scope
+{
+    global
+    system
+    local
+    worktree
+}
+
 # Assert once that Git is already installed on the system.
 Assert-Git
 
@@ -166,6 +174,35 @@ class GitRemote
     }
 }
 
+[DSCResource()]
+class GitConfigUserName
+{
+    [DscProperty()]
+    [Ensure]$Ensure = [Ensure]::Present
+
+    [DscProperty(Key)]
+    [string]$HttpsUrl
+
+    [DscProperty()]
+    [string]$RemoteName
+
+    # The root directory where the project will be cloned to. (i.e. the directory where you expect to run `git clone`)
+    [DscProperty(Mandatory)]
+    [string]$RootDirectory
+
+    [GitConfigUserName] Get()
+    {
+    }
+
+    [bool] Test()
+    {
+    }
+
+    [void] Set()
+    {
+    }
+}
+
 #endregion DSCResources
 
 #region Functions
@@ -193,6 +230,19 @@ function GetGitProjectName
 
     $projectName = ($HttpsUrl.split('/')[-1]).split('.')[0]
     return $projectName
+}
+
+function Invoke-GitConfig
+{
+    param(
+        [Parameter()]
+        [string]$Arguments
+    )
+
+    $command = [List[string]]::new()
+    $command.Add("config")
+    $command.Add($Arguments)
+    return Invoke-Git -Command $command
 }
 
 function Invoke-GitRemote
