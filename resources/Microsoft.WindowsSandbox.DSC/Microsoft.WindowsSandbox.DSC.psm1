@@ -34,6 +34,9 @@ class WindowsSandbox
 
     [DscProperty()]
     [string]$LogonCommand
+    
+    [DscProperty()]
+    [nullable[Int64]]$MemoryInMB
 
     [DscProperty()]
     [nullable[bool]]$vGPU
@@ -60,9 +63,9 @@ class WindowsSandbox
     {
         $currentState = [WindowsSandbox]::new()
         $currentState.WsbFilePath = $this.WsbFilePath
-        
         $windowsSandboxProcess = Get-Process WindowsSandbox -ErrorAction SilentlyContinue
         $currentState.Ensure = $windowsSandboxProcess ? [Ensure]::Present : [Ensure]::Absent
+        
         return $currentState
     }
 
@@ -176,6 +179,17 @@ class WindowsSandbox
             $root.LogonCommand.Command = $this.LogonCommand
         }
 
+        if ($this.MemoryInMB)
+        {
+            if ($null -eq $root.MemoryInMB)
+            {
+                $memoryElement = $xml.CreateElement("MemoryInMB")
+                $root.AppendChild($memoryElement)
+            }
+
+            $root.MemoryInMB = $this.MemoryInMB
+        }
+
         if ($null -ne $this.vGPU)
         {
             if ($null -eq $root.vGPU)
@@ -254,9 +268,16 @@ class WindowsSandbox
         }
 
         # Export wsb file and run.
-        $customSandboxWsbFilePath = "$($env:Temp)\CustomSandbox.wsb"
-        $xml.save($customSandboxWsbFilePath)
-        Invoke-Item $customSandboxWsbFilePath
+        $windowsSandboxDscTempDir = "$($env:Temp)\WindowsSandboxDsc"
+        if (-not (Test-Path -Path $windowsSandboxDscTempDir))
+        {
+            New-Item -ItemType Directory -Path $windowsSandboxDscTempDir
+        }
+
+        $sandboxId = (New-Guid).ToString()
+        $tempSandboxWsbFilePath = Join-Path -Path $windowsSandboxDscTempDir -ChildPath "${sandboxId}.wsb"
+        $xml.save($tempSandboxWsbFilePath)
+        Invoke-Item $tempSandboxWsbFilePath
     }
 }
 
