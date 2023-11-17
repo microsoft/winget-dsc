@@ -11,6 +11,7 @@ enum Ensure
 
 enum ConfigLocation
 {
+    none
     global
     system
     worktree
@@ -196,26 +197,29 @@ class GitConfigUserName
         $currentState.ConfigLocation = $this.ConfigLocation
         $currentState.ProjectDirectory = $this.ProjectDirectory
 
-        if ($this.ProjectDirectory)
+        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system)
         {
-            if (Test-Path -Path $this.ProjectDirectory)
+            # Project directory is not required for --global or --system configurations
+            if ($this.ProjectDirectory)
             {
-                Set-Location $this.ProjectDirectory
+                if (Test-Path -Path $this.ProjectDirectory)
+                {
+                    Set-Location $this.ProjectDirectory
+                }
+                else
+                {
+                    throw "Project directory does not exist."
+                }
             }
             else
             {
-                throw "Project directory does not exist."
+                throw "Project directory parameter must be specified for non-system and non-global configurations."
             }
         }
 
-        $configArgs = ($null -ne $this.ConfigLocation) ? "--$($this.ConfigLocation) user.name" : "user.name"
+        $configArgs = ConstructGitConfigArguments -Arguments "user.name" -ConfigLocation $this.ConfigLocation
         $result = Invoke-GitConfig($configArgs)
-        
-        if ($currentState.UserName -ne $result)
-        {
-            $currentState.Ensure = [Ensure]::Absent
-        }
-        
+        $currentState.Ensure = ($currentState.UserName -eq $result) ? [Ensure]::Present : [Ensure]::Absent
         return $currentState
     }
 
@@ -227,16 +231,105 @@ class GitConfigUserName
 
     [void] Set()
     {
+        if ($this.ConfigLocation -eq [ConfigLocation]::system)
+        {
+            Assert-IsAdministrator
+        }
+
+        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system)
+        {
+            Set-Location $this.ProjectDirectory
+        }
+
         if ($this.Ensure -eq [Ensure]::Present)
         {
-            $configArgs = ($null -ne $this.ConfigLocation) ? "--$($this.ConfigLocation) user.name $($this.UserName)" : "user.name $($this.UserName)"
-            Invoke-GitConfig($configArgs)
+            $configArgs = ConstructGitConfigArguments -Arguments "user.name $($this.UserName)" -ConfigLocation $this.ConfigLocation
         }
         else
         {
-            $configArgs = ($null -ne $this.ConfigLocation) ? "--$($this.ConfigLocation) --unset user.name" : "--unset user.name"
-            Invoke-GitConfig($configArgs)
+            $configArgs = ConstructGitConfigArguments -Arguments "--unset user.name" -ConfigLocation $this.ConfigLocation
         }
+
+        Invoke-GitConfig($configArgs)
+    }
+}
+
+[DSCResource()]
+class GitConfigUserEmail
+{
+    [DscProperty()]
+    [Ensure]$Ensure = [Ensure]::Present
+
+    [DscProperty(Key)]
+    [string]$UserEmail
+
+    [DscProperty()]
+    [ConfigLocation]$ConfigLocation
+
+    [DscProperty()]
+    [string]$ProjectDirectory
+
+    [GitConfigUserEmail] Get()
+    {
+        $currentState = [GitConfigUserEmail]::new()
+        $currentState.UserEmail = $this.UserEmail
+        $currentState.ConfigLocation = $this.ConfigLocation
+        $currentState.ProjectDirectory = $this.ProjectDirectory
+
+        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system)
+        {
+            # Project directory is not required for --global or --system configurations
+            if ($this.ProjectDirectory)
+            {
+                if (Test-Path -Path $this.ProjectDirectory)
+                {
+                    Set-Location $this.ProjectDirectory
+                }
+                else
+                {
+                    throw "Project directory does not exist."
+                }
+            }
+            else
+            {
+                throw "Project directory parameter must be specified for non-system and non-global configurations."
+            }
+        }
+
+        $configArgs = ConstructGitConfigArguments -Arguments "user.email" -ConfigLocation $this.ConfigLocation
+        $result = Invoke-GitConfig($configArgs)
+        $currentState.Ensure = ($currentState.UserEmail -eq $result) ? [Ensure]::Present : [Ensure]::Absent
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set()
+    {
+        if ($this.ConfigLocation -eq [ConfigLocation]::system)
+        {
+            Assert-IsAdministrator
+        }
+
+        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system)
+        {
+            Set-Location $this.ProjectDirectory
+        }
+
+        if ($this.Ensure -eq [Ensure]::Present)
+        {
+            $configArgs = ConstructGitConfigArguments -Arguments "user.email $($this.UserEmail)" -ConfigLocation $this.ConfigLocation
+        }
+        else
+        {
+            $configArgs = ConstructGitConfigArguments -Arguments "--unset user.email" -ConfigLocation $this.ConfigLocation
+        }
+
+        Invoke-GitConfig($configArgs)
     }
 }
 
@@ -316,6 +409,38 @@ function Invoke-Git
     )
 
     return Invoke-Expression -Command "git $Command"
+}
+
+function ConstructGitConfigArguments
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$Arguments,
+
+        [Parameter(Mandatory)]
+        [ConfigLocation]$ConfigLocation
+    )
+
+    $ConfigArguments = $Arguments
+    if ([ConfigLocation]::None -ne $this.ConfigLocation)
+    {
+        $ConfigArguments = "--$($this.ConfigLocation) $($ConfigArguments)"
+    }
+
+    return $ConfigArguments
+}
+
+function Assert-IsAdministrator
+{
+    $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
+
+    $adminRole = [System.Security.Principal.WindowsBuiltInRole]::Administrator
+
+    if (-not $windowsPrincipal.IsInRole($adminRole))
+    {
+        throw "This resource must be run as an Administrator to modify system settings."
+    }
 }
 
 #endregion Functions
