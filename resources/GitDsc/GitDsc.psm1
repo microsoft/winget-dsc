@@ -217,7 +217,7 @@ class GitConfigUserName
             }
         }
 
-        $configArgs = ConstructGitConfigArguments -Arguments "user.name" -ConfigLocation $this.ConfigLocation
+        $configArgs = ConstructGitConfigUserArguments -Arguments "user.name" -ConfigLocation $this.ConfigLocation
         $result = Invoke-GitConfig($configArgs)
         $currentState.Ensure = ($currentState.UserName -eq $result) ? [Ensure]::Present : [Ensure]::Absent
         return $currentState
@@ -243,11 +243,11 @@ class GitConfigUserName
 
         if ($this.Ensure -eq [Ensure]::Present)
         {
-            $configArgs = ConstructGitConfigArguments -Arguments "user.name $($this.UserName)" -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments "user.name $($this.UserName)" -ConfigLocation $this.ConfigLocation
         }
         else
         {
-            $configArgs = ConstructGitConfigArguments -Arguments "--unset user.name" -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments "--unset user.name" -ConfigLocation $this.ConfigLocation
         }
 
         Invoke-GitConfig($configArgs)
@@ -296,7 +296,7 @@ class GitConfigUserEmail
             }
         }
 
-        $configArgs = ConstructGitConfigArguments -Arguments "user.email" -ConfigLocation $this.ConfigLocation
+        $configArgs = ConstructGitConfigUserArguments -Arguments "user.email" -ConfigLocation $this.ConfigLocation
         $result = Invoke-GitConfig($configArgs)
         $currentState.Ensure = ($currentState.UserEmail -eq $result) ? [Ensure]::Present : [Ensure]::Absent
         return $currentState
@@ -322,11 +322,11 @@ class GitConfigUserEmail
 
         if ($this.Ensure -eq [Ensure]::Present)
         {
-            $configArgs = ConstructGitConfigArguments -Arguments "user.email $($this.UserEmail)" -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments "user.email $($this.UserEmail)" -ConfigLocation $this.ConfigLocation
         }
         else
         {
-            $configArgs = ConstructGitConfigArguments -Arguments "--unset user.email" -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments "--unset user.email" -ConfigLocation $this.ConfigLocation
         }
 
         Invoke-GitConfig($configArgs)
@@ -411,7 +411,7 @@ function Invoke-Git
     return Invoke-Expression -Command "git $Command"
 }
 
-function ConstructGitConfigArguments
+function ConstructGitConfigUserArguments
 {
     param(
         [Parameter(Mandatory)]
