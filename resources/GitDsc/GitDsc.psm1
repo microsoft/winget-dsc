@@ -9,12 +9,12 @@ enum Ensure
     Present
 }
 
-enum Scope
+enum ConfigLocation
 {
     global
     system
-    local
     worktree
+    local
 }
 
 # Assert once that Git is already installed on the system.
@@ -181,25 +181,62 @@ class GitConfigUserName
     [Ensure]$Ensure = [Ensure]::Present
 
     [DscProperty(Key)]
-    [string]$HttpsUrl
+    [string]$UserName
 
     [DscProperty()]
-    [string]$RemoteName
+    [ConfigLocation]$ConfigLocation
 
-    # The root directory where the project will be cloned to. (i.e. the directory where you expect to run `git clone`)
-    [DscProperty(Mandatory)]
-    [string]$RootDirectory
+    [DscProperty()]
+    [string]$ProjectDirectory
 
     [GitConfigUserName] Get()
     {
+        $currentState = [GitConfigUserName]::new()
+        $currentState.UserName = $this.UserName
+        $currentState.ConfigLocation = $this.ConfigLocation
+        $currentState.ProjectDirectory = $this.ProjectDirectory
+
+        if ($this.ProjectDirectory)
+        {
+            if (Test-Path -Path $this.ProjectDirectory)
+            {
+                Set-Location $this.ProjectDirectory
+            }
+            else
+            {
+                throw "Project directory does not exist."
+            }
+        }
+
+        $configArgs = ($null -ne $this.ConfigLocation) ? "--$($this.ConfigLocation) user.name" : "user.name"
+        $result = Invoke-GitConfig($configArgs)
+        
+        if ($currentState.UserName -ne $result)
+        {
+            $currentState.Ensure = [Ensure]::Absent
+        }
+        
+        return $currentState
     }
 
     [bool] Test()
     {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
     }
 
     [void] Set()
     {
+        if ($this.Ensure -eq [Ensure]::Present)
+        {
+            $configArgs = ($null -ne $this.ConfigLocation) ? "--$($this.ConfigLocation) user.name $($this.UserName)" : "user.name $($this.UserName)"
+            Invoke-GitConfig($configArgs)
+        }
+        else
+        {
+            $configArgs = ($null -ne $this.ConfigLocation) ? "--$($this.ConfigLocation) --unset user.name" : "--unset user.name"
+            Invoke-GitConfig($configArgs)
+        }
     }
 }
 
