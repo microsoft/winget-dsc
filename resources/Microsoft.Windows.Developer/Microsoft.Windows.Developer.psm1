@@ -11,6 +11,7 @@ enum Alignment
 {
     Left = 0
     Middle = 1
+    KeepCurrentValue
 }
 
 enum HideTaskBarLabelsBehavior
@@ -18,6 +19,21 @@ enum HideTaskBarLabelsBehavior
     Always = 0
     WhenFull = 1
     Never = 2
+    KeepCurrentValue
+}
+
+enum ShowHideFeature
+{
+    Show = 0
+    Hide = 1
+    KeepCurrentValue
+}
+
+enum TaskbarSearchBoxMode {
+    Hidden = 0
+    ShowIconOnly = 1
+    ShowIconAndLabel = 2
+    KeepCurrentValue
 }
 
 #region DSCResources
@@ -120,6 +136,110 @@ class OsVersion
 
 $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
 $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
+
+# Is Keep Current value even needed? It makes the enum value weird.
+[DSCResource()]
+class Taskbar
+{
+    [DscProperty()] [Alignment] $Alignment
+    [DscProperty()] [HideTaskBarLabelsBehavior] $HideLabelsMode
+    [DscProperty()] [TaskbarSearchboxMode] $SearchboxMode
+    [DscProperty()] [ShowHideFeature] $TaskViewButton
+    [DscProperty()] [ShowHideFeature] $WidgetsButton
+
+    [DscProperty(Key)] [string]$SID
+
+    hidden [string] $TaskbarAl = 'TaskbarAl'
+    hidden [string] $TaskbarGlomLevel = 'TaskbarGlomLevel'
+
+    [Taskbar] Get()
+    {
+        $currentState = [Taskbar]::new()
+
+        # Alignment
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl))
+        {
+            $currentState.Alignment = [Alignment]::Middle
+        }
+        else {
+            $currentState.Alignment = [Alignment](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.TaskbarAl)
+        }
+
+        # HideTaskBarLabels
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel))
+        {
+            $currentState.HideLabelsMode = [HideTaskBarLabelsBehavior]::Always
+        }
+        else {
+            $currentState.HideLabelsMode = [HideTaskBarLabelsBehavior](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.TaskbarGlomLevel)
+        }
+
+
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        
+        if ($null -ne $this.Alignment -and $currentState.Alignment -ne $this.Alignment)
+        {
+            return $false
+        }
+
+        if ($null -ne $this.HideLabelsMode -and $currentState.HideLabelsMode -ne $this.HideLabelsMode)
+        {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set()
+    {
+        if ($null -ne $this.Alignment)
+        {
+            $desiredAlignment = [int]$this.Alignment
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl -Value $desiredAlignment
+        }
+
+        if ($null -ne $this.HideLabelsMode)
+        {
+            $desiredHideLabelsBehavior = [int]$this.HideLabelsMode
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel -Value $desiredHideLabelsBehavior
+        }
+
+        # if ($this.RestartExplorer)
+        # {
+        #     # Explorer needs to be restarted to enact the changes.
+        #     Stop-Process -ProcessName Explorer
+        # }
+    }
+}
+
+# [DSCResource()]
+# class WindowsExplorer
+# {
+#     [DscProperty()] [ShowHideFeature] $FileExtensions
+#     [DscProperty()] [ShowHideFeature] $HiddenFiles
+#     [DscProperty()] [ShowHideFeature] $ItemCheckBoxes
+
+#     [DscProperty(Key)] [string]$SID
+
+#     [WindowsExplorer] Get()
+#     {
+#         return @{}
+#     }
+
+#     [bool] Test()
+#     {
+#         return $true
+#     }
+
+#     [void] Set()
+#     {
+#     }
+# }
 
 [DSCResource()]
 class TaskBarAlignment

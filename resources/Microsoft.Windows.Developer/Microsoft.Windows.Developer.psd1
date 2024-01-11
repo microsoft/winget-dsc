@@ -17,6 +17,7 @@ DscResourcesToExport = @(
     'ShowHiddenFiles',
     'HideTaskBarLabels',
     'EnableDarkMode'
+    'Taskbar'
 )
 PrivateData = @{
     PSData = @{
@@ -30,7 +31,8 @@ PrivateData = @{
             'PSDscResource_ShowTaskViewButton',
             'PSDscResource_ShowHiddenFiles',
             'PSDscResource_HideTaskBarLabels',
-            'PSDscResource_EnableDarkMode'
+            'PSDscResource_EnableDarkMode',
+            'PSDscResource_Taskbar'
             )
 
         # Prerelease string of this module
