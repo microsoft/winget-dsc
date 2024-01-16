@@ -10,14 +10,11 @@ PowerShellVersion = '7.2'
 DscResourcesToExport = @(
     'DeveloperMode',
     'OsVersion',
-    'TaskBarAlignment',
     'ShowSecondsInClock',
-    'HideFileExtensions',
-    'ShowTaskViewButton',
-    'ShowHiddenFiles',
-    'HideTaskBarLabels',
-    'EnableDarkMode'
-    'Taskbar'
+    'EnableDarkMode',
+    'Taskbar',
+    'WindowsExplorer',
+    'UserAccessControl'
 )
 PrivateData = @{
     PSData = @{
@@ -25,14 +22,11 @@ PrivateData = @{
         Tags = @(
             'PSDscResource_DeveloperMode',
             'PSDscResource_OsVersion',
-            'PSDscResource_TaskBarAlignment',
             'PSDscResource_ShowSecondsInClock',
-            'PSDscResource_HideFileExtensions',
-            'PSDscResource_ShowTaskViewButton',
-            'PSDscResource_ShowHiddenFiles',
-            'PSDscResource_HideTaskBarLabels',
             'PSDscResource_EnableDarkMode',
-            'PSDscResource_Taskbar'
+            'PSDscResource_Taskbar',
+            'PSDscResource_WindowsExplorer',
+            'PSDscResource_UserAccessControl'
             )
 
         # Prerelease string of this module
