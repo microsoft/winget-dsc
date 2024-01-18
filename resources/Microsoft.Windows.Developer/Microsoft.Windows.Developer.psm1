@@ -9,24 +9,28 @@ enum Ensure
 
 enum Alignment
 {
+    KeepCurrentValue
     Left = 0
     Middle = 1
 }
 
 enum ShowHideFeature
 {
+    KeepCurrentValue
     Hide = 0
     Show = 1
 }
 
 enum HideTaskBarLabelsBehavior
 {
+    KeepCurrentValue
     Always = 0
     WhenFull = 1
     Never = 2
 }
 
 enum TaskbarSearchBoxMode {
+    KeepCurrentValue
     Hide = 0
     ShowIconOnly = 1
     SearchBox = 2
@@ -139,11 +143,11 @@ $global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Polic
 [DSCResource()]
 class Taskbar
 {
-    [DscProperty()] [Alignment] $Alignment
-    [DscProperty()] [HideTaskBarLabelsBehavior] $HideLabelsMode
-    [DscProperty()] [TaskbarSearchboxMode] $SearchboxMode
-    [DscProperty()] [ShowHideFeature] $TaskViewButton
-    [DscProperty()] [ShowHideFeature] $WidgetsButton
+    [DscProperty()] [Alignment] $Alignment = [Alignment]::KeepCurrentValue
+    [DscProperty()] [HideTaskBarLabelsBehavior] $HideLabelsMode = [HideTaskBarLabelsBehavior]::KeepCurrentValue
+    [DscProperty()] [TaskbarSearchboxMode] $SearchboxMode = [TaskbarSearchboxMode]::KeepCurrentValue
+    [DscProperty()] [ShowHideFeature] $TaskViewButton = [ShowHideFeature]::KeepCurrentValue
+    [DscProperty()] [ShowHideFeature] $WidgetsButton = [ShowHideFeature]::KeepCurrentValue
 
     [DscProperty()] [bool] $RestartExplorer = $false
     [DscProperty(Key)] [string]$SID
@@ -166,7 +170,8 @@ class Taskbar
         }
         else
         {
-            $currentState.Alignment = [Alignment](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl)
+            $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl)
+            $currentState.Alignment = $value -eq 0 ? [Alignment]::Left : [Alignment]::Middle
         }
 
         # HideTaskBarLabels
@@ -176,7 +181,13 @@ class Taskbar
         }
         else
         {
-            $currentState.HideLabelsMode = [HideTaskBarLabelsBehavior](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel)
+            $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel)
+            $currentState.HideLabelsMode = switch ($value)
+            {
+                0 { [HideTaskBarLabelsBehavior]::Always }
+                1 { [HideTaskBarLabelsBehavior]::WhenFull }
+                2 { [HideTaskBarLabelsBehavior]::Never }
+            }
         }
 
         # TaskbarSearchboxMode
@@ -186,7 +197,14 @@ class Taskbar
         }
         else
         {
-            $currentState.SearchboxMode = [TaskbarSearchBoxMode](Get-ItemPropertyValue -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode)
+            $value = [int](Get-ItemPropertyValue -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode)
+            $currentState.HideLabelsMode = switch ($value)
+            {
+                0 { [TaskbarSearchBoxMode]::Hide }
+                1 { [TaskbarSearchBoxMode]::ShowIconOnly }
+                2 { [TaskbarSearchBoxMode]::SearchBox }
+                3 { [TaskbarSearchBoxMode]::ShowIconAndLabel }
+            }
         }
 
         # TaskViewButton
@@ -197,8 +215,8 @@ class Taskbar
         }
         else
         {
-            $dword = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton
-            $currentState.TaskViewButton = $dword -eq 0 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
+            $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton)
+            $currentState.TaskViewButton = $value -eq 0 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
         }
 
         # WidgetsButton
@@ -209,8 +227,8 @@ class Taskbar
         }
         else
         {
-            $dword = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarDa
-            $currentState.WidgetsButton = $dword -eq 0 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
+            $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarDa)
+            $currentState.WidgetsButton = $value -eq 0 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
         }
 
         return $currentState
@@ -220,27 +238,27 @@ class Taskbar
     {
         $currentState = $this.Get()
         
-        if ($null -ne $this.Alignment -and $currentState.Alignment -ne $this.Alignment)
+        if ($this.Alignment -ne [Alignment]::KeepCurrentValue -and $currentState.Alignment -ne $this.Alignment)
         {
             return $false
         }
 
-        if ($null -ne $this.HideLabelsMode -and $currentState.HideLabelsMode -ne $this.HideLabelsMode)
+        if ($this.HideLabelsMode -ne [HideTaskBarLabelsBehavior]::KeepCurrentValue -and $currentState.HideLabelsMode -ne $this.HideLabelsMode)
         {
             return $false
         }
 
-        if ($null -ne $this.SearchboxMode -and $currentState.SearchboxMode -ne $this.SearchboxMode)
+        if ($this.SearchboxMode -ne [TaskbarSearchBoxMode]::KeepCurrentValue -and $currentState.SearchboxMode -ne $this.SearchboxMode)
         {
             return $false
         }
 
-        if ($null -ne $this.TaskViewButton -and $currentState.TaskViewButton -ne $this.TaskViewButton)
+        if ($this.TaskViewButton -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.TaskViewButton -ne $this.TaskViewButton)
         {
             return $false
         }
 
-        if ($null -ne $this.WidgetsButton -and $currentState.WidgetsButton -ne $this.WidgetsButton)
+        if ($this.WidgetsButton -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.WidgetsButton -ne $this.WidgetsButton)
         {
             return $false
         }
@@ -250,15 +268,21 @@ class Taskbar
 
     [void] Set()
     {
-        if ($null -ne $this.Alignment)
+        if ($this.Alignment -ne [Alignment]::KeepCurrentValue)
         {
-            $desiredAlignment = [int]$this.Alignment
+            $desiredAlignment = $this.Alignment -eq [Alignment]::Left ? 0 : 1
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl -Value $desiredAlignment
         }
 
-        if ($null -ne $this.HideLabelsMode)
+        if ($this.HideLabelsMode -ne [HideTaskBarLabelsBehavior]::KeepCurrentValue)
         {
-            $desiredHideLabelsBehavior = [int]$this.HideLabelsMode
+            $desiredHideLabelsBehavior = switch ($this.HideLabelsMode)
+            {
+                [HideTaskBarLabelsBehavior]::Always { 0 }
+                [HideTaskBarLabelsBehavior]::WhenFull { 1 }
+                [HideTaskBarLabelsBehavior]::Never { 2 }
+            }
+
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel -Value $desiredHideLabelsBehavior
 
             if ($this.RestartExplorer)
@@ -269,19 +293,26 @@ class Taskbar
             }
         }
 
-        if ($null -ne $this.SearchboxMode)
+        if ($this.SearchboxMode -ne [TaskbarSearchBoxMode]::KeepCurrentValue)
         {
-            $desiredSearchboxMode = [int]$this.SearchboxMode
+            $desiredSearchboxMode = switch ($this.HideLabelsMode)
+            {
+                [TaskbarSearchBoxMode]::Hide { 0 }
+                [TaskbarSearchBoxMode]::ShowIconOnly { 1 }
+                [TaskbarSearchBoxMode]::SearchBox { 2 }
+                [TaskbarSearchBoxMode]::ShowIconAndLabel { 3 }
+            }
+
             Set-ItemProperty -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode -Value $desiredSearchboxMode
         }
 
-        if ($null -ne $this.TaskViewButton)
+        if ($this.TaskViewButton -ne [ShowHideFeature]::KeepCurrentValue)
         {
             $desiredTaskViewButtonState = $this.WidgetsButton -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton -Value $desiredTaskViewButtonState
         }
 
-        if ($null -ne $this.WidgetsButton)
+        if ($this.WidgetsButton -ne [ShowHideFeature]::KeepCurrentValue)
         {
             $desiredWidgetsButtonState = $this.WidgetsButton -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskBarDa -Value $desiredWidgetsButtonState
@@ -292,9 +323,9 @@ class Taskbar
 [DSCResource()]
 class WindowsExplorer
 {
-    [DscProperty()] [ShowHideFeature] $FileExtensions
-    [DscProperty()] [ShowHideFeature] $HiddenFiles
-    [DscProperty()] [ShowHideFeature] $ItemCheckBoxes
+    [DscProperty()] [ShowHideFeature] $FileExtensions = [ShowHideFeature]::KeepCurrentValue
+    [DscProperty()] [ShowHideFeature] $HiddenFiles = [ShowHideFeature]::KeepCurrentValue
+    [DscProperty()] [ShowHideFeature] $ItemCheckBoxes = [ShowHideFeature]::KeepCurrentValue
 
     [DscProperty()] [bool] $RestartExplorer = $false
     [DscProperty(Key)] [string]$SID
@@ -315,8 +346,8 @@ class WindowsExplorer
         }
         else
         {
-            $dword = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.HideFileExt
-            $currentState.FileExtensions   = $dword -eq 1 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
+            $value = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.HideFileExt
+            $currentState.FileExtensions = $value -eq 1 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
         }
 
         # HiddenFiles
@@ -326,7 +357,8 @@ class WindowsExplorer
         }
         else
         {
-            $currentState.HiddenFiles = [ShowHideFeature](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.Hidden)
+            $value = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.Hidden
+            $currentState.HiddenFiles = $value -eq 1 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
         }
 
         # ItemCheckboxes
@@ -336,7 +368,8 @@ class WindowsExplorer
         }
         else
         {
-            $currentState.ItemCheckBoxes = [ShowHideFeature](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.AutoCheckSelect)
+            $value = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.AutoCheckSelect
+            $currentState.ItemCheckBoxes = $value -eq 1 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
         }
 
 
@@ -347,17 +380,17 @@ class WindowsExplorer
     {
         $currentState = $this.Get()
         
-        if ($null -ne $this.FileExtensions -and $currentState.FileExtensions -ne $this.FileExtensions)
+        if ($this.FileExtensions -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.FileExtensions -ne $this.FileExtensions)
         {
             return $false
         }
 
-        if ($null -ne $this.HiddenFiles -and $currentState.HiddenFiles -ne $this.HiddenFiles)
+        if ($this.HiddenFiles -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.HiddenFiles -ne $this.HiddenFiles)
         {
             return $false
         }
 
-        if ($null -ne $this.ItemCheckBoxes -and $currentState.ItemCheckBoxes -ne $this.ItemCheckBoxes)
+        if ($this.ItemCheckBoxes -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.ItemCheckBoxes -ne $this.ItemCheckBoxes)
         {
             return $false
         }
@@ -367,19 +400,19 @@ class WindowsExplorer
 
     [void] Set()
     {
-        if ($null -ne $this.FileExtensions)
+        if ($this.FileExtensions -ne [ShowHideFeature]::KeepCurrentValue)
         {
             $desiredFileExtensions = $this.FileExtensions -eq [ShowHideFeature]::Hide ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskBarDa -Value $desiredFileExtensions
         }
 
-        if ($null -ne $this.HiddenFiles)
+        if ($this.HiddenFiles -ne [ShowHideFeature]::KeepCurrentValue)
         {
             $desiredHiddenFiles = $this.HiddenFiles -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HiddenFiles -Value $desiredHiddenFiles
         }
 
-        if ($null -ne $this.ItemCheckBoxes)
+        if ($this.ItemCheckBoxes -ne [ShowHideFeature]::KeepCurrentValue)
         {
             $desiredItemCheckBoxes = $this.ItemCheckBoxes -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HideFileExt -Value $desiredItemCheckBoxes
@@ -402,7 +435,7 @@ class UserAccessControl
     [string]$SID
 
     [DscProperty()]
-    [Ensure] $Ensure
+    [Ensure] $Ensure = [Ensure]::Present
 
     hidden [string] $EnableLUA = 'EnableLUA'
 
@@ -441,7 +474,7 @@ class UserAccessControl
             Assert-IsAdministrator
             $desiredState = $this.Ensure -eq [Ensure]::Present ? 1 : 0
             Set-ItemProperty -Path $global:UACRegistryPath -Name $this.EnableLUA -Value $desiredState
-        }  
+        }
     }
 }
 
