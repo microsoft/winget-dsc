@@ -2,12 +2,16 @@
 # Licensed under the MIT License.
 using module Microsoft.Windows.Developer
 
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
 <#
 .Synopsis
    Pester tests related to the Microsoft.WinGet.Developer PowerShell module.
 #>
 
 BeforeAll {
+   $global:IsUnderTest = $true
    Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
    Import-Module Microsoft.Windows.Developer
 }

@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
 enum Ensure
 {
     Absent
@@ -138,7 +141,7 @@ class OsVersion
 $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
 $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
 $global:SearchRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\'
-$global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\'
+$global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\' 
 
 [DSCResource()]
 class Taskbar
@@ -284,13 +287,6 @@ class Taskbar
             }
 
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel -Value $desiredHideLabelsBehavior -Type DWORD
-
-            if ($this.RestartExplorer)
-            {
-                # Explorer needs to be restarted to enact the changes.
-                taskkill /F /IM explorer.exe
-                Start-Process explorer.exe
-            }
         }
 
         if ($this.SearchboxMode -ne [SearchBoxMode]::KeepCurrentValue)
@@ -317,6 +313,13 @@ class Taskbar
             $desiredWidgetsButtonState = $this.WidgetsButton -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskBarDa -Value $desiredWidgetsButtonState -Type DWORD
         }
+
+            if ($this.RestartExplorer)
+            {
+                # Explorer needs to be restarted to enact the changes for HideLabelsMode.
+                taskkill /F /IM explorer.exe
+                Start-Process explorer.exe
+            }
     }
 }
 
@@ -437,7 +440,9 @@ class UserAccessControl
     [DscProperty()]
     [Ensure] $Ensure = [Ensure]::Present
 
-    hidden [string] $EnableLUA = 'EnableLUA'
+    hidden [string] $ConsentPromptBehaviorAdmin = 'ConsentPromptBehaviorAdmin'
+
+    # NOTE: 'EnableLUA' is another registry key that disables UAC prompts, but requires a reboot and opens everything in admin mode.
 
     [UserAccessControl] Get()
     {
@@ -471,9 +476,8 @@ class UserAccessControl
     {
         if ($null -ne $this.Ensure)
         {
-            Assert-IsAdministrator
             $desiredState = $this.Ensure -eq [Ensure]::Present ? 1 : 0
-            Set-ItemProperty -Path $global:UACRegistryPath -Name $this.EnableLUA -Value $desiredState
+            Set-ItemProperty -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin -Value $desiredState
         }
     }
 }
