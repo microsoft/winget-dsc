@@ -11,9 +11,13 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-   $global:IsUnderTest = $true
    Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
    Import-Module Microsoft.Windows.Developer
+
+   # Create test registry path.
+   New-Item -Path TestRegistry:\ -Name TestKey
+   # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
+   $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
 }
 
 Describe 'List available DSC resources'{
@@ -26,20 +30,26 @@ Describe 'List available DSC resources'{
 }
 
 Describe 'Taskbar'{
-   BeforeAll {
-      # Retain inital state.
-      $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-   }
-
    It 'Keeps current value.'{
-      $parameters = @{ Alignment = 'KeepCurrentValue';
+      $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+
+      $parameters = @{
+         Alignment = 'KeepCurrentValue';
          HideLabelsMode = 'KeepCurrentValue';
          SearchboxMode = 'KeepCurrentValue';
          TaskViewButton = 'KeepCurrentValue';
          WidgetsButton = 'KeepCurrentValue'}
 
-         $testResult = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
-         $testResult.InDesiredState | Should -Be $true
+      $testResult = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.Alignment | Should -Be $initialState.Alignment
+      $finalState.HideLabelsMode | Should -Be $initialState.HideLabelsMode
+      $finalState.SearchboxMode | Should -Be $initialState.SearchboxMode
+      $finalState.TaskViewButton | Should -Be $initialState.WidgetsButton
    }
 
    It 'Sets desired value' {
@@ -65,32 +75,26 @@ Describe 'Taskbar'{
       $finalState.TaskViewButton | Should -Be $desiredTaskViewButton
       $finalState.WidgetsButton | Should -Be $desiredWidgetsButton
    }
-
-   AfterAll {
-      # Revert back to initial state.
-      $initialStateParameters = @{ Alignment = $initialState.Alignment;
-         HideLabelsMode = $initialState.HideLabelsMode;
-         SearchboxMode = $initialState.SearchboxMode;
-         TaskViewButton = $initialState.TaskViewButton;
-         WidgetsButton = $initialState.WidgetsButton}
-
-      Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $initialStateParameters
-   }
 }
 
 Describe 'WindowsExplorer'{
-   BeforeAll {
-      # Retain inital state.
-      $initialState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-   }
-
    It 'Keeps current value.'{
-      $parameters = @{ FileExtensions = 'KeepCurrentValue';
+      $initialState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+
+      $parameters = @{
+         FileExtensions = 'KeepCurrentValue';
          HiddenFiles = 'KeepCurrentValue';
          ItemCheckBoxes = 'KeepCurrentValue' }
 
-         $testResult = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
-         $testResult.InDesiredState | Should -Be $true
+      $testResult = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+      
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.FileExtensions | Should -Be $initialState.FileExtensions
+      $finalState.HiddenFiles | Should -Be $initialState.HiddenFiles
+      $finalState.ItemCheckBoxes | Should -Be $initialState.ItemCheckBoxes
    }
 
    It 'Sets desired value' {
@@ -99,7 +103,8 @@ Describe 'WindowsExplorer'{
       $desiredHiddenFiles = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
       $desiredItemCheckBoxes = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
 
-      $desiredState = @{ FileExtensions = $desiredFileExtensions;
+      $desiredState = @{
+         FileExtensions = $desiredFileExtensions;
          HiddenFiles = $desiredHiddenFiles;
          ItemCheckBoxes = $desiredItemCheckBoxes}
       
@@ -110,13 +115,25 @@ Describe 'WindowsExplorer'{
       $finalState.HiddenFiles | Should -Be $desiredHiddenFiles
       $finalState.ItemCheckBoxes | Should -Be $desiredItemCheckBoxes
    }
+}
 
-   AfterAll {
-      # Revert back to initial state.
-      $initialStateParameters = @{ FileExtensions = $initialState.FileExtensions;
-         HiddenFiles = $initialState.HiddenFiles;
-         ItemCheckBoxes = $initialState.ItemCheckBoxes}
+Describe 'UserAccessControl'{
+   It 'Sets desired value.'{
+      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property @{Ensure = 'Present'}
 
-      Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $initialStateParameters
+      $initialState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $initialState.Ensure = [Ensure]::Present
+      $initialState.Ensure | Should -Be 'Present'
+
+      $testResult = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property @{Ensure = 'Absent'}
+      $testResult.InDesiredState | Should -Be $false
+
+      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property @{Ensure = 'Absent'}
+      $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.Ensure | Should -Be 'Absent'
    }
+}
+
+AfterAll {
+   $env:TestRegistryPath = ""
 }

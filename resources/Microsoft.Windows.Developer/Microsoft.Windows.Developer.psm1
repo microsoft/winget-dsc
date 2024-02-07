@@ -135,13 +135,19 @@ class OsVersion
     {
         # This resource is only for asserting the os version requirement.
     }
-
 }
 
-$global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
-$global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
-$global:SearchRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\'
-$global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\' 
+if ([string]::IsNullOrEmpty($env:TestRegistryPath))
+{
+    $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
+    $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
+    $global:SearchRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\'
+    $global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\'
+}
+else
+{
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $env:TestRegistryPath
+}
 
 [DSCResource()]
 class Taskbar
@@ -274,7 +280,7 @@ class Taskbar
         if ($this.Alignment -ne [Alignment]::KeepCurrentValue)
         {
             $desiredAlignment = $this.Alignment -eq [Alignment]::Left ? 0 : 1
-            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl -Value $desiredAlignment -Type DWORD
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl -Value $desiredAlignment
         }
 
         if ($this.HideLabelsMode -ne [HideTaskBarLabelsBehavior]::KeepCurrentValue)
@@ -286,7 +292,7 @@ class Taskbar
                 Never { 2 }
             }
 
-            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel -Value $desiredHideLabelsBehavior -Type DWORD
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel -Value $desiredHideLabelsBehavior
         }
 
         if ($this.SearchboxMode -ne [SearchBoxMode]::KeepCurrentValue)
@@ -299,27 +305,27 @@ class Taskbar
                 ShowIconAndLabel { 3 }
             }
             
-            Set-ItemProperty -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode -Value $desiredSearchboxMode -Type DWORD
+            Set-ItemProperty -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode -Value $desiredSearchboxMode
         }
 
         if ($this.TaskViewButton -ne [ShowHideFeature]::KeepCurrentValue)
         {
             $desiredTaskViewButtonState = $this.TaskViewButton -eq [ShowHideFeature]::Show ? 1 : 0
-            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton -Value $desiredTaskViewButtonState -Type DWORD
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton -Value $desiredTaskViewButtonState
         }
 
         if ($this.WidgetsButton -ne [ShowHideFeature]::KeepCurrentValue)
         {
             $desiredWidgetsButtonState = $this.WidgetsButton -eq [ShowHideFeature]::Show ? 1 : 0
-            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskBarDa -Value $desiredWidgetsButtonState -Type DWORD
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskBarDa -Value $desiredWidgetsButtonState
         }
 
-            if ($this.RestartExplorer)
-            {
-                # Explorer needs to be restarted to enact the changes for HideLabelsMode.
-                taskkill /F /IM explorer.exe
-                Start-Process explorer.exe
-            }
+        if ($this.RestartExplorer)
+        {
+            # Explorer needs to be restarted to enact the changes for HideLabelsMode.
+            taskkill /F /IM explorer.exe
+            Start-Process explorer.exe
+        }
     }
 }
 
@@ -412,7 +418,7 @@ class WindowsExplorer
         if ($this.HiddenFiles -ne [ShowHideFeature]::KeepCurrentValue)
         {
             $desiredHiddenFiles = $this.HiddenFiles -eq [ShowHideFeature]::Show ? 1 : 0
-            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HiddenFiles -Value $desiredHiddenFiles
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.Hidden -Value $desiredHiddenFiles
         }
 
         if ($this.ItemCheckBoxes -ne [ShowHideFeature]::KeepCurrentValue)
@@ -448,13 +454,13 @@ class UserAccessControl
     {
         $currentState = [UserAccessControl]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:UACRegistryPath -Name $this.EnableLUA))
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin))
         {
             $currentState.Ensure = [Ensure]::Present
         }
         else
         {
-            $currentState.Ensure = [Ensure](Get-ItemPropertyValue -Path $global:UACRegistryPath -Name $this.EnableLUA)
+            $currentState.Ensure = [Ensure](Get-ItemPropertyValue -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin)
         }
 
         return $currentState
