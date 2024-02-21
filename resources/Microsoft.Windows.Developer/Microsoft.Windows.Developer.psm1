@@ -460,7 +460,8 @@ class UserAccessControl
         }
         else
         {
-            $currentState.Ensure = [Ensure](Get-ItemPropertyValue -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin)
+            $value = Get-ItemPropertyValue -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin
+            $currentState.Ensure = $value -eq 5 ? [Ensure]::Present : [Ensure]::Absent
         }
 
         return $currentState
@@ -482,7 +483,7 @@ class UserAccessControl
     {
         if ($null -ne $this.Ensure)
         {
-            $desiredState = $this.Ensure -eq [Ensure]::Present ? 1 : 0
+            $desiredState = $this.Ensure -eq [Ensure]::Present ? 5 : 0
             Set-ItemProperty -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin -Value $desiredState
         }
     }
