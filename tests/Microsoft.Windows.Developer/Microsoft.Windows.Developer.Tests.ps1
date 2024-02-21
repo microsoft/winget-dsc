@@ -118,19 +118,30 @@ Describe 'WindowsExplorer'{
 }
 
 Describe 'UserAccessControl'{
-   It 'Sets desired value.'{
-      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property @{Ensure = 'Present'}
-
+   It 'Keeps current value.'{
       $initialState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $initialState.Ensure = [Ensure]::Present
-      $initialState.Ensure | Should -Be 'Present'
 
-      $testResult = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property @{Ensure = 'Absent'}
-      $testResult.InDesiredState | Should -Be $false
+      $parameters = @{ AdminConsentPromptBehavior = 'KeepCurrentValue' }
 
-      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property @{Ensure = 'Absent'}
+      $testResult = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+      
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
       $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.Ensure | Should -Be 'Absent'
+      $finalState.AdminConsentPromptBehavior | Should -Be $initialState.AdminConsentPromptBehavior
+   }
+
+   It 'Sets desired value.'{
+      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
+      $desiredAdminConsentPromptBehavior = [AdminConsentPromptBehavior](Get-Random -Maximum 6 -Minimum 1)
+
+      $desiredState = @{ AdminConsentPromptBehavior = $desiredAdminConsentPromptBehavior }
+      
+      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+   
+      $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.AdminConsentPromptBehavior | Should -Be $desiredAdminConsentPromptBehavior
    }
 }
 

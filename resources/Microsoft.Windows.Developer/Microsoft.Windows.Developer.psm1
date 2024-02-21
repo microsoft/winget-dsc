@@ -40,6 +40,16 @@ enum SearchBoxMode {
     ShowIconAndLabel
 }
 
+enum AdminConsentPromptBehavior {
+    KeepCurrentValue
+    NoCredOrConsentRequired
+    RequireCredOnSecureDesktop
+    RequireConsentOnSecureDesktop
+    RequireCred
+    RequireConsent
+    RequireConsentForNonWindowsBinaries
+}
+
 #region DSCResources
 [DSCResource()]
 class DeveloperMode
@@ -444,7 +454,7 @@ class UserAccessControl
     [string]$SID
 
     [DscProperty()]
-    [Ensure] $Ensure = [Ensure]::Present
+    [AdminConsentPromptBehavior] $AdminConsentPromptBehavior = [AdminConsentPromptBehavior]::KeepCurrentValue
 
     hidden [string] $ConsentPromptBehaviorAdmin = 'ConsentPromptBehaviorAdmin'
 
@@ -456,11 +466,20 @@ class UserAccessControl
 
         if (-not(DoesRegistryKeyPropertyExist -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin))
         {
-            $currentState.Ensure = [Ensure]::Present
+            $currentState.AdminConsentPromptBehavior = [AdminConsentPromptBehavior]::RequireConsentForNonWindowsBinaries
         }
         else
         {
-            $currentState.Ensure = [Ensure](Get-ItemPropertyValue -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin)
+            $value = [int](Get-ItemPropertyValue -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin)
+            $currentState.AdminConsentPromptBehavior = switch ($value)
+            {
+                0 { [AdminConsentPromptBehavior]::NoCredOrConsentRequired }
+                1 { [AdminConsentPromptBehavior]::RequireCredOnSecureDesktop }
+                2 { [AdminConsentPromptBehavior]::RequireConsentOnSecureDesktop }
+                3 { [AdminConsentPromptBehavior]::RequireCred }
+                4 { [AdminConsentPromptBehavior]::RequireConsent }
+                5 { [AdminConsentPromptBehavior]::RequireConsentForNonWindowsBinaries }
+            }
         }
 
         return $currentState
@@ -470,7 +489,7 @@ class UserAccessControl
     {
         $currentState = $this.Get()
 
-        if ($null -ne $this.Ensure -and $currentState.Ensure -ne $this.Ensure)
+        if ($this.AdminConsentPromptBehavior -ne [AdminConsentPromptBehavior]::KeepCurrentValue -and $currentState.AdminConsentPromptBehavior -ne $this.AdminConsentPromptBehavior)
         {
             return $false
         }
@@ -480,9 +499,18 @@ class UserAccessControl
 
     [void] Set()
     {
-        if ($null -ne $this.Ensure)
+        if ($this.AdminConsentPromptBehavior -ne [AdminConsentPromptBehavior]::KeepCurrentValue)
         {
-            $desiredState = $this.Ensure -eq [Ensure]::Present ? 1 : 0
+            $desiredState = switch ([AdminConsentPromptBehavior]($this.AdminConsentPromptBehavior))
+            {
+                NoCredOrConsentRequired { 0 }
+                RequireCredOnSecureDesktop { 1 }
+                RequireConsentOnSecureDesktop { 2 }
+                RequireCred { 3 }
+                RequireConsent { 4 }
+                RequireConsentForNonWindowsBinaries { 5 }
+            }
+
             Set-ItemProperty -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin -Value $desiredState
         }
     }
