@@ -1,14 +1,6 @@
-# Project
+# DSC Resources for WinGet Configuration
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
-
-As the maintainer of this project, please make a few updates:
-
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+This project is intended to support WinGet Configuration. Some of these DSC Resources are exploratory and may not be published in the PowerShell Gallery. Other resources may be moved to their own projets or removed entirely.  [Samples](https://aka.ms/dsc.yaml) for using these resources are available in the [Dev Home](https://github.com/microsoft/devhome) repository.
 
 ## Contributing
 
