@@ -56,6 +56,8 @@ When you hit "New Issue", select the type of issue closest to what you want to r
 
   `winget --info`
 
+  If the report is related to a specific DSC Resource, it is also helpful to specify the PowerShell module and resource as well as any additional information regarding how the resource is being called (`winget configure`, `Invoke-WinGetConfiguration`,etc.). The calling context is also important (system context "session 0", "user", "elevated user").
+
 * What tools and apps you're using (e.g. VS 2019, VSCode, etc.)
 * Don't assume we're experts in setting up YOUR environment and don't assume we are experts in `<your distro/tool of choice>`. Teach us to help you!
 * **We LOVE detailed reproduction steps!** What steps do we need to take to reproduce the issue? Assume we love to read reproduction steps. As much detail as you can stand is probably _barely_ enough detail for us!
