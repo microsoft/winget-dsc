@@ -67,8 +67,8 @@ enum CursorIndicatorColorEnum {
 }
 #endregion enums
 
-<#
-[DSCResource()]	
+<##>
+[DSCResource()]
 class Template {
 	[DscProperty(Key)]
 	[string] $Size
@@ -94,7 +94,7 @@ class Template {
 }
 #>
 
-<#
+<##>
 #region DSCResources
 [DSCResource()]	
 class TextSize {
@@ -179,7 +179,7 @@ class TextSize {
 }
 #>
 
-<#
+<##>
 [DSCResource()]	
 class MousePointerSize {
 	[DscProperty(Key)]
@@ -240,12 +240,13 @@ class MousePointerSize {
 }
 #>
 
-<#
+<##>
 [DSCResource()]	
 class ColorFilterSettings {
 	[DscProperty(Key)]
 	[ValidateSet('Active', 'Inactive')]
-	[string] $ActiveState;
+	[string] $ActiveState
+
 	[DscProperty()]
 	[ValidateSet('Grayscale', 'Inverted', 'GrayscaleInverted', 'RedGreen', 'GreenRed', 'BlueYellow')]
 	[string] $FilterType
@@ -257,8 +258,11 @@ class ColorFilterSettings {
 	[ColorFilterSettings] Get() {
 		if (Test-Path -Path $this.RegistryKey) {
 			try {
-				$registryActiveStateValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryActiveState -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $activeValueName
-				$registryFilterTypeValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryFilterType -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $filterTypeValueName
+				$registryActiveStateValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryActiveState -ErrorAction SilentlyContinue `
+				| Select-Object -ExpandProperty $this.RegistryActiveState
+				
+				$registryFilterTypeValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryFilterType -ErrorAction SilentlyContinue `
+				| Select-Object -ExpandProperty $this.RegistryFilterType
 			}
 			catch {
 				throw "Error getting registry values: $_"
@@ -313,7 +317,7 @@ class ColorFilterSettings {
 		### Map the 'ActiveState' value to a valid registry value: 
 		###   - "OrdinalIgnoreCase" is used to ignore case sensitivity
 		$desiredActiveState = [int][ColorFilterActiveEnum]::Parse([ColorFilterActiveEnum], $this.ActiveState, [System.StringComparison]::OrdinalIgnoreCase)
-		$desiredFilterType = [int][ColorFilterTypeEnum]::Parse([ColorFilterTypeEnum], $this.ActiveState, [System.StringComparison]::OrdinalIgnoreCase)
+		$desiredFilterType = [int][ColorFilterTypeEnum]::Parse([ColorFilterTypeEnum], $this.FilterType, [System.StringComparison]::OrdinalIgnoreCase)
 
 		if (-not $(Test-Path -Path $this.RegistryKey)) {
 			try {
@@ -458,6 +462,7 @@ class CursorIndicatorSettings {
 	}
 }
 
+<#
 # ### 6 Set: High Contrast Settings
 # ### -------------------------------------
 # - resource: Microsoft.Windows.Developer/HighContrastSettings
@@ -505,8 +510,8 @@ class HighContrastSettings {
 	[void] Set() {
 	}
 }
-
 #>
+
 
 
 #endregion DSCResources
@@ -573,24 +578,44 @@ public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint
 
 
 #region Tests
+
 ### Text Size
-# Get-DscResource -Module Microsoft.Windows.Setting.Accessibility
+###-------------------------------------
 # Invoke-DscResource -Name TextSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{TextSize = 'Medium' }
 # Invoke-DscResource -Name TextSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{TextSize = 'Small' }
 # Invoke-DscResource -Name TextSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{TextSize = "Small" }
 
 ### Mouse Pointer Size
+###-------------------------------------
 # Invoke-DscResource -Name MousePointerSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{MousePointerSize = 'Medium' }
+# Invoke-DscResource -Name MousePointerSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{MousePointerSize = 'Medium' }
+# Invoke-DscResource -Name MousePointerSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{MousePointerSize = 'Medium' }
 
 ### Color Filter Settings
-#Invoke-DscResource -Name ColorFilterSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{Active = 'inActive'; FilterType = 'Grayscale' }
+###-------------------------------------
+# Invoke-DscResource -Name ColorFilterSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{ActiveState = 'inActive'; FilterType = 'Grayscale' }
+# Invoke-DscResource -Name ColorFilterSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{ActiveState = 'inActive'; FilterType = 'Grayscale' }
+# Invoke-DscResource -Name ColorFilterSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ActiveState = 'inActive'; FilterType = 'Grayscale' }
 
 ### Cursor Settings
-# Invoke-DscResource -Name CursorSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{CursorIndicatorEnabled = 'On'; CursorIndicatorSize = 'Small'; CursorIndicatorColor = 'Purple' }
-
-#Get-ChildItem -File  | Unblock-File
-# Import-Module -Name Microsoft.Windows.Setting.Accessibility -Force
+###-------------------------------------
+# Invoke-DscResource -Name CursorIndicatorSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{CursorIndicatorEnabled = 'On'; CursorIndicatorSize = 'Small'; CursorIndicatorColor = 'Purple' }
+# Invoke-DscResource -Name CursorIndicatorSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{CursorIndicatorEnabled = 'On'; CursorIndicatorSize = 'Small'; CursorIndicatorColor = 'Purple' }
+# Invoke-DscResource -Name CursorIndicatorSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{CursorIndicatorEnabled = 'On'; CursorIndicatorSize = 'Small'; CursorIndicatorColor = 'Purple' }
 
 #endregion Tests
 
+### Module Import
+###-------------------------------------
+#Get-ChildItem -File  | Unblock-File
+
+# Get-DscResource -Module Microsoft.Windows.Setting.Accessibility
+
+
+#$path = "C:\Repo\winget-dsc-CBrennan\resources\Microsoft.Windows.Developer"
+# $path = "C:\Repo\winget-dsc-CBrennan\resources"
+# $env:PSModulePath = $path + ";" + $env:PSModulePath
+#$env:PSModulePath.Split(";")
 #Import-Module -Name 'Microsoft.Windows.Setting.Accessibility'-Force
+#Get-module -ListAvailable | Where-Object { $_.Name -eq 'Microsoft.Windows.Setting.Accessibility' } 
+#Get-DscResource -Module Microsoft.Windows.Setting.Accessibility
