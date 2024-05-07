@@ -1,0 +1,204 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+######################################################################################
+# This configuration will enable or disable various Windows Accessibility Settings.  #
+######################################################################################
+
+properties:
+  ########################################
+  ### ASSERTIONS: System Requirements
+  ########################################
+  # assertions:
+  #   ### Assertion: OS Version
+  #   ### -------------------------------------
+  #   - resource: Microsoft.Windows.Developer/OsVersion
+  #     id: OsVersion
+  #     directives:
+  #       description: Minimum OS version requirement
+  #       allowPrerelease: true
+  #     settings:
+  #       MinVersion: "10.0.22000"
+
+  ########################################
+  ### RESOURCES: System Configuration
+  ########################################
+  resources:
+    ### Enable: Developer Mode
+    ### -------------------------------------
+    # - resource: Microsoft.Windows.Developer/DeveloperMode
+    #   id: DeveloperMode
+    #   directives:
+    #     description: Enable Developer Mode
+    #     allowPrerelease: true
+    #   settings:
+    #     Ensure: Present
+
+    ### Set: Windows Text Size
+    ### -------------------------------------
+    - resource: Microsoft.Windows.Setting.Accessibility/TextSize
+      directives:
+        description: Set Windows Text Size
+        allowPrerelease: true
+      settings:
+        Size: Small # 'Small', 'Medium', 'Large', 'ExtraLarge'
+
+    ### Set: Windows Text Size
+    ### -------------------------------------
+    - resource: Microsoft.Windows.Setting.Accessibility/MousePointerSize
+      directives:
+        description: Set Windows Mouse Cursor Size
+        allowPrerelease: true
+      settings:
+        Size: Small # 'Small', 'Medium', 'Large', 'ExtraLarge'
+
+  ###<<<<<<<<<<<<<<<<<<<<<<< ***END TESTS*** <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+  # ### 1 Set: Windows Text Size
+  # ### -------------------------------------
+  # - resource: Microsoft.Windows.Setting.Accessibility/TextSize
+  #   directives:
+  #     description: Set Windows text size
+  #     allowPrerelease: true
+  #   settings:
+  #     Size: Large # 'Small', 'Medium', 'Large', 'ExtraLarge'
+
+  # ### 2 Set: Mouse Pointer Size
+  # ### -------------------------------------
+  # - resource: Microsoft.Windows.Developer/MousePointerSize
+  #   directives:
+  #     description: Set mouse pointer size
+  #     allowPrerelease: true
+  #   settings:
+  #     Size: Large # 'Small', 'Medium', 'Large', 'ExtraLarge'
+
+  # ### 3 Set: Text Cursor Settings
+  # ### -------------------------------------
+  # - resource: Microsoft.Windows.Developer/TextCursorSettings
+  #   directives:
+  #     description: Set text cursor settings
+  #     allowPrerelease: true
+  #   settings:
+  #     Width: 3 # Set the width of the text cursor
+  #     Color: "#FF0000" # Set the color of the text cursor
+
+  # ### 4 Set: Magnifier Settings
+  # ### -------------------------------------
+  # - resource: Microsoft.Windows.Developer/MagnifierSettings
+  #   directives:
+  #     description: Set Magnifier settings
+  #     allowPrerelease: true
+  #   settings:
+  #     MagnificationLevel: 200 # Set the magnification level
+  #     InvertColors: true # Invert colors
+  #     FollowMouse: true # Magnifier follows the mouse
+
+  # ### 5 Set: Color Filter Settings
+  # ### -------------------------------------
+  # - resource: Microsoft.Windows.Developer/ColorFilterSettings
+  #   directives:
+  #     description: Set color filter settings
+  #     allowPrerelease: true
+  #   settings:
+  #     FilterType: "Grayscale" # Set the type of color filter
+  #     Intensity: 50 # Set the intensity of the color filter
+
+  # ### 6 Set: High Contrast Settings
+  # ### -------------------------------------
+  # - resource: Microsoft.Windows.Developer/HighContrastSettings
+  #   directives:
+  #     description: Set High Contrast settings
+  #     allowPrerelease: true
+  #   settings:
+  #     Theme: "High Contrast #1" # Set the High Contrast theme
+  #     Enable: true # Enable or disable High Contrast
+
+  # ### 7 Set: Narrator Settings
+  # ### -------------------------------------
+  # - resource: Microsoft.Windows.Developer/NarratorSettings
+  #   directives:
+  #     description: Set Narrator settings
+  #     allowPrerelease: true
+  #   settings:
+  #     Enable: true # Enable or disable Narrator
+  #     Voice: "Microsoft David" # Set the voice for the Narrator
+  #     Speed: 50 # Set the speed of the Narrator
+  #     Pitch: 50 # Set the pitch of the Narrator
+
+  # ### 8 Set: Speech Settings
+  # ### -------------------------------------
+  # - resource: Microsoft.Windows.Developer/SpeechSettings
+  #   directives:
+  #     description: Set Speech settings
+  #     allowPrerelease: true
+  #   settings:
+  #     Enable: true # Enable or disable Speech
+  #     Voice: "Microsoft David" # Set the voice for the Speech
+  #     Speed: 50 # Set the speed of the Speech
+  #     Pitch: 50 # Set the pitch of the Speech
+
+  # ##################### START EXAMPLES ################################
+  # ## Set: Taskbar Alignment
+  # ## -------------------------------------
+  # - resource: Microsoft.Windows.Developer/TaskBarAlignment
+  #   directives:
+  #     description: Set taskbar alignment to left
+  #     allowPrerelease: true
+  #   settings:
+  #     Alignment: Left # 'Middle'
+
+  # ## -------------------------------------
+  # - resource: Microsoft.Windows.Developer/ShowSecondsInClock
+  #   directives:
+  #     description: Show seconds in clock
+  #     allowPrerelease: true
+  #   settings:
+  #     Ensure: Present
+
+  # ## -------------------------------------
+  # - resource: Microsoft.Windows.Developer/HideFileExtensions
+  #   directives:
+  #     description: Hide file extensions
+  #     allowPrerelease: true
+  #   settings:
+  #     Ensure: Present
+
+  # ## -------------------------------------
+  # - resource: Microsoft.Windows.Developer/ShowTaskViewButton
+  #   directives:
+  #     description: Show task view button
+  #     allowPrerelease: true
+  #   settings:
+  #     Ensure: Present
+  # - resource: Microsoft.Windows.Developer/ShowHiddenFiles
+  #   directives:
+  #     description: Show hidden files
+  #     allowPrerelease: true
+  #   settings:
+  #     Ensure: Present
+
+  # ## -------------------------------------
+  # - resource: Microsoft.Windows.Developer/HideTaskBarLabels
+  #   directives:
+  #     description: Never hide task bar labels
+  #     allowPrerelease: true
+  #   settings:
+  #     HideLabels: Never # 'WhenFull', 'Always'
+  #     # Use caution when setting `RestartExplorer: true` as this will force explorer to close.
+  #     RestartExplorer: true # Required to apply changes
+
+  # ## -------------------------------------
+  # - resource: Microsoft.Windows.Developer/EnableDarkMode
+  #   directives:
+  #     description: Enable dark mode
+  #     allowPrerelease: true
+  #   settings:
+  #     Ensure: Present
+  #     # Use caution when setting `RestartExplorer: true` as this will force explorer to close.
+  #     RestartExplorer: true # Required to apply changes
+
+  # ##################### END of EXAMPLES ################################
+
+  configurationVersion: 0.2.0
+### Run the following command to invoke this configuration:
+# Get-WinGetConfiguration -File "C:\Repo\azure-devcenter-customizations-tests\Microsoft.Windows.Setting.Accessibility\Accessibility.dsc.yaml" | Invoke-WinGetConfiguration -Verbose
+
