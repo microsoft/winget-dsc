@@ -137,11 +137,6 @@ class TextSize {
 		# }
 	
 		return @{
-			#CurrentTextSize = $this.MapRegistryValueToEnum($currentTextSizeValue)
-			#TextSize = $this.MapRegistryValueToEnum($currentTextSizeValue)
-
-			### Parse the enum value to an integer
-			###  - The 'true' parameter is used to ignore case sensitivity
 			TextSize = [TextSizeEnum]::Parse([TextSizeEnum], $this.TextSize, $true)
 		}
 	}
@@ -152,29 +147,17 @@ class TextSize {
 	}
 
 	[void] Set() {
-
-		### Parse the enum value to an integer
-		###  - The 'true' parameter is used to ignore case sensitivity
 		$DesiredTextSizeValue = [int][TextSizeEnum]::Parse([TextSizeEnum], $this.TextSize, $true)
-
-		if (-not $(Test-Path -Path $this.RegistryKey)) {
-			try {
+		try {
+			if (-not $(Test-Path -Path $this.RegistryKey)) {
 				New-Item -Path $this.RegistryKey -Force
 			}
-			catch {
-				throw $_.Exception.Message
-			}
-		}
-        
-		try {
 			Set-ItemProperty -Path $this.RegistryKey -Name $this.RegistryValue -Value $DesiredTextSizeValue
 		}
 		catch {
 			throw $_.Exception.Message
 		}
-
-		### Refresh the New Settings
-		#Get-Process -Name explorer | Stop-Process -Force -ErrorAction SilentlyContinue
+		Get-Process -Name explorer | Stop-Process -Force -ErrorAction SilentlyContinue
 	}
 }
 #>
@@ -184,13 +167,13 @@ class TextSize {
 class MousePointerSize {
 	[DscProperty(Key)]
 	[ValidateSet('Small', 'Medium', 'Large', 'ExtraLarge')]
+	#[MousePointerSizeEnum] $MousePointerSize
 	[string] $MousePointerSize
 
 	hidden [string] $RegistryKey = "HKCU:\Software\Microsoft\Accessibility"
 	hidden [string] $RegistryValue = "TextScaleFactor"
 
 	[MousePointerSize] Get() {
-		### Get the current value from the registry
 		if (Test-Path -Path $this.RegistryKey) {
 			$currentSizeValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryValue -ErrorAction SilentlyContinue `
 			| Select-Object -ExpandProperty $this.RegistryValue
@@ -200,19 +183,17 @@ class MousePointerSize {
 		}
 		return @{
 			MousePointerSize = [MousePointerSizeEnum]::GetName([MousePointerSizeEnum], $currentSizeValue)
-			#MousePointerSize = [MousePointerSizeEnum]::Parse([MousePointerSizeEnum], $this.MousePointerSize, $true)
 		}
 	}
 
 	[bool] Test() {
-		$currentSizeName = $this.Get()
-		return $currentSizeName.MousePointerSize -eq $this.MousePointerSize
+		$currentValue = $this.Get()
+		$desiredValue = $this.MousePointerSize
+
+		return $currentValue.MousePointerSize -eq $desiredValue
 	}
 
 	[void] Set() {
-
-		### Parse the enum value to an integer
-		###  - The 'true' parameter is used to ignore case sensitivity
 		$sizeValue = [int][MousePointerSizeEnum]::Parse([MousePointerSizeEnum], $this.MousePointerSize, $true)
 
 		if (-not $(Test-Path -Path $this.RegistryKey)) {
@@ -225,17 +206,6 @@ class MousePointerSize {
 		catch {
 			throw $_.Exception.Message
 		}
-
-		### Call Update-Reistry function
-		Update-Registry
-
-		# 			$CSharpSig = @'
-		# [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
-		# public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
-		# '@
-		# 			$CursorRefresh = Add-Type -MemberDefinition $CSharpSig -Name WinAPICall -Namespace SystemParamInfo -PassThru
-		# 			$CursorRefresh::SystemParametersInfo(0x2029, 0, $sizeValue, 0x01)  # Set a cursor size of 16 (you can adjust the value as needed)
-		
 	}
 }
 #>
@@ -260,7 +230,8 @@ class ColorFilterSettings {
 			try {
 				$registryActiveStateValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryActiveState -ErrorAction SilentlyContinue `
 				| Select-Object -ExpandProperty $this.RegistryActiveState
-				
+				#Get-ItemPropertyValue 
+
 				$registryFilterTypeValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryFilterType -ErrorAction SilentlyContinue `
 				| Select-Object -ExpandProperty $this.RegistryFilterType
 			}
@@ -268,14 +239,12 @@ class ColorFilterSettings {
 				throw "Error getting registry values: $_"
 			}
 
-			# Map the registry value to a valid 'Active' value
 			$activeStateMap = @{
 				0 = 'Inactive'
 				1 = 'Active'
 			}
 			$currentActiveState = $activeStateMap[$registryActiveStateValue]
 
-			# Map the registry value to a valid 'FilterType' value
 			$filterTypeMap = @{
 				0 = 'Grayscale'
 				1 = 'Inverted'
@@ -300,44 +269,30 @@ class ColorFilterSettings {
 	}
 
 	[bool] Test() {
-		### Get the current values from the registry
 		$currentState = $this.Get()
 		$currentActiveState = $currentState.ActiveState
 		$currentFilterType = $currentState.FilterType
 
-		### Get the Desired values
 		$desiredActiveState = $this.ActiveState
 		$desiredFilterType = $this.FilterType
 
-		### Test the values
 		return ($currentActiveState -eq $desiredActiveState) -AND ($currentFilterType -eq $desiredFilterType)
 	}
 
 	[void] Set() {
-		### Map the 'ActiveState' value to a valid registry value: 
-		###   - "OrdinalIgnoreCase" is used to ignore case sensitivity
 		$desiredActiveState = [int][ColorFilterActiveEnum]::Parse([ColorFilterActiveEnum], $this.ActiveState, [System.StringComparison]::OrdinalIgnoreCase)
 		$desiredFilterType = [int][ColorFilterTypeEnum]::Parse([ColorFilterTypeEnum], $this.FilterType, [System.StringComparison]::OrdinalIgnoreCase)
 
-		if (-not $(Test-Path -Path $this.RegistryKey)) {
-			try {
+		try {
+			if (-not $(Test-Path -Path $this.RegistryKey)) {
 				New-Item -Path $this.RegistryKey -Force
 			}
-			catch {
-				throw $_.Exception.Message
-			}
-		}
-		try {
 			Set-ItemProperty -Path $this.RegistryKey -Name $this.RegistryActiveState -Value $desiredActiveState
 			Set-ItemProperty -Path $this.RegistryKey -Name $this.RegistryFilterType -Value $desiredFilterType
 		}
 		catch {
-			throw "Error setting registry values: $_"
+			throw $_.Exception.Message
 		}
-
-		### Refresh the registry
-		#Get-Process -Name explorer | Stop-Process -Force -ErrorAction SilentlyContinue
-		Invoke-ExplorerRefresh
 	}
 }
 #>
@@ -372,7 +327,6 @@ class CursorIndicatorSettings {
 	hidden [string] $RegistryValueIndicatorColor = "IndicatorColor"
 
 	[CursorIndicatorSettings] Get() {
-		### Get Cursor Enabled:
 		if (Test-Path -Path $this.RegistryKeyCursorIndicatorEnabled) {
 			$currentCursorIndicatorEnabled = Get-ItemProperty -Path $this.RegistryKeyCursorIndicatorEnabled -Name "Configuration" -ErrorAction SilentlyContinue `
 			| Select-Object -ExpandProperty "Configuration"
@@ -388,7 +342,6 @@ class CursorIndicatorSettings {
 			$currentCursorIndicatorEnabled = $null
 		}
 
-		### Get Cursor Size:
 		if (Test-Path -Path $this.RegistryKeyCursorIndicator) {
 			$currentIndicatorSizeValue = Get-ItemProperty -Path $this.RegistryKeyCursorIndicator -Name $this.RegistryValueIndicatorSize -ErrorAction SilentlyContinue `
 			| Select-Object -ExpandProperty $this.RegistryValueIndicatorSize
@@ -397,7 +350,6 @@ class CursorIndicatorSettings {
 			$currentIndicatorSizeValue = $null
 		}
 
-		### Get Color Value:
 		if (Test-Path -Path $this.RegistryKeyCursorIndicator) {
 			$currentIndicatorColorValue = Get-ItemProperty -Path $this.RegistryKeyCursorIndicator -Name $this.RegistryValueIndicatorColor -ErrorAction SilentlyContinue `
 			| Select-Object -ExpandProperty $this.RegistryValueIndicatorColor
@@ -414,54 +366,46 @@ class CursorIndicatorSettings {
 	}
 
 	[bool] Test() {
-		### Get the current values from the registry
 		$currentState = $this.Get()
 		$currentCursorIndicatorSize = $currentState.CursorIndicatorSize
 		$currentCursorIndicatorColor = $currentState.CursorIndicatorSize
 
-		### Get the Desired values
 		$desiredCursorIndicatorSize = $this.CursorIndicatorSize
 		$desiredCursorIndicatorColor = $this.CursorIndicatorSize
 
-		### Test the values
 		return ($currentCursorIndicatorSize -eq $desiredCursorIndicatorSize) -AND ($currentCursorIndicatorColor -eq $desiredCursorIndicatorColor)
 	}
 
 	[void] Set() {
 
 		$desiredCursorIndicatorEnabled = [int][CursorIndicatorEnabledEnum]::Parse([CursorIndicatorEnabledEnum], $this.CursorIndicatorEnabled, [System.StringComparison]::OrdinalIgnoreCase)
-
-		### Check if the cursor indicator is enabled, if not, enable it
-		if (-not $(Test-Path -Path $this.RegistryKeyCursorIndicatorEnabled)) {
-			New-Item -Path $this.RegistryKeyCursorIndicatorEnabled -Force
-		}
 		try {
+			if (-not $(Test-Path -Path $this.RegistryKeyCursorIndicatorEnabled)) {
+				New-Item -Path $this.RegistryKeyCursorIndicatorEnabled -Force
+			}
 			Set-ItemProperty -Path $this.RegistryKeyCursorIndicatorEnabled -Name 'Configuration' -Value 'cursorindicator'
 		}
 		catch {
 			throw $_.Exception.Message
 		}
 		
-		### Parse the enum value to an integer
 		$desiredIndicatorSizeValue = [int][CursorIndicatorSizeEnum]::Parse([CursorIndicatorSizeEnum], $this.CursorIndicatorSize, $true)
 		$desiredIndicatorColorValue = [int][CursorIndicatorColorEnum]::Parse([CursorIndicatorColorEnum], $this.CursorIndicatorColor, $true)
-		#throw $desiredIndicatorColorValue
-
-		if (-not $(Test-Path -Path $this.RegistryKeyCursorIndicator)) {
-			New-Item -Path $this.RegistryKeyCursorIndicator -Force
-		}
 
 		try {
+			if (-not $(Test-Path -Path $this.RegistryKeyCursorIndicator)) {
+				New-Item -Path $this.RegistryKeyCursorIndicator -Force
+			}
 			Set-ItemProperty -Path $this.RegistryKeyCursorIndicator -Name $this.RegistryValueIndicatorSize -Value $desiredIndicatorSizeValue
 			Set-ItemProperty -Path $this.RegistryKeyCursorIndicator -Name $this.RegistryValueIndicatorColor -Value $desiredIndicatorColorValue 
 			Get-Process -Name explorer | Stop-Process -Force -ErrorAction SilentlyContinue
-		}
+		} 
 		catch {
 			throw $_.Exception.Message
 		}
+
 	}
 }
-
 <#
 # ### 6 Set: High Contrast Settings
 # ### -------------------------------------
@@ -619,3 +563,16 @@ public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint
 #Import-Module -Name 'Microsoft.Windows.Setting.Accessibility'-Force
 #Get-module -ListAvailable | Where-Object { $_.Name -eq 'Microsoft.Windows.Setting.Accessibility' } 
 #Get-DscResource -Module Microsoft.Windows.Setting.Accessibility
+
+<#
+
+		Update-Registry
+
+		# 			$CSharpSig = @'
+		# [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+		# public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
+		# '@
+		# 			$CursorRefresh = Add-Type -MemberDefinition $CSharpSig -Name WinAPICall -Namespace SystemParamInfo -PassThru
+		# 			$CursorRefresh::SystemParametersInfo(0x2029, 0, $sizeValue, 0x01)  # Set a cursor size of 16 (you can adjust the value as needed)
+
+#>
