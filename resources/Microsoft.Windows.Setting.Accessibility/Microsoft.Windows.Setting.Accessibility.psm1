@@ -67,7 +67,6 @@ enum CursorIndicatorColorEnum {
 }
 #endregion enums
 
-<##>
 [DSCResource()]
 class Template {
 	[DscProperty(Key)]
@@ -92,9 +91,7 @@ class Template {
 	[void] Set() {
 	}
 }
-#>
 
-<##>
 #region DSCResources
 [DSCResource()]	
 class TextSize {
@@ -102,20 +99,8 @@ class TextSize {
 	[ValidateSet('Small', 'Medium', 'Large', 'ExtraLarge')]
 	[string] $TextSize
 
-	### Registry Keys and Values
 	hidden [string] $RegistryKey = "HKCU:\Software\Microsoft\Accessibility"
 	hidden [string] $RegistryValue = "TextScaleFactor"
-
-	### Use Switch to map the registry value to the enum value
-	# hidden [TextSizeEnum] MapRegistryValueToEnum([int]$currentTextSizeValue) {
-	# 	switch ($currentTextSizeValue) {
-	# 		96 { return [TextSizeEnum]::Small }
-	# 		120 { return [TextSizeEnum]::Medium }
-	# 		144 { return [TextSizeEnum]::Large }
-	# 		192 { return [TextSizeEnum]::ExtraLarge }
-	# 		default { throw "Invalid registry value: $currentTextSizeValue" }
-	# 	}
-	# }
 
 	[TextSize] Get() {
 		### Get the current value from the registry
@@ -127,15 +112,6 @@ class TextSize {
 			$currentTextSizeValue = $null
 		}
 
-		### Use switch to map the registry value to the enum value
-		# switch ($currentTextSizeValue) {
-		# 	96 { $currentTextSizeValue = 'Small' }
-		# 	120 { $currentTextSizeValue = 'Medium' }
-		# 	144 { $currentTextSizeValue = 'Large' }
-		# 	192 { $currentTextSizeValue = 'ExtraLarge' }
-		# 	default { $currentTextSizeValue = $null }
-		# }
-	
 		return @{
 			TextSize = [TextSizeEnum]::Parse([TextSizeEnum], $this.TextSize, $true)
 		}
@@ -160,14 +136,11 @@ class TextSize {
 		Get-Process -Name explorer | Stop-Process -Force -ErrorAction SilentlyContinue
 	}
 }
-#>
 
-<##>
 [DSCResource()]	
 class MousePointerSize {
 	[DscProperty(Key)]
 	[ValidateSet('Small', 'Medium', 'Large', 'ExtraLarge')]
-	#[MousePointerSizeEnum] $MousePointerSize
 	[string] $MousePointerSize
 
 	hidden [string] $RegistryKey = "HKCU:\Software\Microsoft\Accessibility"
@@ -208,9 +181,7 @@ class MousePointerSize {
 		}
 	}
 }
-#>
 
-<##>
 [DSCResource()]	
 class ColorFilterSettings {
 	[DscProperty(Key)]
@@ -230,7 +201,6 @@ class ColorFilterSettings {
 			try {
 				$registryActiveStateValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryActiveState -ErrorAction SilentlyContinue `
 				| Select-Object -ExpandProperty $this.RegistryActiveState
-				#Get-ItemPropertyValue 
 
 				$registryFilterTypeValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryFilterType -ErrorAction SilentlyContinue `
 				| Select-Object -ExpandProperty $this.RegistryFilterType
@@ -295,18 +265,7 @@ class ColorFilterSettings {
 		}
 	}
 }
-#>
 
-<##>
-# ### 3 Set: Text Cursor Settings
-# ### -------------------------------------
-# - resource: Microsoft.Windows.Developer/TextCursorSettings
-#   directives:
-#     description: Set text cursor settings
-#     allowPrerelease: true
-#   settings:
-#     Width: 3 # Set the width of the text cursor
-#     Color: "#FF0000" # Set the color of the text cursor
 [DSCResource()]	
 class CursorIndicatorSettings {
 	[DscProperty(Key)]
@@ -406,173 +365,3 @@ class CursorIndicatorSettings {
 
 	}
 }
-<#
-# ### 6 Set: High Contrast Settings
-# ### -------------------------------------
-# - resource: Microsoft.Windows.Developer/HighContrastSettings
-#   directives:
-#     description: Set High Contrast settings
-#     allowPrerelease: true
-#   settings:
-#     Theme: "High Contrast #1" # Set the High Contrast theme
-#     Enable: true # Enable or disable High Contrast
-# HKEY_CURRENT_USER\Control Panel\Colors
-# HKEY_CURRENT_USER\Control Panel\Desktop\Colors2
-enum HighContrastSettingsEnum{
-	HighContrast1 = 1
-	HighContrast2 = 2
-	HighContrast3 = 3
-	HighContrast4 = 4
-	HighContrast5 = 5
-	HighContrast6 = 6
-	HighContrast7 = 7
-	HighContrast8 = 8
-	HighContrast9 = 9
-	HighContrast10 = 10
-}
-[DSCResource()]	
-class HighContrastSettings {
-	[DscProperty(Key)]
-	[string] $Size
-
-	[DscProperty(Mandatory)]
-	[string] $Value
-
-	[DscProperty(Mandatory)]
-	[string] $Ensure
-
-	[HighContrastSettings] Get() {
-		return @{
-			Size = "Small"
-		}
-	}
-	
-	[bool] Test() {
-		return $false
-	}
-
-	[void] Set() {
-	}
-}
-#>
-
-
-
-#endregion DSCResources
-
-#region Functions
-<#
-function Invoke-ExplorerRefresh {
-	if (-not ([System.Management.Automation.PSTypeName]'RefreshExplorer').Type) {
-		$code = @"
-using System;
-{
-    private static readonly IntPtr HWND_BROADCAST = new IntPtr(0xffff);
-    private const uint WM_SETTINGCHANGE = (uint)0x1a;
-    private const uint SHCNE_ASSOCCHANGED = (uint)0x08000000L;
-    private const uint SHCNF_FLUSH = (uint)0x1000;
-
-    [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
-    private static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, string lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult);
-
-    [System.Runtime.InteropServices.DllImport("Shell32.dll")]
-    private static extern int SHChangeNotify(uint eventId, uint flags, IntPtr item1, IntPtr item2);
-
-    public static void Refresh() {
-        SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
-    }
-}
-"@
-	}
-	try {
-		Add-Type -TypeDefinition $code -Language CSharp
-	}
-	catch {
-		Write-Host "Error adding type: $_"
-		if ($_.Exception -is [System.Management.Automation.ParseException]) {
-			$_.Exception.Errors | ForEach-Object {
-				Write-Host ("Line {0}: {1}" -f $_.Line, $_.Message)
-			}
-		}
-
-		try {
-			[RefreshExplorer]::Refresh()
-		}
-		catch {
-			Write-Host "Error calling Refresh: $_"
-		}
-	}
-}
-#>
-
-<#
-function Update-Registry {
-	### Refresh the registry
-	$CSharpSig = @'
-[DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
-public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
-'@
-	$CursorRefresh = Add-Type -MemberDefinition $CSharpSig -Name WinAPICall -Namespace SystemParamInfo -PassThru
-	$CursorRefresh::SystemParametersInfo(0x2029, 0, $sizeValue, 0x01)  # Set a cursor size of 16 (you can adjust the value as needed)
-}
-#>
-
-
-#endregion Functions
-
-
-#region Tests
-
-### Text Size
-###-------------------------------------
-# Invoke-DscResource -Name TextSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{TextSize = 'Medium' }
-# Invoke-DscResource -Name TextSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{TextSize = 'Small' }
-# Invoke-DscResource -Name TextSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{TextSize = "Small" }
-
-### Mouse Pointer Size
-###-------------------------------------
-# Invoke-DscResource -Name MousePointerSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{MousePointerSize = 'Medium' }
-# Invoke-DscResource -Name MousePointerSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{MousePointerSize = 'Medium' }
-# Invoke-DscResource -Name MousePointerSize -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{MousePointerSize = 'Medium' }
-
-### Color Filter Settings
-###-------------------------------------
-# Invoke-DscResource -Name ColorFilterSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{ActiveState = 'inActive'; FilterType = 'Grayscale' }
-# Invoke-DscResource -Name ColorFilterSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{ActiveState = 'inActive'; FilterType = 'Grayscale' }
-# Invoke-DscResource -Name ColorFilterSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ActiveState = 'inActive'; FilterType = 'Grayscale' }
-
-### Cursor Settings
-###-------------------------------------
-# Invoke-DscResource -Name CursorIndicatorSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{CursorIndicatorEnabled = 'On'; CursorIndicatorSize = 'Small'; CursorIndicatorColor = 'Purple' }
-# Invoke-DscResource -Name CursorIndicatorSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{CursorIndicatorEnabled = 'On'; CursorIndicatorSize = 'Small'; CursorIndicatorColor = 'Purple' }
-# Invoke-DscResource -Name CursorIndicatorSettings -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{CursorIndicatorEnabled = 'On'; CursorIndicatorSize = 'Small'; CursorIndicatorColor = 'Purple' }
-
-#endregion Tests
-
-### Module Import
-###-------------------------------------
-#Get-ChildItem -File  | Unblock-File
-
-# Get-DscResource -Module Microsoft.Windows.Setting.Accessibility
-
-
-#$path = "C:\Repo\winget-dsc-CBrennan\resources\Microsoft.Windows.Developer"
-# $path = "C:\Repo\winget-dsc-CBrennan\resources"
-# $env:PSModulePath = $path + ";" + $env:PSModulePath
-#$env:PSModulePath.Split(";")
-#Import-Module -Name 'Microsoft.Windows.Setting.Accessibility'-Force
-#Get-module -ListAvailable | Where-Object { $_.Name -eq 'Microsoft.Windows.Setting.Accessibility' } 
-#Get-DscResource -Module Microsoft.Windows.Setting.Accessibility
-
-<#
-
-		Update-Registry
-
-		# 			$CSharpSig = @'
-		# [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
-		# public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
-		# '@
-		# 			$CursorRefresh = Add-Type -MemberDefinition $CSharpSig -Name WinAPICall -Namespace SystemParamInfo -PassThru
-		# 			$CursorRefresh::SystemParametersInfo(0x2029, 0, $sizeValue, 0x01)  # Set a cursor size of 16 (you can adjust the value as needed)
-
-#>
