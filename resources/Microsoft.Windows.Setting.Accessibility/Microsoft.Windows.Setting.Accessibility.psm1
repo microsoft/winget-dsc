@@ -103,7 +103,6 @@ class TextSize {
 	hidden [string] $RegistryValue = "TextScaleFactor"
 
 	[TextSize] Get() {
-		### Get the current value from the registry
 		if (Test-Path -Path $this.RegistryKey) {
 			$currentTextSizeValue = Get-ItemProperty -Path $this.RegistryKey -Name $this.RegistryValue -ErrorAction SilentlyContinue `
 			| Select-Object -ExpandProperty $this.RegistryValue
@@ -362,6 +361,5 @@ class CursorIndicatorSettings {
 		catch {
 			throw $_.Exception.Message
 		}
-
 	}
 }
