@@ -67,31 +67,6 @@ enum CursorIndicatorColorEnum {
 }
 #endregion enums
 
-[DSCResource()]
-class Template {
-	[DscProperty(Key)]
-	[string] $Size
-
-	[DscProperty(Mandatory)]
-	[string] $Value
-
-	[DscProperty(Mandatory)]
-	[string] $Ensure
-
-	[Template] Get() {
-		return @{
-			Size = "Small"
-		}
-	}
-	
-	[bool] Test() {
-		return $false
-	}
-
-	[void] Set() {
-	}
-}
-
 #region DSCResources
 [DSCResource()]	
 class TextSize {
