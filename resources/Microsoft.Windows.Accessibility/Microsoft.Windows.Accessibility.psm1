@@ -4,12 +4,13 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-enum TextSize {
-	KeepCurrentValue
-	Small
-	Medium
-	Large
-	ExtraLarge
+enum TextSize
+{
+    KeepCurrentValue
+    Small
+    Medium
+    Large
+    ExtraLarge
 }
 
 if ([string]::IsNullOrEmpty($env:TestRegistryPath))
@@ -24,66 +25,62 @@ else
 [DSCResource()]	
 class Text
 {
-	[DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
-	[DscProperty(NotConfigurable)] [int] $SizeValue
+    [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
+    [DscProperty(NotConfigurable)] [int] $SizeValue
 
-	hidden [string] $TextScaleFactor = 'TextScaleFactor'
+    hidden [string] $TextScaleFactor = 'TextScaleFactor'
 
-	[Text] Get()
-	{
-		$currentState = [Text]::new()
+    [Text] Get()
+    {
+        $currentState = [Text]::new()
 
-		if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor))
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor))
         {
             $currentState.Size = [TextSize]::Small
-			$currentState.SizeValue = 96
+            $currentState.SizeValue = 96
         }
         else
         {
             $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
-			$currentSize = switch ($currentState.sizeValue)
-            {
-                96 	{ [TextSize]::Small }
+            $currentSize = switch ($currentState.sizeValue) {
+                96 { [TextSize]::Small }
                 120 { [TextSize]::Medium }
                 144 { [TextSize]::Large }
                 256 { [TextSize]::ExtraLarge }
             }
 
-			if ($null -ne $currentSize)
-			{
-				$currentState.Size = $currentSize
-			}
+            if ($null -ne $currentSize) {
+                $currentState.Size = $currentSize
+            }
         }
 
-		return $currentState
-	}
+        return $currentState
+    }
 
-	[bool] Test()
-	{
-		$currentState = $this.Get()
-		if ($this.Size -ne [TextSize]::KeepCurrentValue -and $this.Size -ne $currentState.Size)
-		{
-			return $false
-		}
+    [bool] Test() {
+        $currentState = $this.Get()
+        if ($this.Size -ne [TextSize]::KeepCurrentValue -and $this.Size -ne $currentState.Size)
+        {
+            return $false
+        }
 
-		return $true
-	}
+        return $true
+    }
 
-	[void] Set()
-	{
+    [void] Set()
+    {
         if ($this.Size -ne [TextSize]::KeepCurrentValue)
         {
-			$desiredSize = switch ([TextSize]($this.Size))
-			{
-				Small { 96 }
-				Medium { 120 }
-				Large { 144 }
-				ExtraLarge { 256 }
-			}
+            $desiredSize = switch ([TextSize]($this.Size)) {
+                Small { 96 }
+                Medium { 120 }
+                Large { 144 }
+                ExtraLarge { 256 }
+            }
 
             Set-ItemProperty -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor -Value $desiredSize -Type DWORD
-		}		
-	}
+        }		
+    }
 }
 
 #region Functions
