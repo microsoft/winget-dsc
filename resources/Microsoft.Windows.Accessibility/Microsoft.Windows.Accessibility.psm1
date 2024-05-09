@@ -4,20 +4,7 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-enum Ensure {
-	Absent
-	Present
-}
-
 enum TextSize {
-	KeepCurrentValue
-	Small
-	Medium
-	Large
-	ExtraLarge
-}
-
-enum CursorSize {
 	KeepCurrentValue
 	Small
 	Medium
@@ -35,7 +22,8 @@ else
 }
 
 [DSCResource()]	
-class Text {
+class Text
+{
 	[DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
 	[DscProperty(NotConfigurable)] [int] $SizeValue
 
@@ -55,7 +43,7 @@ class Text {
             $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
 			$currentSize = switch ($currentState.sizeValue)
             {
-                96 { [TextSize]::Small }
+                96 	{ [TextSize]::Small }
                 120 { [TextSize]::Medium }
                 144 { [TextSize]::Large }
                 256 { [TextSize]::ExtraLarge }
@@ -99,7 +87,6 @@ class Text {
 }
 
 #region Functions
-
 function DoesRegistryKeyPropertyExist
 {
     param (
@@ -114,5 +101,4 @@ function DoesRegistryKeyPropertyExist
     $itemProperty = Get-ItemProperty -Path $Path  -Name $Name -ErrorAction SilentlyContinue
     return $null -ne $itemProperty
 }
-
 #endregion Functions
