@@ -12,10 +12,10 @@
     DscResourcesToExport = @(
         'Text'
     )
-    PrivateData = @{
+    PrivateData          = @{
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @(
+            Tags       = @(
                 'PSDscResource_Text'
             )
     

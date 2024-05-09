@@ -14,11 +14,10 @@ enum TextSize {
 
 if ([string]::IsNullOrEmpty($env:TestRegistryPath))
 {
-    $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
+	$global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
 }
-else
-{
-    $global:AccessibilityRegistryPath = $env:TestRegistryPath
+else {
+	$global:AccessibilityRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]	
@@ -29,31 +28,29 @@ class Text
 
 	hidden [string] $TextScaleFactor = 'TextScaleFactor'
 
-	[Text] Get()
-	{
+	[Text] Get() {
 		$currentState = [Text]::new()
 
 		if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor))
-        {
-            $currentState.Size = [TextSize]::Small
+		{
+			$currentState.Size = [TextSize]::Small
 			$currentState.SizeValue = 96
-        }
-        else
-        {
-            $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
+		}
+		else {
+			$currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
 			$currentSize = switch ($currentState.sizeValue)
-            {
-                96 	{ [TextSize]::Small }
-                120 { [TextSize]::Medium }
-                144 { [TextSize]::Large }
-                256 { [TextSize]::ExtraLarge }
-            }
+			{
+				96 { [TextSize]::Small }
+				120 { [TextSize]::Medium }
+				144 { [TextSize]::Large }
+				256 { [TextSize]::ExtraLarge }
+			}
 
 			if ($null -ne $currentSize)
 			{
 				$currentState.Size = $currentSize
 			}
-        }
+		}
 
 		return $currentState
 	}
@@ -71,8 +68,8 @@ class Text
 
 	[void] Set()
 	{
-        if ($this.Size -ne [TextSize]::KeepCurrentValue)
-        {
+		if ($this.Size -ne [TextSize]::KeepCurrentValue)
+		{
 			$desiredSize = switch ([TextSize]($this.Size))
 			{
 				Small { 96 }
@@ -81,7 +78,7 @@ class Text
 				ExtraLarge { 256 }
 			}
 
-            Set-ItemProperty -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor -Value $desiredSize -Type DWORD
+			Set-ItemProperty -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor -Value $desiredSize -Type DWORD
 		}		
 	}
 }
@@ -89,16 +86,16 @@ class Text
 #region Functions
 function DoesRegistryKeyPropertyExist
 {
-    param (
-        [Parameter(Mandatory)]
-        [string]$Path,
+	param (
+		[Parameter(Mandatory)]
+		[string]$Path,
 
-        [Parameter(Mandatory)]
-        [string]$Name
-    )
+		[Parameter(Mandatory)]
+		[string]$Name
+	)
 
-    # Get-ItemProperty will return $null if the registry key property does not exist.
-    $itemProperty = Get-ItemProperty -Path $Path  -Name $Name -ErrorAction SilentlyContinue
-    return $null -ne $itemProperty
+	# Get-ItemProperty will return $null if the registry key property does not exist.
+	$itemProperty = Get-ItemProperty -Path $Path  -Name $Name -ErrorAction SilentlyContinue
+	return $null -ne $itemProperty
 }
 #endregion Functions
