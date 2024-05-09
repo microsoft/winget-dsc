@@ -4,8 +4,7 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-enum TextSize
-{
+enum TextSize {
     KeepCurrentValue
     Small
     Medium
@@ -13,34 +12,28 @@ enum TextSize
     ExtraLarge
 }
 
-if ([string]::IsNullOrEmpty($env:TestRegistryPath))
-{
+if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
 }
-else
-{
+else {
     $global:AccessibilityRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]	
-class Text
-{
+class Text {
     [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
     [DscProperty(NotConfigurable)] [int] $SizeValue
 
     hidden [string] $TextScaleFactor = 'TextScaleFactor'
 
-    [Text] Get()
-    {
+    [Text] Get() {
         $currentState = [Text]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
             $currentState.Size = [TextSize]::Small
             $currentState.SizeValue = 96
         }
-        else
-        {
+        else {
             $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
             $currentSize = switch ($currentState.sizeValue) {
                 96 { [TextSize]::Small }
@@ -59,18 +52,15 @@ class Text
 
     [bool] Test() {
         $currentState = $this.Get()
-        if ($this.Size -ne [TextSize]::KeepCurrentValue -and $this.Size -ne $currentState.Size)
-        {
+        if ($this.Size -ne [TextSize]::KeepCurrentValue -and $this.Size -ne $currentState.Size) {
             return $false
         }
 
         return $true
     }
 
-    [void] Set()
-    {
-        if ($this.Size -ne [TextSize]::KeepCurrentValue)
-        {
+    [void] Set() {
+        if ($this.Size -ne [TextSize]::KeepCurrentValue) {
             $desiredSize = switch ([TextSize]($this.Size)) {
                 Small { 96 }
                 Medium { 120 }
@@ -84,8 +74,7 @@ class Text
 }
 
 #region Functions
-function DoesRegistryKeyPropertyExist
-{
+function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]
         [string]$Path,
