@@ -42,7 +42,8 @@ class Text
         else
         {
             $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
-            $currentSize = switch ($currentState.sizeValue) {
+            $currentSize = switch ($currentState.sizeValue)
+            {
                 96 { [TextSize]::Small }
                 120 { [TextSize]::Medium }
                 144 { [TextSize]::Large }
