@@ -16,7 +16,8 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath))
 {
 	$global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
 }
-else {
+else
+{
 	$global:AccessibilityRegistryPath = $env:TestRegistryPath
 }
 
@@ -28,7 +29,8 @@ class Text
 
 	hidden [string] $TextScaleFactor = 'TextScaleFactor'
 
-	[Text] Get() {
+	[Text] Get()
+	{
 		$currentState = [Text]::new()
 
 		if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor))
@@ -36,7 +38,8 @@ class Text
 			$currentState.Size = [TextSize]::Small
 			$currentState.SizeValue = 96
 		}
-		else {
+		else
+		{
 			$currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
 			$currentSize = switch ($currentState.sizeValue)
 			{
