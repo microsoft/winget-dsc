@@ -6,7 +6,7 @@ Set-StrictMode -Version Latest
 
 enum TextSize {
     KeepCurrentValue
-    Small  
+    Small
     Medium
     Large
     ExtraLarge
@@ -22,7 +22,7 @@ enum MagnificationValue {
 
 enum PointerSize {
     KeepCurrentValue
-    Default    
+    Default   
     Medium
     Large
     ExtraLarge
