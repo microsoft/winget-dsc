@@ -118,15 +118,12 @@ class Magnifier {
     [Magnifier] Get() {
         $currentState = [Magnifier]::new()
 
-        if (-not (Test-Path -Path $global:MagnifierRegistryPath)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.Magnification)) {
             $currentState.Magnification = [MagnificationValue]::None
-            $currentState.MagnificationLevel = 0
-            $currentState.ZoomIncrement = 25
-            $currentState.ZoomIncrementLevel = 25
+            $currentState.MagnificationLevel = 0         
         }
         else {
             $currentState.MagnificationLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty).Magnification
-            $currentState.ZoomIncrementLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement
             $currentMagnification = switch ($currentState.MagnificationLevel) {
                 0 { [MagnificationValue]::None }
                 100 { [MagnificationValue]::Low }
@@ -135,7 +132,15 @@ class Magnifier {
                 default { [MagnificationValue]::KeepCurrentValue }
             }
             
-            $currentState.Magnification = $currentMagnification            
+            $currentState.Magnification = $currentMagnification 
+        }
+
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty)) {
+            $currentState.ZoomIncrement = 25
+            $currentState.ZoomIncrementLevel = 25
+        }
+        else {            
+            $currentState.ZoomIncrementLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement
             $currentState.ZoomIncrement = $currentState.ZoomIncrementLevel
         }
 
@@ -189,8 +194,8 @@ class MousePointer {
 
     [MousePointer] Get() {
         $currentState = [MousePointer]::new()
-
-        if (-not (Test-Path -Path $global:PointerRegistryPath)) {
+        
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty)) {
             $currentState.PointerSize = [PointerSize]::Normal
             $currentState.PointerSizeValue = '32'
         }
