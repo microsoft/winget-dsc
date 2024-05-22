@@ -174,7 +174,7 @@ class Magnifier {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
         }
 
-        if (($this.StartMagnify) -and ((Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue) -eq $null)) {
+        if (($this.StartMagnify) -and (($null -eq (Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue)))) {
             Start-Process "C:\Windows\System32\Magnify.exe"
         }
     }
