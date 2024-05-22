@@ -33,7 +33,7 @@ if ([string]::IsNullOrEmpty($env:TestAccessibilityTextRegistryPath)) {
     $global:TestAccessibilityTextRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'   
 }
 else {
-    $global:TestAccessibilityTextRegistryPath = $env:TestRegistryPath   
+    $global:TestAccessibilityTextRegistryPath = $env:TestAccessibilityTextRegistryPath   
 }
 
 if ([string]::IsNullOrEmpty($env:TestMagnifierRegistryPath)) {   
@@ -107,7 +107,8 @@ class Text {
 [DSCResource()]
 class Magnifier {
     [DscProperty(Key)] [MagnificationValue] $Magnification = [MagnificationValue]::KeepCurrentValue
-    [DscProperty(Mandatory)] [int] $ZoomIncrement = 25    
+    [DscProperty(Mandatory)] [int] $ZoomIncrement = 25
+    [DscProperty()] [bool] $StartMagnify = $false
     [DscProperty(NotConfigurable)] [int] $MagnificationLevel
     [DscProperty(NotConfigurable)] [int] $ZoomIncrementLevel
 
@@ -150,7 +151,7 @@ class Magnifier {
             return $false
         }
 
-        return $true
+        return $false
     }
 
     [void] Set() {
@@ -173,7 +174,7 @@ class Magnifier {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
         }
 
-        if ((Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue) -eq $null) {
+        if (($this.StartMagnify) -and ((Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue) -eq $null)) {
             Start-Process "C:\Windows\System32\Magnify.exe"
         }
     }
