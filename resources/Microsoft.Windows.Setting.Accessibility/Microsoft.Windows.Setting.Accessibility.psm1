@@ -28,27 +28,16 @@ enum PointerSize {
     ExtraLarge
 }
 
+if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
+    $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
+    $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
+    $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
 
-if ([string]::IsNullOrEmpty($env:TestAccessibilityTextRegistryPath)) {
-    $global:TestAccessibilityTextRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'   
 }
 else {
-    $global:TestAccessibilityTextRegistryPath = $env:TestAccessibilityTextRegistryPath   
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath    
 }
 
-if ([string]::IsNullOrEmpty($env:TestMagnifierRegistryPath)) {   
-    $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\' 
-}
-else { 
-    $global:MagnifierRegistryPath = $env:TestMagnifierRegistryPath  
-}
-
-if ([string]::IsNullOrEmpty($env:TestPointerRegistryPath)) {   
-    $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
-}
-else {  
-    $global:PointerRegistryPath = $env:TestPointerRegistryPath
-}
 
 [DSCResource()]	
 class Text {
@@ -60,12 +49,12 @@ class Text {
     [Text] Get() {
         $currentState = [Text]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:TestAccessibilityTextRegistryPath -Name $this.TextScaleFactor)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
             $currentState.Size = [TextSize]::Small
             $currentState.SizeValue = 96
         }
         else {
-            $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:TestAccessibilityTextRegistryPath -Name $this.TextScaleFactor)
+            $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
             $currentSize = switch ($currentState.sizeValue) {
                 96 { [TextSize]::Small }
                 120 { [TextSize]::Medium }
