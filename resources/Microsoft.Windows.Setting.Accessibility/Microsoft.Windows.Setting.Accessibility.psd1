@@ -12,7 +12,7 @@
     DscResourcesToExport = @(
         'Text',       
         'Magnifier',
-        'MousePointer'
+        'MousePointer'   
     )
     PrivateData = @{
         PSData = @{
@@ -20,7 +20,7 @@
             Tags = @(
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
-                'PSDscResource_MousePointer'
+                'PSDscResource_MousePointer'               
             )
     
             # Prerelease string of this module

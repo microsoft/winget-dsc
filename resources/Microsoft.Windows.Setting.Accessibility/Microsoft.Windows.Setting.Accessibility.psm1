@@ -22,25 +22,34 @@ enum MagnificationValue {
 
 enum PointerSize {
     KeepCurrentValue
-    Default   
+    Normal
     Medium
     Large
     ExtraLarge
 }
 
 
-if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
-    $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
-    $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
-    $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
-
+if ([string]::IsNullOrEmpty($env:TestAccessibilityTextRegistryPath)) {
+    $global:TestAccessibilityTextRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'   
 }
 else {
-    $global:AccessibilityRegistryPath = $env:TestRegistryPath
-    $global:MagnifierRegistryPath = $env:TestRegistryPath
-    $global:PointerRegistryPath = $env:TestRegistryPath
+    $global:TestAccessibilityTextRegistryPath = $env:TestRegistryPath   
 }
-#Text size to set start
+
+if ([string]::IsNullOrEmpty($env:TestMagnifierRegistryPath)) {   
+    $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\' 
+}
+else { 
+    $global:MagnifierRegistryPath = $env:TestMagnifierRegistryPath  
+}
+
+if ([string]::IsNullOrEmpty($env:TestPointerRegistryPath)) {   
+    $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
+}
+else {  
+    $global:PointerRegistryPath = $env:TestPointerRegistryPath
+}
+
 [DSCResource()]	
 class Text {
     [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
@@ -51,12 +60,12 @@ class Text {
     [Text] Get() {
         $currentState = [Text]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TestAccessibilityTextRegistryPath -Name $this.TextScaleFactor)) {
             $currentState.Size = [TextSize]::Small
             $currentState.SizeValue = 96
         }
         else {
-            $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
+            $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:TestAccessibilityTextRegistryPath -Name $this.TextScaleFactor)
             $currentSize = switch ($currentState.sizeValue) {
                 96 { [TextSize]::Small }
                 120 { [TextSize]::Medium }
@@ -94,13 +103,11 @@ class Text {
         }		
     }
 }
-#Text size to set end 
 
-#Magnifier Values to set start 
 [DSCResource()]
 class Magnifier {
     [DscProperty(Key)] [MagnificationValue] $Magnification = [MagnificationValue]::KeepCurrentValue
-    [DscProperty(Key)] [int] $ZoomIncrement = 25
+    [DscProperty(Mandatory)] [int] $ZoomIncrement = 25    
     [DscProperty(NotConfigurable)] [int] $MagnificationLevel
     [DscProperty(NotConfigurable)] [int] $ZoomIncrementLevel
 
@@ -126,10 +133,8 @@ class Magnifier {
                 300 { [MagnificationValue]::High }
                 default { [MagnificationValue]::KeepCurrentValue }
             }
-
-            if ($null -ne $currentMagnification) {
-                $currentState.Magnification = $currentMagnification
-            }
+            
+            $currentState.Magnification = $currentMagnification            
             $currentState.ZoomIncrement = $currentState.ZoomIncrementLevel
         }
 
@@ -164,16 +169,16 @@ class Magnifier {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty -Value $desiredMagnification -Type DWORD
         }
 
-        Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
+        if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement) {
+            Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
+        }
 
         if ((Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue) -eq $null) {
             Start-Process "C:\Windows\System32\Magnify.exe"
         }
     }
 }
-#Magnifier Values to set end 
 
-#Mouse Pointer start
 [DSCResource()]
 class MousePointer {
     [DscProperty(Key)] [PointerSize] $PointerSize = [PointerSize]::KeepCurrentValue
@@ -185,22 +190,20 @@ class MousePointer {
         $currentState = [MousePointer]::new()
 
         if (-not (Test-Path -Path $global:PointerRegistryPath)) {
-            $currentState.PointerSize = [PointerSize]::Default
+            $currentState.PointerSize = [PointerSize]::Normal
             $currentState.PointerSizeValue = '32'
         }
         else {
             $currentState.PointerSizeValue = (Get-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty).CursorBaseSize
             $currentSize = switch ($currentState.PointerSizeValue) {
-                '32' { [PointerSize]::Default }                
+                '32' { [PointerSize]::Normal }                
                 '96' { [PointerSize]::Medium }
                 '144' { [PointerSize]::Large }
                 '256' { [PointerSize]::ExtraLarge }
                 default { [PointerSize]::KeepCurrentValue }
             }
-
-            if ($null -ne $currentSize) {
-                $currentState.PointerSize = $currentSize
-            }
+            
+            $currentState.PointerSize = $currentSize            
         }
 
         return $currentState
@@ -218,7 +221,7 @@ class MousePointer {
     [void] Set() {
         if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue) {
             $desiredSize = switch ([PointerSize]($this.PointerSize)) {
-                Default { '32' }
+                Normal { '32' }
                 Medium {'96'}
                 Large { '144' }
                 ExtraLarge { '256' }
@@ -233,7 +236,6 @@ class MousePointer {
         }
     }
 }
-#Mouse Pointer end
 
 #region Functions
 function DoesRegistryKeyPropertyExist {
