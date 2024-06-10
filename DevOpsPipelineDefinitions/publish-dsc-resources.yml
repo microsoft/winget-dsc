@@ -1,6 +1,8 @@
 # winget-dsc pipeline to publish artifacts
-name: '$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)-$(Rev:r)'
+name: '$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(Date:yyyyMMdd)-$(Rev:r)'
 
+trigger: none
+  
 resources:
   repositories:
   - repository: self
