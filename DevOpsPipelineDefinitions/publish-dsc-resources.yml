@@ -1,0 +1,60 @@
+# winget-dsc pipeline to publish artifacts
+name: '$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)-$(Rev:r)'
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/main
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: windows-2022
+      os: windows
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - stage: WinGet_DSC_Artifacts_Publish
+      jobs:
+      - job: Publish_WinGet_DSC_Resources
+        displayName: "Publish WinGet DSC Resources"
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish Pipeline Microsoft.Windows.Developer'
+            targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Developer\
+            artifactName: Microsoft.Windows.Developer
+          - output: pipelineArtifact
+            displayName: 'Publish Pipeline Microsoft.Windows.Setting.Accessibility'
+            targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Setting.Accessibility\
+            artifactName: Microsoft.Windows.Setting.Accessibility
+          - output: pipelineArtifact
+            displayName: 'Publish Pipeline PythonPip3Dsc'
+            targetPath: $(Build.SourcesDirectory)\resources\PythonPip3Dsc\
+            artifactName: PythonPip3Dsc
+          - output: pipelineArtifact
+            displayName: 'Publish Pipeline YarnDsc'
+            targetPath: $(Build.SourcesDirectory)\resources\YarnDsc\
+            artifactName: YarnDsc
+          - output: pipelineArtifact
+            displayName: 'Publish Pipeline NpmDsc'
+            targetPath: $(Build.SourcesDirectory)\resources\NpmDsc\
+            artifactName: NpmDsc
+          - output: pipelineArtifact
+            displayName: 'Publish Pipeline Microsoft.WindowsSandbox.DSC'
+            targetPath: $(Build.SourcesDirectory)\resources\Microsoft.WindowsSandbox.DSC\
+            artifactName: Microsoft.WindowsSandbox.DSC
+          - output: pipelineArtifact
+            displayName: 'Publish Pipeline GitDsc'
+            targetPath: $(Build.SourcesDirectory)\resources\GitDsc\
+            artifactName: GitDsc
+        steps:
+        - checkout: self
+          clean: true
+          fetchTags: false
