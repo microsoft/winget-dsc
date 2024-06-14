@@ -66,12 +66,10 @@ class DeveloperMode
 
     [DeveloperMode] Get()
     {
-        $this.IsEnabled = IsDeveloperModeEnabled
-
-        return @{
-            Ensure = $this.Ensure
-            IsEnabled = $this.IsEnabled
-        }
+        $result = [DeveloperMode]::new()
+        $result.Ensure = $this.Ensure
+        $result.IsEnabled = IsDeveloperModeEnabled
+        return $result
     }
 
     [bool] Test()
