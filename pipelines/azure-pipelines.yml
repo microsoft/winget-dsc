@@ -39,37 +39,35 @@ extends:
       jobs:
       - job: Publish_WinGet_DSC_Resources
         displayName: "Publish WinGet DSC Resources"
-        templateContext:
-          outputs:
-          - output: pipelineArtifact
-            displayName: 'Publish Pipeline Microsoft.Windows.Developer'
-            targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Developer\
-            artifactName: Microsoft.Windows.Developer
-          - output: pipelineArtifact
-            displayName: 'Publish Pipeline Microsoft.Windows.Setting.Accessibility'
-            targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Setting.Accessibility\
-            artifactName: Microsoft.Windows.Setting.Accessibility
-          - output: pipelineArtifact
-            displayName: 'Publish Pipeline PythonPip3Dsc'
-            targetPath: $(Build.SourcesDirectory)\resources\PythonPip3Dsc\
-            artifactName: PythonPip3Dsc
-          - output: pipelineArtifact
-            displayName: 'Publish Pipeline YarnDsc'
-            targetPath: $(Build.SourcesDirectory)\resources\YarnDsc\
-            artifactName: YarnDsc
-          - output: pipelineArtifact
-            displayName: 'Publish Pipeline NpmDsc'
-            targetPath: $(Build.SourcesDirectory)\resources\NpmDsc\
-            artifactName: NpmDsc
-          - output: pipelineArtifact
-            displayName: 'Publish Pipeline Microsoft.WindowsSandbox.DSC'
-            targetPath: $(Build.SourcesDirectory)\resources\Microsoft.WindowsSandbox.DSC\
-            artifactName: Microsoft.WindowsSandbox.DSC
-          - output: pipelineArtifact
-            displayName: 'Publish Pipeline GitDsc'
-            targetPath: $(Build.SourcesDirectory)\resources\GitDsc\
-            artifactName: GitDsc
         steps:
+        - task: PublishPipelineArtifact@1
+          displayName: Publish Microsoft.Windows.Developer Module
+          targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Developer\
+          artifactName: Microsoft.Windows.Developer
+        - task: PublishPipelineArtifact@1
+          displayName: Publish Microsoft.Windows.Setting.Accessibility Module
+          targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Setting.Accessibility\
+          artifactName: Microsoft.Windows.Setting.Accessibility
+        - task: PublishPipelineArtifact@1
+          displayName: Publish PythonPip3Dsc Module
+          targetPath: $(Build.SourcesDirectory)\resources\PythonPip3Dsc\
+          artifactName: PythonPip3Dsc
+        - task: PublishPipelineArtifact@1
+          displayName: Publish YarnDsc Module
+          targetPath: $(Build.SourcesDirectory)\resources\YarnDsc\
+          artifactName: YarnDsc
+        - task: PublishPipelineArtifact@1
+          displayName: Publish NpmDsc Module
+          targetPath: $(Build.SourcesDirectory)\resources\NpmDsc\
+          artifactName: NpmDsc
+        - task: PublishPipelineArtifact@1
+          displayName: Publish Microsoft.WindowsSandbox.DSC Module
+          targetPath: $(Build.SourcesDirectory)\resources\Microsoft.WindowsSandbox.DSC\
+          artifactName: Microsoft.WindowsSandbox.DSC
+        - task: PublishPipelineArtifact@1
+          displayName: Publish GitDsc Module
+          targetPath: $(Build.SourcesDirectory)\resources\GitDsc\
+          artifactName: GitDsc
         - checkout: self
           clean: true
           fetchTags: false
