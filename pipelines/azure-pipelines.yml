@@ -1,7 +1,20 @@
 # winget-dsc pipeline to publish artifacts
 name: '$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(Date:yyyyMMdd)-$(Rev:r)'
 
-trigger: none
+# Commit triggers
+trigger:
+- main
+
+# PR triggers
+pr:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - pipelines/azure-pipelines.yml
+    - resources/*
+    - tests/*
   
 resources:
   repositories:
