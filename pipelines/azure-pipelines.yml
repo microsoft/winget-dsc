@@ -81,8 +81,10 @@ extends:
         - task: PowerShell@2
           displayName: "Run Pester tests for DSC modules"
           inputs:
+            pwsh: true
             targetType: "inline"
             script: |
+              $env:PSModulePath += ";$(Build.SourcesDirectory)\resources"
               Invoke-Pester -CI
             workingDirectory: $(Build.SourcesDirectory)\tests\
             ignoreLASTEXITCODE: true
