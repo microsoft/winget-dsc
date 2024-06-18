@@ -573,8 +573,7 @@ class EnableDarkMode
 }
 
 [DSCResource()]
-class ShowSecondsInClock
-{
+class ShowSecondsInClock {
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -584,11 +583,9 @@ class ShowSecondsInClock
 
     hidden [string] $ShowSecondsInSystemClock = 'ShowSecondsInSystemClock'
 
-    [ShowSecondsInClock] Get()
-    {
+    [ShowSecondsInClock] Get() {
         $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock
-        if (-not($exists))
-        {
+        if (-not($exists)) {
             return @{
                 Ensure = [Ensure]::Absent
             }
@@ -601,14 +598,12 @@ class ShowSecondsInClock
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
         Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock -Value $value
     }
