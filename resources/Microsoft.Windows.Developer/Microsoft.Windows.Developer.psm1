@@ -517,48 +517,6 @@ class UserAccessControl
 }
 
 [DSCResource()]
-class ShowSecondsInClock
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
-
-    [DscProperty()]
-    [Ensure] $Ensure = [Ensure]::Present
-
-    hidden [string] $ShowSecondsInSystemClock = 'ShowSecondsInSystemClock'
-
-    [ShowSecondsInClock] Get()
-    {
-        $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock
-        if (-not($exists))
-        {
-            return @{
-                Ensure = [Ensure]::Absent
-            }
-        }
-
-        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.ShowSecondsInSystemClock
-        
-        return @{
-            Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
-        }
-    }
-
-    [bool] Test()
-    {
-        $currentState = $this.Get()
-        return $currentState.Ensure -eq $this.Ensure
-    }
-
-    [void] Set()
-    {
-        $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
-        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock -Value $value
-    }
-}
-
-[DSCResource()]
 class EnableDarkMode
 {
     # Key required. Do not set.
@@ -611,6 +569,43 @@ class EnableDarkMode
             # Explorer needs to be restarted to enact the changes.
             Stop-Process -ProcessName Explorer
         }
+    }
+}
+
+[DSCResource()]
+class ShowSecondsInClock {
+    # Key required. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $ShowSecondsInSystemClock = 'ShowSecondsInSystemClock'
+
+    [ShowSecondsInClock] Get() {
+        $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock
+        if (-not($exists)) {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.ShowSecondsInSystemClock
+        
+        return @{
+            Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
+        }
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set() {
+        $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
+        Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock -Value $value
     }
 }
 #endregion DSCResources
