@@ -45,6 +45,11 @@ class Pip3Package
         foreach ($package in $this.Packages)
         {
             $this.InstalledStatus = $this.InstalledPackages -contains $package
+
+            if ($this.InstalledStatus -eq $false)
+            {
+                break
+            }
         }
 
         return @{
