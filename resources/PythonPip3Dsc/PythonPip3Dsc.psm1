@@ -54,7 +54,7 @@ class Pip3Package
             Arguments = $this.Arguments
             InstalledStatus = $this.InstalledStatus
             InstalledPackages = $this.InstalledPackages
-        }       
+        }
     }
 
     [bool] Test()
@@ -187,7 +187,7 @@ function Invoke-Pip3
 {
     param (
         [Parameter(Mandatory)]
-        [string]$command 
+        [string]$command
     )
 
     if ($global:usePip3Exe)
