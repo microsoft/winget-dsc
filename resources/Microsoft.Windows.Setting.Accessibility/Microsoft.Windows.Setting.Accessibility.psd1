@@ -20,7 +20,8 @@
             Tags = @(
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
-                'PSDscResource_MousePointer'               
+                'PSDscResource_MousePointer',
+                'PSDscResource_AnimationEffects'
             )
     
             # Prerelease string of this module

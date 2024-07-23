@@ -28,10 +28,17 @@ enum PointerSize {
     ExtraLarge
 }
 
+enum AnimationEffectsState {
+    KeepCurrentValue
+	Enabled
+	Disabled
+}
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
+    $global:AnimationEffectsSettingsRegistryPath = 'HKCU:\Control Panel\Desktop\'
 }
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
@@ -229,6 +236,69 @@ class MousePointer {
             
         }
     }
+}
+
+[DSCResource()]
+class AnimationEffects {
+    [DscProperty(Key)] [AnimationEffectsState] $AnimationEffectsState = [AnimationEffectsState]::KeepCurrentValue
+    [DscProperty(NotConfigurable)] [string] $AnimationEffectsValue
+
+    hidden [string] $AnimationEffectsProperty = 'UserPreferencesMask'
+	#These settings are stored alongside other settings in a bitmask.
+
+    [AnimationEffects] Get() {
+        $currentState = [AnimationEffectsState]::new()
+
+		$AnimationState = (Get-ItemPropertyValue -Path $global:AnimationEffectsSettingsRegistryPath -Name $AnimationEffectsProperty) | %{[System.Convert]::ToString($_,2).PadLeft(8,'0')} #Get-ItemPropertyValue converts hex to int, so need to complete converting to binary.
+		
+		#Decode bitmask string array as char array grid
+		#1001ABC0 
+		#00D1EF10 
+		#00000G11
+
+		$A = $AnimationState[0][4] #Smooth-scroll list boxes
+		$B = $AnimationState[0][5] #Slide open combo boxes
+		$C = $AnimationState[0][6] #Fade or slide menus into view
+		
+		$D = $AnimationState[1][2] #Show shadows under mouse pointer
+		$E = $AnimationState[1][4] #Fade or slide ToolTips into view
+		$F = $AnimationState[1][5] #Fade out menu items after clicking
+		
+		$G = $AnimationState[2][5] #Show shadows under windows
+		
+		if ($A -eq 0 -AND $B -eq 0 -AND $C -eq 0 -AND $D -eq 0 -AND $E -eq 0 -AND $F -eq 0 -AND $G -eq 0) {
+			$currentState = [AnimationEffectsState]::Disabled
+		} else {
+			$currentState = [AnimationEffectsState]::Enabled
+		}
+		
+		return $currentState
+	}
+
+    [bool] Test() {
+		$currentState = $this.Get()
+		if ($this.AnimationEffectsState -ne [AnimationEffectsState]::KeepCurrentValue -and $this.AnimationEffectsState -ne $currentState.AnimationEffectsState) {
+			return $false
+		}
+
+		return $true
+    }
+
+    [void] Set() {
+		if ($this.AnimationEffectsState -ne [AnimationEffectsState]::KeepCurrentValue) {
+            $desiredValue = switch ([AnimationEffectsState]($this.AnimationEffectsState)) {
+                Enabled {1}
+                Disabled {0}
+            }
+			
+			$currentState = [AnimationEffects]::Get()
+
+			if (-not (Test-Path -Path $global:AnimationEffectsSettingsRegistryPath)) {
+			}
+
+			Set-ItemProperty -Path $global:AnimationEffectsSettingsRegistryPath -Name $this.AnimationEffectsProperty -Value $desiredValue
+		}
+	}
 }
 
 #region Functions
