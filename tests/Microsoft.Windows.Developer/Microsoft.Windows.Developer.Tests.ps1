@@ -145,6 +145,34 @@ Describe 'UserAccessControl'{
    }
 }
 
+Describe 'Animation'{
+   It 'Keeps current value.'{
+      $initialState = Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+
+      $parameters = @{ AdminConsentPromptBehavior = 'KeepCurrentValue' }
+
+      $testResult = Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+      
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.AdminConsentPromptBehavior | Should -Be $initialState.AdminConsentPromptBehavior
+   }
+
+   It 'Sets desired value.'{
+      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
+      $desiredAdminConsentPromptBehavior = [AdminConsentPromptBehavior]("Enabled","Disabled"|Get-Random)
+
+      $desiredState = @{ AdminConsentPromptBehavior = $desiredAdminConsentPromptBehavior }
+      
+      Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+   
+      $finalState = Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.AdminConsentPromptBehavior | Should -Be $desiredAdminConsentPromptBehavior
+   }
+}
+
 AfterAll {
    $env:TestRegistryPath = ""
 }
