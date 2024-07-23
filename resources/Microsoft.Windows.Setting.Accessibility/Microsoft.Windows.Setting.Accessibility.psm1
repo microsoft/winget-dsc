@@ -291,12 +291,27 @@ class AnimationEffects {
                 Disabled {0}
             }
 			
-			$currentState = [AnimationEffects]::Get()
+			$AnimationState = (Get-ItemPropertyValue -Path $global:AnimationEffectsSettingsRegistryPath -Name $AnimationEffectsProperty) | %{[System.Convert]::ToString($_,2).PadLeft(8,'0')} #Get-ItemPropertyValue converts hex to int, so need to complete converting to binary.
+			#Decode bitmask string array as char array grid
+			#1001ABC0 
+			#00D1EF10 
+			#00000G11
+
+			$AnimationState[0][4] = $desiredValue #A
+			$AnimationState[0][5] = $desiredValue #B
+			$AnimationState[0][6] = $desiredValue  #C
+			
+			$AnimationState[1][2]  = $desiredValue #D
+			$AnimationState[1][4]  = $desiredValue #E
+			$AnimationState[1][5]  = $desiredValue #F
+			
+			$AnimationState[2][5]  = $desiredValue #G
 
 			if (-not (Test-Path -Path $global:AnimationEffectsSettingsRegistryPath)) {
+                New-Item -Path $global:AnimationEffectsSettingsRegistryPath -Force | Out-Null
 			}
 
-			Set-ItemProperty -Path $global:AnimationEffectsSettingsRegistryPath -Name $this.AnimationEffectsProperty -Value $desiredValue
+			Set-ItemProperty -Path $global:AnimationEffectsSettingsRegistryPath -Name $this.AnimationEffectsProperty -Value $AnimationState
 		}
 	}
 }
