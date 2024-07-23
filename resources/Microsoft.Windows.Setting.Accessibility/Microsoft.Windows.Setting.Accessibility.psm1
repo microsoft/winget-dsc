@@ -292,26 +292,22 @@ class AnimationEffects {
             }
 			
 			$AnimationState = (Get-ItemPropertyValue -Path $global:AnimationEffectsSettingsRegistryPath -Name $AnimationEffectsProperty) | %{[System.Convert]::ToString($_,2).PadLeft(8,'0')} #Get-ItemPropertyValue converts hex to int, so need to complete converting to binary.
-			#Decode bitmask string array as char array grid
+			#Recombine string array with desired state variables.
 			#1001ABC0 
 			#00D1EF10 
 			#00000G11
 
-			$AnimationState[0][4] = $desiredValue #A
-			$AnimationState[0][5] = $desiredValue #B
-			$AnimationState[0][6] = $desiredValue  #C
+			$AnimationState[0] = $AnimationState[0][0..3]+$desiredValue+$desiredValue+$desiredValue+$AnimationState[0][7] -join ""
 			
-			$AnimationState[1][2]  = $desiredValue #D
-			$AnimationState[1][4]  = $desiredValue #E
-			$AnimationState[1][5]  = $desiredValue #F
-			
-			$AnimationState[2][5]  = $desiredValue #G
+			$AnimationState[1] = $AnimationState[1][0..1]+$desiredValue+$AnimationState[1][3]+$desiredValue+$desiredValue+$AnimationState[1][6..7] -join ""
+
+			$AnimationState[2] = $AnimationState[2][0..4]+$desiredValue+$AnimationState[0][6..7] -join ""
 
 			if (-not (Test-Path -Path $global:AnimationEffectsSettingsRegistryPath)) {
                 New-Item -Path $global:AnimationEffectsSettingsRegistryPath -Force | Out-Null
 			}
 
-			Set-ItemProperty -Path $global:AnimationEffectsSettingsRegistryPath -Name $this.AnimationEffectsProperty -Value $AnimationState
+			Set-ItemProperty -Path $global:AnimationEffectsSettingsRegistryPath -Name $this.AnimationEffectsProperty -Value ($AnimationState | %{[convert]::ToInt32($_,2).ToString("X").PadLeft(2,'0')})
 		}
 	}
 }
