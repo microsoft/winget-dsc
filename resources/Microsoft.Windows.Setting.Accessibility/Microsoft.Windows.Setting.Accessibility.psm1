@@ -1,8 +1,9 @@
-@@ -1,37 +1,44 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
+
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+
 enum TextSize {
     KeepCurrentValue
     Small
@@ -10,6 +11,7 @@ enum TextSize {
     Large
     ExtraLarge
 }
+
 enum MagnificationValue {
     KeepCurrentValue
     None
@@ -17,6 +19,7 @@ enum MagnificationValue {
     Medium
     High
 }
+
 enum PointerSize {
     KeepCurrentValue
     Normal
@@ -40,13 +43,18 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
 }
+
+
 [DSCResource()]	
 class Text {
     [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
     [DscProperty(NotConfigurable)] [int] $SizeValue
+
     hidden [string] $TextScaleFactor = 'TextScaleFactor'
+
     [Text] Get() {
         $currentState = [Text]::new()
+
         if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
             $currentState.Size = [TextSize]::Small
             $currentState.SizeValue = 96
@@ -59,19 +67,24 @@ class Text {
                 144 { [TextSize]::Large }
                 256 { [TextSize]::ExtraLarge }
             }
+
             if ($null -ne $currentSize) {
                 $currentState.Size = $currentSize
             }
         }
+
         return $currentState
     }
+
     [bool] Test() {
         $currentState = $this.Get()
         if ($this.Size -ne [TextSize]::KeepCurrentValue -and $this.Size -ne $currentState.Size) {
             return $false
         }
+
         return $true
     }
+
     [void] Set() {
         if ($this.Size -ne [TextSize]::KeepCurrentValue) {
             $desiredSize = switch ([TextSize]($this.Size)) {
@@ -80,10 +93,12 @@ class Text {
                 Large { 144 }
                 ExtraLarge { 256 }
             }
+
             Set-ItemProperty -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor -Value $desiredSize -Type DWORD
         }		
     }
 }
+
 [DSCResource()]
 class Magnifier {
     [DscProperty(Key)] [MagnificationValue] $Magnification = [MagnificationValue]::KeepCurrentValue
@@ -91,10 +106,13 @@ class Magnifier {
     [DscProperty()] [bool] $StartMagnify = $false
     [DscProperty(NotConfigurable)] [int] $MagnificationLevel
     [DscProperty(NotConfigurable)] [int] $ZoomIncrementLevel
+
     hidden [string] $MagnificationProperty = 'Magnification'
     hidden [string] $ZoomIncrementProperty = 'ZoomIncrement'
+
     [Magnifier] Get() {
         $currentState = [Magnifier]::new()
+
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.Magnification)) {
             $currentState.Magnification = [MagnificationValue]::None
             $currentState.MagnificationLevel = 0         
@@ -108,9 +126,10 @@ class Magnifier {
                 300 { [MagnificationValue]::High }
                 default { [MagnificationValue]::KeepCurrentValue }
             }
-            
+
             $currentState.Magnification = $currentMagnification 
         }
+
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty)) {
             $currentState.ZoomIncrement = 25
             $currentState.ZoomIncrementLevel = 25
@@ -119,8 +138,10 @@ class Magnifier {
             $currentState.ZoomIncrementLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement
             $currentState.ZoomIncrement = $currentState.ZoomIncrementLevel
         }
+
         return $currentState
     }
+
     [bool] Test() {
         $currentState = $this.Get()
         if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue -and $this.Magnification -ne $currentState.Magnification) {
@@ -129,8 +150,10 @@ class Magnifier {
         if ($this.ZoomIncrement -ne $currentState.ZoomIncrement) {
             return $false
         }
+
         return $false
     }
+
     [void] Set() {
         if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue) {
             $desiredMagnification = switch ([MagnificationValue]($this.Magnification)) {
@@ -139,27 +162,34 @@ class Magnifier {
                 Medium { 200 }
                 High { 300 }
             }
+
             if (-not (Test-Path -Path $global:MagnifierRegistryPath)) {
                 New-Item -Path $global:MagnifierRegistryPath -Force | Out-Null
             }
+
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty -Value $desiredMagnification -Type DWORD
         }
+
         if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement) {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
         }
+
         if (($this.StartMagnify) -and (($null -eq (Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue)))) {
             Start-Process "C:\Windows\System32\Magnify.exe"
         }
     }
 }
+
 [DSCResource()]
 class MousePointer {
     [DscProperty(Key)] [PointerSize] $PointerSize = [PointerSize]::KeepCurrentValue
     [DscProperty(NotConfigurable)] [string] $PointerSizeValue
+
     hidden [string] $PointerSizeProperty = 'CursorBaseSize'
+
     [MousePointer] Get() {
         $currentState = [MousePointer]::new()
-        
+
         if (-not(DoesRegistryKeyPropertyExist -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty)) {
             $currentState.PointerSize = [PointerSize]::Normal
             $currentState.PointerSizeValue = '32'
@@ -173,18 +203,22 @@ class MousePointer {
                 '256' { [PointerSize]::ExtraLarge }
                 default { [PointerSize]::KeepCurrentValue }
             }
-            
+
             $currentState.PointerSize = $currentSize            
         }
+
         return $currentState
     }
+
     [bool] Test() {
         $currentState = $this.Get()
         if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue -and $this.PointerSize -ne $currentState.PointerSize) {
             return $false
         }
+
         return $true
     }
+
     [void] Set() {
         if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue) {
             $desiredSize = switch ([PointerSize]($this.PointerSize)) {
@@ -193,11 +227,13 @@ class MousePointer {
                 Large { '144' }
                 ExtraLarge { '256' }
             }
+
             if (-not (Test-Path -Path $global:PointerRegistryPath)) {
                 New-Item -Path $global:PointerRegistryPath -Force | Out-Null
             }
+
             Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
-            
+
         }
     }
 }
@@ -294,9 +330,11 @@ function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]
         [string]$Path,
+
         [Parameter(Mandatory)]
         [string]$Name
     )
+
     # Get-ItemProperty will return $null if the registry key property does not exist.
     $itemProperty = Get-ItemProperty -Path $Path  -Name $Name -ErrorAction SilentlyContinue
     return $null -ne $itemProperty
