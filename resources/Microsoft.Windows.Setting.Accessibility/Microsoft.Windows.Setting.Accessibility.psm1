@@ -391,7 +391,7 @@ function Get-AnimiationState {
 
 	$AnimationState[1] = $AnimationState[1][0..1]+$desiredValue+$AnimationState[1][3]+$desiredValue+$desiredValue+$AnimationState[1][6..7] -join ""
 
-	$AnimationState[2] = $AnimationState[2][0..4]+$desiredValue+$AnimationState[0][6..7] -join ""
+	$AnimationState[2] = $AnimationState[2][0..4]+$desiredValue+$AnimationState[2][6..7] -join ""
 	return $AnimationState
 }
 
