@@ -126,7 +126,7 @@ class Magnifier {
                 300 { [MagnificationValue]::High }
                 default { [MagnificationValue]::KeepCurrentValue }
             }
-
+            
             $currentState.Magnification = $currentMagnification 
         }
 
@@ -189,7 +189,7 @@ class MousePointer {
 
     [MousePointer] Get() {
         $currentState = [MousePointer]::new()
-
+        
         if (-not(DoesRegistryKeyPropertyExist -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty)) {
             $currentState.PointerSize = [PointerSize]::Normal
             $currentState.PointerSizeValue = '32'
@@ -203,7 +203,7 @@ class MousePointer {
                 '256' { [PointerSize]::ExtraLarge }
                 default { [PointerSize]::KeepCurrentValue }
             }
-
+            
             $currentState.PointerSize = $currentSize            
         }
 
@@ -233,7 +233,7 @@ class MousePointer {
             }
 
             Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
-
+            
         }
     }
 }
