@@ -34,6 +34,9 @@ extends:
       os: windows
     customBuildTags:
     - ES365AIMigrationTooling
+    settings:
+      skipBuildTagsForGitHubPullRequests: true
+
     stages:
     - stage: WinGet_DSC_Artifacts_Publish
       jobs:
@@ -69,7 +72,25 @@ extends:
             displayName: 'Publish Pipeline GitDsc'
             targetPath: $(Build.SourcesDirectory)\resources\GitDsc\
             artifactName: GitDsc
+
         steps:
         - checkout: self
           clean: true
           fetchTags: false
+        
+        - task: PowerShell@2
+          displayName: "Run Pester tests for DSC modules"
+          inputs:
+            pwsh: true
+            targetType: "inline"
+            script: |
+              $env:PSModulePath += ";$(Build.SourcesDirectory)\resources"
+              Invoke-Pester -CI
+            workingDirectory: $(Build.SourcesDirectory)\tests\
+            ignoreLASTEXITCODE: true
+
+        - task: PublishTestResults@2
+          inputs:
+            testResultsFormat: "NUnit"
+            testResultsFiles: "**/Test*.xml"
+            failTaskOnFailedTests: true
