@@ -13,7 +13,7 @@
         'Text',       
         'Magnifier',
         'MousePointer',   
-		'AnimationEffects'
+        'AnimationEffects'
     )
     PrivateData = @{
         PSData = @{
