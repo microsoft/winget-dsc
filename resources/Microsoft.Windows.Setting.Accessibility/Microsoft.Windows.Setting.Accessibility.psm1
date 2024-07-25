@@ -304,6 +304,18 @@ class AnimationEffects {
 		} else {
 			$this.ShowShadowsUnderWindows = [BinarySettingState]::Enabled
 		}
+		
+		if ($this.SmoothScrollListBoxes -eq [BinarySettingState]::Disabled -and 
+		$this.SlideOpenComboBoxes -eq [BinarySettingState]::Disabled -and 
+		$this.FadeOrSlideMenusIntoView -eq [BinarySettingState]::Disabled -and 
+		$this.ShowShadowsUnderMousePointer -eq [BinarySettingState]::Disabled -and 
+		$this.FadeOrSlideToolTipsIntoView -eq [BinarySettingState]::Disabled -and 
+		$this.FadeOutMenuItemsAfterClicking -eq [BinarySettingState]::Disabled -and 
+		$this.ShowShadowsUnderWindows -eq [BinarySettingState]::Disabled ) {
+			$this.currentState = [AnimationEffectsState]::Disabled
+		} else {
+			$this.currentState = [AnimationEffectsState]::Disabled
+		}
 
 		return $this.currentState
 	}
