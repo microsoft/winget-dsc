@@ -259,7 +259,7 @@ class AnimationEffects {
     [DscProperty(NotConfigurable)] [AnimationEffects] $currentState
 
     [AnimationEffects] Get() {
-        $this.currentState = [AnimationEffectsState]::new()
+        $this.currentState = [AnimationEffects]::new()
 
 		$this.AnimationState = (Get-ItemPropertyValue -Path $global:AnimationEffectsRegistryPath -Name 'UserPreferencesMask') | %{[System.Convert]::ToString($_,2).PadLeft(8,'0')}
 		
@@ -322,7 +322,22 @@ class AnimationEffects {
 
     [bool] Test() {
 		$this.currentState = $this.Get()
-		if ($this.SmoothScrollListBoxes -ne [BinarySettingState]::KeepCurrentValue -and $this.SmoothScrollListBoxes -ne $this.currentState.SmoothScrollListBoxes -and $this.SlideOpenComboBoxes -ne [BinarySettingState]::KeepCurrentValue -and $this.SlideOpenComboBoxes -ne $this.currentState.SlideOpenComboBoxes -and $this.FadeOrSlideMenusIntoView -ne [BinarySettingState]::KeepCurrentValue -and $this.FadeOrSlideMenusIntoView -ne $this.currentState.FadeOrSlideMenusIntoView -and $this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -and $this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer -and $this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -and $this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer -and $this.FadeOrSlideToolTipsIntoView -ne [BinarySettingState]::KeepCurrentValue -and $this.FadeOrSlideToolTipsIntoView -ne $this.currentState.FadeOrSlideToolTipsIntoView -and $this.FadeOutMenuItemsAfterClicking -ne [BinarySettingState]::KeepCurrentValue -and $this.FadeOutMenuItemsAfterClicking -ne $this.currentState.FadeOutMenuItemsAfterClicking -and $this.ShowShadowsUnderWindows -ne [BinarySettingState]::KeepCurrentValue -and $this.ShowShadowsUnderWindows -ne $this.currentState.ShowShadowsUnderWindows) {
+		if ($this.SmoothScrollListBoxes -ne [BinarySettingState]::KeepCurrentValue -and
+		$this.SmoothScrollListBoxes -ne $this.currentState.SmoothScrollListBoxes -and
+		 $this.SlideOpenComboBoxes -ne [BinarySettingState]::KeepCurrentValue -and
+		 $this.SlideOpenComboBoxes -ne $this.currentState.SlideOpenComboBoxes -and
+		 $this.FadeOrSlideMenusIntoView -ne [BinarySettingState]::KeepCurrentValue -and
+		 $this.FadeOrSlideMenusIntoView -ne $this.currentState.FadeOrSlideMenusIntoView -and
+		 $this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -and
+		 $this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer -and
+		 $this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -and
+		 $this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer -and
+		 $this.FadeOrSlideToolTipsIntoView -ne [BinarySettingState]::KeepCurrentValue -and
+		 $this.FadeOrSlideToolTipsIntoView -ne $this.currentState.FadeOrSlideToolTipsIntoView -and
+		 $this.FadeOutMenuItemsAfterClicking -ne [BinarySettingState]::KeepCurrentValue -and
+		 $this.FadeOutMenuItemsAfterClicking -ne $this.currentState.FadeOutMenuItemsAfterClicking -and
+		 $this.ShowShadowsUnderWindows -ne [BinarySettingState]::KeepCurrentValue -and
+		 $this.ShowShadowsUnderWindows -ne $this.currentState.ShowShadowsUnderWindows) {
 
 			return $false
 		}
