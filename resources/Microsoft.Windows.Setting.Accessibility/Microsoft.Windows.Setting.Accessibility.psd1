@@ -24,7 +24,7 @@
                 'PSDscResource_MousePointer' 
                 'PSDscResource_AnimationEffects'
             )
-
+    
             # Prerelease string of this module
             Prerelease = 'alpha'
         }
