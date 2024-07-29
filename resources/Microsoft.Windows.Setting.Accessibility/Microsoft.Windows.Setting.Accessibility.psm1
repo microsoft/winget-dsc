@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
+
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+
 enum TextSize {
     KeepCurrentValue
     Small
@@ -9,6 +11,7 @@ enum TextSize {
     Large
     ExtraLarge
 }
+
 enum MagnificationValue {
     KeepCurrentValue
     None
@@ -16,6 +19,7 @@ enum MagnificationValue {
     Medium
     High
 }
+
 enum PointerSize {
     KeepCurrentValue
     Normal
@@ -39,14 +43,19 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
 }
+
+
 [DSCResource()]	
 class Text {
     [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
     [DscProperty(NotConfigurable)] [int] $SizeValue
+	
     hidden [string] $TextScaleFactor = 'TextScaleFactor'
-    [Text] Get() {
+    
+	[Text] Get() {
         $currentState = [Text]::new()
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
+    
+    if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
             $currentState.Size = [TextSize]::Small
             $currentState.SizeValue = 96
         }
@@ -58,19 +67,24 @@ class Text {
                 144 { [TextSize]::Large }
                 256 { [TextSize]::ExtraLarge }
             }
+
             if ($null -ne $currentSize) {
                 $currentState.Size = $currentSize
             }
         }
+
         return $currentState
     }
+
     [bool] Test() {
         $currentState = $this.Get()
         if ($this.Size -ne [TextSize]::KeepCurrentValue -and $this.Size -ne $currentState.Size) {
             return $false
         }
+
         return $true
     }
+
     [void] Set() {
         if ($this.Size -ne [TextSize]::KeepCurrentValue) {
             $desiredSize = switch ([TextSize]($this.Size)) {
@@ -78,11 +92,13 @@ class Text {
                 Medium { 120 }
                 Large { 144 }
                 ExtraLarge { 256 }
+				
             }
             Set-ItemProperty -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor -Value $desiredSize -Type DWORD
         }		
     }
 }
+
 [DSCResource()]
 class Magnifier {
     [DscProperty(Key)] [MagnificationValue] $Magnification = [MagnificationValue]::KeepCurrentValue
@@ -151,6 +167,7 @@ class Magnifier {
         }
     }
 }
+
 [DSCResource()]
 class MousePointer {
     [DscProperty(Key)] [PointerSize] $PointerSize = [PointerSize]::KeepCurrentValue
