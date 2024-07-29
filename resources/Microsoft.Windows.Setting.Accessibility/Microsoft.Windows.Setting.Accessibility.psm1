@@ -138,6 +138,7 @@ class Magnifier {
             $currentState.ZoomIncrementLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement
             $currentState.ZoomIncrement = $currentState.ZoomIncrementLevel
         }
+
         return $currentState
     }
 
@@ -148,8 +149,8 @@ class Magnifier {
         }
         if ($this.ZoomIncrement -ne $currentState.ZoomIncrement) {
             return $false
-
         }
+
         return $false
     }
 
@@ -161,14 +162,18 @@ class Magnifier {
                 Medium { 200 }
                 High { 300 }
             }
+
             if (-not (Test-Path -Path $global:MagnifierRegistryPath)) {
                 New-Item -Path $global:MagnifierRegistryPath -Force | Out-Null
             }
+
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty -Value $desiredMagnification -Type DWORD
         }
+
         if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement) {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
         }
+
         if (($this.StartMagnify) -and (($null -eq (Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue)))) {
             Start-Process "C:\Windows\System32\Magnify.exe"
         }
@@ -179,7 +184,9 @@ class Magnifier {
 class MousePointer {
     [DscProperty(Key)] [PointerSize] $PointerSize = [PointerSize]::KeepCurrentValue
     [DscProperty(NotConfigurable)] [string] $PointerSizeValue
+
     hidden [string] $PointerSizeProperty = 'CursorBaseSize'
+
     [MousePointer] Get() {
         $currentState = [MousePointer]::new()
         
@@ -199,15 +206,19 @@ class MousePointer {
             
             $currentState.PointerSize = $currentSize            
         }
+
         return $currentState
     }
+
     [bool] Test() {
         $currentState = $this.Get()
         if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue -and $this.PointerSize -ne $currentState.PointerSize) {
             return $false
         }
+
         return $true
     }
+
     [void] Set() {
         if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue) {
             $desiredSize = switch ([PointerSize]($this.PointerSize)) {
@@ -216,9 +227,11 @@ class MousePointer {
                 Large { '144' }
                 ExtraLarge { '256' }
             }
+
             if (-not (Test-Path -Path $global:PointerRegistryPath)) {
                 New-Item -Path $global:PointerRegistryPath -Force | Out-Null
             }
+
             Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
             
         }
