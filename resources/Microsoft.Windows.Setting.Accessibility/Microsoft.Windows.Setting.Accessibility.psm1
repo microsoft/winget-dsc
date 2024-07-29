@@ -360,14 +360,15 @@ function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]
         [string]$Path,
+
         [Parameter(Mandatory)]
         [string]$Name
     )
+
     # Get-ItemProperty will return $null if the registry key property does not exist.
     $itemProperty = Get-ItemProperty -Path $Path  -Name $Name -ErrorAction SilentlyContinue
     return $null -ne $itemProperty
 }
-#endregion Functions
 
 function Get-AnimiationState {
 	param(
