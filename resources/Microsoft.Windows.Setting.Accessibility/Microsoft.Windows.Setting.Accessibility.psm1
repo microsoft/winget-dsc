@@ -51,11 +51,11 @@ class Text {
     [DscProperty(NotConfigurable)] [int] $SizeValue
 	
     hidden [string] $TextScaleFactor = 'TextScaleFactor'
-    
+
 	[Text] Get() {
         $currentState = [Text]::new()
     
-    if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
+		if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
             $currentState.Size = [TextSize]::Small
             $currentState.SizeValue = 96
         }
@@ -92,8 +92,8 @@ class Text {
                 Medium { 120 }
                 Large { 144 }
                 ExtraLarge { 256 }
-				
             }
+
             Set-ItemProperty -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor -Value $desiredSize -Type DWORD
         }		
     }
