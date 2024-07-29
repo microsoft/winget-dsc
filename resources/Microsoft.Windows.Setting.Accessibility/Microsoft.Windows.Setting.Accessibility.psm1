@@ -49,13 +49,13 @@ else {
 class Text {
     [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
     [DscProperty(NotConfigurable)] [int] $SizeValue
-	
+
     hidden [string] $TextScaleFactor = 'TextScaleFactor'
 
-	[Text] Get() {
+    [Text] Get() {
         $currentState = [Text]::new()
-    
-		if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
+
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
             $currentState.Size = [TextSize]::Small
             $currentState.SizeValue = 96
         }
@@ -106,10 +106,13 @@ class Magnifier {
     [DscProperty()] [bool] $StartMagnify = $false
     [DscProperty(NotConfigurable)] [int] $MagnificationLevel
     [DscProperty(NotConfigurable)] [int] $ZoomIncrementLevel
+
     hidden [string] $MagnificationProperty = 'Magnification'
     hidden [string] $ZoomIncrementProperty = 'ZoomIncrement'
+
     [Magnifier] Get() {
         $currentState = [Magnifier]::new()
+
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.Magnification)) {
             $currentState.Magnification = [MagnificationValue]::None
             $currentState.MagnificationLevel = 0         
@@ -126,6 +129,7 @@ class Magnifier {
             
             $currentState.Magnification = $currentMagnification 
         }
+
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty)) {
             $currentState.ZoomIncrement = 25
             $currentState.ZoomIncrementLevel = 25
@@ -136,6 +140,7 @@ class Magnifier {
         }
         return $currentState
     }
+
     [bool] Test() {
         $currentState = $this.Get()
         if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue -and $this.Magnification -ne $currentState.Magnification) {
@@ -143,9 +148,11 @@ class Magnifier {
         }
         if ($this.ZoomIncrement -ne $currentState.ZoomIncrement) {
             return $false
+
         }
         return $false
     }
+
     [void] Set() {
         if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue) {
             $desiredMagnification = switch ([MagnificationValue]($this.Magnification)) {
