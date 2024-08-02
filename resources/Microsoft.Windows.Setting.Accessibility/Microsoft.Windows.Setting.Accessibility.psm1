@@ -277,50 +277,82 @@ class AnimationEffects {
 
     [bool] Test() {
  		$this.currentState = $this.Get()
-		if ($this.SmoothScrollListBoxes -ne [BinarySettingState]::KeepCurrentValue -or
-		$this.SmoothScrollListBoxes -ne $this.currentState.SmoothScrollListBoxes) {
+		if ($this.SmoothScrollListBoxes -ne [BinarySettingState]::KeepCurrentValue) {
 
 			return $false
 		}
 		
-		elseif ($this.SlideOpenComboBoxes -ne [BinarySettingState]::KeepCurrentValue -or
-		$this.SlideOpenComboBoxes -ne $this.currentState.SlideOpenComboBoxes) {
+		elseif ($this.SmoothScrollListBoxes -ne $this.currentState.SmoothScrollListBoxes) {
 
 			return $false
 		}
 		
-		elseif ($this.FadeOrSlideMenusIntoView -ne [BinarySettingState]::KeepCurrentValue -or
-		$this.FadeOrSlideMenusIntoView -ne $this.currentState.FadeOrSlideMenusIntoView) {
+		elseif ($this.SlideOpenComboBoxes -ne [BinarySettingState]::KeepCurrentValue) {
 
 			return $false
 		}
 		
-		elseif ($this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -or
-		$this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer) {
+		elseif ($this.SlideOpenComboBoxes -ne $this.currentState.SlideOpenComboBoxes) {
 
 			return $false
 		}
 		
-		elseif ($this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -or
-		$this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer) {
+		elseif ($this.FadeOrSlideMenusIntoView -ne [BinarySettingState]::KeepCurrentValue) {
 
 			return $false
 		}
 		
-		elseif ($this.FadeOrSlideToolTipsIntoView -ne [BinarySettingState]::KeepCurrentValue -or
-		$this.FadeOrSlideToolTipsIntoView -ne $this.currentState.FadeOrSlideToolTipsIntoView) {
+		elseif ($this.FadeOrSlideMenusIntoView -ne $this.currentState.FadeOrSlideMenusIntoView) {
 
 			return $false
 		}
 		
-		elseif ($this.FadeOutMenuItemsAfterClicking -ne [BinarySettingState]::KeepCurrentValue -or
-		$this.FadeOutMenuItemsAfterClicking -ne $this.currentState.FadeOutMenuItemsAfterClicking) {
+		elseif ($this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue) {
 
 			return $false
 		}
 		
-		elseif ($this.ShowShadowsUnderWindows -ne [BinarySettingState]::KeepCurrentValue -or
-		$this.ShowShadowsUnderWindows -ne $this.currentState.ShowShadowsUnderWindows) {
+		elseif ($this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer) {
+
+			return $false
+		}
+		
+		elseif ($this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue) {
+
+			return $false
+		}
+		
+		elseif ($this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer) {
+
+			return $false
+		}
+		
+		elseif ($this.FadeOrSlideToolTipsIntoView -ne [BinarySettingState]::KeepCurrentValue) {
+
+			return $false
+		}
+		
+		elseif ($this.FadeOrSlideToolTipsIntoView -ne $this.currentState.FadeOrSlideToolTipsIntoView) {
+
+			return $false
+		}
+		
+		elseif ($this.FadeOutMenuItemsAfterClicking -ne [BinarySettingState]::KeepCurrentValue) {
+
+			return $false
+		}
+		
+		elseif ($this.FadeOutMenuItemsAfterClicking -ne $this.currentState.FadeOutMenuItemsAfterClicking) {
+
+			return $false
+		}
+		
+		elseif ($this.ShowShadowsUnderWindows -ne [BinarySettingState]::KeepCurrentValue) {
+
+			return $false
+		}
+		
+		elseif ($this.ShowShadowsUnderWindows -ne $this.currentState.ShowShadowsUnderWindows) {
 
 			return $false
 		}else {
