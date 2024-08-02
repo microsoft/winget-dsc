@@ -263,7 +263,8 @@ class AnimationEffects {
     [AnimationEffects] Get() {
         $this.currentState = [AnimationEffects]::new()
 
-		$this.currentState = "Disabled"
+		$this.currentState = [BinarySettingState]::Disabled
+
 
 		foreach ($enum in [AnimationEffectsSettings].GetEnumNames()) {
 			$thisState = Get-AnimationState $enum
