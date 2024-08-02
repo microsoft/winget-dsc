@@ -265,11 +265,10 @@ class AnimationEffects {
 
 		$this.currentState = [BinarySettingState]::Disabled
 
-
 		foreach ($enum in [AnimationEffectsSettings].GetEnumNames()) {
 			$thisState = Get-AnimationState $enum
 			if ($thisState -eq [BinarySettingState]::Enabled) {
-				$this.currentState = "Enabled"
+				$this.currentState = [BinarySettingState]::Enabled
 			}
 		}
 
@@ -278,27 +277,56 @@ class AnimationEffects {
 
     [bool] Test() {
 		$this.currentState = $this.Get()
-		if ($this.SmoothScrollListBoxes -ne [BinarySettingState]::KeepCurrentValue -and
-		$this.SmoothScrollListBoxes -ne $this.currentState.SmoothScrollListBoxes -and
-		 $this.SlideOpenComboBoxes -ne [BinarySettingState]::KeepCurrentValue -and
-		 $this.SlideOpenComboBoxes -ne $this.currentState.SlideOpenComboBoxes -and
-		 $this.FadeOrSlideMenusIntoView -ne [BinarySettingState]::KeepCurrentValue -and
-		 $this.FadeOrSlideMenusIntoView -ne $this.currentState.FadeOrSlideMenusIntoView -and
-		 $this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -and
-		 $this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer -and
-		 $this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -and
-		 $this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer -and
-		 $this.FadeOrSlideToolTipsIntoView -ne [BinarySettingState]::KeepCurrentValue -and
-		 $this.FadeOrSlideToolTipsIntoView -ne $this.currentState.FadeOrSlideToolTipsIntoView -and
-		 $this.FadeOutMenuItemsAfterClicking -ne [BinarySettingState]::KeepCurrentValue -and
-		 $this.FadeOutMenuItemsAfterClicking -ne $this.currentState.FadeOutMenuItemsAfterClicking -and
-		 $this.ShowShadowsUnderWindows -ne [BinarySettingState]::KeepCurrentValue -and
-		 $this.ShowShadowsUnderWindows -ne $this.currentState.ShowShadowsUnderWindows) {
+		if ($this.SmoothScrollListBoxes -ne [BinarySettingState]::KeepCurrentValue -or
+		$this.SmoothScrollListBoxes -ne $this.currentState.SmoothScrollListBoxes) {
 
 			return $false
 		}
+		
+		else if ($this.SlideOpenComboBoxes -ne [BinarySettingState]::KeepCurrentValue -or
+		$this.SlideOpenComboBoxes -ne $this.currentState.SlideOpenComboBoxes) {
 
+			return $false
+		}
+		
+		else if ($this.FadeOrSlideMenusIntoView -ne [BinarySettingState]::KeepCurrentValue -or
+		$this.FadeOrSlideMenusIntoView -ne $this.currentState.FadeOrSlideMenusIntoView) {
+
+			return $false
+		}
+		
+		else if ($this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -or
+		$this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer) {
+
+			return $false
+		}
+		
+		else if ($this.ShowShadowsUnderMousePointer -ne [BinarySettingState]::KeepCurrentValue -or
+		$this.ShowShadowsUnderMousePointer -ne $this.currentState.ShowShadowsUnderMousePointer) {
+
+			return $false
+		}
+		
+		else if ($this.FadeOrSlideToolTipsIntoView -ne [BinarySettingState]::KeepCurrentValue -or
+		$this.FadeOrSlideToolTipsIntoView -ne $this.currentState.FadeOrSlideToolTipsIntoView) {
+
+			return $false
+		}
+		
+		else if ($this.FadeOutMenuItemsAfterClicking -ne [BinarySettingState]::KeepCurrentValue -or
+		$this.FadeOutMenuItemsAfterClicking -ne $this.currentState.FadeOutMenuItemsAfterClicking) {
+
+			return $false
+		}
+		
+		else if ($this.ShowShadowsUnderWindows -ne [BinarySettingState]::KeepCurrentValue -or
+		$this.ShowShadowsUnderWindows -ne $this.currentState.ShowShadowsUnderWindows) {
+
+			return $false
+		} else {
+			
 		return $true
+		}
     }
 
     [void] Set() {
@@ -308,7 +336,7 @@ class AnimationEffects {
                 Disabled {0}
             }
 
-			$this.currentState = Get-CombinedState `
+			$this.currentState = GetAnimationEffectsStateHexValue `
 			-SmoothScrollListBoxesDesiredValue $SmoothScrollListBoxes `
 			-SlideOpenComboBoxesDesiredValue $SlideOpenComboBoxes `
 			-FadeOrSlideMenusIntoViewDesiredValue $FadeOrSlideMenusIntoView `
@@ -327,6 +355,8 @@ class AnimationEffects {
 }
 
 #region Functions
+[string] $AnimationEffectsProperty = 'UserPreferencesMask'
+
 function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]
@@ -341,7 +371,7 @@ function DoesRegistryKeyPropertyExist {
     return $null -ne $itemProperty
 }
 
-function Get-CombinedState {
+function GetAnimationEffectsStateHexValue {
 	param(
 		[Parameter(Mandatory)]
 		[BinarySettingState]$SmoothScrollListBoxes,
@@ -351,16 +381,24 @@ function Get-CombinedState {
 		[BinarySettingState]$FadeOrSlideToolTipsIntoView,
 		[BinarySettingState]$FadeOutMenuItemsAfterClicking,
 		[BinarySettingState]$ShowShadowsUnderWindows,
-		[string] $AnimationEffectsProperty = 'UserPreferencesMask'
 	)
 
 	$OverallState = (Get-ItemPropertyValue -Path $global:AnimationEffectsRegistryPath -Name $AnimationEffectsProperty) | %{[System.Convert]::ToString($_,2).PadLeft(8,'0')}#Registry converts from hex to int, so this converts from int to binary.
 
-	$OverallState[0] = $OverallState[0][0..3]+$SmoothScrollListBoxes+$SlideOpenComboBoxes+$FadeOrSlideMenusIntoView+$OverallState[0][7] -join "" -replace "Enabled",1  -replace "Disabled",0 
 
-	$OverallState[1] = $OverallState[1][0..1]+$ShowShadowsUnderMousePointer+$OverallState[1][3]+$FadeOrSlideToolTipsIntoView+$FadeOutMenuItemsAfterClicking+$OverallState[1][6..7] -join "" -replace "Enabled",1  -replace "Disabled",0
-
-	$OverallState[2] = $OverallState[2][0..4]+$ShowShadowsUnderWindows+$OverallState[2][6..7] -join "" -replace "Enabled",1  -replace "Disabled",0
+		foreach ($enum in [AnimationEffectsSettings].GetEnumNames()) {
+			switch ([AnimationEffectsSettings]$enum) {
+				SmoothScrollListBoxes {$OverallState[0][4] = $SmoothScrollListBoxes}
+				SlideOpenComboBoxes {$OverallState[0][5] = $SlideOpenComboBoxes}
+				FadeOrSlideMenusIntoView {$OverallState[0][6] = $FadeOrSlideMenusIntoView}
+				ShowShadowsUnderMousePointer {$OverallState[1][2] = $ShowShadowsUnderMousePointer}
+				FadeOrSlideToolTipsIntoView {$OverallState[1][4] = $FadeOrSlideToolTipsIntoView}
+				FadeOutMenuItemsAfterClicking {$OverallState[1][5] = $FadeOutMenuItemsAfterClicking}
+				ShowShadowsUnderWindows {$OverallState[2][5] = $ShowShadowsUnderWindows}
+			} 
+		}
+		
+	$OverallState = $OverallState  -replace "Enabled",1  -replace "Disabled",0
 	$OverallState = $OverallState | %{[convert]::ToInt32($_,2).ToString("X").PadLeft(2,'0')}#Converts from binary back to hex.
 	return $OverallState 
 }
@@ -370,7 +408,6 @@ Function Get-AnimationState {
 	param(
 		[Parameter(Mandatory)]
 		[AnimationEffectsSettings]$enum,	
-		[string] $AnimationEffectsProperty = 'UserPreferencesMask'
 	)
 	
 		$OverallState = (Get-ItemPropertyValue -Path $global:AnimationEffectsRegistryPath -Name $AnimationEffectsProperty) | %{[System.Convert]::ToString($_,2).PadLeft(8,'0')}#Registry converts from hex to int, so this converts from int to binary.
