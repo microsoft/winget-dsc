@@ -28,10 +28,17 @@ enum PointerSize {
     ExtraLarge
 }
 
+enum BinarySettingState {
+    KeepCurrentValue
+	Enabled
+	Disabled
+}
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
+    $global:AlwaysShowScrollbarsRegistryPath = 'HKCU:\Control Panel\Accessibility\'
 }
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
@@ -190,7 +197,7 @@ class MousePointer {
         else {
             $currentState.PointerSizeValue = (Get-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty).CursorBaseSize
             $currentSize = switch ($currentState.PointerSizeValue) {
-                '32' { [PointerSize]::Normal }                
+                '32' { [PointerSize]::Normal }               
                 '96' { [PointerSize]::Medium }
                 '144' { [PointerSize]::Large }
                 '256' { [PointerSize]::ExtraLarge }
@@ -226,6 +233,56 @@ class MousePointer {
             }
 
             Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
+            
+        }
+    }
+}
+
+[DSCResource()]
+class AlwaysShowScrollbars {
+    [DscProperty(Key)] [BinarySettingState] $ShowScrollBars = [BinarySettingState]::KeepCurrentValue
+
+    hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+
+    [AlwaysShowScrollbars] Get() {
+        $currentState = [AlwaysShowScrollbars]::new()
+        
+		if (-not(DoesRegistryKeyPropertyExist -Path $global:AlwaysShowScrollbarsRegistryPath -Name $this.DynamicScrollbarsProperty)) {
+            $ShowBars = [BinarySettingState]::Disabled                
+        } else {
+			$ShowBars = (Get-ItemProperty -Path $global:AlwaysShowScrollbarsRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
+			$currentState.ShowScrollBars = switch ($ShowBars) {
+				1 { [BinarySettingState]::Disabled }               
+				0 { [BinarySettingState]::Enabled }               
+				default { [BinarySettingState]::KeepCurrentValue }
+			}
+				
+		}
+		
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        if ($this.ShowScrollBars -ne [BinarySettingState]::KeepCurrentValue -and $this.ShowScrollBars -ne $currentState.ShowScrollBars) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        if ($this.ShowScrollBars -ne [BinarySettingState]::KeepCurrentValue) {
+            $desiredState = switch ([BinarySettingState]($this.ShowScrollBars)) {
+                Disabled { '1' }
+                Enabled { '0' }
+            }
+
+            if (-not (Test-Path -Path $global:PointerRegistryPath)) {
+                New-Item -Path $global:PointerRegistryPath -Force | Out-Null
+            }
+
+            Set-ItemProperty -Path $global:AlwaysShowScrollbarsRegistryPath -Name $this.DynamicScrollbarsProperty -Value $desiredState            
             
         }
     }
