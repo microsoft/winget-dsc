@@ -12,7 +12,8 @@
     DscResourcesToExport = @(
         'Text',       
         'Magnifier',
-        'MousePointer'   
+        'MousePointer',   
+        'AlwaysShowScrollbars'
     )
     PrivateData = @{
         PSData = @{
@@ -20,9 +21,10 @@
             Tags = @(
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
-                'PSDscResource_MousePointer'               
+                'PSDscResource_MousePointer', 
+                'PSDscResource_AlwaysShowScrollbars'
             )
-    
+
             # Prerelease string of this module
             Prerelease = 'alpha'
         }
