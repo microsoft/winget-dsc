@@ -28,10 +28,17 @@ enum PointerSize {
     ExtraLarge
 }
 
+enum BinarySettingState {
+    KeepCurrentValue
+	Enabled
+	Disabled
+}
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
+    $global:TransparencyEffectsRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
 }
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
@@ -190,7 +197,7 @@ class MousePointer {
         else {
             $currentState.PointerSizeValue = (Get-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty).CursorBaseSize
             $currentSize = switch ($currentState.PointerSizeValue) {
-                '32' { [PointerSize]::Normal }                
+                '32' { [PointerSize]::Normal }               
                 '96' { [PointerSize]::Medium }
                 '144' { [PointerSize]::Large }
                 '256' { [PointerSize]::ExtraLarge }
@@ -226,6 +233,56 @@ class MousePointer {
             }
 
             Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
+            
+        }
+    }
+}
+
+[DSCResource()]
+class TransparencyEffects {
+    [DscProperty(Key)] [BinarySettingState] $TransparencyEffectsSetting = [BinarySettingState]::KeepCurrentValue
+
+    hidden [string] $TransparencySettingProperty = 'EnableTransparency'
+
+    [TransparencyEffects] Get() {
+        $currentState = [TransparencyEffects]::new()
+        
+		if (-not(DoesRegistryKeyPropertyExist -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty)) {
+            $TransparencySetting = [BinarySettingState]::Disabled                
+        } else {
+			$TransparencySetting = (Get-ItemProperty -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
+			$currentState.TransparencyEffectsSetting = switch ($TransparencySetting) {
+				0 { [BinarySettingState]::Disabled }               
+				1 { [BinarySettingState]::Enabled }               
+				default { [BinarySettingState]::KeepCurrentValue }
+			}
+				
+		}
+		
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        if ($this.TransparencyEffectsSetting -ne [BinarySettingState]::KeepCurrentValue -and $this.TransparencyEffectsSetting -ne $currentState.TransparencyEffectsSetting) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        if ($this.TransparencyEffectsSetting -ne [BinarySettingState]::KeepCurrentValue) {
+            $desiredState = switch ([BinarySettingState]($this.TransparencyEffectsSetting)) {
+                Disabled { '1' }
+                Enabled { '0' }
+            }
+
+            if (-not (Test-Path -Path $global:PointerRegistryPath)) {
+                New-Item -Path $global:PointerRegistryPath -Force | Out-Null
+            }
+
+            Set-ItemProperty -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty -Value $desiredState            
             
         }
     }
