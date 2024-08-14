@@ -144,7 +144,7 @@ class Magnifier {
             return $false
         }
 
-        return $false
+        return $true
     }
 
     [void] Set() {
