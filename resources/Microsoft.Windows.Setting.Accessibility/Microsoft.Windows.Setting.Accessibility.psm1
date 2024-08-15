@@ -252,10 +252,10 @@ class Scrollbars {
         $currentState = [AlwaysShowScrollbars]::new()
         
 		if (-not(DoesRegistryKeyPropertyExist -Path $global:AlwaysShowScrollbarsRegistryPath -Name $this.DynamicScrollbarsProperty)) {
-            $ShowBars = [BinarySettingState]::Disabled                
+            $dynamicScrollbarsValue = [BinarySettingState]::Disabled                
         } else {
-			$ShowBars = (Get-ItemProperty -Path $global:AlwaysShowScrollbarsRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
-			$currentState.ShowScrollBars = switch ($ShowBars) {
+			$dynamicScrollbarsValue = (Get-ItemProperty -Path $global:AlwaysShowScrollbarsRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
+			$currentState.ShowScrollBars = switch ($dynamicScrollbarsValue) {
 				1 { [BinarySettingState]::Disabled }               
 				0 { [BinarySettingState]::Enabled }               
 				default { [BinarySettingState]::KeepCurrentValue }
@@ -282,12 +282,11 @@ class Scrollbars {
                 Enabled { '0' }
             }
 
-            if (-not (Test-Path -Path $global:PointerRegistryPath)) {
-                New-Item -Path $global:PointerRegistryPath -Force | Out-Null
+            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath)) {
+                New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
 
-            Set-ItemProperty -Path $global:AlwaysShowScrollbarsRegistryPath -Name $this.DynamicScrollbarsProperty -Value $desiredState            
-            
+            Set-ItemProperty -Path $global:AlwaysShowScrollbarsRegistryPath -Name $this.DynamicScrollbarsProperty -Value $desiredState
         }
     }
 }
