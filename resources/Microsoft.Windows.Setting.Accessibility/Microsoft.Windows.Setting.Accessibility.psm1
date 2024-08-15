@@ -39,7 +39,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
-    $global:TransparencyEffectsRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
+    $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
 }
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
@@ -280,8 +280,8 @@ class TransparencyEffects {
                 Enabled { '0' }
             }
 
-            if (-not (Test-Path -Path $global:PointerRegistryPath)) {
-                New-Item -Path $global:PointerRegistryPath -Force | Out-Null
+            if (-not (Test-Path -Path $global:PersonalizationRegistryPath)) {
+                New-Item -Path $global:PersonalizationRegistryPath -Force | Out-Null
             }
 
             Set-ItemProperty -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty -Value $desiredState            
