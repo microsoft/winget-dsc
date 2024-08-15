@@ -249,7 +249,8 @@ class TransparencyEffects {
         $currentState = [TransparencyEffects]::new()
         
 		if (-not(DoesRegistryKeyPropertyExist -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty)) {
-            $TransparencySetting = [BinarySettingState]::Disabled                
+            $currentState.TransparencyEffectsSetting = [Status]::Disabled                
+
         } else {
 			$TransparencySetting = (Get-ItemProperty -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
 			$currentState.TransparencyEffectsSetting = switch ($TransparencySetting) {
