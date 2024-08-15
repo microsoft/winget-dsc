@@ -28,11 +28,12 @@ enum PointerSize {
     ExtraLarge
 }
 
-enum BinarySettingState {
-    KeepCurrentValue
+enum Status {
+        KeepCurrentValue
 	Enabled
 	Disabled
 }
+
 
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
