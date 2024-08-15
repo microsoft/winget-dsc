@@ -241,7 +241,8 @@ class MousePointer {
 }
 
 [DSCResource()]
-class AlwaysShowScrollbars {
+class Scrollbars {
+
     [DscProperty(Key)] [BinarySettingState] $ShowScrollBars = [BinarySettingState]::KeepCurrentValue
 
     hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
