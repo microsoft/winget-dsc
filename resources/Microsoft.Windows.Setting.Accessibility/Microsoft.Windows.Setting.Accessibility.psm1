@@ -28,10 +28,17 @@ enum PointerSize {
     ExtraLarge
 }
 
+enum Status {
+    KeepCurrentValue
+	Enabled
+	Disabled
+}
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
+    $global:AudioRegistryPath = 'HKCU:\Software\Microsoft\Multimedia\Audio\'
 }
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
@@ -190,7 +197,7 @@ class MousePointer {
         else {
             $currentState.PointerSizeValue = (Get-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty).CursorBaseSize
             $currentSize = switch ($currentState.PointerSizeValue) {
-                '32' { [PointerSize]::Normal }                
+                '32' { [PointerSize]::Normal }               
                 '96' { [PointerSize]::Medium }
                 '144' { [PointerSize]::Large }
                 '256' { [PointerSize]::ExtraLarge }
@@ -227,6 +234,59 @@ class MousePointer {
 
             Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
             
+        }
+    }
+}
+
+[DSCResource()]
+class EnableMono {
+    [DscProperty(Key)] [Status] $MonoEnabledSetting = [Status]::KeepCurrentValue
+
+    hidden [string] $AudioEnableMonoSettingProperty = 'AccessibilityMonoMixState'
+
+    [EnableMono] Get() {
+        $currentState = [EnableMono]::new()
+
+		if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty)) {
+            $currentState.MonoEnabledSetting = [Status]::Disabled                
+
+        } else {
+			$AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty).AccessibilityMonoMixState 
+			$currentState.MonoEnabledSetting = switch ($AudioMonoSetting) {
+				0 { [Status]::Disabled }
+				1 { [Status]::Enabled }
+				default { [Status]::Disabled } #Key is missing by default.
+			 }
+
+		}
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        if ($this.MonoEnabledSetting -ne [Status]::KeepCurrentValue -and $this.MonoEnabledSetting -ne $currentState.MonoEnabledSetting) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        if ($this.MonoEnabledSetting -ne [Status]::KeepCurrentValue) {
+            $desiredState = switch ([Status]($this.MonoEnabledSetting)) {
+                Disabled { '0' }
+                Enabled { '1' }
+            }
+
+            if (-not (Test-Path -Path $global:AudioRegistryPath)) {
+                New-Item -Path $global:AudioRegistryPath -Force | Out-Null
+            }
+
+            if (-not (DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty)) {
+				New-ItemProperty -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty -Value $desiredState -PropertyType DWord
+            }
+
+            Set-ItemProperty -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty -Value $desiredState 
         }
     }
 }
