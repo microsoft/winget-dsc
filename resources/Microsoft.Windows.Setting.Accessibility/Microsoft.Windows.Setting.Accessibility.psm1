@@ -144,30 +144,40 @@ class Magnifier {
             return $false
         }
 
-        return $false
+        return $true
     }
 
     [void] Set() {
-        if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue) {
-            $desiredMagnification = switch ([MagnificationValue]($this.Magnification)) {
+        if ($this.Test())
+        {
+            return
+        }
+
+        if (-not (Test-Path -Path $global:MagnifierRegistryPath))
+        {
+            New-Item -Path $global:MagnifierRegistryPath -Force | Out-Null
+        }
+
+        if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue)
+        {
+            $desiredMagnification = switch ([MagnificationValue]($this.Magnification))
+            {
                 None { 0 }
                 Low { 100 }
                 Medium { 200 }
                 High { 300 }
             }
 
-            if (-not (Test-Path -Path $global:MagnifierRegistryPath)) {
-                New-Item -Path $global:MagnifierRegistryPath -Force | Out-Null
-            }
-
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty -Value $desiredMagnification -Type DWORD
         }
 
-        if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement) {
+        if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement)
+        {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
         }
 
-        if (($this.StartMagnify) -and (($null -eq (Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue)))) {
+        if (($this.StartMagnify) -and (($null -eq (Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue))))
+        {
             Start-Process "C:\Windows\System32\Magnify.exe"
         }
     }
