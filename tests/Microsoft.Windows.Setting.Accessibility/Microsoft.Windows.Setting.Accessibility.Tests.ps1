@@ -2,19 +2,23 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 using module Microsoft.Windows.Setting.Accessibility
+
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+
 <#
 .Synopsis
-   Pester tests related to the Microsoft.WinGet.Developer PowerShell module.
+   Pester tests related to the Microsoft.Windows.Setting.Accessibility PowerShell module.
 #>
+
 BeforeAll {
-   Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
-   Import-Module Microsoft.Windows.Accessibility
-   # Create test registry path.
-   New-Item -Path TestRegistry:\ -Name TestKey
-   # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
-   $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
+    Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    Import-Module Microsoft.Windows.Setting.Accessibility
+
+    # Create test registry path.
+    New-Item -Path TestRegistry:\ -Name TestKey
+    # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
+    $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
 }
 
 Describe 'List available DSC resources' {
@@ -102,9 +106,9 @@ Describe 'MousePointer' {
         $desiredPointerSize = [PointerSize](Get-Random -Maximum 4 -Minimum 1)
 
         $desiredState = @{ PointerSize = $desiredPointerSize }
-      
+
         Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
-   
+
         $finalState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.PointerSize | Should -Be $desiredPointerSize
     }
@@ -135,10 +139,10 @@ Describe 'EnableMono'{
 
       $finalState = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
       $finalState.MonoEnabledSetting | Should -Be $desiredMonoEnabledSetting
-	  
+
    }
 }
 
 AfterAll {
-   $env:TestRegistryPath = ""
+    $env:TestRegistryPath = ""
 }
