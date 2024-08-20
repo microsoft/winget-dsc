@@ -245,23 +245,23 @@ class MousePointer {
 }
 
 [DSCResource()]
-class Scrollbars {
+class Scrollbar {
 
     [DscProperty(Key)] [Bool] $Show = $false
 
 
 
-    hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    hidden [string] $DynamicScrollbarProperty = 'DynamicScrollbar'
 
-    [Scrollbars] Get() {
+    [Scrollbar] Get() {
 
-        $currentState = [AlwaysShowScrollbars]::new()
+        $currentState = [AlwaysShowScrollbar]::new()
         
-		if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty)) {
+		if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarProperty)) {
             $currentState.Show = $false        
         } else {
-			$dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
-			$currentState.Show = ($dynamicScrollbarsValue -eq 0) ? $true : $false
+			$dynamicScrollbarValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarProperty).DynamicScrollbar
+			$currentState.Show = ($dynamicScrollbarValue -eq 0) ? $true : $false
 
 				
 		}
@@ -289,7 +289,7 @@ class Scrollbars {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
 
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $desiredState
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarProperty -Value $desiredState
         }
     }
 }

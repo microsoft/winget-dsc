@@ -13,7 +13,7 @@
         'Text',       
         'Magnifier',
         'MousePointer',   
-        'AlwaysShowScrollbars'
+        'Scrollbar'
     )
     PrivateData = @{
         PSData = @{
@@ -22,7 +22,7 @@
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
                 'PSDscResource_MousePointer', 
-                'PSDscResource_AlwaysShowScrollbars'
+                'PSDscResource_Scrollbar'
             )
 
             # Prerelease string of this module
