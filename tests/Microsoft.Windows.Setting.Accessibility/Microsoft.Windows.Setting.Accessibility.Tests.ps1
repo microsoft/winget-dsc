@@ -114,6 +114,35 @@ Describe 'MousePointer' {
     }
 }
 
+Describe 'TransparencyEffects'{
+   It 'Keeps current value.'{
+      $initialState = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+
+      $parameters = @{ TransparencyEnabledSetting = 'KeepCurrentValue' }
+
+      $testResult = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.TransparencyEnabledSetting | Should -Be $initialState.TransparencyEnabledSetting
+   }
+
+   It 'Sets desired value.'{
+      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
+      $desiredTransparencyEnabledSetting = [TransparencyEnabledSetting](Get-Random -Maximum 2 -Minimum 1)
+
+      $desiredState = @{ TransparencyEnabledSetting = $desiredTransparencyEnabledSetting }
+
+      Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+
+      $finalState = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.TransparencyEnabledSetting | Should -Be $desiredTransparencyEnabledSetting
+	  
+   }
+}
+
 AfterAll {
     $env:TestRegistryPath = ""
 }
