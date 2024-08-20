@@ -286,11 +286,10 @@ class Scrollbars {
     }
 
     [void] Set() {
-        if ($this.ShowScrollBars -ne [BinarySettingState]::KeepCurrentValue) {
-            $desiredState = switch ([BinarySettingState]($this.ShowScrollBars)) {
-                Disabled { '1' }
-                Enabled { '0' }
-            }
+        if ($this.Test() -ne $true) {        
+            $desiredState = $this.Show ? 0 : 1
+        }
+
 
             if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath)) {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
