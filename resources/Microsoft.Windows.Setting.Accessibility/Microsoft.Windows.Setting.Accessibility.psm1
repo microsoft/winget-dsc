@@ -267,11 +267,8 @@ class Scrollbars {
             $currentState.Show = $false        
         } else {
 			$dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
-			$currentState.ShowScrollBars = switch ($dynamicScrollbarsValue) {
-				1 { [BinarySettingState]::Disabled }               
-				0 { [BinarySettingState]::Enabled }               
-				default { [BinarySettingState]::KeepCurrentValue }
-			}
+			$currentState.Show = ($dynamicScrollbarsValue -eq 0) ? $true : $false
+
 				
 		}
 		
