@@ -15,33 +15,70 @@ BeforeAll {
    # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
    $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
 }
-getDescribe 'EnableMono'{
-   It 'Keeps current value.'{
-      $initialState = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
 
-      $parameters = @{ MonoEnabledSetting = 'KeepCurrentValue' }
+Describe 'List available DSC resources' {
+    It 'Shows DSC Resources' {
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer"
+        $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
+        $availableDSCResources.length | Should -Be 3
+        $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
+    }
+}
 
-      $testResult = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
-      $testResult.InDesiredState | Should -Be $true
+Describe 'Text' {
+    It 'Keeps current value.' {
+        $initialState = Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
 
-      # Invoking set should not change these values.
-      Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-      $finalState.MonoEnabledSetting | Should -Be $initialState.MonoEnabledSetting
-   }
+        $parameters = @{ Size = 'KeepCurrentValue' }
 
-   It 'Sets desired value.'{
-      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
-      $desiredMonoEnabledSetting = [MonoEnabledSetting](Get-Random -Maximum 2 -Minimum 1)
+        $testResult = Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $true
 
-      $desiredState = @{ MonoEnabledSetting = $desiredMonoEnabledSetting }
+        # Invoking set should not change these values.
+        Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.Size | Should -Be $initialState.Size
+    }
 
-      Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+    It 'Sets desired value' {
+        # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
+        $desiredTextSize = [TextSize](Get-Random -Maximum 4 -Minimum 1)
 
-      $finalState = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-      $finalState.MonoEnabledSetting | Should -Be $desiredMonoEnabledSetting
-	  
-   }
+        $desiredState = @{ Size = $desiredTextSize }
+
+        Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.Size | Should -Be $desiredTextSize
+    }
+}
+
+Describe 'Magnifier' {
+    It 'Keeps current value.' {
+        $initialState = Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+
+        $parameters = @{ Magnification = 'KeepCurrentValue' }
+
+        $testResult = Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $true
+
+        # Invoking set should not change these values.
+        Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.Magnification | Should -Be $initialState.Magnification
+    }
+
+    It 'Sets desired value' {
+        # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
+        $desiredMagnification = [MagnificationValue](Get-Random -Maximum 4 -Minimum 1)
+
+        $desiredState = @{ Magnification = $desiredMagnification }
+
+        Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.Magnification | Should -Be $desiredMagnification
+    }
 }
 
 Describe 'MousePointer' {
@@ -70,6 +107,35 @@ Describe 'MousePointer' {
         $finalState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.PointerSize | Should -Be $desiredPointerSize
     }
+}
+
+Describe 'EnableMono'{
+   It 'Keeps current value.'{
+      $initialState = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+
+      $parameters = @{ MonoEnabledSetting = 'KeepCurrentValue' }
+
+      $testResult = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.MonoEnabledSetting | Should -Be $initialState.MonoEnabledSetting
+   }
+
+   It 'Sets desired value.'{
+      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
+      $desiredMonoEnabledSetting = [MonoEnabledSetting](Get-Random -Maximum 2 -Minimum 1)
+
+      $desiredState = @{ MonoEnabledSetting = $desiredMonoEnabledSetting }
+
+      Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+
+      $finalState = Invoke-DscResource -Name EnableMono -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.MonoEnabledSetting | Should -Be $desiredMonoEnabledSetting
+	  
+   }
 }
 
 AfterAll {
