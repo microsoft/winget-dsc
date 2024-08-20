@@ -258,7 +258,8 @@ class Scrollbars {
 
     hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
 
-    [AlwaysShowScrollbars] Get() {
+    [Scrollbars] Get() {
+
         $currentState = [AlwaysShowScrollbars]::new()
         
 		if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty)) {
