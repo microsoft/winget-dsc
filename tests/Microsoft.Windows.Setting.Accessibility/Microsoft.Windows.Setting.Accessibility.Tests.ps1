@@ -117,7 +117,8 @@ Describe 'MousePointer' {
 Describe 'DynamicScrollbar'{
 
    It 'Sets desired value.'{
-      Invoke-DscResource -Name Scrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $false
+      $testingState = @{ Show = $false }
+      Invoke-DscResource -Name Scrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $testingState
 
       # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
       $desiredScrollbarBehavior = [Scrollbar](Get-Random -Maximum 2 -Minimum 1)
