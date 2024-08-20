@@ -114,6 +114,35 @@ Describe 'MousePointer' {
     }
 }
 
+Describe 'MessageDuration'{
+   It 'Keeps current value.'{
+      $initialState = Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+
+      $parameters = @{ MessageDurationSetting = 'KeepCurrentValue' }
+
+      $testResult = Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.MessageDurationSetting | Should -Be $initialState.MessageDurationSetting
+   }
+
+   It 'Sets desired value.'{
+      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
+      $desiredMessageDuration = [MessageDurationSetting](Get-Random -Maximum 2 -Minimum 1)
+
+      $desiredState = @{ MessageDurationSetting = $desiredMessageDuration }
+
+      Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+
+      $finalState = Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.MessageDurationSetting | Should -Be $desiredMessageDuration
+	  
+   }
+}
+
 AfterAll {
     $env:TestRegistryPath = ""
 }
