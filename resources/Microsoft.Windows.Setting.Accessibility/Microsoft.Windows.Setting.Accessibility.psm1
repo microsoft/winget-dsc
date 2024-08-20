@@ -277,9 +277,10 @@ class Scrollbars {
 
     [bool] Test() {
         $currentState = $this.Get()
-        if ($this.ShowScrollBars -ne [BinarySettingState]::KeepCurrentValue -and $this.ShowScrollBars -ne $currentState.ShowScrollBars) {
+        if ($this.Show -ne $currentState.Show) {
             return $false
         }
+
 
         return $true
     }
