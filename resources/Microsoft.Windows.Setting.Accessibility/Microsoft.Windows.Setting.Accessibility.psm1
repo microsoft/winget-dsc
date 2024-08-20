@@ -263,7 +263,7 @@ class Scrollbars {
         $currentState = [AlwaysShowScrollbars]::new()
         
 		if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty)) {
-            $dynamicScrollbarsValue = [BinarySettingState]::Disabled                
+            $currentState.Show = $false        
         } else {
 			$dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
 			$currentState.ShowScrollBars = switch ($dynamicScrollbarsValue) {
