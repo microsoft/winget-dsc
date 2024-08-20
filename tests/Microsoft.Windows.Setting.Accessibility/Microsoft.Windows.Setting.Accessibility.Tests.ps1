@@ -114,6 +114,42 @@ Describe 'MousePointer' {
     }
 }
 
+Describe 'Animation'{
+   It 'Keeps current value.'{
+      $initialState = Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+
+      $parameters = @{ AnimationBehavior = 'KeepCurrentValue' }
+
+      $testResult = Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.AnimationBehavior | Should -Be $initialState.AnimationBehavior
+   }
+
+   It 'Sets desired value.'{
+      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
+      $desiredAnimationBehavior = [AnimationBehavior](Get-Random -Maximum 2 -Minimum 1)
+
+      $desiredState = @{ AnimationBehavior = $desiredAnimationBehavior }
+
+      Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+
+      $finalState = Invoke-DscResource -Name AnimationEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.AnimationBehavior | Should -Be $desiredAnimationBehavior
+      $finalState.SmoothScrollListBoxes | Should -Be $desiredAnimationBehavior
+      $finalState.SlideOpenComboBoxes | Should -Be $desiredAnimationBehavior
+      $finalState.FadeOrSlideMenusIntoView | Should -Be $desiredAnimationBehavior
+      $finalState.ShowShadowsUnderMousePointer | Should -Be $desiredAnimationBehavior
+      $finalState.FadeOrSlideToolTipsIntoView | Should -Be $desiredAnimationBehavior
+      $finalState.FadeOrSlideToolTipsIntoView | Should -Be $desiredAnimationBehavior
+      $finalState.ShowShadowsUnderWindows | Should -Be $desiredAnimationBehavior
+	  
+   }
+}
+
 AfterAll {
     $env:TestRegistryPath = ""
 }
