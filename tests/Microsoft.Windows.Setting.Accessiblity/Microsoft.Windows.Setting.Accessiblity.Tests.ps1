@@ -44,6 +44,34 @@ getDescribe 'EnableMono'{
    }
 }
 
+Describe 'MousePointer' {
+    It 'Keeps current value.' {
+        $initialState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+
+        $parameters = @{ PointerSize = 'KeepCurrentValue' }
+
+        $testResult = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $true
+
+        # Invoking set should not change these values.
+        Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.PointerSize | Should -Be $initialState.PointerSize
+    }
+
+    It 'Sets desired value' {
+        # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
+        $desiredPointerSize = [PointerSize](Get-Random -Maximum 4 -Minimum 1)
+
+        $desiredState = @{ PointerSize = $desiredPointerSize }
+      
+        Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+   
+        $finalState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.PointerSize | Should -Be $desiredPointerSize
+    }
+}
+
 AfterAll {
    $env:TestRegistryPath = ""
 }
