@@ -275,8 +275,8 @@ class DynamicScrollbar {
     }
     [void] Set() {
         if ($this.DynamicScrollbarState -ne [BinaryState]::KeepCurrentValue) {
-            if (-not (Test-Path -Path $global:PointerRegistryPath)) {
-                New-Item -Path $global:PointerRegistryPath -Force | Out-Null
+            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath)) {
+                New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
             Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $this.DynamicScrollbarState
         }
