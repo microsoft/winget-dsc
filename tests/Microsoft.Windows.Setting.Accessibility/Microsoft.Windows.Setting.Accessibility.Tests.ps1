@@ -5,19 +5,20 @@ using module Microsoft.Windows.Setting.Accessibility
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+
 <#
 .Synopsis
-   Pester tests related to the Microsoft.WinGet.Developer PowerShell module.
+   Pester tests related to the Windows.Setting.Accessibility PowerShell module.
 #>
 
 BeforeAll {
-   Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
-   Import-Module Microsoft.Windows.Accessibility
+    Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    Import-Module Microsoft.Windows.Accessibility
 
-   # Create test registry path.
-   New-Item -Path TestRegistry:\ -Name TestKey
-   # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
-   $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
+    # Create test registry path.
+    New-Item -Path TestRegistry:\ -Name TestKey
+    # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
+    $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
 }
 
 Describe 'List available DSC resources' {
@@ -47,6 +48,7 @@ Describe 'Text' {
     It 'Sets desired value' {
         # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
         $desiredTextSize = [TextSize](Get-Random -Maximum 4 -Minimum 1)
+
         $desiredState = @{ Size = $desiredTextSize }
       
         Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
@@ -74,6 +76,7 @@ Describe 'Magnifier' {
     It 'Sets desired value' {
         # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
         $desiredMagnification = [MagnificationValue](Get-Random -Maximum 4 -Minimum 1)
+
         $desiredState = @{ Magnification = $desiredMagnification }
       
         Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
@@ -101,6 +104,7 @@ Describe 'MousePointer' {
     It 'Sets desired value' {
         # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
         $desiredPointerSize = [PointerSize](Get-Random -Maximum 4 -Minimum 1)
+
         $desiredState = @{ PointerSize = $desiredPointerSize }
       
         Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
@@ -139,5 +143,5 @@ Describe 'DynamicScrollbar'{
 }
 
 AfterAll {
-   $env:TestRegistryPath = ""
+    $env:TestRegistryPath = ""
 }

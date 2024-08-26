@@ -127,7 +127,7 @@ class Magnifier {
                 default { [MagnificationValue]::KeepCurrentValue }
             }
             
-            $currentState.Magnification = $currentMagnification
+            $currentState.Magnification = $currentMagnification 
         }
 
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty)) {
