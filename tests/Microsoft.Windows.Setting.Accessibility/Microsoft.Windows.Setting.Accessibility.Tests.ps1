@@ -50,9 +50,9 @@ Describe 'Text' {
         $desiredTextSize = [TextSize](Get-Random -Maximum 4 -Minimum 1)
 
         $desiredState = @{ Size = $desiredTextSize }
-      
+
         Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
-   
+
         $finalState = Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.Size | Should -Be $desiredTextSize
     }
@@ -78,9 +78,9 @@ Describe 'Magnifier' {
         $desiredMagnification = [MagnificationValue](Get-Random -Maximum 4 -Minimum 1)
 
         $desiredState = @{ Magnification = $desiredMagnification }
-      
+
         Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
-   
+
         $finalState = Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.Magnification | Should -Be $desiredMagnification
     }
@@ -106,9 +106,9 @@ Describe 'MousePointer' {
         $desiredPointerSize = [PointerSize](Get-Random -Maximum 4 -Minimum 1)
 
         $desiredState = @{ PointerSize = $desiredPointerSize }
-      
+
         Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
-   
+
         $finalState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.PointerSize | Should -Be $desiredPointerSize
     }
