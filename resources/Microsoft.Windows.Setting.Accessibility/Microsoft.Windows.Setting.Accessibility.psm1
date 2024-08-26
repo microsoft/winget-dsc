@@ -29,7 +29,7 @@ enum PointerSize {
 }
 
 enum BinaryState {
-    KeepCurrentValue = -1
+	KeepCurrentValue = -1
 	Enabled = 0
 	Disabled = 1
 }
