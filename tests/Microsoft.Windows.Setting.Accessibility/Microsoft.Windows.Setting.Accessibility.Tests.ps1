@@ -1,26 +1,51 @@
-
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 using module Microsoft.Windows.Setting.Accessibility
-
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+<#
+.Synopsis
+   Pester tests related to the Microsoft.WinGet.Developer PowerShell module.
+#>
+BeforeAll {
+   Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+   Import-Module Microsoft.Windows.Accessibility
+   # Create test registry path.
+   New-Item -Path TestRegistry:\ -Name TestKey
+   # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
+   $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
+}
 
+Describe 'TransparencyEffects'{
+   It 'Keeps current value.'{
+      $initialState = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+
+      $parameters = @{ TransparencyEnabledSetting = 'KeepCurrentValue' }
+
+      $testResult = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.TransparencyEnabledSetting | Sho
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+using module Microsoft.Windows.Setting.Accessibility
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 <#
 .Synopsis
    Pester tests related to the Microsoft.Windows.Setting.Accessibility PowerShell module.
 #>
-
 BeforeAll {
     Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
     Import-Module Microsoft.Windows.Setting.Accessibility
-
     # Create test registry path.
     New-Item -Path TestRegistry:\ -Name TestKey
     # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
     $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
 }
-
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
         $expectedDSCResources = "Text", "Magnifier", "MousePointer"
@@ -29,26 +54,20 @@ Describe 'List available DSC resources' {
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
-
 Describe 'Text' {
     It 'Keeps current value.' {
         $initialState = Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-
         $parameters = @{ Size = 'KeepCurrentValue' }
-
         $testResult = Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $true
-
         # Invoking set should not change these values.
         Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
         $finalState = Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.Size | Should -Be $initialState.Size
     }
-
     It 'Sets desired value' {
         # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
         $desiredTextSize = [TextSize](Get-Random -Maximum 4 -Minimum 1)
-
         $desiredState = @{ Size = $desiredTextSize }
       
         Invoke-DscResource -Name Text -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
@@ -57,26 +76,20 @@ Describe 'Text' {
         $finalState.Size | Should -Be $desiredTextSize
     }
 }
-
 Describe 'Magnifier' {
     It 'Keeps current value.' {
         $initialState = Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-
         $parameters = @{ Magnification = 'KeepCurrentValue' }
-
         $testResult = Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $true
-
         # Invoking set should not change these values.
         Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
         $finalState = Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.Magnification | Should -Be $initialState.Magnification
     }
-
     It 'Sets desired value' {
         # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
         $desiredMagnification = [MagnificationValue](Get-Random -Maximum 4 -Minimum 1)
-
         $desiredState = @{ Magnification = $desiredMagnification }
       
         Invoke-DscResource -Name Magnifier -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
@@ -85,26 +98,20 @@ Describe 'Magnifier' {
         $finalState.Magnification | Should -Be $desiredMagnification
     }
 }
-
 Describe 'MousePointer' {
     It 'Keeps current value.' {
         $initialState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-
         $parameters = @{ PointerSize = 'KeepCurrentValue' }
-
         $testResult = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $true
-
         # Invoking set should not change these values.
         Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
         $finalState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.PointerSize | Should -Be $initialState.PointerSize
     }
-
     It 'Sets desired value' {
         # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
         $desiredPointerSize = [PointerSize](Get-Random -Maximum 4 -Minimum 1)
-
         $desiredState = @{ PointerSize = $desiredPointerSize }
       
         Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
@@ -115,24 +122,33 @@ Describe 'MousePointer' {
 }
 
 Describe 'DynamicScrollbar'{
+   It 'Keeps current value.'{
+      $initialState = Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
 
+      $parameters = @{ DynamicScrollbarState = 'KeepCurrentValue' }
+
+      $testResult = Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+      $testResult.InDesiredState | Should -Be $true
+
+      # Invoking set should not change these values.
+      Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState.DynamicScrollbarState | Should -Be $initialState.DynamicScrollbarState
+   }
    It 'Sets desired value.'{
-      $initialState= @{ Show = $false }
-      Invoke-DscResource -Name Scrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $testingState
-
       # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
-      $desiredScrollbarBehavior = [Scrollbar](Get-Random -Maximum 2 -Minimum 1)
+      $desiredScrollbarBehavior = [DynamicScrollbar](Get-Random -Maximum 2 -Minimum 1)
 
       $desiredState = @{ Show = $desiredScrollbarBehavior }
 
-      Invoke-DscResource -Name Scrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+      Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name Scrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+      $finalState = Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
       $finalState.ShowScrollbar | Should -Be $desiredScrollbarBehavior
-	  
+
    }
 }
 
 AfterAll {
-    $env:TestRegistryPath = ""
+   $env:TestRegistryPath = ""
 }

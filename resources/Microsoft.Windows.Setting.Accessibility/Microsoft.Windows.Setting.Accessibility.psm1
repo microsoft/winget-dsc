@@ -28,13 +28,17 @@ enum PointerSize {
     ExtraLarge
 }
 
+enum BinaryState {
+    KeepCurrentValue = -1
+	Enabled = 0
+	Disabled = 1
+}
 
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
     $global:ControlPanelAccessibilityRegistryPath= 'HKCU:\Control Panel\Accessibility\'
-
 }
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
@@ -111,7 +115,7 @@ class Magnifier {
 
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.Magnification)) {
             $currentState.Magnification = [MagnificationValue]::None
-            $currentState.MagnificationLevel = 0         
+            $currentState.MagnificationLevel = 0
         }
         else {
             $currentState.MagnificationLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty).Magnification
@@ -122,15 +126,15 @@ class Magnifier {
                 300 { [MagnificationValue]::High }
                 default { [MagnificationValue]::KeepCurrentValue }
             }
-            
-            $currentState.Magnification = $currentMagnification 
+
+            $currentState.Magnification = $currentMagnification
         }
 
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty)) {
             $currentState.ZoomIncrement = 25
             $currentState.ZoomIncrementLevel = 25
         }
-        else {            
+        else {
             $currentState.ZoomIncrementLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement
             $currentState.ZoomIncrement = $currentState.ZoomIncrementLevel
         }
@@ -147,40 +151,30 @@ class Magnifier {
             return $false
         }
 
-        return $true
+        return $false
     }
 
     [void] Set() {
-        if ($this.Test())
-        {
-            return
-        }
-
-        if (-not (Test-Path -Path $global:MagnifierRegistryPath))
-        {
-            New-Item -Path $global:MagnifierRegistryPath -Force | Out-Null
-        }
-
-        if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue)
-        {
-            $desiredMagnification = switch ([MagnificationValue]($this.Magnification))
-            {
+        if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue) {
+            $desiredMagnification = switch ([MagnificationValue]($this.Magnification)) {
                 None { 0 }
                 Low { 100 }
                 Medium { 200 }
                 High { 300 }
             }
 
+            if (-not (Test-Path -Path $global:MagnifierRegistryPath)) {
+                New-Item -Path $global:MagnifierRegistryPath -Force | Out-Null
+            }
+
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty -Value $desiredMagnification -Type DWORD
         }
 
-        if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement)
-        {
+        if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement) {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
         }
 
-        if (($this.StartMagnify) -and (($null -eq (Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue))))
-        {
+        if (($this.StartMagnify) -and (($null -eq (Get-Process -Name 'Magnify' -ErrorAction SilentlyContinue)))) {
             Start-Process "C:\Windows\System32\Magnify.exe"
         }
     }
@@ -195,7 +189,7 @@ class MousePointer {
 
     [MousePointer] Get() {
         $currentState = [MousePointer]::new()
-        
+
         if (-not(DoesRegistryKeyPropertyExist -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty)) {
             $currentState.PointerSize = [PointerSize]::Normal
             $currentState.PointerSizeValue = '32'
@@ -203,14 +197,14 @@ class MousePointer {
         else {
             $currentState.PointerSizeValue = (Get-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty).CursorBaseSize
             $currentSize = switch ($currentState.PointerSizeValue) {
-                '32' { [PointerSize]::Normal }               
+                '32' { [PointerSize]::Normal }
                 '96' { [PointerSize]::Medium }
                 '144' { [PointerSize]::Large }
                 '256' { [PointerSize]::ExtraLarge }
                 default { [PointerSize]::KeepCurrentValue }
             }
-            
-            $currentState.PointerSize = $currentSize            
+
+            $currentState.PointerSize = $currentSize
         }
 
         return $currentState
@@ -238,58 +232,39 @@ class MousePointer {
                 New-Item -Path $global:PointerRegistryPath -Force | Out-Null
             }
 
-            Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
-            
+            Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize
+
         }
     }
 }
 
 [DSCResource()]
-class Scrollbar {
+class DynamicScrollbar {
+    [DscProperty(Key)] [BinaryState] $DynamicScrollbarState = [BinaryState]::KeepCurrentValue
+    hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    [DynamicScrollbar] Get() {
+        $currentState = [DynamicScrollbar]::new()
 
-    [DscProperty(Key)] [Bool] $Show = $false
-
-
-
-    hidden [string] $DynamicScrollbarProperty = 'DynamicScrollbar'
-
-    [Scrollbar] Get() {
-
-        $currentState = [AlwaysShowScrollbar]::new()
-        
-		if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarProperty)) {
-            $currentState.Show = $false        
-        } else {
-			$dynamicScrollbarValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarProperty).DynamicScrollbar
-			$currentState.Show = ($dynamicScrollbarValue -eq 0) ? $true : $false
-
-				
+		if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty)) {
+			$ShowBars = [BinaryState]::Disabled
+		} else {
+			$currentState.DynamicScrollbarState = [BinaryState].getEnumName((Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars)
 		}
-		
-        return $currentState
-    }
-
+		return $currentState
+	}
     [bool] Test() {
         $currentState = $this.Get()
-        if ($this.Show -ne $currentState.Show) {
+        if ($this.DynamicScrollbarState -ne [BinaryState]::KeepCurrentValue -and $this.DynamicScrollbarState -ne $currentState.DynamicScrollbarState) {
             return $false
         }
-
-
         return $true
     }
-
     [void] Set() {
-        if ($this.Test() -ne $true) {        
-            $desiredState = $this.Show ? 0 : 1
-        }
-
-
-            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath)) {
-                New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
+        if ($this.DynamicScrollbarState -ne [BinaryState]::KeepCurrentValue) {
+            if (-not (Test-Path -Path $global:PointerRegistryPath)) {
+                New-Item -Path $global:PointerRegistryPath -Force | Out-Null
             }
-
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarProperty -Value $desiredState
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $this.DynamicScrollbarState
         }
     }
 }
