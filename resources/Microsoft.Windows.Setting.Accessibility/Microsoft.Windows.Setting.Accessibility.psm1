@@ -29,9 +29,9 @@ enum PointerSize {
 }
 
 enum BinaryState {
-	KeepCurrentValue = -1
-	Enabled = 0
-	Disabled = 1
+    KeepCurrentValue = -1
+    Enabled = 0
+    Disabled = 1
 }
 
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
