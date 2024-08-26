@@ -10,7 +10,7 @@
     Description = 'DSC Module for Windows Accessibility'
     PowerShellVersion = '7.2'
     DscResourcesToExport = @(
-        'Text',
+        'Text',       
         'Magnifier',
         'MousePointer',
         'DynamicScrollbar'
@@ -19,12 +19,12 @@
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags = @(
-                'PSDscResource_Text',     
+                'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
                 'PSDscResource_MousePointer',
                 'PSDscResource_DynamicScrollbar'
             )
-
+    
             # Prerelease string of this module
             Prerelease = 'alpha'
         }
