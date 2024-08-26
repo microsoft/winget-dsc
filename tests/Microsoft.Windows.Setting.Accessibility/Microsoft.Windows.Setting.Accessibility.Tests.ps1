@@ -8,12 +8,12 @@ Set-StrictMode -Version Latest
 
 <#
 .Synopsis
-   Pester tests related to the Windows.Setting.Accessibility PowerShell module.
+   Pester tests related to the Microsoft.Windows.Setting.Accessibility PowerShell module.
 #>
 
 BeforeAll {
     Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
-    Import-Module Microsoft.Windows.Accessibility
+    Import-Module Microsoft.Windows.Setting.Accessibility
 
     # Create test registry path.
     New-Item -Path TestRegistry:\ -Name TestKey
