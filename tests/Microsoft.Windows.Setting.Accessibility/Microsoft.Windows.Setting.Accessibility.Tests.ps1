@@ -23,9 +23,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer"
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect"
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 3
+        $availableDSCResources.length | Should -Be 4
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -114,32 +114,26 @@ Describe 'MousePointer' {
     }
 }
 
-Describe 'DynamicScrollbar'{
-   It 'Keeps current value.'{
-      $initialState = Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+Describe 'VisualEffect'{
+    It 'AlwaysShowScrollbars.'{
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ AlwaysShowScrollbars = $false }
 
-      $parameters = @{ DynamicScrollbarState = 'KeepCurrentValue' }
+        $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.AlwaysShowScrollbars | Should -Be $false
 
-      $testResult = Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
-      $testResult.InDesiredState | Should -Be $true
+        # Set 'AlwaysShowScrollbars' to true.
+        $parameters = @{ AlwaysShowScrollbars = $true }
+        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
 
-      # Invoking set should not change these values.
-      Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-      $finalState.DynamicScrollbarState | Should -Be $initialState.DynamicScrollbarState
-   }
-   It 'Sets desired value.'{
-      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
-      $desiredScrollbarBehavior = [DynamicScrollbar](Get-Random -Maximum 2 -Minimum 1)
+        # Verify the changes are correct.
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.AlwaysShowScrollbars | Should -Be $true
 
-      $desiredState = @{ Show = $desiredScrollbarBehavior }
-
-      Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
-
-      $finalState = Invoke-DscResource -Name DynamicScrollbar -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-      $finalState.ShowScrollbar | Should -Be $desiredScrollbarBehavior
-
-   }
+        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
 }
 
 AfterAll {

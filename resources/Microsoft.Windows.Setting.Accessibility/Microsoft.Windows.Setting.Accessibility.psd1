@@ -13,7 +13,7 @@
         'Text',       
         'Magnifier',
         'MousePointer',
-        'DynamicScrollbar'
+        'VisualEffect'
     )
     PrivateData = @{
         PSData = @{
@@ -22,7 +22,7 @@
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
                 'PSDscResource_MousePointer',
-                'PSDscResource_DynamicScrollbar'
+                'PSDscResource_VisualEffect'
             )
     
             # Prerelease string of this module
