@@ -94,3 +94,20 @@ extends:
             testResultsFormat: "NUnit"
             testResultsFiles: "**/Test*.xml"
             failTaskOnFailedTests: true
+
+        - task: PowerShell@2
+          displayName: "Run PSScriptAnalyzer for DSC modules"
+          inputs:
+            pwsh: true
+            targetType: "inline"
+            script: |
+              Invoke-ScriptAnalyzer -Path *.ps1 -Recurse -Outvariable issues
+              $errors   = $issues.Where({$_.Severity -eq 'Error'})
+              $warnings = $issues.Where({$_.Severity -eq 'Warning'})
+              if ($errors)
+              {
+                  Write-Error "There were $($errors.Count) errors." -ErrorAction Stop
+              }
+              Write-Output "There were $($warnings.Count) warnings total."
+            workingDirectory: $(Build.SourcesDirectory)\resources\
+            ignoreLASTEXITCODE: true
