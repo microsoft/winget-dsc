@@ -28,12 +28,6 @@ enum PointerSize {
     ExtraLarge
 }
 
-enum BinaryState {
-    KeepCurrentValue = -1
-    Enabled = 0
-    Disabled = 1
-}
-
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
@@ -245,7 +239,6 @@ class MousePointer {
             }
 
             Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize
-
         }
     }
 }
