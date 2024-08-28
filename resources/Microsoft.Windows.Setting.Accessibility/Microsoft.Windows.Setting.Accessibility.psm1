@@ -267,7 +267,7 @@ class VisualEffect
         }
 
         return $currentState
-	}
+    }
 
     [bool] Test()
     {
