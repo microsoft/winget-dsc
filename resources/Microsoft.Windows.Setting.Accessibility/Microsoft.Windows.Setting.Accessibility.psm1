@@ -153,7 +153,7 @@ class Magnifier {
         {
             return
         }
-        
+
         if (-not (Test-Path -Path $global:MagnifierRegistryPath))
         {
             New-Item -Path $global:MagnifierRegistryPath -Force | Out-Null
@@ -256,17 +256,17 @@ class VisualEffect
     {
         $currentState = [VisualEffect]::new()
 
-		if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty))
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty))
         {
-			$currentState.AlwaysShowScrollbars = $false
-		}
+            $currentState.AlwaysShowScrollbars = $false
+        }
         else
         {
             $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
-			$currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
-		}
+            $currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
+        }
 
-		return $currentState
+        return $currentState
 	}
 
     [bool] Test()
