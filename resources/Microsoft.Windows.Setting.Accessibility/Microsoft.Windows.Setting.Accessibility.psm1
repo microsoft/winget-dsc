@@ -38,10 +38,11 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
+    $global:ControlPanelAccessibilityRegistryPath= 'HKCU:\Control Panel\Accessibility\'
     $global:AudioRegistryPath = 'HKCU:\Software\Microsoft\Multimedia\Audio\'
 }
 else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $env:TestRegistryPath
 }
 
 
@@ -113,7 +114,7 @@ class Magnifier {
     [Magnifier] Get() {
         $currentState = [Magnifier]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.Magnification)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty)) {
             $currentState.Magnification = [MagnificationValue]::None
             $currentState.MagnificationLevel = 0         
         }
@@ -178,7 +179,9 @@ class Magnifier {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty -Value $desiredMagnification -Type DWORD
         }
 
-        if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement)
+        $currentState = $this.Get()
+
+        if ($this.ZoomIncrement -ne $currentState.ZoomIncrement)
         {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
         }
@@ -242,61 +245,86 @@ class MousePointer {
                 New-Item -Path $global:PointerRegistryPath -Force | Out-Null
             }
 
-            Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
-            
+            Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize
         }
     }
 }
 
 [DSCResource()]
-class EnableMono {
-    [DscProperty(Key)] [Status] $MonoEnabledSetting = [Status]::KeepCurrentValue
+class VisualEffect
+{
+    # Key required. Do not set.
+    [DscProperty(Key)] [string] $SID
+    [DscProperty()] [bool] $AlwaysShowScrollbars = $false
+    [DscProperty()] [bool] $EnableMonoAudio = $false
 
-    hidden [string] $AudioEnableMonoSettingProperty = 'AccessibilityMonoMixState'
+    hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    hidden [string] $EnableMonoAudioProperty = 'AccessibilityMonoMixState'
 
-    [EnableMono] Get() {
-        $currentState = [EnableMono]::new()
+    [VisualEffect] Get()
+    {
+        $currentState = [VisualEffect]::new()
 
-		if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty)) {
-            $currentState.MonoEnabledSetting = [Status]::Disabled                
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty))
+        {
+            $currentState.AlwaysShowScrollbars = $false
+        }
+        else
+        {
+            $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
+            $currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
+        }
 
-        } else {
-			$AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty).AccessibilityMonoMixState 
-			$currentState.MonoEnabledSetting = switch ($AudioMonoSetting) {
-				0 { [Status]::Disabled }
-				1 { [Status]::Enabled }
-				default { [Status]::Disabled } #Key is missing by default.
-			 }
-
-		}
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty)) {
+        {
+            $currentState.EnableMonoAudio = $false
+        }
+        else
+        {
+            $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty).AccessibilityMonoMixState
+            $currentState.EnableMonoAudio = ($AudioMonoSetting -eq 0)
+        }
+        
         return $currentState
     }
 
-    [bool] Test() {
+    [bool] Test()
+    {
         $currentState = $this.Get()
-        if ($this.MonoEnabledSetting -ne [Status]::KeepCurrentValue -and $this.MonoEnabledSetting -ne $currentState.MonoEnabledSetting) {
+        if ($this.AlwaysShowScrollbars -ne $currentState.AlwaysShowScrollbars)
+        {
             return $false
         }
+        if ($this.EnableMonoAudio -ne $currentState.EnableMonoAudio)
+            return $false
+        }
+
 
         return $true
     }
 
-    [void] Set() {
-        if ($this.MonoEnabledSetting -ne [Status]::KeepCurrentValue) {
-            $desiredState = switch ([Status]($this.MonoEnabledSetting)) {
-                Disabled { '0' }
-                Enabled { '1' }
+    [void] Set()
+    {
+        if (-not $this.Test())
+        {
+            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath))
+            {
+                New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
-
-            if (-not (Test-Path -Path $global:AudioRegistryPath)) {
+            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath))
+            {
                 New-Item -Path $global:AudioRegistryPath -Force | Out-Null
             }
 
-            if (-not (DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty)) {
-				New-ItemProperty -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty -Value $desiredState -PropertyType DWord
+            if (-not (DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty)) {
+                New-ItemProperty -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty -Value $desiredState -PropertyType DWord
             }
 
-            Set-ItemProperty -Path $global:AudioRegistryPath -Name $this.AudioEnableMonoSettingProperty -Value $desiredState 
+            $dynamicScrollbarValue = $this.AlwaysShowScrollbars ? 0 : 1
+            $monoAudioValue = $this.EnableMonoAudio ? 0 : 1
+
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
+            Set-ItemProperty -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty -Value $desiredState 
         }
     }
 }

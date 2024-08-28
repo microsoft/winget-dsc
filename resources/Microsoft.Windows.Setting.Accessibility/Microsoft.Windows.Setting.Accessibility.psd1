@@ -13,6 +13,7 @@
         'Text',       
         'Magnifier',
         'MousePointer',   
+        'VisualEffect',
         'EnableMono'
     )
     PrivateData = @{
@@ -22,7 +23,9 @@
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
                 'PSDscResource_MousePointer', 
-                'PSDscResource_EnableMono'
+                'PSDscResource_MousePointer',
+                'PSDscResource_VisualEffect',
+                'PSDscResource_EnableMono',
             )
 
             # Prerelease string of this module
