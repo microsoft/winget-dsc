@@ -22,12 +22,11 @@
             Tags = @(
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
-                'PSDscResource_MousePointer', 
                 'PSDscResource_MousePointer',
                 'PSDscResource_VisualEffect',
                 'PSDscResource_EnableMono',
             )
-
+    
             # Prerelease string of this module
             Prerelease = 'alpha'
         }
