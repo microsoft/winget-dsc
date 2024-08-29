@@ -23,9 +23,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer"
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect"
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 3
+        $availableDSCResources.length | Should -Be 4
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -114,33 +114,46 @@ Describe 'MousePointer' {
     }
 }
 
-Describe 'MessageDuration'{
-   It 'Keeps current value.'{
-      $initialState = Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+Describe 'VisualEffect'{
+    It 'AlwaysShowScrollbars.'{
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ AlwaysShowScrollbars = $false }
 
-      $parameters = @{ MessageDurationSetting = 'KeepCurrentValue' }
+        $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.AlwaysShowScrollbars | Should -Be $false
 
-      $testResult = Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
-      $testResult.InDesiredState | Should -Be $true
+        # Set 'AlwaysShowScrollbars' to true.
+        $parameters = @{ AlwaysShowScrollbars = $true }
+        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
 
-      # Invoking set should not change these values.
-      Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-      $finalState.MessageDurationSetting | Should -Be $initialState.MessageDurationSetting
-   }
+        # Verify the changes are correct.
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.AlwaysShowScrollbars | Should -Be $true
 
-   It 'Sets desired value.'{
-      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
-      $desiredMessageDuration = [MessageDurationSetting](Get-Random -Maximum 2 -Minimum 1)
+        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+   It 'MessageDuration'{
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ MessageDurationInSeconds = $false }
 
-      $desiredState = @{ MessageDurationSetting = $desiredMessageDuration }
+        $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.MessageDurationInSeconds | Should -Be $false
 
-      Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+        # Set 'MessageDurationInSeconds' to true.
+        $parameters = @{ MessageDurationInSeconds = $true }
+        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
 
-      $finalState = Invoke-DscResource -Name MessageDuration -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-      $finalState.MessageDurationSetting | Should -Be $desiredMessageDuration
-	  
-   }
+        # Verify the changes are correct.
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.MessageDurationInSeconds | Should -Be $true
+
+        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+ 
 }
 
 AfterAll {

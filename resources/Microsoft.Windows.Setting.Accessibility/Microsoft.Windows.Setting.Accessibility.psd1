@@ -12,7 +12,8 @@
     DscResourcesToExport = @(
         'Text',       
         'Magnifier',
-        'MousePointer',   
+        'MousePointer',
+        'VisualEffect',
         'MessageDuration'
     )
     PrivateData = @{
@@ -21,7 +22,8 @@
             Tags = @(
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
-                'PSDscResource_MousePointer', 
+                'PSDscResource_MousePointer',
+                'PSDscResource_VisualEffect',
                 'PSDscResource_MessageDuration'
             )
 
