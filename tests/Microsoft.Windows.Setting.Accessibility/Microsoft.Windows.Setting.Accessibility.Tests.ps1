@@ -23,9 +23,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer"
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect"
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 3
+        $availableDSCResources.length | Should -Be 4
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -111,6 +111,28 @@ Describe 'MousePointer' {
 
         $finalState = Invoke-DscResource -Name MousePointer -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.PointerSize | Should -Be $desiredPointerSize
+    }
+}
+
+Describe 'VisualEffect'{
+    It 'AlwaysShowScrollbars.'{
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ AlwaysShowScrollbars = $false }
+
+        $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.AlwaysShowScrollbars | Should -Be $false
+
+        # Set 'AlwaysShowScrollbars' to true.
+        $parameters = @{ AlwaysShowScrollbars = $true }
+        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
+
+        # Verify the changes are correct.
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.AlwaysShowScrollbars | Should -Be $true
+
+        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
     }
 }
 
