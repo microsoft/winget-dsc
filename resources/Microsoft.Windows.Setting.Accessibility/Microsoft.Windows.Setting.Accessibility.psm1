@@ -293,7 +293,6 @@ class VisualEffect
             return $false
         }
 
-
         return $true
     }
 
