@@ -12,7 +12,7 @@
     DscResourcesToExport = @(
         'Text',       
         'Magnifier',
-        'MousePointer',   
+        'MousePointer',
         'VisualEffect',
         'EnableMono'
     )
@@ -24,7 +24,7 @@
                 'PSDscResource_Magnifier',
                 'PSDscResource_MousePointer',
                 'PSDscResource_VisualEffect',
-                'PSDscResource_EnableMono',
+                'PSDscResource_EnableMono'
             )
     
             # Prerelease string of this module
