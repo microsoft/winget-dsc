@@ -23,9 +23,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer"
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect"
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 3
+        $availableDSCResources.length | Should -Be 4
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -114,33 +114,45 @@ Describe 'MousePointer' {
     }
 }
 
-Describe 'TransparencyEffects'{
-   It 'Keeps current value.'{
-      $initialState = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+Describe 'VisualEffect'{
+    It 'AlwaysShowScrollbars.'{
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ AlwaysShowScrollbars = $false }
 
-      $parameters = @{ TransparencyEnabledSetting = 'KeepCurrentValue' }
+        $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.AlwaysShowScrollbars | Should -Be $false
 
-      $testResult = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
-      $testResult.InDesiredState | Should -Be $true
+        # Set 'AlwaysShowScrollbars' to true.
+        $parameters = @{ AlwaysShowScrollbars = $true }
+        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
 
-      # Invoking set should not change these values.
-      Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-      $finalState.TransparencyEnabledSetting | Should -Be $initialState.TransparencyEnabledSetting
-   }
+        # Verify the changes are correct.
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.AlwaysShowScrollbars | Should -Be $true
 
-   It 'Sets desired value.'{
-      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
-      $desiredTransparencyEnabledSetting = [TransparencyEnabledSetting](Get-Random -Maximum 2 -Minimum 1)
+        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+    It 'EnableTransparencyEffects.'{
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ EnableTransparencyEffects = $false }
 
-      $desiredState = @{ TransparencyEnabledSetting = $desiredTransparencyEnabledSetting }
+        $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.EnableTransparencyEffects | Should -Be $false
 
-      Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $desiredState
+        # Set 'EnableTransparencyEffects' to true.
+        $parameters = @{ EnableTransparencyEffects = $true }
+        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
 
-      $finalState = Invoke-DscResource -Name TransparencyEffects -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-      $finalState.TransparencyEnabledSetting | Should -Be $desiredTransparencyEnabledSetting
-	  
-   }
+        # Verify the changes are correct.
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.EnableTransparencyEffects | Should -Be $true
+
+        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
 }
 
 AfterAll {

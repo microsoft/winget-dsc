@@ -39,10 +39,11 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
+    $global:ControlPanelAccessibilityRegistryPath= 'HKCU:\Control Panel\Accessibility\'
     $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
 }
 else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $env:TestRegistryPath
 }
 
 
@@ -114,7 +115,7 @@ class Magnifier {
     [Magnifier] Get() {
         $currentState = [Magnifier]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.Magnification)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty)) {
             $currentState.Magnification = [MagnificationValue]::None
             $currentState.MagnificationLevel = 0         
         }
@@ -179,7 +180,9 @@ class Magnifier {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty -Value $desiredMagnification -Type DWORD
         }
 
-        if ($this.ZoomIncrement -ne (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement)
+        $currentState = $this.Get()
+
+        if ($this.ZoomIncrement -ne $currentState.ZoomIncrement)
         {
             Set-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty -Value $this.ZoomIncrement -Type DWORD
         }
@@ -243,8 +246,59 @@ class MousePointer {
                 New-Item -Path $global:PointerRegistryPath -Force | Out-Null
             }
 
-            Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize            
-            
+            Set-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty -Value $desiredSize
+        }
+    }
+}
+
+[DSCResource()]
+class VisualEffect
+{
+    # Key required. Do not set.
+    [DscProperty(Key)] [string] $SID
+    [DscProperty()] [bool] $AlwaysShowScrollbars = $false
+
+    hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+
+    [VisualEffect] Get()
+    {
+        $currentState = [VisualEffect]::new()
+
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty))
+        {
+            $currentState.AlwaysShowScrollbars = $false
+        }
+        else
+        {
+            $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
+            $currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
+        }
+
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        if ($this.AlwaysShowScrollbars -ne $currentState.AlwaysShowScrollbars)
+        {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set()
+    {
+        if (-not $this.Test())
+        {
+            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath))
+            {
+                New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
+            }
+
+            $dynamicScrollbarValue = $this.AlwaysShowScrollbars ? 0 : 1
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
         }
     }
 }

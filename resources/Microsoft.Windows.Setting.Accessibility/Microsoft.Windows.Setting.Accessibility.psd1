@@ -12,8 +12,8 @@
     DscResourcesToExport = @(
         'Text',       
         'Magnifier',
-        'MousePointer',   
-        'TransparencyEffects'
+        'MousePointer',
+        'VisualEffect'
     )
     PrivateData = @{
         PSData = @{
@@ -21,8 +21,8 @@
             Tags = @(
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
-                'PSDscResource_MousePointer', 
-                'PSDscResource_TransparencyEffects'
+                'PSDscResource_MousePointer',
+                'PSDscResource_VisualEffect'
             )
 
             # Prerelease string of this module
