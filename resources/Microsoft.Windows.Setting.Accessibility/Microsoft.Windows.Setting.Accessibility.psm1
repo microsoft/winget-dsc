@@ -270,13 +270,13 @@ class VisualEffect
             $currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
         }
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.TransparencySettingProperty)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty)) {
         {
             $currentState.TransparencyEffectsSetting = $false
         }
         else
         {
-            $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
+            $AudioMonoSetting = (Get-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
             $currentState.TransparencyEffectsSetting = ($AudioMonoSetting -eq 0)
         }
         
@@ -313,7 +313,7 @@ class VisualEffect
                 New-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty -Value $transparencyValue -PropertyType DWord
             }
             Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
-            Set-ItemProperty -Path $global:AudioRegistryPath -Name $this.TransparencySettingProperty -Value $transparencyValue 
+            Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty -Value $transparencyValue 
         }
     }
 }
