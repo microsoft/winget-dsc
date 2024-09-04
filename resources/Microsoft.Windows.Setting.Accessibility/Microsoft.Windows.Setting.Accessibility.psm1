@@ -28,22 +28,6 @@ enum PointerSize {
     ExtraLarge
 }
 
-enum MessageDurationSeconds {
-    KeepCurrentValue
-	fiveSeconds = 5
-	sevenSeconds = 7
-	fifteenSeconds = 15
-	thirtySeconds = 30
-	oneMinute = 60
-	fiveMinutes = 300
-}
-
-enum BinarySettingState {
-    KeepCurrentValue
-	Enabled
-	Disabled
-}
-
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
