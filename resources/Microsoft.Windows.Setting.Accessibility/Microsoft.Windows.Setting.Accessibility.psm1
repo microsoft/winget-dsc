@@ -28,7 +28,6 @@ enum PointerSize {
     ExtraLarge
 }
 
-
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
@@ -317,9 +316,6 @@ class VisualEffect
         }
     }
 }
-
-
-
 
 #region Functions
 function DoesRegistryKeyPropertyExist {
