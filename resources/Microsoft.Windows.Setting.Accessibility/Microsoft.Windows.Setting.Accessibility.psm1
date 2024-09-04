@@ -28,12 +28,6 @@ enum PointerSize {
     ExtraLarge
 }
 
-enum Status {
-    KeepCurrentValue
-	Enabled
-	Disabled
-}
-
 
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
@@ -43,7 +37,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
 }
 else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:PersonalizationRegistryPath = $env:TestRegistryPath
 }
 
 
@@ -257,8 +251,10 @@ class VisualEffect
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [bool] $AlwaysShowScrollbars = $false
+    [DscProperty()] [bool] $TransparencyEffectsSetting = $false
 
     hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    hidden [string] $TransparencySettingProperty = 'EnableTransparency'
 
     [VisualEffect] Get()
     {
@@ -274,6 +270,16 @@ class VisualEffect
             $currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
         }
 
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.TransparencySettingProperty)) {
+        {
+            $currentState.TransparencyEffectsSetting = $false
+        }
+        else
+        {
+            $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
+            $currentState.TransparencyEffectsSetting = ($AudioMonoSetting -eq 0)
+        }
+        
         return $currentState
     }
 
@@ -282,6 +288,9 @@ class VisualEffect
         $currentState = $this.Get()
         if ($this.AlwaysShowScrollbars -ne $currentState.AlwaysShowScrollbars)
         {
+            return $false
+        }
+        if ($this.TransparencyEffectsSetting -ne $currentState.TransparencyEffectsSetting)
             return $false
         }
 
@@ -298,61 +307,19 @@ class VisualEffect
             }
 
             $dynamicScrollbarValue = $this.AlwaysShowScrollbars ? 0 : 1
+            $transparencyValue = $this.TransparencyEffectsSetting ? 0 : 1
+
+            if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty)) {
+                New-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty -Value $transparencyValue -PropertyType DWord
+            }
             Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
+            Set-ItemProperty -Path $global:AudioRegistryPath -Name $this.TransparencySettingProperty -Value $transparencyValue 
         }
     }
 }
 
-[DSCResource()]
-class TransparencyEffects {
-    [DscProperty(Key)] [BinarySettingState] $TransparencyEffectsSetting = [BinarySettingState]::KeepCurrentValue
 
-    hidden [string] $TransparencySettingProperty = 'EnableTransparency'
 
-    [TransparencyEffects] Get() {
-        $currentState = [TransparencyEffects]::new()
-        
-		if (-not(DoesRegistryKeyPropertyExist -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty)) {
-            $currentState.TransparencyEffectsSetting = [Status]::Disabled                
-
-        } else {
-			$TransparencySetting = (Get-ItemProperty -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
-			$currentState.TransparencyEffectsSetting = switch ($TransparencySetting) {
-				0 { [BinarySettingState]::Disabled }               
-				1 { [BinarySettingState]::Enabled }               
-				default { [BinarySettingState]::KeepCurrentValue }
-			}
-				
-		}
-		
-        return $currentState
-    }
-
-    [bool] Test() {
-        $currentState = $this.Get()
-        if ($this.TransparencyEffectsSetting -ne [BinarySettingState]::KeepCurrentValue -and $this.TransparencyEffectsSetting -ne $currentState.TransparencyEffectsSetting) {
-            return $false
-        }
-
-        return $true
-    }
-
-    [void] Set() {
-        if ($this.TransparencyEffectsSetting -ne [BinarySettingState]::KeepCurrentValue) {
-            $desiredState = switch ([BinarySettingState]($this.TransparencyEffectsSetting)) {
-                Disabled { '1' }
-                Enabled { '0' }
-            }
-
-            if (-not (Test-Path -Path $global:PersonalizationRegistryPath)) {
-                New-Item -Path $global:PersonalizationRegistryPath -Force | Out-Null
-            }
-
-            Set-ItemProperty -Path $global:TransparencyEffectsRegistryPath -Name $this.TransparencySettingProperty -Value $desiredState            
-            
-        }
-    }
-}
 
 #region Functions
 function DoesRegistryKeyPropertyExist {
