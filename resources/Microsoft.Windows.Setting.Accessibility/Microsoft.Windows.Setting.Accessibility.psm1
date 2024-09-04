@@ -265,8 +265,10 @@ class VisualEffect
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [bool] $AlwaysShowScrollbars = $false
+    [DscProperty()] [int] $MessageDurationSeconds = 5
 
     hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    hidden [string] $MessageDurationProperty = 'MessageDuration'
 
     [VisualEffect] Get()
     {
@@ -282,6 +284,16 @@ class VisualEffect
             $currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
         }
 
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.MessageDurationProperty)) {
+        {
+            $currentState.MessageDurationSeconds = $false
+        }
+        else
+        {
+            $AudioMonoSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.MessageDurationProperty).AccessibilityMonoMixState
+            $currentState.MessageDurationSeconds = ($AudioMonoSetting -eq 0)
+        }
+        
         return $currentState
     }
 
@@ -290,6 +302,9 @@ class VisualEffect
         $currentState = $this.Get()
         if ($this.AlwaysShowScrollbars -ne $currentState.AlwaysShowScrollbars)
         {
+            return $false
+        }
+        if ($this.MessageDurationSeconds -ne $currentState.MessageDurationSeconds)
             return $false
         }
 
@@ -304,60 +319,29 @@ class VisualEffect
             {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
-
-            $dynamicScrollbarValue = $this.AlwaysShowScrollbars ? 0 : 1
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
-        }
-    }
-}
-
-[DSCResource()]
-class MessageDuration {
-    [DscProperty(Key)] [MessageDurationSeconds] $MessageDurationSetting = [MessageDurationSeconds]::KeepCurrentValue
-
-    hidden [string] $MessageDurationProperty = 'MessageDuration'
-
-    [MessageDuration] Get() {
-        $currentState = [MessageDuration]::new()
-        
-		if (-not(DoesRegistryKeyPropertyExist -Path $global:MessageDurationRegistryPath -Name $this.MessageDurationProperty)) {
-            $MessageSetting = [MessageDurationSeconds]::fiveSeconds
-        } else {
-			$MessageSetting = (Get-ItemProperty -Path $global:MessageDurationRegistryPath -Name $this.MessageDurationProperty).MessageDuration
-			$currentState.MessageDurationSetting = switch ($MessageSetting) {
-				5 { [MessageDurationSeconds]::fiveSeconds }
-				7 { [MessageDurationSeconds]::sevenSeconds }
-				15 { [MessageDurationSeconds]::fifteenSeconds }
-				30 { [MessageDurationSeconds]::thirtySeconds }
-				60 { [MessageDurationSeconds]::oneMinute }
-				300 { [MessageDurationSeconds]::fiveMinutes }
-				default { [MessageDurationSeconds]::KeepCurrentValue }
-			}
-				
-		}
-		
-        return $currentState
-    }
-
-    [bool] Test() {
-        $currentState = $this.Get()
-        if ($this.MessageDurationSetting -ne [MessageDurationSeconds]::KeepCurrentValue -and $this.MessageDurationSetting -ne $currentState.MessageDurationSetting) {
-            return $false
-        }
-
-        return $true
-    }
-
-    [void] Set() {
-        if ($this.MessageDurationSetting -ne [MessageDurationSeconds]::KeepCurrentValue) {
-            $desiredState = [MessageDurationSeconds]($this.MessageDurationSetting)
-
-            if (-not (Test-Path -Path $global:PointerRegistryPath)) {
-                New-Item -Path $global:PointerRegistryPath -Force | Out-Null
+            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath))
+            {
+                New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
 
-            Set-ItemProperty -Path $global:MessageDurationRegistryPath -Name $this.MessageDurationProperty -Value $desiredState            
-            
+            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath )) {
+                New-Item -Path $global:ControlPanelAccessibilityRegistryPath  -Force | Out-Null
+            }
+
+            $dynamicScrollbarValue = $this.AlwaysShowScrollbars ? 0 : 1
+            $five = 5
+            $300 = 300
+            if ($this.MessageDurationSeconds -lt $five) {
+                $this.MessageDurationSeconds = $five
+                Write-Output "Valid values are 5-300. Setting to $five seconds."
+            }
+            if ($this.MessageDurationSeconds -gt $300) {
+                $this.MessageDurationSeconds = $300
+                Write-Output "Valid values are 5-300. Setting to $300 seconds."
+            }
+
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.MessageDurationProperty -Value $this.MessageDurationSeconds
         }
     }
 }
