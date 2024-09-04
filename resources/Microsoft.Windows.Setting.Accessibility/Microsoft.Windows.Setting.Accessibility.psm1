@@ -211,7 +211,7 @@ class MousePointer {
         else {
             $currentState.PointerSizeValue = (Get-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty).CursorBaseSize
             $currentSize = switch ($currentState.PointerSizeValue) {
-                '32' { [PointerSize]::Normal }               
+                '32' { [PointerSize]::Normal }                
                 '96' { [PointerSize]::Medium }
                 '144' { [PointerSize]::Large }
                 '256' { [PointerSize]::ExtraLarge }
