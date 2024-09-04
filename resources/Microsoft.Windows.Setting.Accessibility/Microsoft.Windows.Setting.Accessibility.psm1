@@ -276,8 +276,8 @@ class VisualEffect
         }
         else
         {
-            $AudioMonoSetting = (Get-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
-            $currentState.TransparencyEffectsSetting = ($AudioMonoSetting -eq 0)
+            $TransparencySetting = (Get-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
+            $currentState.TransparencyEffectsSetting = ($TransparencySetting -eq 0)
         }
         
         return $currentState
