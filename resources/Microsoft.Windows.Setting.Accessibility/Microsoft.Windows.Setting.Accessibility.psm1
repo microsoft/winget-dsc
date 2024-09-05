@@ -252,8 +252,8 @@ class VisualEffect
     [DscProperty()] [bool] $AlwaysShowScrollbars = $false
     [DscProperty()] [bool] $EnableMonoAudio = $false
 
-    hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
-    hidden [string] $EnableMonoAudioProperty = 'AccessibilityMonoMixState'
+    static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    static hidden [string] $EnableMonoAudioProperty = 'AccessibilityMonoMixState'
 
     [VisualEffect] Get()
     {
