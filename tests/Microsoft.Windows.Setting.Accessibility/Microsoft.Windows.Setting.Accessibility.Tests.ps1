@@ -162,7 +162,6 @@ Describe 'Audio'{
     }
 }
 
-
 AfterAll {
     $env:TestRegistryPath = ""
 }
