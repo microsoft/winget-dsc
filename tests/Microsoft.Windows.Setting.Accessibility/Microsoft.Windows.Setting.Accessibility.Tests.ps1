@@ -12,7 +12,11 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    if ($null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration))
+    {
+        Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    }
+    
     Import-Module Microsoft.Windows.Setting.Accessibility
 
     # Create test registry path.

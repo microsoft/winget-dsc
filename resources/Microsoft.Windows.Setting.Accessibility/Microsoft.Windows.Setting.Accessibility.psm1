@@ -255,21 +255,25 @@ class VisualEffect
     static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
     static hidden [string] $EnableMonoAudioProperty = 'AccessibilityMonoMixState'
 
-    [VisualEffect] Get()
+    static [bool] GetShowDynamicScrollbarsStatus()
     {
-        $currentState = [VisualEffect]::new()
-
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty))
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::DynamicScrollbarsProperty))
         {
-            $currentState.AlwaysShowScrollbars = $false
+            return $false
         }
         else
         {
-            $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
-            $currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
-        }
+            $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::DynamicScrollbarsProperty).DynamicScrollbars
+            return ($dynamicScrollbarsValue -eq 0)
+        }        
+    }
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty)) {
+    [VisualEffect] Get()
+    {
+        $currentState = [VisualEffect]::new()
+        $currentState = [VisualEffect]::GetShowDynamicScrollbarsStatus()
+
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty))
         {
             $currentState.EnableMonoAudio = $false
         }
@@ -289,7 +293,9 @@ class VisualEffect
         {
             return $false
         }
+
         if ($this.EnableMonoAudio -ne $currentState.EnableMonoAudio)
+        {
             return $false
         }
 
@@ -309,15 +315,11 @@ class VisualEffect
                 New-Item -Path $global:AudioRegistryPath -Force | Out-Null
             }
 
-            if (-not (DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty)) {
-                New-ItemProperty -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty -Value $desiredState -PropertyType DWord
-            }
-
-            $dynamicScrollbarValue = $this.AlwaysShowScrollbars ? 0 : 1
-            $monoAudioValue = $this.EnableMonoAudio ? 0 : 1
+            $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
+            $monoAudioValue = if ($this.EnableMonoAudio) { 0 } else { 1 }
 
             Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
-            Set-ItemProperty -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty -Value $desiredState 
+            Set-ItemProperty -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty -Value $monoAudioValue 
         }
     }
 }
