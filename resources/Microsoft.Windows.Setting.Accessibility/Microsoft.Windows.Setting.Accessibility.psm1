@@ -314,7 +314,7 @@ class VisualEffect
             {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
-			
+            
             $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
             $transparencyValue = if ($this.TransparencyEffectsSetting) { 0 } else { 1 }
 			
