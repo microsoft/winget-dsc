@@ -313,15 +313,15 @@ class VisualEffect
             }
 
             $dynamicScrollbarValue = $this.AlwaysShowScrollbars ? 0 : 1
-            $dynamicScrollbarLowerValue = 5
-            $dynamicScrollbarUpperValue = 300
-            if ($this.MessageDurationSeconds -lt $dynamicScrollbarLowerValue) {
-                $this.MessageDurationSeconds = $dynamicScrollbarLowerValue
-                Write-Output "Valid values are $dynamicScrollbarLowerValue-$dynamicScrollbarUpperValue. Setting to $dynamicScrollbarLowerValue seconds."
+            $MessageDurationSecondsLowerValue = 5
+            $MessageDurationSecondsUpperValue = 300
+            if ($this.MessageDurationSeconds -lt $MessageDurationSecondsLowerValue) {
+                $this.MessageDurationSeconds = $MessageDurationSecondsLowerValue
+                Write-Output "Valid values are $MessageDurationSecondsLowerValue-$MessageDurationSecondsUpperValue. Setting to $MessageDurationSecondsLowerValue seconds."
             }
-            if ($this.MessageDurationSeconds -gt $dynamicScrollbarUpperValue) {
-                $this.MessageDurationSeconds = $dynamicScrollbarUpperValue
-                Write-Output "Valid values are $dynamicScrollbarLowerValue-$dynamicScrollbarUpperValue. Setting to $dynamicScrollbarUpperValue seconds."
+            if ($this.MessageDurationSeconds -gt $MessageDurationSecondsUpperValue) {
+                $this.MessageDurationSeconds = $MessageDurationSecondsUpperValue
+                Write-Output "Valid values are $MessageDurationSecondsLowerValue-$MessageDurationSecondsUpperValue. Setting to $MessageDurationSecondsUpperValue seconds."
             }
 
             Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
