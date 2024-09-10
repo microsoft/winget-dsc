@@ -14,7 +14,6 @@ enum Ensure
 [DSCResource()]
 class VSCodeExtension
 {
-    # Key required. Do not set.
     [DscProperty(Key)]
     [string] $Name
 
@@ -29,9 +28,6 @@ class VSCodeExtension
 
     [VSCodeExtension] Get()
     {
-        # Get all installed extensions
-        # Check if visual studio code is installed.
-
         Assert-VSCode
 
         $currentState = [VSCodeExtension]::new()
@@ -52,7 +48,6 @@ class VSCodeExtension
         {
             if ($extension -eq $this.Name)
             {
-                # if version parameter is provided.
                 if ($null -ne $this.Version)
                 {
                     if ($this.Version -eq $currentState.InstalledExtensions[$this.Name])
@@ -106,7 +101,7 @@ class VSCodeExtension
 
 function Assert-VSCode
 {
-    # Refresh session $path value before invoking 'code'
+    # Refresh session $PATH value before invoking 'code.exe'.
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
     try
     {
