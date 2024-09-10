@@ -138,27 +138,30 @@ Describe 'VisualEffect'{
         $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
-    It 'EnableMonoAudio.'{
-        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ EnableMonoAudio = $false }
+}
 
-        $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+Describe 'Audio'{
+    It 'EnableMonoAudio.'{
+        Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ EnableMonoAudio = $false }
+
+        $initialState = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $initialState.EnableMonoAudio | Should -Be $false
 
         # Set 'EnableMonoAudio' to true.
         $parameters = @{ EnableMonoAudio = $true }
-        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $false
 
         # Verify the changes are correct.
-        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
-        $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.EnableMonoAudio | Should -Be $true
 
-        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2 = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
 }
-}
+
 
 AfterAll {
     $env:TestRegistryPath = ""
