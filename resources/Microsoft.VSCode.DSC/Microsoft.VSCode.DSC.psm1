@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-enum Ensure
+enum VSCodeEnsure
 {
     Absent
     Present
@@ -21,45 +21,34 @@ class VSCodeExtension
     [string] $Version
 
     [DscProperty()]
-    [Ensure] $Ensure = [Ensure]::Present
-
-    [DscProperty(NotConfigurable)]
-    [hashtable] $InstalledExtensions = @{}
+    [VSCodeEnsure] $Ensure = [VSCodeEnsure]::Present
 
     [VSCodeExtension] Get()
     {
-        Assert-VSCode
-
         $currentState = [VSCodeExtension]::new()
-        $currentState.Ensure = [Ensure]::Absent
+        $currentState.Ensure = [VSCodeEnsure]::Absent
         $currentState.Name = $this.Name
         $currentState.Version = $this.Version
+
+        $installedExtensions = @{}
         $extensionList = (Invoke-VSCode -Command "--list-extensions --show-versions") -Split [Environment]::NewLine
 
+        # Populate hash table with installed VSCode extensions.
         foreach ($extension in $extensionList)
         {
             $info = $extension -Split '@'
             $extensionName = $info[0]
             $extensionVersion = $info[1]
-            $currentState.InstalledExtensions[$extensionName] = $extensionVersion
+            $installedExtensions[$extensionName] = $extensionVersion
         }
 
-        foreach ($extension in $currentState.InstalledExtensions.Keys)
+        foreach ($extension in $installedExtensions.Keys)
         {
             if ($extension -eq $this.Name)
             {
-                if ($null -ne $this.Version)
-                {
-                    if ($this.Version -eq $currentState.InstalledExtensions[$this.Name])
-                    {
-                        $currentState.Ensure = [Ensure]::Present
-                    }
-                }
-                else
-                {
-                    $currentState.Ensure = [Ensure]::Present
-                }
-
+                $currentState.Ensure = [VSCodeEnsure]::Present
+                $currentState.Name = $extension
+                $currentState.Version = $installedExtensions[$extension]
                 break
             }
         }
@@ -70,7 +59,17 @@ class VSCodeExtension
     [bool] Test()
     {
         $currentState = $this.Get()
-        return $currentState.Ensure -eq $this.Ensure
+        if ($currentState.Ensure -ne $this.Ensure)
+        {
+            return $false
+        }
+
+        if ($null -ne $this.Version -and $this.Version -ne $currentState.Version)
+        {
+            return $false
+        }
+
+        return $true
     }
 
     [void] Set()
@@ -80,7 +79,7 @@ class VSCodeExtension
             return
         }
 
-        if ($this.Ensure -eq [Ensure]::Present)
+        if ($this.Ensure -eq [VSCodeEnsure]::Present)
         {
             $extensionArg = $this.Name
 
@@ -95,22 +94,6 @@ class VSCodeExtension
         {
             Invoke-VSCode -Command "--uninstall-extension $($this.Name)"
         }
-
-    }
-}
-
-function Assert-VSCode
-{
-    # Refresh session $PATH value before invoking 'code.exe'.
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-    try
-    {
-        Invoke-VSCode -Command '--help'
-        return
-    }
-    catch
-    {
-        throw "VSCode is not installed"
     }
 }
 
@@ -121,5 +104,12 @@ function Invoke-VSCode
         [string]$Command
     )
 
-    return Invoke-Expression -Command "code $Command"
+    try 
+    {
+        return Invoke-Expression "& `"$env:LocalAppData\Programs\Microsoft VS Code\bin\code.cmd`" $Command"
+    }
+    catch
+    {
+        throw "VSCode is not installed."
+    }
 }
