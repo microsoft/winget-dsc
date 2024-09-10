@@ -251,17 +251,17 @@ class VisualEffect
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [bool] $AlwaysShowScrollbars = $false
 
-    static hidden [string] $RegistryProperty = 'DynamicScrollbars'
+    static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
 
     static [bool] GetShowDynamicScrollbarsStatus()
     {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::RegistryProperty))
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::DynamicScrollbarsProperty))
         {
             return $false
         }
         else
         {
-            $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::RegistryProperty).[VisualEffect]::RegistryProperty
+            $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::DynamicScrollbarsProperty).[VisualEffect]::DynamicScrollbarsProperty
             return ($dynamicScrollbarsValue -eq 0)
         }        
     }
@@ -296,7 +296,7 @@ class VisualEffect
 
             $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
 
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::RegistryProperty -Value $dynamicScrollbarValue
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::DynamicScrollbarsProperty -Value $dynamicScrollbarValue
         }
     }
 }
@@ -308,17 +308,17 @@ class Audio
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [bool] $EnableMonoAudio = $false
 
-    static hidden [string] $RegistryProperty = 'AccessibilityMonoMixState'
+    static hidden [string] $EnableMonoAudioProperty = 'AccessibilityMonoMixState'
 
     static [bool] GetEnableMonoAudioStatus()
     {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name [Audio]::RegistryProperty))
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name [Audio]::EnableMonoAudioProperty))
         {
             return $false
         }
         else
         {
-            $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name [Audio]::RegistryProperty).[Audio]::RegistryProperty
+            $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name [Audio]::EnableMonoAudioProperty).[Audio]::EnableMonoAudioProperty
             return ($AudioMonoSetting -eq 0)
         }        
     }
@@ -353,7 +353,7 @@ class Audio
 
             $monoAudioValue = if ($this.EnableMonoAudio) { 0 } else { 1 }
 
-            Set-ItemProperty -Path $global:AudioRegistryPath -Name [Audio]::RegistryProperty -Value $monoAudioValue 
+            Set-ItemProperty -Path $global:AudioRegistryPath -Name [Audio]::EnableMonoAudioProperty -Value $monoAudioValue 
         }
     }
 }
