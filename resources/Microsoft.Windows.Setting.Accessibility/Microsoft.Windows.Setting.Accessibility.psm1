@@ -380,6 +380,65 @@ class Audio
 
             $monoAudioValue = if ($this.EnableMonoAudio) { 0 } else { 1 }
 
+            $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
+
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
+        }
+    }
+}
+
+[DSCResource()]
+class Audio
+{
+    # Key required. Do not set.
+    [DscProperty(Key)] [string] $SID
+    [DscProperty()] [bool] $EnableMonoAudio = $false
+
+    static hidden [string] $EnableMonoAudioProperty = 'AccessibilityMonoMixState'
+
+    static [bool] GetEnableMonoAudioStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty)).AccessibilityMonoMixState
+            return ($AudioMonoSetting -eq 0)
+        }        
+    }
+
+    [Audio] Get()
+    {
+        $currentState = [Audio]::new()
+        $currentState.EnableMonoAudio = [Audio]::GetEnableMonoAudioStatus()
+        
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        if ($this.EnableMonoAudio -ne $currentState.EnableMonoAudio)
+        {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set()
+    {
+        if (-not $this.Test())
+        {
+            if (-not (Test-Path -Path $global:AudioRegistryPath))
+            {
+                New-Item -Path $global:AudioRegistryPath -Force | Out-Null
+            }
+
+            $monoAudioValue = if ($this.EnableMonoAudio) { 0 } else { 1 }
+
             Set-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty) -Value $monoAudioValue 
         }
     }
