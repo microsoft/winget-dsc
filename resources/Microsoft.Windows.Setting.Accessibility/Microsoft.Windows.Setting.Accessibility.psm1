@@ -296,7 +296,7 @@ class VisualEffect
 
             $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
 
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::DynamicScrollbarsProperty -Value $dynamicScrollbarValue
         }
     }
 }
@@ -353,7 +353,7 @@ class Audio
 
             $monoAudioValue = if ($this.EnableMonoAudio) { 0 } else { 1 }
 
-            Set-ItemProperty -Path $global:AudioRegistryPath -Name $this.EnableMonoAudioProperty -Value $monoAudioValue 
+            Set-ItemProperty -Path $global:AudioRegistryPath -Name [Audio]::EnableMonoAudioProperty -Value $monoAudioValue 
         }
     }
 }

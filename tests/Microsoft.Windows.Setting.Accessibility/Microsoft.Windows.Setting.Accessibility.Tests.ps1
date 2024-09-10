@@ -27,9 +27,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect"
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect","Audio"
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 4
+        $availableDSCResources.length | Should -Be 5
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -161,6 +161,7 @@ Describe 'Audio'{
         $testResult2.InDesiredState | Should -Be $true
     }
 }
+
 
 AfterAll {
     $env:TestRegistryPath = ""
