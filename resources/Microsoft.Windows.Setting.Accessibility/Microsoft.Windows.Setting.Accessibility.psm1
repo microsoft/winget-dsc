@@ -33,10 +33,11 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
     $global:ControlPanelAccessibilityRegistryPath= 'HKCU:\Control Panel\Accessibility\'
+    $global:AudioRegistryPath = 'HKCU:\Software\Microsoft\Multimedia\Audio\'
     $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
 }
 else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:PersonalizationRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $env:TestRegistryPath
 }
 
 
@@ -252,33 +253,41 @@ class VisualEffect
     [DscProperty()] [bool] $AlwaysShowScrollbars = $false
     [DscProperty()] [bool] $TransparencyEffectsSetting = $false
 
-    hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
-    hidden [string] $TransparencySettingProperty = 'EnableTransparency'
+    static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    static hidden [string] $TransparencySettingProperty = 'EnableTransparency'
+
+    static [bool] GetShowDynamicScrollbarsStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty)).DynamicScrollbars
+            return ($dynamicScrollbarsValue -eq 0)
+        }        
+    }
+
+    static [bool] GetTransparencyStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $TransparencySetting = (Get-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty)).EnableTransparency
+            return ($TransparencySetting -eq 0)
+        }
+    }
 
     [VisualEffect] Get()
     {
         $currentState = [VisualEffect]::new()
+        $currentState.AlwaysShowScrollbars = [VisualEffect]::GetShowDynamicScrollbarsStatus()
+        $currentState.TransparencyEffectsSetting = [VisualEffect]::GetTransparencyStatus()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty))
-        {
-            $currentState.AlwaysShowScrollbars = $false
-        }
-        else
-        {
-            $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty).DynamicScrollbars
-            $currentState.AlwaysShowScrollbars = ($dynamicScrollbarsValue -eq 0)
-        }
-
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty)) {
-        {
-            $currentState.TransparencyEffectsSetting = $false
-        }
-        else
-        {
-            $TransparencySetting = (Get-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty).EnableTransparency
-            $currentState.TransparencyEffectsSetting = ($TransparencySetting -eq 0)
-        }
-        
         return $currentState
     }
 
@@ -290,6 +299,7 @@ class VisualEffect
             return $false
         }
         if ($this.TransparencyEffectsSetting -ne $currentState.TransparencyEffectsSetting)
+		{
             return $false
         }
 
@@ -304,15 +314,73 @@ class VisualEffect
             {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
-
-            $dynamicScrollbarValue = $this.AlwaysShowScrollbars ? 0 : 1
-            $transparencyValue = $this.TransparencyEffectsSetting ? 0 : 1
-
-            if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty)) {
-                New-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty -Value $transparencyValue -PropertyType DWord
+			
+            $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
+            $transparencyValue = if ($this.TransparencyEffectsSetting) { 0 } else { 1 }
+			
+            if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
+                New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
             }
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.DynamicScrollbarsProperty -Value $dynamicScrollbarValue            
-            Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name $this.TransparencySettingProperty -Value $transparencyValue 
+			
+            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
+            Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
+        }
+    }
+}
+
+[DSCResource()]
+class Audio
+{
+    # Key required. Do not set.
+    [DscProperty(Key)] [string] $SID
+    [DscProperty()] [bool] $EnableMonoAudio = $false
+
+    static hidden [string] $EnableMonoAudioProperty = 'AccessibilityMonoMixState'
+
+    static [bool] GetEnableMonoAudioStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty)).AccessibilityMonoMixState
+            return ($AudioMonoSetting -eq 0)
+        }        
+    }
+
+    [Audio] Get()
+    {
+        $currentState = [Audio]::new()
+        $currentState.EnableMonoAudio = [Audio]::GetEnableMonoAudioStatus()
+        
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        if ($this.EnableMonoAudio -ne $currentState.EnableMonoAudio)
+        {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set()
+    {
+        if (-not $this.Test())
+        {
+            if (-not (Test-Path -Path $global:AudioRegistryPath))
+            {
+                New-Item -Path $global:AudioRegistryPath -Force | Out-Null
+            }
+
+            $monoAudioValue = if ($this.EnableMonoAudio) { 0 } else { 1 }
+
+            Set-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty) -Value $monoAudioValue 
         }
     }
 }

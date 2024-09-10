@@ -12,7 +12,11 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    if ($null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration))
+    {
+        Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    }
+	
     Import-Module Microsoft.Windows.Setting.Accessibility
 
     # Create test registry path.
@@ -23,9 +27,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect"
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect", "Audio"
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 4
+        $availableDSCResources.length | Should -Be 5
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -151,6 +155,28 @@ Describe 'VisualEffect'{
         $finalState.EnableTransparencyEffects | Should -Be $true
 
         $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+}
+
+Describe 'Audio'{
+    It 'EnableMonoAudio.'{
+        Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ EnableMonoAudio = $false }
+
+        $initialState = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.EnableMonoAudio | Should -Be $false
+
+        # Set 'EnableMonoAudio' to true.
+        $parameters = @{ EnableMonoAudio = $true }
+        $testResult = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
+
+        # Verify the changes are correct.
+        Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.EnableMonoAudio | Should -Be $true
+
+        $testResult2 = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
 }
