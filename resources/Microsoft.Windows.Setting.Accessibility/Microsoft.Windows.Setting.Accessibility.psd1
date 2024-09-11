@@ -13,7 +13,8 @@
         'Text',       
         'Magnifier',
         'MousePointer',
-        'VisualEffect'
+        'VisualEffect',
+        'Audio'
     )
     PrivateData = @{
         PSData = @{
@@ -22,7 +23,8 @@
                 'PSDscResource_Text',                
                 'PSDscResource_Magnifier',
                 'PSDscResource_MousePointer',
-                'PSDscResource_VisualEffect'
+                'PSDscResource_VisualEffect',
+                'PSDscResource_Audio'
             )
     
             # Prerelease string of this module
