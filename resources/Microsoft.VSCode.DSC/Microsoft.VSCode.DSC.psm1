@@ -23,37 +23,44 @@ class VSCodeExtension
     [DscProperty()]
     [VSCodeEnsure] $Ensure = [VSCodeEnsure]::Present
 
-    [VSCodeExtension] Get()
-    {
-        $currentState = [VSCodeExtension]::new()
-        $currentState.Ensure = [VSCodeEnsure]::Absent
-        $currentState.Name = $this.Name
-        $currentState.Version = $this.Version
+    static [hashtable] $InstalledExtensions
 
-        $installedExtensions = @{}
+    static VSCodeExtension()
+    {
+        [VSCodeExtension]::GetInstalledExtensions()
+    }
+
+    static [VSCodeExtension[]] Export()
+    {
         $extensionList = (Invoke-VSCode -Command "--list-extensions --show-versions") -Split [Environment]::NewLine
 
-        # Populate hash table with installed VSCode extensions.
-        foreach ($extension in $extensionList)
+        $results = [VSCodeExtension[]]::new($extensionList.length)
+        
+        for ($i = 0; $i -lt $extensionList.length; $i++)
         {
-            $info = $extension -Split '@'
-            $extensionName = $info[0]
-            $extensionVersion = $info[1]
-            $installedExtensions[$extensionName] = $extensionVersion
+            $extensionName, $extensionVersion = $extensionList[$i] -Split '@'
+            $results[$i] = [VSCodeExtension]@{
+                Name = $extensionName
+                Version = $extensionVersion
+            }     
         }
 
-        foreach ($extension in $installedExtensions.Keys)
+        return $results
+    }
+
+    [VSCodeExtension] Get()
+    {
+        $currentState = [VSCodeExtension]::InstalledExtensions[$this.Name]
+        if ($null -ne $currentState)
         {
-            if ($extension -eq $this.Name)
-            {
-                $currentState.Ensure = [VSCodeEnsure]::Present
-                $currentState.Name = $extension
-                $currentState.Version = $installedExtensions[$extension]
-                break
-            }
+            return $currentState
         }
         
-        return $currentState
+        return [VSCodeExtension]@{
+            Name = $this.Name
+            Version = $this.Version
+            Ensure = [VSCodeEnsure]::Absent
+        }
     }
 
     [bool] Test()
@@ -81,20 +88,89 @@ class VSCodeExtension
 
         if ($this.Ensure -eq [VSCodeEnsure]::Present)
         {
-            $extensionArg = $this.Name
-
-            if ($null -ne $this.Version)
-            {
-                $extensionArg += "@$($this.Version)"
-            }
-
-            Invoke-VSCode -Command "--install-extension $($extensionArg)"
+            $this.Install($false)
         }
         else
         {
-            Invoke-VSCode -Command "--uninstall-extension $($this.Name)"
+            $this.Uninstall($false)
         }
     }
+
+#region VSCodeExtension helper functions
+    static [void] GetInstalledExtensions()
+    {
+        [VSCodeExtension]::InstalledExtensions = @{}
+        foreach ($extension in [VSCodeExtension]::Export())
+        {
+            [VSCodeExtension]::InstalledExtensions[$extension.Name] = $extension
+        }          
+    }
+
+    [string] GetInstallArgument()
+    {
+        if ($null -eq $this.Version)
+        {
+            return $this.Name
+        }
+
+        return @(
+            $this.Name
+            $this.Version
+        ) -join '@'
+    }
+
+    [void] Install([bool] $preTest)
+    {
+        if ($preTest -and $this.Test())
+        {
+            return
+        }
+
+        Install-VSCodeExtension -Name $this.Name -Version $this.Version
+        [VSCodeExtension]::GetInstalledExtensions()
+    }
+
+    [void] Install()
+    {
+        $this.Install($true)
+    }
+
+    [void] Uninstall([bool] $preTest)
+    {
+        Uninstall-VSCodeExtension -Name $this.Name
+        [VSCodeExtension]::GetInstalledExtensions()
+    }
+
+    [void] Uninstall()
+    {
+        $this.Uninstall($true)
+    }
+#endregion VSCodeExtension helper functions
+}
+#endregion DSCResources
+
+function Install-VSCodeExtension
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [string]$Name,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [string]$Version
+    )
+        
+    Invoke-VSCode -Command "--install-extension $($this.GetInstallArgument())"
+}
+
+function Uninstall-VSCodeExtension
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [string]$Name
+    )
+        
+    Invoke-VSCode -Command "--uninstall-extension $($this.Name)"  
 }
 
 function Invoke-VSCode
@@ -106,7 +182,7 @@ function Invoke-VSCode
 
     try 
     {
-        return Invoke-Expression "& `"$env:LocalAppData\Programs\Microsoft VS Code\bin\code.cmd`" $Command"
+        Invoke-Expression "& `"$env:LocalAppData\Programs\Microsoft VS Code\bin\code.cmd`" $Command"
     }
     catch
     {
