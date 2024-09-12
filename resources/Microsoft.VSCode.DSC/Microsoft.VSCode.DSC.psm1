@@ -4,11 +4,101 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+#region Enums
 enum VSCodeEnsure
 {
     Absent
     Present
 }
+#endregion Enums
+
+#region Functions
+function Get-VSCodeCLIPath
+{
+    $codeCLIUserPath = "$env:LocalAppData\Programs\Microsoft VS Code\bin\code.cmd"
+    $codeCLIMachinePath = "$env:ProgramFiles\Microsoft VS Code\bin\code.cmd"
+
+    if (Test-Path -Path $codeCLIUserPath)
+    {
+        return $codeCLIUserPath
+    }
+    elseif (Test-Path -Path $codeCLIMachinePath)
+    {
+        return $codeCLIMachinePath
+    }
+    else
+    {
+        throw "VSCode is not installed."
+    }
+}
+
+function Install-VSCodeExtension
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [string]$Name,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [string]$Version
+    )
+    
+    begin
+    {
+        function Get-VSCodeExtensionInstallArgument
+        {
+            param([string]$Name, [string]$Version)
+            
+            if ([string]::IsNullOrEmpty($Version))
+            {
+                return $Name
+            }
+
+            return @(
+                $Name
+                $Version
+            ) -join '@'
+        }
+    }
+    
+    process
+    {
+        $installArgument = Get-VSCodeExtensionInstallArgument @PSBoundParameters
+        Invoke-VSCode -Command "--install-extension $installArgument"
+    }
+}
+
+function Uninstall-VSCodeExtension
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [string]$Name
+    )
+        
+    Invoke-VSCode -Command "--uninstall-extension $($this.Name)"  
+}
+
+function Invoke-VSCode
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Command
+    )
+
+    try 
+    {
+        Invoke-Expression "& `"$VSCodeCLIPath`" $Command"
+        "$env:ProgramFiles\Microsoft VS Code\bin\code.cmd"
+    }
+    catch
+    {
+        throw "Executing code.exe with {$Command} failed."
+    }
+}
+#endregion Functions
+
+# Keeps the path of the code.exe CLI path.
+$VSCodeCLIPath = Get-VSCodeCLIPath
 
 #region DSCResources
 [DSCResource()]
@@ -106,19 +196,6 @@ class VSCodeExtension
         }          
     }
 
-    [string] GetInstallArgument()
-    {
-        if ($null -eq $this.Version)
-        {
-            return $this.Name
-        }
-
-        return @(
-            $this.Name
-            $this.Version
-        ) -join '@'
-    }
-
     [void] Install([bool] $preTest)
     {
         if ($preTest -and $this.Test())
@@ -148,44 +225,3 @@ class VSCodeExtension
 #endregion VSCodeExtension helper functions
 }
 #endregion DSCResources
-
-function Install-VSCodeExtension
-{
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
-        [string]$Name,
-        [Parameter(ValueFromPipelineByPropertyName)]
-        [string]$Version
-    )
-        
-    Invoke-VSCode -Command "--install-extension $($this.GetInstallArgument())"
-}
-
-function Uninstall-VSCodeExtension
-{
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
-        [string]$Name
-    )
-        
-    Invoke-VSCode -Command "--uninstall-extension $($this.Name)"  
-}
-
-function Invoke-VSCode
-{
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Command
-    )
-
-    try 
-    {
-        Invoke-Expression "& `"$env:LocalAppData\Programs\Microsoft VS Code\bin\code.cmd`" $Command"
-    }
-    catch
-    {
-        throw "VSCode is not installed."
-    }
-}
