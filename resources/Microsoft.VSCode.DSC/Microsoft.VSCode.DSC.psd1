@@ -1,5 +1,5 @@
 @{
-    RootModule = 'Microsoft.VSCode.DSC.psm1'
+    RootModule = 'Microsoft.VSCode.Dsc.psm1'
     ModuleVersion = '0.1.0'
     GUID = 'baf2c585-d931-4089-8500-93a5b8de1741'
     Author = 'Microsoft Corporation'

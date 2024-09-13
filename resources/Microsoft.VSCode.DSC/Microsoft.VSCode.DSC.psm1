@@ -4,17 +4,11 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-#region Enums
-enum VSCodeEnsure
-{
-    Absent
-    Present
-}
-#endregion Enums
-
 #region Functions
 function Get-VSCodeCLIPath
 {
+    # Currently only supports user/machine install for VSCode on Windows.
+    # TODO: Update this function to handle when VSCode is installed in portable mode or on macOS/Linux.
     $codeCLIUserPath = "$env:LocalAppData\Programs\Microsoft VS Code\bin\code.cmd"
     $codeCLIMachinePath = "$env:ProgramFiles\Microsoft VS Code\bin\code.cmd"
 
@@ -88,7 +82,6 @@ function Invoke-VSCode
     try 
     {
         Invoke-Expression "& `"$VSCodeCLIPath`" $Command"
-        "$env:ProgramFiles\Microsoft VS Code\bin\code.cmd"
     }
     catch
     {
@@ -111,7 +104,7 @@ class VSCodeExtension
     [string] $Version
 
     [DscProperty()]
-    [VSCodeEnsure] $Ensure = [VSCodeEnsure]::Present
+    [bool] $Exist = $true
 
     static [hashtable] $InstalledExtensions
 
@@ -149,14 +142,14 @@ class VSCodeExtension
         return [VSCodeExtension]@{
             Name = $this.Name
             Version = $this.Version
-            Ensure = [VSCodeEnsure]::Absent
+            Exist = $false
         }
     }
 
     [bool] Test()
     {
         $currentState = $this.Get()
-        if ($currentState.Ensure -ne $this.Ensure)
+        if ($currentState.Exist -ne $this.Exist)
         {
             return $false
         }
@@ -176,7 +169,7 @@ class VSCodeExtension
             return
         }
 
-        if ($this.Ensure -eq [VSCodeEnsure]::Present)
+        if ($this.Exist)
         {
             $this.Install($false)
         }
