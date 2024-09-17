@@ -250,8 +250,8 @@ class VisualEffect
 {
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
-    [DscProperty()] [bool] $AlwaysShowScrollbars = $false
-    [DscProperty()] [bool] $TransparencyEffectsSetting = $false
+    [DscProperty()] [nullable[bool]] $AlwaysShowScrollbars
+    [DscProperty()] [nullable[bool]] $TransparencyEffectsSetting
 
     static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
     static hidden [string] $TransparencySettingProperty = 'EnableTransparency'
@@ -314,16 +314,21 @@ class VisualEffect
             {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
-            
-            $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
-            $transparencyValue = if ($this.TransparencyEffectsSetting) { 0 } else { 1 }
+			if ($null -ne $this.AlwaysShowScrollbars) 
+			{
+				$dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
+				Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
+			}
+			if ($null -ne $this.TransparencyEffectsSetting) 
+			{
+				$transparencyValue = if ($this.TransparencyEffectsSetting) { 0 } else { 1 }
+				
+				if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
+					New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
+				}
+				Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
+			}
 			
-            if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
-                New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
-            }
-			
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
-            Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
         }
     }
 }
