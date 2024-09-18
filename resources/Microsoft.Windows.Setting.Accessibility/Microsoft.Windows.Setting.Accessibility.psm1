@@ -34,9 +34,10 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
     $global:ControlPanelAccessibilityRegistryPath= 'HKCU:\Control Panel\Accessibility\'
     $global:AudioRegistryPath = 'HKCU:\Software\Microsoft\Multimedia\Audio\'
+    $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
 }
 else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $env:TestRegistryPath
 }
 
 
@@ -249,9 +250,11 @@ class VisualEffect
 {
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
-    [DscProperty()] [bool] $AlwaysShowScrollbars = $false
+    [DscProperty()] [nullable[bool]] $AlwaysShowScrollbars
+    [DscProperty()] [nullable[bool]] $TransparencyEffects
 
     static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    static hidden [string] $TransparencySettingProperty = 'EnableTransparency'
 
     static [bool] GetShowDynamicScrollbarsStatus()
     {
@@ -266,10 +269,24 @@ class VisualEffect
         }        
     }
 
+    static [bool] GetTransparencyStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $TransparencySetting = (Get-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty)).EnableTransparency
+            return ($TransparencySetting -eq 0)
+        }
+    }
+
     [VisualEffect] Get()
     {
         $currentState = [VisualEffect]::new()
         $currentState.AlwaysShowScrollbars = [VisualEffect]::GetShowDynamicScrollbarsStatus()
+        $currentState.TransparencyEffects = [VisualEffect]::GetTransparencyStatus()
 
         return $currentState
     }
@@ -277,8 +294,12 @@ class VisualEffect
     [bool] Test()
     {
         $currentState = $this.Get()
-        if ($this.AlwaysShowScrollbars -ne $currentState.AlwaysShowScrollbars)
+        if (($null -ne $this.AlwaysShowScrollbars) -and ($this.AlwaysShowScrollbars -ne $currentState.AlwaysShowScrollbars))
         {
+            return $false
+        }
+        if (($null -ne $this.TransparencyEffects) -and ($this.TransparencyEffects -ne $currentState.TransparencyEffects))
+		{
             return $false
         }
 
@@ -293,10 +314,20 @@ class VisualEffect
             {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
-
-            $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
-
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
+            if ($null -ne $this.AlwaysShowScrollbars) 
+            {
+                $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
+                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
+            }
+            if ($null -ne $this.TransparencyEffects) 
+            {
+                $transparencyValue = if ($this.TransparencyEffects) { 0 } else { 1 }
+				
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
+                    New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
+                }
+                Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
+            }
         }
     }
 }

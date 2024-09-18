@@ -16,7 +16,7 @@ BeforeAll {
     {
         Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
     }
-    
+	
     Import-Module Microsoft.Windows.Setting.Accessibility
 
     # Create test registry path.
@@ -138,6 +138,25 @@ Describe 'VisualEffect'{
         $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
+    It 'TransparencyEffects.'{
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ TransparencyEffects = $false }
+
+        $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.TransparencyEffects | Should -Be $false
+
+        # Set 'TransparencyEffects' to true.
+        $parameters = @{ TransparencyEffects = $true }
+        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
+
+        # Verify the changes are correct.
+        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.TransparencyEffects | Should -Be $true
+
+        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
 }
 
 Describe 'Audio'{
@@ -161,7 +180,6 @@ Describe 'Audio'{
         $testResult2.InDesiredState | Should -Be $true
     }
 }
-
 
 AfterAll {
     $env:TestRegistryPath = ""
