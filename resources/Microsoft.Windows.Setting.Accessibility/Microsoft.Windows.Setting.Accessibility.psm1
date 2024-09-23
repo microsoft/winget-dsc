@@ -34,9 +34,10 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
     $global:ControlPanelAccessibilityRegistryPath= 'HKCU:\Control Panel\Accessibility\'
     $global:AudioRegistryPath = 'HKCU:\Software\Microsoft\Multimedia\Audio\'
+    $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
 }
 else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $env:TestRegistryPath
 }
 
 
@@ -249,10 +250,12 @@ class VisualEffect
 {
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
-    [DscProperty()] [bool] $AlwaysShowScrollbars = $false
-    [DscProperty()] [int] $MessageDurationSeconds = 5
+    [DscProperty()] [nullable[bool]] $AlwaysShowScrollbars
+    [DscProperty()] [nullable[bool]] $TransparencyEffects
+    [DscProperty()] [int] $MessageDurationSeconds
 
     static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
+    static hidden [string] $TransparencySettingProperty = 'EnableTransparency'
     static hidden [string] $MessageDurationProperty = 'MessageDuration'
 
     static [bool] GetShowDynamicScrollbarsStatus()
@@ -268,10 +271,24 @@ class VisualEffect
         }        
     }
 
+    static [bool] GetTransparencyStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $TransparencySetting = (Get-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty)).EnableTransparency
+            return ($TransparencySetting -eq 0)
+        }
+    }
+
     [VisualEffect] Get()
     {
         $currentState = [VisualEffect]::new()
         $currentState.AlwaysShowScrollbars = [VisualEffect]::GetShowDynamicScrollbarsStatus()
+        $currentState.TransparencyEffects = [VisualEffect]::GetTransparencyStatus()
 
         if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.MessageDurationProperty)) {
         {
@@ -289,11 +306,16 @@ class VisualEffect
     [bool] Test()
     {
         $currentState = $this.Get()
-        if ($this.AlwaysShowScrollbars -ne $currentState.AlwaysShowScrollbars)
+        if (($null -ne $this.AlwaysShowScrollbars) -and ($this.AlwaysShowScrollbars -ne $currentState.AlwaysShowScrollbars))
         {
             return $false
         }
-        if ($this.MessageDurationSeconds -ne $currentState.MessageDurationSeconds)
+        if (($null -ne $this.TransparencyEffects) -and ($this.TransparencyEffects -ne $currentState.TransparencyEffects))
+        {
+            return $false
+        }
+        if (($null -ne $this.MessageDurationSeconds) -and ($this.MessageDurationSeconds -ne $currentState.MessageDurationSeconds))
+        {
             return $false
         }
 
@@ -308,30 +330,30 @@ class VisualEffect
             {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
-            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath))
+            if ($null -ne $this.AlwaysShowScrollbars) 
             {
-                New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
+                $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
+                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
             }
-
-            if (-not (Test-Path -Path $global:ControlPanelAccessibilityRegistryPath )) {
-                New-Item -Path $global:ControlPanelAccessibilityRegistryPath  -Force | Out-Null
+            if ($null -ne $this.TransparencyEffects) 
+            {
+                $transparencyValue = if ($this.TransparencyEffects) { 0 } else { 1 }
+				
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
+                    New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
+                }
+                Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
             }
-
-            $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
-
-            $MessageDurationSecondsLowerValue = 5
-            $MessageDurationSecondsUpperValue = 300
-            if ($this.MessageDurationSeconds -lt $MessageDurationSecondsLowerValue) {
-                $this.MessageDurationSeconds = $MessageDurationSecondsLowerValue
-                Write-Output "Valid values are $MessageDurationSecondsLowerValue-$MessageDurationSecondsUpperValue. Setting to $MessageDurationSecondsLowerValue seconds."
             }
-            if ($this.MessageDurationSeconds -gt $MessageDurationSecondsUpperValue) {
-                $this.MessageDurationSeconds = $MessageDurationSecondsUpperValue
-                Write-Output "Valid values are $MessageDurationSecondsLowerValue-$MessageDurationSecondsUpperValue. Setting to $MessageDurationSecondsUpperValue seconds."
+            if ($null -ne $this.TransparencyEffects) 
+            {
+                $transparencyValue = if ($this.TransparencyEffects) { 0 } else { 1 }
+				
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
+                    New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
+                }
+                Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
             }
-
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
-            Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $MessageDurationSeconds0
         }
     }
 }

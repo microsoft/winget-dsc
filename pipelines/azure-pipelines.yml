@@ -72,6 +72,10 @@ extends:
             displayName: 'Publish Pipeline GitDsc'
             targetPath: $(Build.SourcesDirectory)\resources\GitDsc\
             artifactName: GitDsc
+          - output: pipelineArtifact
+            displayName: 'Publish Pipeline Microsoft.VSCode.Dsc'
+            targetPath: $(Build.SourcesDirectory)\resources\Microsoft.VSCode.Dsc\
+            artifactName: Microsoft.VSCode.Dsc
 
         steps:
         - checkout: self
