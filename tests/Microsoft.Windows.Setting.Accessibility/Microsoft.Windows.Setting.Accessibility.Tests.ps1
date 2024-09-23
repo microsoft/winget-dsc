@@ -145,6 +145,7 @@ Describe 'VisualEffect'{
         $initialState.TransparencyEffects | Should -Be $false
 
         # Set 'TransparencyEffects' to true.
+        $parameters = @{ TransparencyEffects = $true }
         $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $false
 
@@ -163,7 +164,8 @@ Describe 'VisualEffect'{
         $initialState.MessageDurationInSeconds | Should -Be $false
 
         # Set 'MessageDurationInSeconds' to true.
-        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{ MessageDurationInSeconds = $true }
+        $parameters = @{ MessageDurationInSeconds = $true }
+        $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $false
 
         # Verify the changes are correct.
@@ -171,7 +173,7 @@ Describe 'VisualEffect'{
         $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $finalState.MessageDurationInSeconds | Should -Be $true
 
-        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property @{ MessageDurationInSeconds = $true }
+        $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
 }
