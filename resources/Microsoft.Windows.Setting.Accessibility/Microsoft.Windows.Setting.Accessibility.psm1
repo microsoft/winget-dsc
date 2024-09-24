@@ -285,7 +285,7 @@ class VisualEffect
     }
 
     static [int] GetMessageDuration()
-	{
+    {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty))
         {
             return 5
