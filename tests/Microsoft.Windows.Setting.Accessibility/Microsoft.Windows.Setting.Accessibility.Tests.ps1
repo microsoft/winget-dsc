@@ -159,7 +159,7 @@ Describe 'VisualEffect'{
     }
    It 'MessageDuration'{
         $firstValue = 5 #Key is missing by default, and default value is 5 when not specified. 
-		$secondValue = 10
+        $secondValue = 10
 		
         $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $initialState.MessageDurationInSeconds | Should -Be $firstValue
