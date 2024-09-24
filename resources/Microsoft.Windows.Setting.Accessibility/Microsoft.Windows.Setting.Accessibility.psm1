@@ -284,21 +284,25 @@ class VisualEffect
         }
     }
 
+    static [int] GetMessageDuration()
+	{
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty))
+        {
+            return 5
+        }
+        else
+        {
+            $MessageDurationSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty).MessageDuration
+            return $MessageDurationSetting
+        }
+    }
+
     [VisualEffect] Get()
     {
         $currentState = [VisualEffect]::new()
         $currentState.AlwaysShowScrollbars = [VisualEffect]::GetShowDynamicScrollbarsStatus()
         $currentState.TransparencyEffects = [VisualEffect]::GetTransparencyStatus()
-
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty))
-        {
-            $currentState.MessageDurationInSeconds = 5
-        }
-        else
-        {
-            $MessageDurationSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty).MessageDuration
-            $currentState.MessageDurationInSeconds = $MessageDurationSetting
-        }
+        $currentState.MessageDurationInSeconds = [VisualEffect]::GetMessageDuration()
         
         return $currentState
     }
