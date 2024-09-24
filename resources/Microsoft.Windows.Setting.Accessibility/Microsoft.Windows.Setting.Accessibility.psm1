@@ -350,9 +350,17 @@ class VisualEffect
             }
             if ($null -ne $this.MessageDurationInSeconds) 
             {
-                $messageDurationValue = if ($this.MessageDurationInSeconds -lt 5) { 5 } elseif ($this.MessageDurationInSeconds -gt 300)  { 300 } else {$this.MessageDurationInSeconds}
-				#Should have some way to notify users if outside this range of 5-300.
-                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $messageDurationValue 0
+                $min = 5
+				$max = 300
+				if ($this.MessageDurationInSeconds -in $min..$max) 
+				{ 
+					 $messageDurationValue = $this.MessageDurationInSeconds 
+				} 
+				else 
+				{
+					 throw "MessageDurationInSeconds must be between $min and $max." 
+				}
+                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $messageDurationValue
             }
         }
     }
