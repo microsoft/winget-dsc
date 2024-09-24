@@ -296,7 +296,7 @@ class VisualEffect
         }
         else
         {
-            $MessageDurationSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty).AccessibilityMonoMixState
+            $MessageDurationSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty).MessageDuration
             $currentState.MessageDurationInSeconds = $MessageDurationSetting
         }
         
