@@ -252,7 +252,7 @@ class VisualEffect
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [nullable[bool]] $AlwaysShowScrollbars
     [DscProperty()] [nullable[bool]] $TransparencyEffects
-    [DscProperty()] [int] $MessageDurationSeconds
+    [DscProperty()] [int] $MessageDurationInSeconds
 
     static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
     static hidden [string] $TransparencySettingProperty = 'EnableTransparency'
@@ -290,14 +290,14 @@ class VisualEffect
         $currentState.AlwaysShowScrollbars = [VisualEffect]::GetShowDynamicScrollbarsStatus()
         $currentState.TransparencyEffects = [VisualEffect]::GetTransparencyStatus()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.MessageDurationProperty)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty))
         {
-            $currentState.MessageDurationSeconds = $false
+            $currentState.MessageDurationInSeconds = 5
         }
         else
         {
-            $AudioMonoSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name $this.MessageDurationProperty).AccessibilityMonoMixState
-            $currentState.MessageDurationSeconds = ($AudioMonoSetting -eq 0)
+            $MessageDurationSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty).AccessibilityMonoMixState
+            $currentState.MessageDurationInSeconds = $MessageDurationSetting
         }
         
         return $currentState
@@ -314,7 +314,7 @@ class VisualEffect
         {
             return $false
         }
-        if (($null -ne $this.MessageDurationSeconds) -and ($this.MessageDurationSeconds -ne $currentState.MessageDurationSeconds))
+        if (($null -ne $this.MessageDurationInSeconds) -and ($this.MessageDurationInSeconds -ne $currentState.MessageDurationInSeconds))
         {
             return $false
         }
@@ -344,15 +344,11 @@ class VisualEffect
                 }
                 Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
             }
-            }
-            if ($null -ne $this.TransparencyEffects) 
+            if ($null -ne $this.MessageDurationInSeconds) 
             {
-                $transparencyValue = if ($this.TransparencyEffects) { 0 } else { 1 }
-				
-                if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
-                    New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
-                }
-                Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
+                $messageDurationValue = if ($this.MessageDurationInSeconds -lt 5) { 5 } elseif ($this.MessageDurationInSeconds -gt 300)  { 300 } else {$this.MessageDurationInSeconds}
+				#Should have some way to notify users if outside this range of 5-300.
+                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $messageDurationValue 0
             }
         }
     }

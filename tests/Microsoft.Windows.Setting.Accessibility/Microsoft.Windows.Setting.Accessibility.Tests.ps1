@@ -158,20 +158,21 @@ Describe 'VisualEffect'{
         $testResult2.InDesiredState | Should -Be $true
     }
    It 'MessageDuration'{
-        Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ MessageDurationInSeconds = $false }
-
+        $firstValue = 5 #Key is missing by default, and default value is 5 when not specified. 
+		$secondValue = 10
+		
         $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-        $initialState.MessageDurationInSeconds | Should -Be $false
+        $initialState.MessageDurationInSeconds | Should -Be $firstValue
 
-        # Set 'MessageDurationInSeconds' to true.
-        $parameters = @{ MessageDurationInSeconds = $true }
+        # Set 'MessageDurationInSeconds' to 10.
+        $parameters = @{ MessageDurationInSeconds = $secondValue }
         $testResult = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $false
 
         # Verify the changes are correct.
         Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
         $finalState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-        $finalState.MessageDurationInSeconds | Should -Be $true
+        $finalState.MessageDurationInSeconds | Should -Be $secondValue
 
         $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
