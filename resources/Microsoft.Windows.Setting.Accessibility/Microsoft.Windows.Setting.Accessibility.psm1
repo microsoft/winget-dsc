@@ -352,7 +352,7 @@ class VisualEffect
             {
                 $min = 5
                 $max = 300
-				$messageDurationValue = $this.MessageDurationInSeconds 
+                $messageDurationValue = $this.MessageDurationInSeconds 
                 if ($messageDurationValue -notin 5..300) 
                 { 
                     throw "MessageDurationInSeconds must be between $min and $max. Value $messageDurationValue was provided." 
