@@ -285,14 +285,14 @@ class VisualEffect
     }
 
     static [int] GetMessageDuration()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty))
+	{
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty)))
         {
             return 5
         }
         else
         {
-            $MessageDurationSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name [VisualEffect]::MessageDurationProperty).MessageDuration
+            $MessageDurationSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty)).MessageDuration
             return $MessageDurationSetting
         }
     }
@@ -318,7 +318,7 @@ class VisualEffect
         {
             return $false
         }
-        if (($null -ne $this.MessageDurationInSeconds) -and ($this.MessageDurationInSeconds -ne $currentState.MessageDurationInSeconds))
+        if ((0 -ne $this.MessageDurationInSeconds) -and ($this.MessageDurationInSeconds -ne $currentState.MessageDurationInSeconds))
         {
             return $false
         }
@@ -348,17 +348,14 @@ class VisualEffect
                 }
                 Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
             }
-            if ($null -ne $this.MessageDurationInSeconds) 
+            if (0 -ne $this.MessageDurationInSeconds) 
             {
                 $min = 5
                 $max = 300
-                if ($this.MessageDurationInSeconds -in $min..$max) 
+				$messageDurationValue = $this.MessageDurationInSeconds 
+                if ($messageDurationValue -notin 5..300) 
                 { 
-                    $messageDurationValue = $this.MessageDurationInSeconds 
-                } 
-                else 
-                {
-                    throw "MessageDurationInSeconds must be between $min and $max." 
+                    throw "MessageDurationInSeconds must be between $min and $max. Value $messageDurationValue was provided." 
                 }
                 Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $messageDurationValue
             }
