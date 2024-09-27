@@ -252,9 +252,11 @@ class VisualEffect
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [nullable[bool]] $AlwaysShowScrollbars
     [DscProperty()] [nullable[bool]] $TransparencyEffects
+    [DscProperty()] [int] $MessageDurationInSeconds
 
     static hidden [string] $DynamicScrollbarsProperty = 'DynamicScrollbars'
     static hidden [string] $TransparencySettingProperty = 'EnableTransparency'
+    static hidden [string] $MessageDurationProperty = 'MessageDuration'
 
     static [bool] GetShowDynamicScrollbarsStatus()
     {
@@ -282,12 +284,26 @@ class VisualEffect
         }
     }
 
+    static [int] GetMessageDuration()
+	{
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty)))
+        {
+            return 5
+        }
+        else
+        {
+            $MessageDurationSetting = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty)).MessageDuration
+            return $MessageDurationSetting
+        }
+    }
+
     [VisualEffect] Get()
     {
         $currentState = [VisualEffect]::new()
         $currentState.AlwaysShowScrollbars = [VisualEffect]::GetShowDynamicScrollbarsStatus()
         $currentState.TransparencyEffects = [VisualEffect]::GetTransparencyStatus()
-
+        $currentState.MessageDurationInSeconds = [VisualEffect]::GetMessageDuration()
+        
         return $currentState
     }
 
@@ -299,7 +315,11 @@ class VisualEffect
             return $false
         }
         if (($null -ne $this.TransparencyEffects) -and ($this.TransparencyEffects -ne $currentState.TransparencyEffects))
-		{
+        {
+            return $false
+        }
+        if ((0 -ne $this.MessageDurationInSeconds) -and ($this.MessageDurationInSeconds -ne $currentState.MessageDurationInSeconds))
+        {
             return $false
         }
 
@@ -327,6 +347,16 @@ class VisualEffect
                     New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
                 }
                 Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
+            }
+            if (0 -ne $this.MessageDurationInSeconds) 
+            {
+                $min = 5
+                $max = 300
+                if ($this.MessageDurationInSeconds  -notin $min..$max) 
+                { 
+                    throw "MessageDurationInSeconds must be between $min and $max. Value $($this.MessageDurationInSeconds) was provided." 
+                }
+                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $this.MessageDurationInSeconds 
             }
         }
     }
