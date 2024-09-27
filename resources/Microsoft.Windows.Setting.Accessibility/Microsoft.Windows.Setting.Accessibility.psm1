@@ -352,12 +352,11 @@ class VisualEffect
             {
                 $min = 5
                 $max = 300
-                $messageDurationValue = $this.MessageDurationInSeconds 
-                if ($messageDurationValue -notin 5..300) 
+                if ($this.MessageDurationInSeconds  -notin $min..$max) 
                 { 
-                    throw "MessageDurationInSeconds must be between $min and $max. Value $messageDurationValue was provided." 
+                    throw "MessageDurationInSeconds must be between $min and $max. Value $($this.MessageDurationInSeconds) was provided." 
                 }
-                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $messageDurationValue
+                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $this.MessageDurationInSeconds 
             }
         }
     }
