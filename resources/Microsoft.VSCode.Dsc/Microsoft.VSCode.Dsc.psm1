@@ -35,9 +35,11 @@ function Get-VSCodeCLIPath {
 
     # Check the paths and return the appropriate one
     if (Test-Path -Path $codeCLIUserPath) {
+        Write-Verbose "VSCode CLI found at $codeCLIUserPath"
         return $codeCLIUserPath
     }
     elseif (Test-Path -Path $codeCLIMachinePath) {
+        Write-Verbose -Message "VSCode CLI found at $codeCLIMachinePath"
         return $codeCLIMachinePath
     }
     else {
@@ -51,11 +53,7 @@ function Install-VSCodeExtension {
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [string]$Name,
         [Parameter(ValueFromPipelineByPropertyName)]
-        [string]$Version,
-
-        [Parameter(Mandatory = $false)]
-        [System.String]
-        $VSCodeCLIPath = (Get-VSCodeCLIPath)
+        [string]$Version
     )
     
     begin {
@@ -75,7 +73,7 @@ function Install-VSCodeExtension {
     
     process {
         $installArgument = Get-VSCodeExtensionInstallArgument @PSBoundParameters
-        Invoke-VSCode -Command "--install-extension $installArgument" -VSCodeCLIPath $VSCodeCLIPath
+        Invoke-VSCode -Command "--install-extension $installArgument"
     }
 }
 
@@ -83,14 +81,10 @@ function Uninstall-VSCodeExtension {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
-        [string]$Name,
-
-        [Parameter(Mandatory = $false)]
-        [System.String]
-        $VSCodeCLIPath = (Get-VSCodeCLIPath)
+        [string]$Name
     )
         
-    Invoke-VSCode -Command "--uninstall-extension $($this.Name)" -VSCodeCLIPath $VSCodeCLIPath 
+    Invoke-VSCode -Command "--uninstall-extension $($this.Name)"
 }
 
 function Invoke-VSCode {
@@ -126,38 +120,41 @@ class VSCodeExtension {
     $UseInsiders = $false
 
     static [hashtable] $InstalledExtensions
-    
-    # VSCodeExtension() {
-    #     $this.Initialize($this.UseInsiders)
-    #     [VSCodeExtension]::InstalledExtensions = @{}
-    # }
-
-    static [void] Initialize([bool]$UseInsiders) {
-        [VSCodeExtension]::GetInstalledExtensions($UseInsiders) 
-    }
 
     VSCodeExtension() {
-        # [VSCodeExtension]::Initialize($this.UseInsiders)
-        [VSCodeExtension]::InstalledExtensions = @{}
     }
 
-    static [VSCodeExtension[]] Export([bool]$UseInsiders) {
+    VSCodeExtension([string]$Name, [string]$Version) {
+        $this.Name = $Name
+        $this.Version = $Version
+    }
+
+    # TODO: validate if 'dsc.exe' is able to parse in the 'VSCodeExtension' class with UseInsiders input.
+    static [VSCodeExtension[]] Export([bool]$UseInsiders)
+    {
+        if ($UseInsiders) {
+            $script:VSCodeCLIPath = Get-VSCodeCLIPath -UseInsiders
+        }
+        else {
+            $script:VSCodeCLIPath = Get-VSCodeCLIPath
+        }
         $extensionList = (Invoke-VSCode -Command "--list-extensions --show-versions") -Split [Environment]::NewLine
 
         $results = [VSCodeExtension[]]::new($extensionList.length)
         
-        for ($i = 0; $i -lt $extensionList.length; $i++) {
+        for ($i = 0; $i -lt $extensionList.length; $i++)
+        {
             $extensionName, $extensionVersion = $extensionList[$i] -Split '@'
-            $results[$i] = [VSCodeExtension]@{
-                Name    = $extensionName
-                Version = $extensionVersion
-            }     
+            $results[$i] = [VSCodeExtension]::new($extensionName, $extensionVersion)
         }
 
         return $results
     }
 
     [VSCodeExtension] Get() {
+        # start state here
+        [VSCodeExtension]::GetInstalledExtensions($this.UseInsiders)
+
         $currentState = [VSCodeExtension]::InstalledExtensions[$this.Name]
         if ($null -ne $currentState) {
             return [VSCodeExtension]::InstalledExtensions[$this.Name]
@@ -167,6 +164,7 @@ class VSCodeExtension {
             Name    = $this.Name
             Version = $this.Version
             Exist   = $false
+            UseInsiders = $this.UseInsiders
         }
     }
 
@@ -200,11 +198,9 @@ class VSCodeExtension {
     static [void] GetInstalledExtensions([bool]$UseInsiders) {   
         [VSCodeExtension]::InstalledExtensions = @{}
 
-        $script:VSCodeCLIPath = Get-VSCodeCLIPath -UseInsiders:$UseInsiders
-
         foreach ($extension in [VSCodeExtension]::Export($UseInsiders)) {
             [VSCodeExtension]::InstalledExtensions[$extension.Name] = $extension
-        }     
+        }
     }
 
     [void] Install([bool] $preTest) {
