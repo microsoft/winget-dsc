@@ -209,15 +209,15 @@ Describe 'TextCursor'{
         # Set 'TextCursorIndicatorStatus' to true.
         $parameters = @{ TextCursorIndicatorStatus = $true }
         $testResult = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
-        $testResult.InDesiredState # Should -Be $false
+        $testResult.InDesiredState | Should -Be $false
 
         # Verify the changes are correct.
         Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
         $finalState = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-        $finalState.TextCursorIndicatorStatus # Should -Be $true
+        $finalState.TextCursorIndicatorStatus | Should -Be $true
 
         $testResult2 = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
-        $testResult2.InDesiredState # Should -Be $true
+        $testResult2.InDesiredState | Should -Be $true
     }
     It 'TextCursorIndicatorSize.'{ 
         Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ TextCursorIndicatorSize = 1 }

@@ -548,7 +548,7 @@ class TextCursor
  
             if ($null -ne $this.TextCursorIndicatorStatus) 
             {
-                $textCursorValue = if ($this.TextCursorIndicatorStatus) { "" } else { ([TextCursor]::TextCursorIndicatorStatusValue) }
+                $textCursorValue = if ($this.TextCursorIndicatorStatus) { ([TextCursor]::TextCursorIndicatorStatusValue) } else { "" }
                 Set-ItemProperty @TextCursorIndicatorStatusArguments -Value $textCursorValue
             }
 			
