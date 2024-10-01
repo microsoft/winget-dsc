@@ -225,7 +225,7 @@ Describe 'TextCursor'{
         $initialState = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $initialState.TextCursorIndicatorSize | Should -Be 1
 
-        # Set 'TextCursorIndicatorSize' to Size 2.
+        # Set 'TextCursorIndicatorSize' to 2.
         $parameters = @{ TextCursorIndicatorSize = 2 }
         $testResult = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $false
@@ -239,7 +239,7 @@ Describe 'TextCursor'{
         $testResult2.InDesiredState | Should -Be $true
     }
     It 'TextCursorIndicatorColor.'{ 
-        Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ TextCursorIndicatorSize = 16711871 }
+        Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ TextCursorIndicatorColor = 16711871 }
 
         $initialState = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $initialState.TextCursorIndicatorColor | Should -Be 16711871

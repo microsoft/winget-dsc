@@ -521,15 +521,15 @@ class TextCursor
         {
             return $false
         }
-        if (($null -ne $this.TextCursorIndicatorSize) -and ($this.TextCursorIndicatorSize -ne $currentState.TextCursorIndicatorSize))
+        if ((0 -ne $this.TextCursorIndicatorSize) -and ($this.TextCursorIndicatorSize -ne $currentState.TextCursorIndicatorSize))
         {
             return $false
         }
-        if (($null -ne $this.TextCursorIndicatorColor) -and ($this.TextCursorIndicatorColor -ne $currentState.TextCursorIndicatorColor))
+        if ((0 -ne $this.TextCursorIndicatorColor) -and ($this.TextCursorIndicatorColor -ne $currentState.TextCursorIndicatorColor))
         {
             return $false
         }
-        if (($null -ne $this.TextCursorThickness) -and ($this.TextCursorThickness -ne $currentState.TextCursorThickness))
+        if ((0 -ne $this.TextCursorThickness) -and ($this.TextCursorThickness -ne $currentState.TextCursorThickness))
         {
             return $false
         }
@@ -569,7 +569,7 @@ class TextCursor
             if (0 -ne $this.TextCursorIndicatorColor) 
             {
                 $min = 1
-                $max = 9999999999
+                $max = 99999999
                 if ($this.TextCursorIndicatorColor  -notin $min..$max) 
                 { 
                     throw "TextCursorIndicatorColor must be between $min and $max. Value $($this.TextCursorIndicatorColor) was provided." 
