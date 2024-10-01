@@ -36,7 +36,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AudioRegistryPath = 'HKCU:\Software\Microsoft\Multimedia\Audio\'
     $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
     $global:NTAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Accessibility\'
-    $global:CursorIndicatorAccessibilityRegistryPath = $global:AccessibilityRegistryPath + '\CursorIndicator'
+    $global:CursorIndicatorAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\CursorIndicator\'
     $global:ControlPanelDesktopRegistryPath= 'HKCU:\Control Panel\Desktop'
 }
 else {
@@ -421,84 +421,75 @@ class Audio
     }
 }
 
-<# Notes:
-Text cursor indicator: (Colorful arrows above/below the cursor that blinks.)
-- Enabled: Empty string by default. Off is any value other than "cursorindicator". 
-- Size: Key doesn't exist by default. Values are literally "Size 1" to "Size 5"
-- Color "16711871" by default, which seems like 167, 118, 71. 
-
-Text cursor (Cursor that blinks.)
-- Thickness: 1 by default. Range: 1-20
-#>
 [DSCResource()]
 class TextCursor
 {
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
-    [DscProperty()] [nullable[bool]] $TextCursorIndicatorStatus
-    [DscProperty()] [int] $TextCursorIndicatorSize
-    [DscProperty()] [int] $TextCursorIndicatorColor
-    [DscProperty()] [int] $TextCursorThickness
+    [DscProperty()] [nullable[bool]] $IndicatorStatus
+    [DscProperty()] [int] $IndicatorSize
+    [DscProperty()] [int] $IndicatorColor
+    [DscProperty()] [int] $Thickness
 
-    static hidden [string] $TextCursorIndicatorStatusProperty = 'Configuration'
-    static hidden [string] $TextCursorIndicatorStatusValue = 'cursorindicator'
-    static hidden [string] $TextCursorIndicatorSizeProperty = 'IndicatorType'
-    static hidden [string] $TextCursorIndicatorColorProperty = 'IndicatorColor'
-    static hidden [string] $TextCursorThicknessProperty = 'CaretWidth'
+    static hidden [string] $IndicatorStatusProperty = 'Configuration'
+    static hidden [string] $IndicatorStatusValue = 'cursorindicator'
+    static hidden [string] $IndicatorSizeProperty = 'IndicatorType'
+    static hidden [string] $IndicatorColorProperty = 'IndicatorColor'
+    static hidden [string] $ThicknessProperty = 'CaretWidth'
 
 
-    static [bool] GetTextCursorIndicatorStatus()
+    static [bool] GetIndicatorStatus()
     {
-		$TextCursorIndicatorStatusArguments = @{  Path = $global:NTAccessibilityRegistryPath; Name = ([TextCursor]::TextCursorIndicatorStatusProperty)}
-        if (-not(DoesRegistryKeyPropertyExist @TextCursorIndicatorStatusArguments))
+        $indicatorStatusArgs = @{  Path = $global:NTAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorStatusProperty)}
+        if (-not(DoesRegistryKeyPropertyExist @indicatorStatusArgs))
         {
             return $false
         }
         else
         {
-            $textCursorSetting = (Get-ItemProperty @TextCursorIndicatorStatusArguments).Configuration
-            return ($textCursorSetting -eq ([TextCursor]::TextCursorIndicatorStatusValue))
+            $textCursorSetting = (Get-ItemProperty @indicatorStatusArgs).Configuration
+            return ($textCursorSetting -eq ([TextCursor]::IndicatorStatusValue))
         }        
     }
 
-    static [int] GetTextCursorIndicatorSize()
+    static [int] GetIndicatorSize()
     {
-		$TextCursorIndicatorSizeArguments = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::TextCursorIndicatorSizeProperty)}
-        if (-not(DoesRegistryKeyPropertyExist @TextCursorIndicatorSizeArguments))
+        $indicatorSizeArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorSizeProperty)}
+        if (-not(DoesRegistryKeyPropertyExist @indicatorSizeArgs))
         {
             return 1
         }
         else
         {
-            $textCursorSetting = (Get-ItemProperty @TextCursorIndicatorSizeArguments).IndicatorType
+            $textCursorSetting = (Get-ItemProperty @indicatorSizeArgs).IndicatorType
             return $textCursorSetting
         }        
     }
 
-    static [int] GetTextCursorIndicatorColor()
+    static [int] GetIndicatorColor()
     {
-		$TextCursorIndicatorColorArguments = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::TextCursorIndicatorColorProperty)}
-        if (-not(DoesRegistryKeyPropertyExist @TextCursorIndicatorColorArguments))
+        $indicatorColorArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorColorProperty)}
+        if (-not(DoesRegistryKeyPropertyExist @indicatorColorArgs))
         {
             return $false
         }
         else
         {
-            $textCursorSetting = (Get-ItemProperty @TextCursorIndicatorColorArguments).IndicatorColor
+            $textCursorSetting = (Get-ItemProperty @indicatorColorArgs).IndicatorColor
             return $textCursorSetting
         }        
     }
 
-    static [int] GetTextCursorThickness()
+    static [int] GetThickness()
     {
-		$TextCursorThicknessArguments = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::TextCursorThicknessProperty); }
-        if (-not(DoesRegistryKeyPropertyExist @TextCursorThicknessArguments))
+        $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
+        if (-not(DoesRegistryKeyPropertyExist @thicknessArgs))
         {
             return 1
         }
         else
         {
-            $textCursorSetting = (Get-ItemProperty @TextCursorThicknessArguments).CaretWidth
+            $textCursorSetting = (Get-ItemProperty @thicknessArgs).CaretWidth
             return $textCursorSetting
         }        
     }
@@ -506,10 +497,10 @@ class TextCursor
     [TextCursor] Get()
     {
         $currentState = [TextCursor]::new()
-        $currentState.TextCursorIndicatorStatus = [TextCursor]::GetTextCursorIndicatorStatus()
-        $currentState.TextCursorIndicatorSize = [TextCursor]::GetTextCursorIndicatorSize()
-        $currentState.TextCursorIndicatorColor = [TextCursor]::GetTextCursorIndicatorColor()
-        $currentState.TextCursorThickness = [TextCursor]::GetTextCursorThickness()
+        $currentState.IndicatorStatus = [TextCursor]::GetIndicatorStatus()
+        $currentState.IndicatorSize = [TextCursor]::GetIndicatorSize()
+        $currentState.IndicatorColor = [TextCursor]::GetIndicatorColor()
+        $currentState.Thickness = [TextCursor]::GetThickness()
         
         return $currentState
     }
@@ -517,19 +508,19 @@ class TextCursor
     [bool] Test()
     {
         $currentState = $this.Get()
-        if (($null -ne $this.TextCursorIndicatorStatus) -and ($this.TextCursorIndicatorStatus -ne $currentState.TextCursorIndicatorStatus))
+        if (($null -ne $this.IndicatorStatus) -and ($this.IndicatorStatus -ne $currentState.IndicatorStatus))
         {
             return $false
         }
-        if ((0 -ne $this.TextCursorIndicatorSize) -and ($this.TextCursorIndicatorSize -ne $currentState.TextCursorIndicatorSize))
+        if ((0 -ne $this.IndicatorSize) -and ($this.IndicatorSize -ne $currentState.IndicatorSize))
         {
             return $false
         }
-        if ((0 -ne $this.TextCursorIndicatorColor) -and ($this.TextCursorIndicatorColor -ne $currentState.TextCursorIndicatorColor))
+        if ((0 -ne $this.IndicatorColor) -and ($this.IndicatorColor -ne $currentState.IndicatorColor))
         {
             return $false
         }
-        if ((0 -ne $this.TextCursorThickness) -and ($this.TextCursorThickness -ne $currentState.TextCursorThickness))
+        if ((0 -ne $this.Thickness) -and ($this.Thickness -ne $currentState.Thickness))
         {
             return $false
         }
@@ -541,54 +532,53 @@ class TextCursor
     {
         if (-not $this.Test())
         {
-			$TextCursorIndicatorStatusArguments = @{ Path = $global:NTAccessibilityRegistryPath; Name = ([TextCursor]::TextCursorIndicatorStatusProperty); }
-			$TextCursorThicknessArguments = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::TextCursorThicknessProperty); }
-			$TextCursorIndicatorSizeArguments = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::TextCursorIndicatorSizeProperty)}
-			$TextCursorIndicatorColorArguments = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::TextCursorIndicatorColorProperty)}
- 
-            if ($null -ne $this.TextCursorIndicatorStatus) 
+            if ($null -ne $this.IndicatorStatus) 
             {
-                $textCursorValue = if ($this.TextCursorIndicatorStatus) { ([TextCursor]::TextCursorIndicatorStatusValue) } else { "" }
-                Set-ItemProperty @TextCursorIndicatorStatusArguments -Value $textCursorValue
+                $indicatorStatusArgs = @{ Path = $global:NTAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorStatusProperty); }
+                $textCursorValue = if ($this.IndicatorStatus) { ([TextCursor]::IndicatorStatusValue) } else { "" }
+                Set-ItemProperty @indicatorStatusArgs -Value $textCursorValue
             }
-			
-            if (0 -ne $this.TextCursorIndicatorSize) 
+            
+            if (0 -ne $this.IndicatorSize) 
             {
+                $indicatorSizeArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorSizeProperty)}
                 $min = 1
                 $max = 20
-                if ($this.TextCursorIndicatorSize  -notin $min..$max) 
+                if ($this.IndicatorSize  -notin $min..$max) 
                 { 
-                    throw "TextCursorIndicatorSize must be between $min and $max. Value $($this.TextCursorIndicatorSize) was provided." 
+                    throw "IndicatorSize must be between $min and $max. Value $($this.IndicatorSize) was provided." 
                 }
-                if (-not (DoesRegistryKeyPropertyExist @TextCursorIndicatorSizeArguments)) {
-                    New-ItemProperty @TextCursorIndicatorSizeArguments -Value $this.TextCursorIndicatorSize -PropertyType DWord
+                if (-not (DoesRegistryKeyPropertyExist @indicatorSizeArgs)) {
+                    New-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize -PropertyType DWord
                 }
-                Set-ItemProperty @TextCursorIndicatorSizeArguments -Value $this.TextCursorIndicatorSize 
+                Set-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize 
             }
-			
-            if (0 -ne $this.TextCursorIndicatorColor) 
+            
+            if (0 -ne $this.IndicatorColor) 
             {
+                $indicatorColorArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorColorProperty)}
                 $min = 1
                 $max = 99999999
-                if ($this.TextCursorIndicatorColor  -notin $min..$max) 
+                if ($this.IndicatorColor  -notin $min..$max) 
                 { 
-                    throw "TextCursorIndicatorColor must be between $min and $max. Value $($this.TextCursorIndicatorColor) was provided." 
+                    throw "IndicatorColor must be between $min and $max. Value $($this.IndicatorColor) was provided." 
                 }
-                if (-not (DoesRegistryKeyPropertyExist @TextCursorIndicatorColorArguments)) {
-                    New-ItemProperty @TextCursorIndicatorColorArguments -Value $this.TextCursorIndicatorColor -PropertyType DWord
+                if (-not (DoesRegistryKeyPropertyExist @indicatorColorArgs)) {
+                    New-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor -PropertyType DWord
                 }
-                Set-ItemProperty @TextCursorIndicatorColorArguments -Value $this.TextCursorIndicatorColor 
+                Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor 
             }
-			
-            if (0 -ne $this.TextCursorThickness) 
+            
+            if (0 -ne $this.Thickness) 
             {
+                $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
                 $min = 1
                 $max = 20
-                if ($this.TextCursorThickness  -notin $min..$max) 
+                if ($this.Thickness  -notin $min..$max) 
                 { 
-                    throw "TextCursorThickness must be between $min and $max. Value $($this.TextCursorThickness) was provided." 
+                    throw "Thickness must be between $min and $max. Value $($this.Thickness) was provided." 
                 }
-                Set-ItemProperty @TextCursorThicknessArguments -Value $this.TextCursorThickness 
+                Set-ItemProperty @thicknessArgs -Value $this.Thickness 
             }
         }
     }
