@@ -40,7 +40,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ControlPanelDesktopRegistryPath= 'HKCU:\Control Panel\Desktop'
 }
 else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]	
@@ -436,7 +436,7 @@ class TextCursor
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [nullable[bool]] $TextCursorIndicatorStatus
-    [DscProperty()] [string] $TextCursorIndicatorSize
+    [DscProperty()] [int] $TextCursorIndicatorSize
     [DscProperty()] [int] $TextCursorIndicatorColor
     [DscProperty()] [int] $TextCursorThickness
 
@@ -461,12 +461,12 @@ class TextCursor
         }        
     }
 
-    static [string] GetTextCursorIndicatorSize()
+    static [int] GetTextCursorIndicatorSize()
     {
 		$TextCursorIndicatorSizeArguments = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::TextCursorIndicatorSizeProperty)}
         if (-not(DoesRegistryKeyPropertyExist @TextCursorIndicatorSizeArguments))
         {
-            return "Size 1"
+            return 1
         }
         else
         {
@@ -552,16 +552,28 @@ class TextCursor
                 Set-ItemProperty @TextCursorIndicatorStatusArguments -Value $textCursorValue
             }
 			
-            if ($null -ne $this.TextCursorIndicatorSize) 
+            if (0 -ne $this.TextCursorIndicatorSize) 
             {
+                $min = 1
+                $max = 20
+                if ($this.TextCursorIndicatorSize  -notin $min..$max) 
+                { 
+                    throw "TextCursorIndicatorSize must be between $min and $max. Value $($this.TextCursorIndicatorSize) was provided." 
+                }
                 if (-not (DoesRegistryKeyPropertyExist @TextCursorIndicatorSizeArguments)) {
                     New-ItemProperty @TextCursorIndicatorSizeArguments -Value $this.TextCursorIndicatorSize -PropertyType DWord
                 }
                 Set-ItemProperty @TextCursorIndicatorSizeArguments -Value $this.TextCursorIndicatorSize 
             }
-            
-            if ($null -ne $this.TextCursorIndicatorColor) 
+			
+            if (0 -ne $this.TextCursorIndicatorColor) 
             {
+                $min = 1
+                $max = 9999999999
+                if ($this.TextCursorIndicatorColor  -notin $min..$max) 
+                { 
+                    throw "TextCursorIndicatorColor must be between $min and $max. Value $($this.TextCursorIndicatorColor) was provided." 
+                }
                 if (-not (DoesRegistryKeyPropertyExist @TextCursorIndicatorColorArguments)) {
                     New-ItemProperty @TextCursorIndicatorColorArguments -Value $this.TextCursorIndicatorColor -PropertyType DWord
                 }
@@ -576,7 +588,7 @@ class TextCursor
                 { 
                     throw "TextCursorThickness must be between $min and $max. Value $($this.TextCursorThickness) was provided." 
                 }
-                Set-ItemProperty @TextCursorThicknessArguments
+                Set-ItemProperty @TextCursorThicknessArguments -Value $this.TextCursorThickness 
             }
         }
     }
