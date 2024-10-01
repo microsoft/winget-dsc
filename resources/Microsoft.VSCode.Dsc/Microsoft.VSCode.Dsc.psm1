@@ -15,13 +15,13 @@ function Get-VSCodeCLIPath {
     # TODO: Update this function to handle when VSCode is installed in portable mode or on macOS/Linux.
 
     # If a custom path is provided, use it
-    # if ($PSBoundParameters.ContainsKey('CustomPath')) { 
-    #     if ((Test-Path -Path $CustomPath) -and (Split-Path $CustomPath -Leaf) -in ('code.cmd', 'code-insiders.cmd')) {
-    #         return $CustomPath
-    #     } else {
-    #         throw "The specified custom path does not exist or does not start with 'code.cmd' or 'code-insiders.cmd'."
-    #     }
-    # }
+    if ($PSBoundParameters.ContainsKey('CustomPath')) { 
+        if ((Test-Path -Path $CustomPath) -and (Split-Path $CustomPath -Leaf) -in ('code.cmd', 'code-insiders.cmd')) {
+            return $CustomPath
+        } else {
+            throw "The specified custom path does not exist or does not start with 'code.cmd' or 'code-insiders.cmd'."
+        }
+    }
 
     # Determine the paths based on whether the Insiders version is used
     if ($UseInsiders) {
@@ -119,6 +119,11 @@ class VSCodeExtension {
     [System.Boolean]
     $UseInsiders = $false
 
+    [System.Management.Automation.HiddenAttribute()]
+    [DscProperty()]
+    [System.String]
+    $CustomPath
+
     static [hashtable] $InstalledExtensions
 
     VSCodeExtension() {
@@ -130,10 +135,13 @@ class VSCodeExtension {
     }
 
     # TODO: validate if 'dsc.exe' is able to parse in the 'VSCodeExtension' class with UseInsiders input.
-    static [VSCodeExtension[]] Export([bool]$UseInsiders)
+    static [VSCodeExtension[]] Export([System.Boolean]$UseInsiders, [System.String]$CustomPath)
     {
         if ($UseInsiders) {
             $script:VSCodeCLIPath = Get-VSCodeCLIPath -UseInsiders
+        }
+        elseif(-not ([string]::IsNullOrEmpty($CustomPath))) {
+            $script:VSCodeCLIPath = Get-VSCodeCLIPath -CustomPath $CustomPath
         }
         else {
             $script:VSCodeCLIPath = Get-VSCodeCLIPath
@@ -153,7 +161,7 @@ class VSCodeExtension {
 
     [VSCodeExtension] Get() {
         # start state here
-        [VSCodeExtension]::GetInstalledExtensions($this.UseInsiders)
+        [VSCodeExtension]::GetInstalledExtensions($this.UseInsiders, $this.CustomPath)
 
         $currentState = [VSCodeExtension]::InstalledExtensions[$this.Name]
         if ($null -ne $currentState) {
@@ -195,10 +203,10 @@ class VSCodeExtension {
     }
 
     #region VSCodeExtension helper functions
-    static [void] GetInstalledExtensions([bool]$UseInsiders) {   
+    static [void] GetInstalledExtensions([System.Boolean]$UseInsiders, [System.String]$CustomPath) {   
         [VSCodeExtension]::InstalledExtensions = @{}
 
-        foreach ($extension in [VSCodeExtension]::Export($UseInsiders)) {
+        foreach ($extension in [VSCodeExtension]::Export($UseInsiders, $CustomPath)) {
             [VSCodeExtension]::InstalledExtensions[$extension.Name] = $extension
         }
     }
