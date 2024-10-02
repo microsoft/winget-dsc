@@ -98,41 +98,6 @@ Describe 'VSCodeInsidersExtension' {
      }
 }
 
-Describe 'VSCodeCustomPath' {
-    It 'Keeps current extension in custom path.' -Skip:(!$IsWindows) {
-        $parameters = @{
-            Name = 'ms-vscode.powershell'
-            CustomPath = (Join-Path -Path $env:LOCALAPPDATA -ChildPath 'Programs\Microsoft VS Code\bin\code.cmd')
-        }
-
-        $initialState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
- 
-        $testResult = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Test -Property $parameters
-        $testResult.InDesiredState | Should -Be $true
- 
-        # Invoking set should not change these values.
-        Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $parameters
-        $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
-        $finalState.Name | Should -Be $initialState.Name
-        $finalState.Version | Should -Be $initialState.Version
-        $finalState.Exist | Should -Be $initialState.Exist
-    }
-
-    It 'Sets desired extension in custom path' -Skip:(!$IsWindows) {
-        $desiredState = @{
-            Name = 'ms-azure-devops.azure-pipelines'
-            CustomPath = (Join-Path -Path $env:LOCALAPPDATA -ChildPath 'Programs\Microsoft VS Code\bin\code.cmd')
-        }
-        
-        Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
-     
-        $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property $desiredState
-        $finalState.Name | Should -Be $desiredState.Name
-        # $finalState.Version | Should -Be $initialState.Version TODO: Add version check
-        $finalState.Exist | Should -BeTrue
-     }
-}
-
 AfterAll {
     # Uninstall VSCode?
 }
