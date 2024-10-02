@@ -118,7 +118,6 @@ class VSCodeExtension {
         $this.Version = $Version
     }
 
-    # TODO: validate if 'dsc.exe' is able to parse in the 'VSCodeExtension' class with UseInsiders input.
     [VSCodeExtension[]] Export([bool]$UseInsiders)
     {
         if ($UseInsiders) {
@@ -199,7 +198,7 @@ class VSCodeExtension {
         }
 
         Install-VSCodeExtension -Name $this.Name -Version $this.Version
-        [VSCodeExtension]::GetInstalledExtensions()
+        [VSCodeExtension]::GetInstalledExtensions($this.UseInsiders)
     }
 
     [void] Install() {
@@ -208,7 +207,7 @@ class VSCodeExtension {
 
     [void] Uninstall([bool] $preTest) {
         Uninstall-VSCodeExtension -Name $this.Name
-        [VSCodeExtension]::GetInstalledExtensions()
+        [VSCodeExtension]::GetInstalledExtensions($this.UseInsiders)
     }
 
     [void] Uninstall() {

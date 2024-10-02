@@ -24,9 +24,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "VSCodeExtension", "VSCodeInsidersExtension"
+        $expectedDSCResources = "VSCodeExtension"
         $availableDSCResources = (Get-DscResource -Module Microsoft.VSCode.Dsc).Name
-        $availableDSCResources.length | Should -Be 2
+        $availableDSCResources.count | Should -Be 1
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -56,28 +56,27 @@ Describe 'VSCodeExtension' {
         
         Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
      
-        $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property $desiredState
+        $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $desiredState
         $finalState.Name | Should -Be $desiredState.Name
-        # $finalState.Version | Should -Be $initialState.Version TODO: Add version check
         $finalState.Exist | Should -BeTrue
      }
 }
 
-Describe 'VSCodeInsidersExtension' {
+Describe 'VSCodeExtension-Insiders' {
     It 'Keeps current extension in Insiders edition.' -Skip:(!$IsWindows) {
         $parameters = @{
             Name = 'ms-vscode.powershell'
             UseInsiders = $true
         }
 
-        $initialState = Invoke-DscResource -Name VSCodeInsidersExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
+        $initialState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
  
-        $testResult = Invoke-DscResource -Name VSCodeInsidersExtension -ModuleName Microsoft.VSCode.Dsc -Method Test -Property $parameters
+        $testResult = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $true
  
         # Invoking set should not change these values.
-        Invoke-DscResource -Name VSCodeInsidersExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $parameters
-        $finalState = Invoke-DscResource -Name VSCodeInsidersExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
+        Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
         $finalState.Name | Should -Be $initialState.Name
         $finalState.Version | Should -Be $initialState.Version
         $finalState.Exist | Should -Be $initialState.Exist
@@ -89,11 +88,10 @@ Describe 'VSCodeInsidersExtension' {
             UseInsiders = $true
         }
         
-        Invoke-DscResource -Name VSCodeInsidersExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
+        Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
      
-        $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property $desiredState
+        $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $desiredState
         $finalState.Name | Should -Be $desiredState.Name
-        # $finalState.Version | Should -Be $initialState.Version TODO: Add version check
         $finalState.Exist | Should -BeTrue
      }
 }
