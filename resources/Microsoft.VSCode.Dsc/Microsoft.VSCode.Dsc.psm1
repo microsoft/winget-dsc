@@ -105,7 +105,7 @@ class VSCodeExtension {
     [bool] $Exist = $true
 
     [DscProperty()]
-    [System.Boolean]
+    [bool]
     $UseInsiders = $false
 
     static [hashtable] $InstalledExtensions
@@ -183,7 +183,7 @@ class VSCodeExtension {
     }
 
 #region VSCodeExtension helper functions
-    static [void] GetInstalledExtensions([System.Boolean]$UseInsiders) {   
+    static [void] GetInstalledExtensions([bool]$UseInsiders) {   
         [VSCodeExtension]::InstalledExtensions = @{}
 
         $extension = [VSCodeExtension]::new()
