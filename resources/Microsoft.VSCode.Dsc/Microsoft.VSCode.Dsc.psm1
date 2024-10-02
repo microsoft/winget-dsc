@@ -105,8 +105,7 @@ class VSCodeExtension {
     [bool] $Exist = $true
 
     [DscProperty()]
-    [bool]
-    $UseInsiders = $false
+    [bool] $UseInsiders = $false
 
     static [hashtable] $InstalledExtensions
 
