@@ -203,6 +203,7 @@ class NETSDKToolInstaller {
     }
 
     Set() {
+        # TODO: validate for upgrade/update scenarios
         if ($this.Test())
         {
             return
