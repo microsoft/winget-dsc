@@ -44,6 +44,7 @@ extends:
         displayName: "Publish WinGet DSC Resources"
         templateContext:
           outputs:
+          # TODO: Add pipeline artifact for NET.SDK.ToolInstaller
           - output: pipelineArtifact
             displayName: 'Publish Pipeline Microsoft.Windows.Developer'
             targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Developer\
