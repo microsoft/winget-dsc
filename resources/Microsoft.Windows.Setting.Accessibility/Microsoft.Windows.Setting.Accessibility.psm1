@@ -28,6 +28,16 @@ enum PointerSize {
     ExtraLarge
 }
 
+enum ColorFilters {
+    KeepCurrentValue
+    Greyscale
+    Inverted
+    GreyscaleInverted
+    Deuteranopia
+    Protanopia
+    Tritanopia
+}
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
@@ -38,6 +48,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:NTAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Accessibility\'
     $global:CursorIndicatorAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\CursorIndicator\'
     $global:ControlPanelDesktopRegistryPath= 'HKCU:\Control Panel\Desktop'
+    $global:ColorFilteringRegistryPath= 'HKCU:\Software\Microsoft\ColorFiltering'
 }
 else {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $env:TestRegistryPath
@@ -429,13 +440,12 @@ class TextCursor
     [DscProperty()] [nullable[bool]] $IndicatorStatus
     [DscProperty()] [int] $IndicatorSize
     [DscProperty()] [int] $IndicatorColor
-    [DscProperty()] [int] $Thickness
+    [DscProperty()] [int] $KeyboardShortcutStatus
 
     static hidden [string] $IndicatorStatusProperty = 'Configuration'
     static hidden [string] $IndicatorStatusValue = 'cursorindicator'
-    static hidden [string] $IndicatorSizeProperty = 'IndicatorType'
-    static hidden [string] $IndicatorColorProperty = 'IndicatorColor'
-    static hidden [string] $ThicknessProperty = 'CaretWidth'
+    static hidden [string] $IndicatorColorProperty = 'FilterType'
+    static hidden [string] $KeyboardShortcutStatusProperty = 'HotkeyEnabled'
 
 
     static [bool] GetIndicatorStatus()
@@ -480,16 +490,16 @@ class TextCursor
         }        
     }
 
-    static [int] GetThickness()
+    static [int] GetKeyboardShortcutStatus()
     {
-        $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
-        if (-not(DoesRegistryKeyPropertyExist @thicknessArgs))
+        $KeyboardShortcutStatusArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::KeyboardShortcutStatusProperty); }
+        if (-not(DoesRegistryKeyPropertyExist @KeyboardShortcutStatusArgs))
         {
             return 1
         }
         else
         {
-            $textCursorSetting = (Get-ItemProperty @thicknessArgs).CaretWidth
+            $textCursorSetting = (Get-ItemProperty @KeyboardShortcutStatusArgs).CaretWidth
             return $textCursorSetting
         }        
     }
@@ -500,7 +510,7 @@ class TextCursor
         $currentState.IndicatorStatus = [TextCursor]::GetIndicatorStatus()
         $currentState.IndicatorSize = [TextCursor]::GetIndicatorSize()
         $currentState.IndicatorColor = [TextCursor]::GetIndicatorColor()
-        $currentState.Thickness = [TextCursor]::GetThickness()
+        $currentState.KeyboardShortcutStatus = [TextCursor]::GetKeyboardShortcutStatus()
         
         return $currentState
     }
@@ -520,7 +530,7 @@ class TextCursor
         {
             return $false
         }
-        if ((0 -ne $this.Thickness) -and ($this.Thickness -ne $currentState.Thickness))
+        if ((0 -ne $this.KeyboardShortcutStatus) -and ($this.KeyboardShortcutStatus -ne $currentState.KeyboardShortcutStatus))
         {
             return $false
         }
@@ -569,16 +579,171 @@ class TextCursor
                 Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor 
             }
             
-            if (0 -ne $this.Thickness) 
+            if (0 -ne $this.KeyboardShortcutStatus) 
             {
-                $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
+                $KeyboardShortcutStatusArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::KeyboardShortcutStatusProperty); }
                 $min = 1
                 $max = 20
-                if ($this.Thickness  -notin $min..$max) 
+                if ($this.KeyboardShortcutStatus  -notin $min..$max) 
                 { 
-                    throw "Thickness must be between $min and $max. Value $($this.Thickness) was provided." 
+                    throw "KeyboardShortcutStatus must be between $min and $max. Value $($this.KeyboardShortcutStatus) was provided." 
                 }
-                Set-ItemProperty @thicknessArgs -Value $this.Thickness 
+                Set-ItemProperty @KeyboardShortcutStatusArgs -Value $this.KeyboardShortcutStatus 
+            }
+        }
+    }
+}
+
+<#
+Enable/disable is controlled by 2 keys:
+- HKEY_CURRENT_USER\Software\Microsoft\ColorFiltering
+  - Dword: "Active"
+- HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\Accessibility
+  - Key: "Configuration" add value "colorfiltering"
+#>
+[DSCResource()]
+class ColorFilter
+{
+    # Key required. Do not set.
+    [DscProperty(Key)] [string] $SID
+    [DscProperty()] [nullable[bool]] $FilterStatus
+    [DscProperty()] [int] $FilterSize
+    [DscProperty()] [ColorFilters] $FilterColor
+    [DscProperty()] [int] $KeyboardShortcutStatus
+
+    static hidden [string] $FilterStatusProperty = 'Configuration'
+    static hidden [string] $FilterStatusActiveProperty = 'Active'
+    static hidden [string] $FilterStatusValue = 'colorfiltering'
+    static hidden [string] $FilterColorProperty = 'FilterType'
+    static hidden [string] $KeyboardShortcutStatusProperty = 'HotkeyEnabled'
+
+
+    static [bool] GetStatus()
+    {
+        $FilterStatusArgs = @{  Path = $global:NTAccessibilityRegistryPath; Name = ([ColorFilter]::FilterStatusProperty)}
+        if (-not(DoesRegistryKeyPropertyExist @FilterStatusArgs))
+        {
+            return $false
+        }
+        else
+        {
+            $colorFilterSetting = (Get-ItemProperty @FilterStatusArgs).Configuration
+            return ($colorFilterSetting -eq ([ColorFilter]::FilterStatusValue))
+        }
+    }
+
+    static [int] GetColor()
+    {
+        $FilterColorArgs = @{  Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::FilterColorProperty)}
+        if (-not(DoesRegistryKeyPropertyExist @FilterColorArgs))
+        {
+            return $false
+        }
+        else
+        {
+            $colorFilterSetting = (Get-ItemProperty @FilterColorArgs).FilterColor
+            return $colorFilterSetting
+        }        
+    }
+
+    static [int] GetKeyboardShortcutStatus()
+    {
+        $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::KeyboardShortcutStatusProperty); }
+        if (-not(DoesRegistryKeyPropertyExist @KeyboardShortcutStatusArgs))
+        {
+            return 1
+        }
+        else
+        {
+            $colorFilterSetting = (Get-ItemProperty @KeyboardShortcutStatusArgs).CaretWidth
+            return $colorFilterSetting
+        }        
+    }
+
+    [ColorFilter] Get()
+    {
+        $currentState = [ColorFilter]::new()
+        $currentState.FilterStatus = [ColorFilter]::GetStatus()
+        $currentState.FilterColor = [ColorFilter]::GetColor()
+        $currentState.KeyboardShortcutStatus = [ColorFilter]::GetKeyboardShortcutStatus()
+        
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        if (($null -ne $this.FilterStatus) -and ($this.FilterStatus -ne $currentState.FilterStatus))
+        {
+            return $false
+        }
+        if ((0 -ne $this.FilterSize) -and ($this.FilterSize -ne $currentState.FilterSize))
+        {
+            return $false
+        }
+        if ((0 -ne $this.FilterColor) -and ($this.FilterColor -ne $currentState.FilterColor))
+        {
+            return $false
+        }
+        if ((0 -ne $this.KeyboardShortcutStatus) -and ($this.KeyboardShortcutStatus -ne $currentState.KeyboardShortcutStatus))
+        {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set()
+    {
+        if (-not $this.Test())
+        {
+            if ($null -ne $this.FilterStatus) 
+            {
+                $FilterStatusArgs = @{ Path = $global:NTAccessibilityRegistryPath; Name = ([ColorFilter]::FilterStatusProperty); }
+                $ColorFilterValue = if ($this.FilterStatus) { ([ColorFilter]::FilterStatusValue) } else { "" }
+                Set-ItemProperty @FilterStatusArgs -Value $ColorFilterValue
+            }
+            
+            if (0 -ne $this.FilterSize) 
+            {
+                $FilterSizeArgs = @{  Path = $global:CursorFilterAccessibilityRegistryPath; Name = ([ColorFilter]::FilterSizeProperty)}
+                $min = 1
+                $max = 20
+                if ($this.FilterSize  -notin $min..$max) 
+                { 
+                    throw "FilterSize must be between $min and $max. Value $($this.FilterSize) was provided." 
+                }
+                if (-not (DoesRegistryKeyPropertyExist @FilterSizeArgs)) {
+                    New-ItemProperty @FilterSizeArgs -Value $this.FilterSize -PropertyType DWord
+                }
+                Set-ItemProperty @FilterSizeArgs -Value $this.FilterSize 
+            }
+            
+            if (0 -ne $this.FilterColor) 
+            {
+                $FilterColorArgs = @{  Path = $global:CursorFilterAccessibilityRegistryPath; Name = ([ColorFilter]::FilterColorProperty)}
+                $min = 1
+                $max = 99999999
+                if ($this.FilterColor  -notin $min..$max) 
+                { 
+                    throw "FilterColor must be between $min and $max. Value $($this.FilterColor) was provided." 
+                }
+                if (-not (DoesRegistryKeyPropertyExist @FilterColorArgs)) {
+                    New-ItemProperty @FilterColorArgs -Value $this.FilterColor -PropertyType DWord
+                }
+                Set-ItemProperty @FilterColorArgs -Value $this.FilterColor 
+            }
+            
+            if (0 -ne $this.KeyboardShortcutStatus) 
+            {
+                $KeyboardShortcutStatusArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([ColorFilter]::KeyboardShortcutStatusProperty); }
+                $min = 1
+                $max = 20
+                if ($this.KeyboardShortcutStatus  -notin $min..$max) 
+                { 
+                    throw "KeyboardShortcutStatus must be between $min and $max. Value $($this.KeyboardShortcutStatus) was provided." 
+                }
+                Set-ItemProperty @KeyboardShortcutStatusArgs -Value $this.KeyboardShortcutStatus 
             }
         }
     }

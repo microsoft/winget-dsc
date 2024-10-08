@@ -15,7 +15,8 @@
         'MousePointer',
         'VisualEffect',
         'Audio',
-        'TextCursor'
+        'TextCursor',
+        'ColorFilter'
     )
     PrivateData = @{
         PSData = @{
@@ -26,7 +27,8 @@
                 'PSDscResource_MousePointer',
                 'PSDscResource_VisualEffect',
                 'PSDscResource_Audio',
-                'PSDscResource_TextCursor'
+                'PSDscResource_TextCursor',
+                'PSDscResource_ColorFilter'
             )
     
             # Prerelease string of this module
