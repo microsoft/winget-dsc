@@ -100,4 +100,18 @@ Describe 'DSC operation capabilities' {
         
         {Invoke-DscResource -Name NETSDKToolInstaller -ModuleName Microsoft.NET.SDK.ToolInstaller -Method Set -Property $parameters} | Should -Throw -ExpectedMessage "Executing dotnet.exe with {tool install Azure-Core --no-cache --global} failed."
      }
+
+    It 'Installs in tool path location' -Skip:(!$IsWindows) {
+        $parameters = @{
+            PackageId = 'dotnet-dump'
+            ToolPath  = 'C:\tools'
+        }
+
+        Invoke-DscResource -Name NETSDKToolInstaller -ModuleName Microsoft.NET.SDK.ToolInstaller -Method Set -Property $parameters
+
+        $state = Invoke-DscResource -Name NETSDKToolInstaller -ModuleName Microsoft.NET.SDK.ToolInstaller -Method Get -Property $parameters
+        $state.Exist | Should -BeTrue
+        $state.ToolPath | Should -Be $parameters.ToolPath
+        $state::InstalledPackages[$parameters.PackageId].ToolPath | Should -Be $parameters.ToolPath # It should reflect updated export()
+    }
 }
