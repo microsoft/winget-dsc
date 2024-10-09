@@ -601,6 +601,7 @@ Enable/disable is controlled by 2 keys:
   - Dword: "Active"
 - HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\Accessibility
   - Key: "Configuration" add value "colorfiltering"
+  - This key actually stores several values at the same time, as a concatenated string. Enable by adding into the string, and disable by removing. 
 #>
 [DSCResource()]
 class ColorFilter
@@ -640,21 +641,21 @@ class ColorFilter
         }
         else
         {
-            $colorFilterSetting = (Get-ItemProperty @FilterColorArgs).FilterColor
+            $colorFilterSetting = (Get-ItemProperty @FilterColorArgs).FilterType
             return $colorFilterSetting
         }        
     }
 
-    static [int] GetKeyboardShortcutStatus()
+    static [nullable[bool]] GetKeyboardShortcutStatus()
     {
         $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::KeyboardShortcutStatusProperty); }
         if (-not(DoesRegistryKeyPropertyExist @KeyboardShortcutStatusArgs))
         {
-            return 1
+            return $false
         }
         else
         {
-            $colorFilterSetting = (Get-ItemProperty @KeyboardShortcutStatusArgs).CaretWidth
+            $colorFilterSetting = (Get-ItemProperty @KeyboardShortcutStatusArgs).HotkeyEnabled
             return $colorFilterSetting
         }        
     }
@@ -717,7 +718,7 @@ class ColorFilter
             if ($null -ne $this.KeyboardShortcutStatus) 
             {
                 $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::KeyboardShortcutStatusProperty); }
-                $ColorFilterValue = if ($this.KeyboardShortcutStatus) { ([ColorFilter]::KeyboardShortcutStatusValue) } else { "" }
+                $ColorFilterValue = if ($this.KeyboardShortcutStatus) { ([ColorFilter]::KeyboardShortcutStatusProperty) } else { "" }
                 Set-ItemProperty @KeyboardShortcutStatusArgs -Value $ColorFilterValue
             }
         }
