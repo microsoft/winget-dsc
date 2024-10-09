@@ -608,16 +608,14 @@ class ColorFilter
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [nullable[bool]] $FilterStatus
-    [DscProperty()] [int] $FilterSize
     [DscProperty()] [ColorFilters] $FilterColor
-    [DscProperty()] [int] $KeyboardShortcutStatus
+    [DscProperty()] [nullable[bool]] $KeyboardShortcutStatus
 
     static hidden [string] $FilterStatusProperty = 'Configuration'
     static hidden [string] $FilterStatusActiveProperty = 'Active'
     static hidden [string] $FilterStatusValue = 'colorfiltering'
     static hidden [string] $FilterColorProperty = 'FilterType'
     static hidden [string] $KeyboardShortcutStatusProperty = 'HotkeyEnabled'
-
 
     static [bool] GetStatus()
     {
@@ -705,24 +703,9 @@ class ColorFilter
                 Set-ItemProperty @FilterStatusArgs -Value $ColorFilterValue
             }
             
-            if (0 -ne $this.FilterSize) 
-            {
-                $FilterSizeArgs = @{  Path = $global:CursorFilterAccessibilityRegistryPath; Name = ([ColorFilter]::FilterSizeProperty)}
-                $min = 1
-                $max = 20
-                if ($this.FilterSize  -notin $min..$max) 
-                { 
-                    throw "FilterSize must be between $min and $max. Value $($this.FilterSize) was provided." 
-                }
-                if (-not (DoesRegistryKeyPropertyExist @FilterSizeArgs)) {
-                    New-ItemProperty @FilterSizeArgs -Value $this.FilterSize -PropertyType DWord
-                }
-                Set-ItemProperty @FilterSizeArgs -Value $this.FilterSize 
-            }
-            
             if (0 -ne $this.FilterColor) 
             {
-                $FilterColorArgs = @{  Path = $global:CursorFilterAccessibilityRegistryPath; Name = ([ColorFilter]::FilterColorProperty)}
+                $FilterColorArgs = @{  Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::FilterColorProperty)}
                 $min = 1
                 $max = 99999999
                 if ($this.FilterColor  -notin $min..$max) 
@@ -735,16 +718,11 @@ class ColorFilter
                 Set-ItemProperty @FilterColorArgs -Value $this.FilterColor 
             }
             
-            if (0 -ne $this.KeyboardShortcutStatus) 
+            if ($null -ne $this.KeyboardShortcutStatus) 
             {
-                $KeyboardShortcutStatusArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([ColorFilter]::KeyboardShortcutStatusProperty); }
-                $min = 1
-                $max = 20
-                if ($this.KeyboardShortcutStatus  -notin $min..$max) 
-                { 
-                    throw "KeyboardShortcutStatus must be between $min and $max. Value $($this.KeyboardShortcutStatus) was provided." 
-                }
-                Set-ItemProperty @KeyboardShortcutStatusArgs -Value $this.KeyboardShortcutStatus 
+                $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::KeyboardShortcutStatusProperty); }
+                $ColorFilterValue = if ($this.KeyboardShortcutStatus) { ([ColorFilter]::KeyboardShortcutStatusValue) } else { "" }
+                Set-ItemProperty @KeyboardShortcutStatusArgs -Value $ColorFilterValue
             }
         }
     }
