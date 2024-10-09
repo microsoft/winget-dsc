@@ -511,7 +511,7 @@ class TextCursor
         $currentState.IndicatorStatus = [TextCursor]::GetIndicatorStatus()
         $currentState.IndicatorSize = [TextCursor]::GetIndicatorSize()
         $currentState.IndicatorColor = [TextCursor]::GetIndicatorColor()
-        $currentState.KeyboardShortcutStatus = [TextCursor]::GetKeyboardShortcutStatus()
+        $currentState.Thickness = [TextCursor]::GetThickness()
         
         return $currentState
     }
@@ -531,7 +531,7 @@ class TextCursor
         {
             return $false
         }
-        if ((0 -ne $this.KeyboardShortcutStatus) -and ($this.KeyboardShortcutStatus -ne $currentState.KeyboardShortcutStatus))
+        if ((0 -ne $this.Thickness) -and ($this.Thickness -ne $currentState.Thickness))
         {
             return $false
         }
