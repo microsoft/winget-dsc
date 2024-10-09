@@ -676,15 +676,11 @@ class ColorFilter
         {
             return $false
         }
-        if ((0 -ne $this.FilterSize) -and ($this.FilterSize -ne $currentState.FilterSize))
-        {
-            return $false
-        }
         if ((0 -ne $this.FilterColor) -and ($this.FilterColor -ne $currentState.FilterColor))
         {
             return $false
         }
-        if ((0 -ne $this.KeyboardShortcutStatus) -and ($this.KeyboardShortcutStatus -ne $currentState.KeyboardShortcutStatus))
+        if (($null -ne $this.KeyboardShortcutStatus) -and ($this.KeyboardShortcutStatus -ne $currentState.KeyboardShortcutStatus))
         {
             return $false
         }
