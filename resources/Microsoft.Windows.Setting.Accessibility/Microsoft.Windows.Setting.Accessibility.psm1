@@ -582,14 +582,14 @@ class TextCursor
             
             if (0 -ne $this.Thickness) 
             {
-                $ThicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
+                $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
                 $min = 1
                 $max = 20
                 if ($this.Thickness  -notin $min..$max) 
                 { 
                     throw "Thickness must be between $min and $max. Value $($this.Thickness) was provided." 
                 }
-                Set-ItemProperty @ThicknessArgs -Value $this.Thickness 
+                Set-ItemProperty @thicknessArgs -Value $this.Thickness 
             }
         }
     }
