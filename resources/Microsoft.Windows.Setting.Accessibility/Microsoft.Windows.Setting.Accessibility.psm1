@@ -440,12 +440,13 @@ class TextCursor
     [DscProperty()] [nullable[bool]] $IndicatorStatus
     [DscProperty()] [int] $IndicatorSize
     [DscProperty()] [int] $IndicatorColor
-    [DscProperty()] [int] $KeyboardShortcutStatus
+    [DscProperty()] [int] $Thickness
 
     static hidden [string] $IndicatorStatusProperty = 'Configuration'
     static hidden [string] $IndicatorStatusValue = 'cursorindicator'
-    static hidden [string] $IndicatorColorProperty = 'FilterType'
-    static hidden [string] $KeyboardShortcutStatusProperty = 'HotkeyEnabled'
+    static hidden [string] $IndicatorSizeProperty = 'IndicatorType'
+    static hidden [string] $IndicatorColorProperty = 'IndicatorColor'
+    static hidden [string] $ThicknessProperty = 'CaretWidth'
 
 
     static [bool] GetIndicatorStatus()
@@ -490,16 +491,16 @@ class TextCursor
         }        
     }
 
-    static [int] GetKeyboardShortcutStatus()
+    static [int] GetThickness()
     {
-        $KeyboardShortcutStatusArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::KeyboardShortcutStatusProperty); }
-        if (-not(DoesRegistryKeyPropertyExist @KeyboardShortcutStatusArgs))
+        $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
+        if (-not(DoesRegistryKeyPropertyExist @thicknessArgs))
         {
             return 1
         }
         else
         {
-            $textCursorSetting = (Get-ItemProperty @KeyboardShortcutStatusArgs).CaretWidth
+            $textCursorSetting = (Get-ItemProperty @thicknessArgs).CaretWidth
             return $textCursorSetting
         }        
     }
@@ -510,7 +511,7 @@ class TextCursor
         $currentState.IndicatorStatus = [TextCursor]::GetIndicatorStatus()
         $currentState.IndicatorSize = [TextCursor]::GetIndicatorSize()
         $currentState.IndicatorColor = [TextCursor]::GetIndicatorColor()
-        $currentState.KeyboardShortcutStatus = [TextCursor]::GetKeyboardShortcutStatus()
+        $currentState.Thickness = [TextCursor]::GetThickness()
         
         return $currentState
     }
@@ -530,7 +531,7 @@ class TextCursor
         {
             return $false
         }
-        if ((0 -ne $this.KeyboardShortcutStatus) -and ($this.KeyboardShortcutStatus -ne $currentState.KeyboardShortcutStatus))
+        if ((0 -ne $this.Thickness) -and ($this.Thickness -ne $currentState.Thickness))
         {
             return $false
         }
@@ -579,16 +580,16 @@ class TextCursor
                 Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor 
             }
             
-            if (0 -ne $this.KeyboardShortcutStatus) 
+            if (0 -ne $this.Thickness) 
             {
-                $KeyboardShortcutStatusArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::KeyboardShortcutStatusProperty); }
+                $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
                 $min = 1
                 $max = 20
-                if ($this.KeyboardShortcutStatus  -notin $min..$max) 
+                if ($this.Thickness  -notin $min..$max) 
                 { 
-                    throw "KeyboardShortcutStatus must be between $min and $max. Value $($this.KeyboardShortcutStatus) was provided." 
+                    throw "Thickness must be between $min and $max. Value $($this.Thickness) was provided." 
                 }
-                Set-ItemProperty @KeyboardShortcutStatusArgs -Value $this.KeyboardShortcutStatus 
+                Set-ItemProperty @thicknessArgs -Value $this.Thickness 
             }
         }
     }
