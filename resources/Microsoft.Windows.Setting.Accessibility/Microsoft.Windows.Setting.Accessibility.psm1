@@ -47,11 +47,11 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
     $global:NTAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Accessibility\'
     $global:CursorIndicatorAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\CursorIndicator\'
-    $global:ControlPanelDesktopRegistryPath= 'HKCU:\Control Panel\Desktop'
-    $global:ColorFilteringRegistryPath= 'HKCU:\Software\Microsoft\ColorFiltering'
+    $global:ControlPanelDesktopRegistryPath = 'HKCU:\Control Panel\Desktop'
+    $global:ColorFilteringRegistryPath = 'HKCU:\Software\Microsoft\ColorFiltering'
 }
 else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $global:ColorFilteringRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]	
