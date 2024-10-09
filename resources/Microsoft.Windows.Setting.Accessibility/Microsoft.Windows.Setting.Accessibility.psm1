@@ -580,16 +580,16 @@ class TextCursor
                 Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor 
             }
             
-            if (0 -ne $this.KeyboardShortcutStatus) 
+            if (0 -ne $this.Thickness) 
             {
-                $KeyboardShortcutStatusArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::KeyboardShortcutStatusProperty); }
+                $ThicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
                 $min = 1
                 $max = 20
-                if ($this.KeyboardShortcutStatus  -notin $min..$max) 
+                if ($this.Thickness  -notin $min..$max) 
                 { 
-                    throw "KeyboardShortcutStatus must be between $min and $max. Value $($this.KeyboardShortcutStatus) was provided." 
+                    throw "Thickness must be between $min and $max. Value $($this.Thickness) was provided." 
                 }
-                Set-ItemProperty @KeyboardShortcutStatusArgs -Value $this.KeyboardShortcutStatus 
+                Set-ItemProperty @ThicknessArgs -Value $this.Thickness 
             }
         }
     }
