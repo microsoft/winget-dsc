@@ -7,34 +7,41 @@ Set-StrictMode -Version Latest
 #region Functions
 function Get-VSCodeCLIPath {
     param (
-        [switch]$UseInsiders
+        [switch]$Insiders
     )
 
-    # Currently only supports user/machine install for VSCode on Windows.
-    # TODO: Update this function to handle when VSCode is installed in portable mode or on macOS/Linux.
+    if ($Insiders)
+    {
+        $cmdPath = "bin\code-insiders.cmd"
+        $insidersUserInstallLocation = TryGetRegistryValue -Key "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{217B4C08-948D-4276-BFBB-BEE930AE5A2C}_is1" -Property "InstallLocation"
+        if ($insidersUserInstallLocation)
+        {
+            return $insidersUserInstallLocation + $cmdPath
+        }
 
-    # Determine the paths based on whether the Insiders version is used
-    if ($UseInsiders) {
-        $codeCLIUserPath = "$env:LocalAppData\Programs\Microsoft VS Code Insiders\bin\code-insiders.cmd"
-        $codeCLIMachinePath = "$env:ProgramFiles\Microsoft VS Code Insiders\bin\code-insiders.cmd"
+        $insidersMachineInstallLocation = TryGetRegistryValue -Key "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{1287CAD5-7C8D-410D-88B9-0D1EE4A83FF2}_is1" -Property "InstallLocation"
+        if ($insidersMachineInstallLocation)
+        {
+            return $insidersMachineInstallLocation + $cmdPath
+        }
     }
-    else {
-        $codeCLIUserPath = "$env:LocalAppData\Programs\Microsoft VS Code\bin\code.cmd"
-        $codeCLIMachinePath = "$env:ProgramFiles\Microsoft VS Code\bin\code.cmd"
+    else
+    {
+        $cmdPath = "bin\code.cmd"
+        $codeUserInstallLocation = TryGetRegistryValue -Key "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{771FD6B0-FA20-440A-A002-3B3BAC16DC50}_is1" -Property "InstallLocation"
+        if ($codeUserInstallLocation)
+        {
+            return $codeUserInstallLocation + $cmdPath
+        }
+
+        $codeMachineInstallLocation = TryGetRegistryValue -Key "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{EA457B21-F73E-494C-ACAB-524FDE069978}_is1" -Property "InstallLocation"
+        if ($codeMachineInstallLocation)
+        {
+            return $codeMachineInstallLocation + $cmdPath
+        }
     }
 
-    # Check the paths and return the appropriate one
-    if (Test-Path -Path $codeCLIUserPath) {
-        Write-Verbose "VSCode CLI found at $codeCLIUserPath"
-        return $codeCLIUserPath
-    }
-    elseif (Test-Path -Path $codeCLIMachinePath) {
-        Write-Verbose -Message "VSCode CLI found at $codeCLIMachinePath"
-        return $codeCLIMachinePath
-    }
-    else {
-        throw "VSCode is not installed."
-    }
+    throw "VSCode is not installed."
 }
 
 function Install-VSCodeExtension {
@@ -90,6 +97,34 @@ function Invoke-VSCode {
         throw ("Executing {0} with {$Command} failed." -f $VSCodeCLIPath)
     }
 }
+
+
+
+function TryGetRegistryValue{
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Key,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Property
+        )    
+
+    if (Test-Path -Path $Key)
+    {
+        try
+        {
+            return (Get-ItemProperty -Path $Key | Select-Object -ExpandProperty $Property)     
+        }
+        catch
+        {
+            Write-Verbose "Property `"$($Property)`" could not be found."
+        }
+    }
+    else
+    {
+        Write-Verbose "Registry key does not exist."
+    }
+}
 #endregion Functions
 
 #region DSCResources
@@ -105,7 +140,7 @@ class VSCodeExtension {
     [bool] $Exist = $true
 
     [DscProperty()]
-    [bool] $UseInsiders = $false
+    [bool] $Insiders = $false
 
     static [hashtable] $InstalledExtensions
 
@@ -117,14 +152,15 @@ class VSCodeExtension {
         $this.Version = $Version
     }
 
-    [VSCodeExtension[]] Export([bool]$UseInsiders)
+    [VSCodeExtension[]] Export([bool]$Insiders)
     {
-        if ($UseInsiders) {
-            $script:VSCodeCLIPath = Get-VSCodeCLIPath -UseInsiders
+        if ($Insiders) {
+            $script:VSCodeCLIPath = Get-VSCodeCLIPath -Insiders
         }
         else {
             $script:VSCodeCLIPath = Get-VSCodeCLIPath
         }
+
         $extensionList = (Invoke-VSCode -Command "--list-extensions --show-versions") -Split [Environment]::NewLine
 
         $results = [VSCodeExtension[]]::new($extensionList.length)
@@ -139,7 +175,7 @@ class VSCodeExtension {
     }
 
     [VSCodeExtension] Get() {
-        [VSCodeExtension]::GetInstalledExtensions($this.UseInsiders)
+        [VSCodeExtension]::GetInstalledExtensions($this.Insiders)
 
         $currentState = [VSCodeExtension]::InstalledExtensions[$this.Name]
         if ($null -ne $currentState) {
@@ -150,7 +186,7 @@ class VSCodeExtension {
             Name    = $this.Name
             Version = $this.Version
             Exist   = $false
-            UseInsiders = $this.UseInsiders
+            Insiders = $this.Insiders
         }
     }
 
@@ -181,12 +217,12 @@ class VSCodeExtension {
     }
 
 #region VSCodeExtension helper functions
-    static [void] GetInstalledExtensions([bool]$UseInsiders) {   
+    static [void] GetInstalledExtensions([bool]$Insiders) {   
         [VSCodeExtension]::InstalledExtensions = @{}
 
         $extension = [VSCodeExtension]::new()
 
-        foreach ($extension in $extension.Export($UseInsiders)) {
+        foreach ($extension in $extension.Export($Insiders)) {
             [VSCodeExtension]::InstalledExtensions[$extension.Name] = $extension
         }
     }
@@ -197,7 +233,7 @@ class VSCodeExtension {
         }
 
         Install-VSCodeExtension -Name $this.Name -Version $this.Version
-        [VSCodeExtension]::GetInstalledExtensions($this.UseInsiders)
+        [VSCodeExtension]::GetInstalledExtensions($this.Insiders)
     }
 
     [void] Install() {
@@ -206,7 +242,7 @@ class VSCodeExtension {
 
     [void] Uninstall([bool] $preTest) {
         Uninstall-VSCodeExtension -Name $this.Name
-        [VSCodeExtension]::GetInstalledExtensions($this.UseInsiders)
+        [VSCodeExtension]::GetInstalledExtensions($this.Insiders)
     }
 
     [void] Uninstall() {
