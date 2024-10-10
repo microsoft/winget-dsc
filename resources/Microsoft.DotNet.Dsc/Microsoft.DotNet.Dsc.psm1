@@ -453,7 +453,7 @@ class DotNetToolPackage
 
         $params = $this.ToHashTable()   
 
-        Install-DotNetToolpackage @params #-Name $this.PackageId -Version $this.Version -PreRelease $this.PreRelease -ToolPath $this.ToolPath
+        Install-DotNetToolpackage @params
         [DotNetToolPackage]::GetInstalledPackages()
     }
 
@@ -488,5 +488,4 @@ class DotNetToolPackage
     }
     #endregion DotNetToolPackage helper functions
 }
-#
 #endregion Classes
