@@ -178,7 +178,6 @@ function Get-InstalledDotNetToolPackages
     {
         # flags to determine the existence of the package
         $preFlag = $false
-        $Exist = $true
         $preReleasePackage = $package.Version -Split "-"
         if ($preReleasePackage.Count -gt 1)
         {
@@ -186,17 +185,54 @@ function Get-InstalledDotNetToolPackages
             $preFlag = $true
         }
 
-        if (-not [string]::IsNullOrEmpty($Version) -and $package.Version -ne $Version)
-        {
-            $Exist = $false
-        }
-
         $resultSet.Add([DotNetToolPackage]::new(
-                $package.PackageId, $package.Version, $package.Commands, $preFlag, $installDir, $Exist
+                $package.PackageId, $package.Version, $package.Commands, $preFlag, $installDir, $true
             ))
     }
 
     return $resultSet
+}
+
+function Get-SemVer($version)
+{
+    $version -match "^(?<major>\d+)(\.(?<minor>\d+))?(\.(?<patch>\d+))?(\-(?<pre>[0-9A-Za-z\-\.]+))?(\+(?<build>[0-9A-Za-z\-\.]+))?$" | Out-Null
+    $major = [int]$matches['major']
+    $minor = [int]$matches['minor']
+    $patch = [int]$matches['patch']
+    
+    if ($null -eq $matches['pre']) { $pre = @() }
+    else { $pre = $matches['pre'].Split(".") }
+
+    $revision = 0
+    if ($pre.Count -gt 0)
+    {
+        $revision = Get-HighestRevision -InputArray $pre
+    }
+
+    return [version]$version = "$major.$minor.$patch.$revision" 
+}
+
+function Get-HighestRevision
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [array]$InputArray
+    )
+
+    # Filter the array to keep only integers
+    $integers = $InputArray | ForEach-Object {
+        $_ -as [int]
+    }
+
+    # Return the highest integer
+    if ($integers.Count -gt 0)
+    {
+        return ($integers | Measure-Object -Maximum).Maximum
+    }
+    else
+    {
+        return $null
+    }
 }
 
 function Install-DotNetToolPackage
@@ -242,13 +278,15 @@ function Uninstall-DotNetToolPackage
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
-        [string]$Name
+        [string] $PackageId,
+        [string] $ToolPath
     )
 
-    $arguments = "tool uninstall $Name --global" 
+    $installArgument = Get-DotNetToolArguments @PSBoundParameters
+    $arguments = "tool uninstall $installArgument" 
     Write-Verbose -Message "Uninstalling dotnet tool package with arguments: $arguments"
         
-    Invoke-DotNet -Command
+    Invoke-DotNet -Command $arguments
 }
 
 function Invoke-DotNet
@@ -324,10 +362,8 @@ class DotNetToolPackage
         # refresh installed packages
         [DotNetToolPackage]::GetInstalledPackages($properties)
 
+        # get the current state
         $currentState = [DotNetToolPackage]::InstalledPackages[$this.PackageId]
-        
-        # current state
-        # $currentState = [DotNetToolPackage]::Export($properties)
 
         # get the properties of the object currently set
         $properties = $this.ToHashTable()
@@ -342,8 +378,20 @@ class DotNetToolPackage
         {
             if ($this.Version -and ($this.Version -ne $currentState.Version))
             {
-                $currentState.Exist = $false   
-                $currentState.Version = $this.Version
+                # See treatment: https://learn.microsoft.com/en-us/nuget/concepts/package-versioning?tabs=semver20sort#normalized-version-numbers
+                # in this case, we misuse revision if beta,alpha, rc are present and grab the highest revision
+                $installedVersion = Get-Semver -Version $currentState.Version
+                $currentVersion = Get-Semver -Version $this.Version
+                if ($currentVersion -gt $installedVersion)
+                {
+                    $currentState.Exist = $false
+                    $currentState.Version = $this.Version
+                }
+                else 
+                {
+                    # Don't want to downgrade scenarios
+                    Throw "The package version cannot be less than the installed version. Please provide a version greater than or equal to the installed version."
+                }
             }
 
             return $currentState
@@ -366,14 +414,9 @@ class DotNetToolPackage
             return
         }
 
-        if ($this.Exist -and [DotNetToolPackage]::InstalledPackages[$this.PackageId])
+        if ([DotNetToolPackage]::InstalledPackages[$this.PackageId] -and ($this.Exist))
         {
-            $current = $this.Version -as [version]
-            $installed = [DotNetToolPackage]::InstalledPackages[$this.PackageId].Version -as [version]
-            if ( $current -gt $installed )
-            {
-                $this.Upgrade($false)
-            }
+            $this.Upgrade($false)
         }
         elseif ($this.Exist)
         {
@@ -393,7 +436,7 @@ class DotNetToolPackage
             return $false
         }
 
-        if ($null -ne $this.Version -and $this.Version -ne $currentState.Version -and $this.PreRelease -ne $currentState.PreRelease)
+        if ($null -ne $this.Version -or $this.Version -ne $currentState.Version -and $this.PreRelease -ne $currentState.PreRelease)
         {
             return $false
         }
@@ -440,7 +483,9 @@ class DotNetToolPackage
             return
         }
 
-        Update-DotNetToolpackage -Name $this.PackageId -Version $this.Version -PreRelease $this.PreRelease -ToolPath $this.ToolPath
+        $params = $this.ToHashTable()   
+
+        Update-DotNetToolpackage @params
         [DotNetToolPackage]::GetInstalledPackages()
     }
 
@@ -464,7 +509,18 @@ class DotNetToolPackage
 
     [void] Uninstall([bool] $preTest)
     {
-        Uninstall-DotNetToolpackage -Name $this.PackageId
+        $params = $this.ToHashTable()
+
+        $uninstallParams = @{
+            PackageId = $this.PackageId
+        }
+
+        if ($params.ContainsKey('ToolPath'))
+        {
+            $uninstallParams.Add('ToolPath', $params['ToolPath'])
+        }
+
+        Uninstall-DotNetToolpackage @uninstallParams
         [DotNetToolPackage]::GetInstalledPackages()
     }
 

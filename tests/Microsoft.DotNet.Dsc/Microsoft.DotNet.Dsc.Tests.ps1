@@ -121,20 +121,43 @@ Describe 'DSC operation capabilities' {
     }
 
     # TODO: Work on update scenario
-    # It 'Update in tool path location' -Skip:(!$IsWindows) {
-    #     $parameters = @{
-    #         PackageId = 'dotnet-dump'
-    #         ToolPath  = 'C:\tools'
-    #         Version   = '8.0.547301'
-    #     }
+    It 'Update in tool path location' -Skip:(!$IsWindows) {
+        $parameters = @{
+            PackageId = 'dotnet-dump'
+            ToolPath  = 'C:\tools'
+            Version   = '8.0.547301'
+        }
 
-    #     Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
+        Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
 
-    #     $state = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
-    #     $state.Exist | Should -BeTrue
-    #     $state.ToolPath | Should -Be $parameters.ToolPath
-    #     $state::InstalledPackages[$parameters.PackageId].ToolPath | Should -Be $parameters.ToolPath # It should reflect updated export()
-    # }
+        $state = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
+        $state.Exist | Should -BeTrue
+        $state.ToolPath | Should -Be $parameters.ToolPath
+        $state::InstalledPackages[$parameters.PackageId].ToolPath | Should -Be $parameters.ToolPath # It should reflect updated export()
+    }
 
-    # TODO: Work on uninstall scenario
+    It 'Uninstall a tool' -Skip:(!$IsWindows) {
+        $parameters = @{
+            PackageId = 'gitversion.tool'
+            Exist     = $false
+        }
+
+        Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
+
+        $state = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
+        $state.Exist | Should -BeFalse
+    }
+
+    It 'Uninstall a tool from tool path location' -Skip:(!$IsWindows) {
+        $parameters = @{
+            PackageId = 'dotnet-dump'
+            ToolPath  = 'C:\tools'
+            Exist     = $false
+        }
+
+        Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
+
+        $state = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
+        $state.Exist | Should -BeFalse
+    }
 }
