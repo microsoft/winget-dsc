@@ -13,6 +13,13 @@ Set-StrictMode -Version Latest
 BeforeAll {
     Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
     Import-Module Microsoft.DotNet.Dsc
+
+    $script:toolsDir = Join-Path $env:USERPROFILE 'tools'
+
+    if (-not (Test-Path $toolsDir))
+    {
+        $null = New-Item -ItemType Directory -Path $toolsDir -Force -ErrorAction SilentlyContinue
+    }
 }
 
 Describe 'List available DSC resources' {
@@ -108,7 +115,7 @@ Describe 'DSC operation capabilities' {
     It 'Installs in tool path location with version' -Skip:(!$IsWindows) {
         $parameters = @{
             PackageId = 'dotnet-dump'
-            ToolPath  = 'C:\tools'
+            ToolPath  = $toolsDir
             Version   = '8.0.532401'
         }
 
@@ -124,7 +131,7 @@ Describe 'DSC operation capabilities' {
     It 'Update in tool path location' -Skip:(!$IsWindows) {
         $parameters = @{
             PackageId = 'dotnet-dump'
-            ToolPath  = 'C:\tools'
+            ToolPath  = $toolsDir
             Version   = '8.0.547301'
         }
 
@@ -151,7 +158,7 @@ Describe 'DSC operation capabilities' {
     It 'Uninstall a tool from tool path location' -Skip:(!$IsWindows) {
         $parameters = @{
             PackageId = 'dotnet-dump'
-            ToolPath  = 'C:\tools'
+            ToolPath  = $toolsDir
             Exist     = $false
         }
 
@@ -160,4 +167,8 @@ Describe 'DSC operation capabilities' {
         $state = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $state.Exist | Should -BeFalse
     }
+}
+
+AfterAll {
+    Remove-Item -Path $toolsDir -Recurse -Force -ErrorAction SilentlyContinue
 }
