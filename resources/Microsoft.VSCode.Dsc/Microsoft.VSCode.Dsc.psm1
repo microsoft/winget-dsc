@@ -10,6 +10,14 @@ function Get-VSCodeCLIPath {
         [switch]$Insiders
     )
 
+    # Product Codes for VSCode and VSCode Insider:
+    $vsCodeUserProductCode = "{771FD6B0-FA20-440A-A002-3B3BAC16DC50}_is1"
+    $vsCodeMachineProductCode = "{EA457B21-F73E-494C-ACAB-524FDE069978}_is1"
+
+    $vsCodeInsidersUserProductCode = "{217B4C08-948D-4276-BFBB-BEE930AE5A2C}_is1"
+    $vsCodeInsidersMachineProductCode = "{1287CAD5-7C8D-410D-88B9-0D1EE4A83FF2}_is1"
+
+    # Note: WOW6432 registry not checked as no uninstall entry was found.
     $userUninstallRegistry = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
     $machineUninstallRegistry = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
     $installLocationProperty = "InstallLocation"
@@ -17,13 +25,13 @@ function Get-VSCodeCLIPath {
     if ($Insiders)
     {
         $cmdPath = "bin\code-insiders.cmd"
-        $insidersUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\{217B4C08-948D-4276-BFBB-BEE930AE5A2C}_is1" -Property $installLocationProperty
+        $insidersUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\$($vsCodeInsidersUserProductCode)" -Property $installLocationProperty
         if ($insidersUserInstallLocation)
         {
             return $insidersUserInstallLocation + $cmdPath
         }
 
-        $insidersMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\{1287CAD5-7C8D-410D-88B9-0D1EE4A83FF2}_is1" -Property $installLocationProperty
+        $insidersMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\$($vsCodeInsidersMachineProductCode)" -Property $installLocationProperty
         if ($insidersMachineInstallLocation)
         {
             return $insidersMachineInstallLocation + $cmdPath
@@ -32,13 +40,13 @@ function Get-VSCodeCLIPath {
     else
     {
         $cmdPath = "bin\code.cmd"
-        $codeUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\{771FD6B0-FA20-440A-A002-3B3BAC16DC50}_is1" -Property $installLocationProperty
+        $codeUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\$($vsCodeUserProductCode)" -Property $installLocationProperty
         if ($codeUserInstallLocation)
         {
             return $codeUserInstallLocation + $cmdPath
         }
 
-        $codeMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\{EA457B21-F73E-494C-ACAB-524FDE069978}_is1" -Property $installLocationProperty
+        $codeMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\$($vsCodeMachineProductCode)" -Property $installLocationProperty
         if ($codeMachineInstallLocation)
         {
             return $codeMachineInstallLocation + $cmdPath
