@@ -595,14 +595,6 @@ class TextCursor
     }
 }
 
-<#
-Enable/disable is controlled by 2 keys:
-- HKEY_CURRENT_USER\Software\Microsoft\ColorFiltering
-  - Dword: "Active"
-- HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\Accessibility
-  - Key: "Configuration" add value "colorfiltering"
-  - This key actually stores several values at the same time, as a concatenated string. Enable by adding into the string, and disable by removing. 
-#>
 [DSCResource()]
 class ColorFilter
 {
