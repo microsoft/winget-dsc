@@ -355,11 +355,7 @@ class VisualEffect
             if ($null -ne $this.TransparencyEffects) 
             {
                 $transparencyValue = if ($this.TransparencyEffects) { 0 } else { 1 }
-				
-                if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
-                    New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
-                }
-                Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
+                Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
             }
             if (0 -ne $this.MessageDurationInSeconds) 
             {
@@ -559,10 +555,7 @@ class TextCursor
                 { 
                     throw "IndicatorSize must be between $min and $max. Value $($this.IndicatorSize) was provided." 
                 }
-                if (-not (DoesRegistryKeyPropertyExist @indicatorSizeArgs)) {
-                    New-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize -PropertyType DWord
-                }
-                Set-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize 
+				Set-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize -PropertyType DWord
             }
             
             if (0 -ne $this.IndicatorColor) 
@@ -574,10 +567,7 @@ class TextCursor
                 { 
                     throw "IndicatorColor must be between $min and $max. Value $($this.IndicatorColor) was provided." 
                 }
-                if (-not (DoesRegistryKeyPropertyExist @indicatorColorArgs)) {
-                    New-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor -PropertyType DWord
-                }
-                Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor 
+				Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor -PropertyType DWord
             }
             
             if (0 -ne $this.Thickness) 
@@ -600,27 +590,27 @@ class ColorFilter
 {
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
-    [DscProperty()] [nullable[bool]] $FilterStatus
+    [DscProperty()] [nullable[bool]] $FilterEnabled
     [DscProperty()] [ColorFilters] $FilterColor
-    [DscProperty()] [nullable[bool]] $KeyboardShortcutStatus
+    [DscProperty()] [nullable[bool]] $HotkeyEnabled
 
-    static hidden [string] $FilterStatusProperty = 'Configuration'
-    static hidden [string] $FilterStatusActiveProperty = 'Active'
-    static hidden [string] $FilterStatusValue = 'colorfiltering'
+    static hidden [string] $AccessibilityStatusKey = 'Configuration'
+    static hidden [string] $AccessibilityStatusValue = 'colorfiltering'
+    static hidden [string] $FilterActiveValue = 'Active'
     static hidden [string] $FilterColorProperty = 'FilterType'
-    static hidden [string] $KeyboardShortcutStatusProperty = 'HotkeyEnabled'
+    static hidden [string] $HotkeyEnabledProperty = 'HotkeyEnabled'
 
     static [bool] GetStatus()
     {
-        $FilterStatusArgs = @{  Path = $global:NTAccessibilityRegistryPath; Name = ([ColorFilter]::FilterStatusProperty)}
+        $FilterStatusArgs = @{  Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::FilterActiveValue)}
         if (-not(DoesRegistryKeyPropertyExist @FilterStatusArgs))
         {
             return $false
         }
         else
         {
-            $colorFilterSetting = (Get-ItemProperty @FilterStatusArgs).Configuration
-            return ($colorFilterSetting -eq ([ColorFilter]::FilterStatusValue))
+            $colorFilterSetting = (Get-ItemProperty @FilterStatusArgs).Active
+            return ($colorFilterSetting -eq ([ColorFilter]::AccessibilityStatusValue))
         }
     }
 
@@ -640,7 +630,7 @@ class ColorFilter
 
     static [nullable[bool]] GetKeyboardShortcutStatus()
     {
-        $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::KeyboardShortcutStatusProperty); }
+        $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::HotkeyEnabledProperty); }
         if (-not(DoesRegistryKeyPropertyExist @KeyboardShortcutStatusArgs))
         {
             return $false
@@ -655,9 +645,9 @@ class ColorFilter
     [ColorFilter] Get()
     {
         $currentState = [ColorFilter]::new()
-        $currentState.FilterStatus = [ColorFilter]::GetStatus()
+        $currentState.FilterEnabled = [ColorFilter]::GetStatus()
         $currentState.FilterColor = [ColorFilter]::GetColor()
-        $currentState.KeyboardShortcutStatus = [ColorFilter]::GetKeyboardShortcutStatus()
+        $currentState.HotkeyEnabled = [ColorFilter]::GetKeyboardShortcutStatus()
         
         return $currentState
     }
@@ -665,15 +655,15 @@ class ColorFilter
     [bool] Test()
     {
         $currentState = $this.Get()
-        if (($null -ne $this.FilterStatus) -and ($this.FilterStatus -ne $currentState.FilterStatus))
+        if (($null -ne $this.FilterEnabled) -and ($this.FilterEnabled -ne $currentState.FilterEnabled))
         {
             return $false
         }
-        if ((0 -ne $this.FilterColor) -and ($this.FilterColor -ne $currentState.FilterColor))
+        if (([ColorFilter]::KeepCurrentValue -ne $this.FilterColor) -and ($this.FilterColor -ne $currentState.FilterColor))
         {
             return $false
         }
-        if (($null -ne $this.KeyboardShortcutStatus) -and ($this.KeyboardShortcutStatus -ne $currentState.KeyboardShortcutStatus))
+        if (($null -ne $this.HotkeyEnabled) -and ($this.HotkeyEnabled -ne $currentState.HotkeyEnabled))
         {
             return $false
         }
@@ -685,32 +675,23 @@ class ColorFilter
     {
         if (-not $this.Test())
         {
-            if ($null -ne $this.FilterStatus) 
+            if ($null -ne $this.FilterEnabled) 
             {
-                $FilterStatusArgs = @{ Path = $global:NTAccessibilityRegistryPath; Name = ([ColorFilter]::FilterStatusProperty); }
-                $ColorFilterValue = if ($this.FilterStatus) { ([ColorFilter]::FilterStatusValue) } else { "" }
+                $FilterStatusArgs = @{ Path = $global:NTAccessibilityRegistryPath; Name = ([ColorFilter]::AccessibilityStatusKey); }
+                $ColorFilterValue = if ($this.FilterEnabled) { ([ColorFilter]::AccessibilityStatusValue) } else { "" }
                 Set-ItemProperty @FilterStatusArgs -Value $ColorFilterValue
             }
             
-            if (0 -ne $this.FilterColor) 
+            if ([PointerSize]::KeepCurrentValue -ne $this.FilterColor) 
             {
                 $FilterColorArgs = @{  Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::FilterColorProperty)}
-                $min = 1
-                $max = 99999999
-                if ($this.FilterColor  -notin $min..$max) 
-                { 
-                    throw "FilterColor must be between $min and $max. Value $($this.FilterColor) was provided." 
-                }
-                if (-not (DoesRegistryKeyPropertyExist @FilterColorArgs)) {
-                    New-ItemProperty @FilterColorArgs -Value $this.FilterColor -PropertyType DWord
-                }
-                Set-ItemProperty @FilterColorArgs -Value $this.FilterColor 
+                Set-ItemProperty @FilterColorArgs -Value $this.FilterColor -PropertyType DWord 
             }
             
-            if ($null -ne $this.KeyboardShortcutStatus) 
+            if ($null -ne $this.HotkeyEnabled) 
             {
-                $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::KeyboardShortcutStatusProperty); }
-                $ColorFilterValue = if ($this.KeyboardShortcutStatus) { ([ColorFilter]::KeyboardShortcutStatusProperty) } else { "" }
+                $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::HotkeyEnabledProperty); }
+                $ColorFilterValue = if ($this.HotkeyEnabled) { ([ColorFilter]::HotkeyEnabledProperty) } else { "" }
                 Set-ItemProperty @KeyboardShortcutStatusArgs -Value $ColorFilterValue
             }
         }

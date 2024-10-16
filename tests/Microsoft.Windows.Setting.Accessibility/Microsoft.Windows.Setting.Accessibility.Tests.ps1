@@ -298,20 +298,26 @@ Describe 'ColorFilter'{
         $testResult2.InDesiredState | Should -Be $true
     }
     It 'FilterColor.'{ 
-        Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ FilterColor = 2 }
+        $desiredFilterColor = [ColorFilters](Get-Random -Maximum 6 -Minimum 1)
+        $parameters = @{ FilterColor = $desiredFilterColor }
+        Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
 
         $initialState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-        $initialState.FilterColor | Should -Be 2
+        $initialState.FilterColor | Should -Be $desiredFilterColor
 
-        # Set 'FilterColor' to 3.
-        $parameters = @{ FilterColor = 3 } #Increment default by 1
+		#Choose new value at random	
+        $newDesiredFilterColor = $desiredFilterColor;
+		while ($newDesiredFilterColor -eq $desiredFilterColor) {$newDesiredFilterColor = [ColorFilters](Get-Random -Maximum 6 -Minimum 1)}
+        
+		# Update 'FilterColor'.
+        $parameters = @{ FilterColor = $newDesiredFilterColor }
         $testResult = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $false
 
         # Verify the changes are correct.
         Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
         $finalState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
-        $finalState.FilterColor | Should -Be 3
+        $finalState.FilterColor | Should -Be $newDesiredFilterColor
 
         $testResult2 = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
