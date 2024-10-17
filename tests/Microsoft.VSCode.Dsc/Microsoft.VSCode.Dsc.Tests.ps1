@@ -66,7 +66,7 @@ Describe 'VSCodeExtension-Insiders' {
     It 'Keeps current extension in Insiders edition.' -Skip:(!$IsWindows) {
         $parameters = @{
             Name = 'ms-vscode.powershell'
-            UseInsiders = $true
+            Insiders = $true
         }
 
         $initialState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
@@ -85,7 +85,7 @@ Describe 'VSCodeExtension-Insiders' {
     It 'Sets desired extension in Insiders edition' -Skip:(!$IsWindows) {
         $desiredState = @{
             Name = 'ms-azure-devops.azure-pipelines'
-            UseInsiders = $true
+            Insiders = $true
         }
         
         Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
