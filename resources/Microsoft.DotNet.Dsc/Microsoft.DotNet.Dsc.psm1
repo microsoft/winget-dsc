@@ -64,28 +64,39 @@ function Get-DotNetToolArguments
         [Parameter(Mandatory = $false)]
         [bool]   $PreRelease,
         [Parameter(Mandatory = $false)]
-        [string] $ToolPath,
-        [bool]   $Exist
+        [string] $ToolPathDirectory,
+        [bool]   $Exist,
+        [switch] $Downgrade
     )
 
     $arguments = @($PackageId)
 
-    if (-not ($PSBoundParameters.ContainsKey("ToolPath")))
+    if (-not ($PSBoundParameters.ContainsKey("ToolPathDirectory")))
     {
         $arguments += "--global"
     }
 
+    if ($PSBoundParameters.ContainsKey("Prerelease") -and $PSBoundParameters.ContainsKey("Version"))
+    {
+        # do it with version instead of pre
+        $null = $PSBoundParameters.Remove("Prerelease")
+    }
+
     # mapping table of command line arguments
     $mappingTable = @{
-        Version    = "--version {0}"
-        PreRelease = "--prerelease"
-        ToolPath   = "--tool-path {0}"
+        Version           = "--version {0}"
+        PreRelease        = "--prerelease"
+        ToolPathDirectory = "--tool-path {0}"
+        Downgrade         = '--allow-downgrade'
     }
     
     $PSBoundParameters.GetEnumerator() | ForEach-Object {
-        if ($mappingTable.ContainsKey($_.Key) -and $_.Value -ne $false)
+        if ($mappingTable.ContainsKey($_.Key)) 
         {
-            $arguments += ($mappingTable[$_.Key] -f $_.Value)
+            if ($_.Value -ne $false -and -not (([string]::IsNullOrEmpty($_.Value))))
+            {
+                $arguments += ($mappingTable[$_.Key] -f $_.Value)
+            }
         }
     }
 
@@ -146,7 +157,7 @@ function Get-InstalledDotNetToolPackages
                 }
                 return $true
             })]
-        [string] $ToolPath,
+        [string] $ToolPathDirectory,
         [bool]   $Exist
     )
 
@@ -154,10 +165,10 @@ function Get-InstalledDotNetToolPackages
     $listCommand = "tool list --global"
     $installDir = Join-Path -Path $env:USERPROFILE '.dotnet' 'tools'
 
-    if ($PSBoundParameters.ContainsKey('ToolPath'))
+    if ($PSBoundParameters.ContainsKey('ToolPathDirectory'))
     {
-        $listCommand = "tool list --tool-path $ToolPath"
-        $installDir = $ToolPath
+        $listCommand = "tool list --tool-path $ToolPathDirectory"
+        $installDir = $ToolPathDirectory
     }
 
     $result = Invoke-DotNet -Command $listCommand
@@ -177,16 +188,16 @@ function Get-InstalledDotNetToolPackages
     foreach ($package in $packages)
     {
         # flags to determine the existence of the package
-        $preFlag = $false
+        $isPrerelease = $false
         $preReleasePackage = $package.Version -Split "-"
         if ($preReleasePackage.Count -gt 1)
         {
             # set the pre-release flag to true to build the object
-            $preFlag = $true
+            $isPrerelease = $true
         }
 
         $resultSet.Add([DotNetToolPackage]::new(
-                $package.PackageId, $package.Version, $package.Commands, $preFlag, $installDir, $true
+                $package.PackageId, $package.Version, $package.Commands, $isPrerelease, $installDir, $true
             ))
     }
 
@@ -204,7 +215,7 @@ function Get-SemVer($version)
     else { $pre = $matches['pre'].Split(".") }
 
     $revision = 0
-    if ($pre.Count -gt 0)
+    if ($pre.Length -gt 1)
     {
         $revision = Get-HighestRevision -InputArray $pre
     }
@@ -243,7 +254,7 @@ function Install-DotNetToolPackage
         [string] $PackageId,
         [string] $Version,
         [bool]   $PreRelease,
-        [string] $ToolPath,
+        [string] $ToolPathDirectory,
         [bool]   $Exist
     )
 
@@ -262,9 +273,18 @@ function Update-DotNetToolPackage
         [string] $PackageId,
         [string] $Version,
         [bool]   $PreRelease,
-        [string] $ToolPath,
-        [bool]   $Exist
+        [string] $ToolPathDirectory,
+        [bool]   $Exist,
+        [switch] $Downgrade
     )
+
+    if ($Downgrade.IsPresent)
+    {
+        if (-not (Assert-DotNetToolDowngrade))
+        {
+            Throw "Downgrade is not supported in this version of dotnet tool. Please upgrade to a version that supports downgrade."
+        }
+    }
 
     $installArgument = Get-DotNetToolArguments @PSBoundParameters
     $arguments = "tool update $installArgument --ignore-failed-sources"
@@ -273,13 +293,25 @@ function Update-DotNetToolPackage
     Invoke-DotNet -Command $arguments
 }
 
+function Assert-DotNetToolDowngrade
+{
+    [version]$version = Invoke-DotNet -Command '--version'
+
+    if ($version.Build -lt 200)
+    {
+        return $false
+    }
+
+    return $true
+}
+
 function Uninstall-DotNetToolPackage
 {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [string] $PackageId,
-        [string] $ToolPath
+        [string] $ToolPathDirectory
     )
 
     $installArgument = Get-DotNetToolArguments @PSBoundParameters
@@ -329,10 +361,10 @@ class DotNetToolPackage
     [string[]] $Commands
 
     [DscProperty()]
-    [bool] $PreRelease = $false
+    [bool] $Prerelease = $false
 
     [DscProperty()]
-    [string] $ToolPath
+    [string] $ToolPathDirectory
 
     [DscProperty()]
     [bool] $Exist = $true
@@ -344,27 +376,18 @@ class DotNetToolPackage
         [DotNetToolPackage]::GetInstalledPackages()
     }
 
-    DotNetToolPackage([string] $PackageId, [string] $Version, [string[]] $Commands, [bool] $PreRelease, [string] $ToolPath, [bool] $Exist)
+    DotNetToolPackage([string] $PackageId, [string] $Version, [string[]] $Commands, [bool] $PreRelease, [string] $ToolPathDirectory, [bool] $Exist)
     {
         $this.PackageId = $PackageId
         $this.Version = $Version
         $this.Commands = $Commands
         $this.PreRelease = $PreRelease
-        $this.ToolPath = $ToolPath
+        $this.ToolPathDirectory = $ToolPathDirectory
         $this.Exist = $Exist
     }
 
     [DotNetToolPackage] Get()
     {
-        # get the properties of the object currently set
-        $properties = $this.ToHashTable()
-
-        # refresh installed packages
-        [DotNetToolPackage]::GetInstalledPackages($properties)
-
-        # get the current state
-        $currentState = [DotNetToolPackage]::InstalledPackages[$this.PackageId]
-
         # get the properties of the object currently set
         $properties = $this.ToHashTable()
 
@@ -382,15 +405,9 @@ class DotNetToolPackage
                 # in this case, we misuse revision if beta,alpha, rc are present and grab the highest revision
                 $installedVersion = Get-Semver -Version $currentState.Version
                 $currentVersion = Get-Semver -Version $this.Version
-                if ($currentVersion -gt $installedVersion)
+                if ($currentVersion -gt $installedVersion -or $currentState -le $currentState)
                 {
                     $currentState.Exist = $false
-                    $currentState.Version = $this.Version
-                }
-                else 
-                {
-                    # Don't want to downgrade scenarios
-                    Throw "The package version cannot be less than the installed version. Please provide a version greater than or equal to the installed version."
                 }
             }
 
@@ -398,12 +415,12 @@ class DotNetToolPackage
         }
         
         return [DotNetToolPackage]@{
-            PackageId  = $this.PackageId
-            Version    = $this.Version
-            Commands   = $this.Commands
-            PreRelease = $this.PreRelease
-            ToolPath   = $this.ToolPath
-            Exist      = $false
+            PackageId         = $this.PackageId
+            Version           = $this.Version
+            Commands          = $this.Commands
+            PreRelease        = $this.PreRelease
+            ToolPathDirectory = $this.ToolPathDirectory
+            Exist             = $false
         }
     }
 
@@ -414,9 +431,17 @@ class DotNetToolPackage
             return
         }
 
-        if ([DotNetToolPackage]::InstalledPackages[$this.PackageId] -and ($this.Exist))
+        $currentPackage = [DotNetToolPackage]::InstalledPackages[$this.PackageId]
+        if ($currentPackage -and $this.Exist)
         {
-            $this.Upgrade($false)
+            if ($this.Version -lt $currentPackage.Version)
+            {
+                $this.Downgrade($false)
+            }
+            else
+            {
+                $this.Upgrade($false)
+            }
         }
         elseif ($this.Exist)
         {
@@ -489,6 +514,20 @@ class DotNetToolPackage
         [DotNetToolPackage]::GetInstalledPackages()
     }
 
+    [void] Downgrade([bool] $preTest)
+    {
+        if ($preTest -and $this.Test())
+        {
+            return
+        }
+
+        $params = $this.ToHashTable()   
+        $params.Add('Downgrade', $true)
+
+        Update-DotNetToolpackage @params
+        [DotNetToolPackage]::GetInstalledPackages()
+    }
+
     [void] Install([bool] $preTest)
     {
         if ($preTest -and $this.Test())
@@ -515,9 +554,9 @@ class DotNetToolPackage
             PackageId = $this.PackageId
         }
 
-        if ($params.ContainsKey('ToolPath'))
+        if ($params.ContainsKey('ToolPathDirectory'))
         {
-            $uninstallParams.Add('ToolPath', $params['ToolPath'])
+            $uninstallParams.Add('ToolPathDirectory', $params['ToolPathDirectory'])
         }
 
         Uninstall-DotNetToolpackage @uninstallParams
