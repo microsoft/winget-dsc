@@ -274,17 +274,8 @@ function Update-DotNetToolPackage
         [string] $Version,
         [bool]   $PreRelease,
         [string] $ToolPathDirectory,
-        [bool]   $Exist,
-        [switch] $Downgrade
+        [bool]   $Exist
     )
-
-    if ($Downgrade.IsPresent)
-    {
-        if (-not (Assert-DotNetToolDowngrade))
-        {
-            Throw "Downgrade is not supported in this version of dotnet tool. Please upgrade to a version that supports downgrade."
-        }
-    }
 
     $installArgument = Get-DotNetToolArguments @PSBoundParameters
     $arguments = "tool update $installArgument --ignore-failed-sources"
@@ -405,7 +396,7 @@ class DotNetToolPackage
                 # in this case, we misuse revision if beta,alpha, rc are present and grab the highest revision
                 $installedVersion = Get-Semver -Version $currentState.Version
                 $currentVersion = Get-Semver -Version $this.Version
-                if ($currentVersion -gt $installedVersion -or $currentState -le $currentState)
+                if ($currentVersion -ne $installedVersion)
                 {
                     $currentState.Exist = $false
                 }
@@ -436,7 +427,7 @@ class DotNetToolPackage
         {
             if ($this.Version -lt $currentPackage.Version)
             {
-                $this.Downgrade($false)
+                $this.ReInstall($false)
             }
             else
             {
@@ -514,17 +505,15 @@ class DotNetToolPackage
         [DotNetToolPackage]::GetInstalledPackages()
     }
 
-    [void] Downgrade([bool] $preTest)
+    [void] ReInstall([bool] $preTest)
     {
         if ($preTest -and $this.Test())
         {
             return
         }
-
-        $params = $this.ToHashTable()   
-        $params.Add('Downgrade', $true)
-
-        Update-DotNetToolpackage @params
+        
+        $this.Uninstall($false)
+        $this.Install($false)
         [DotNetToolPackage]::GetInstalledPackages()
     }
 
