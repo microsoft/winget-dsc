@@ -18,7 +18,7 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Documentation
 
-The documentation can be found in the [doc](/doc/) directory. Each DSC resource stored in the [resources](/resources//Help/), provide synopsis and examples to get yourself started.
+The documentation can be found in the [doc](/doc/) directory. Each DSC resource stored in the [resources](/resources/Help/), provide synopsis and examples to get yourself started.
 
 ## Trademarks
 
