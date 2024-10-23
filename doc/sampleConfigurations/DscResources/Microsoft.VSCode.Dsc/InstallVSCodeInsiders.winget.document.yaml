@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+########################################################################################
+# This configuration will install Visual Studio Code Insiders.                         #
+# PowerShell module: Microsoft.Dotnet.Dsc (v0.1.1-alpha)                               #
+########################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.VSCode.Dsc/VSCodeInstaller
+      directives:
+        description: Install Visual Studio Code Insiders
+        allowPrerelease: true
+      settings: 
+        Insiders: true
+  configurationVersion: 0.2.0

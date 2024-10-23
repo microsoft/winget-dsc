@@ -5,7 +5,8 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 #region Functions
-function Get-VSCodeCLIPath {
+function Get-VSCodeCLIPath
+{
     param (
         [switch]$Insiders
     )
@@ -28,13 +29,21 @@ function Get-VSCodeCLIPath {
         $insidersUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\$($vsCodeInsidersUserProductCode)" -Property $installLocationProperty
         if ($insidersUserInstallLocation)
         {
-            return $insidersUserInstallLocation + $cmdPath
+            return @{
+                Path    = $insidersUserInstallLocation + $cmdPath
+                Version = (Get-Item -Path (Join-Path $insidersUserInstallLocation 'Code - Insiders.exe')).VersionInfo.ProductVersion
+                Insiders = $true
+            }
         }
 
         $insidersMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\$($vsCodeInsidersMachineProductCode)" -Property $installLocationProperty
         if ($insidersMachineInstallLocation)
         {
-            return $insidersMachineInstallLocation + $cmdPath
+            return @{
+                Path    = $insidersMachineInstallLocation + $cmdPath
+                Version = (Get-Item -Path (Join-Path $insidersMachineInstallLocation 'Code - Insiders.exe')).VersionInfo.ProductVersion
+                Insiders = $true
+            }
         }
     }
     else
@@ -43,20 +52,51 @@ function Get-VSCodeCLIPath {
         $codeUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\$($vsCodeUserProductCode)" -Property $installLocationProperty
         if ($codeUserInstallLocation)
         {
-            return $codeUserInstallLocation + $cmdPath
+            return @{
+                Path    = $codeUserInstallLocation + $cmdPath
+                Version = (Get-Item -Path (Join-Path $codeUserInstallLocation 'Code.exe')).VersionInfo.ProductVersion
+            }
         }
 
         $codeMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\$($vsCodeMachineProductCode)" -Property $installLocationProperty
         if ($codeMachineInstallLocation)
         {
-            return $codeMachineInstallLocation + $cmdPath
+            return @{
+                Path    = $codeMachineInstallLocation + $cmdPath
+                Version = (Get-Item -Path (Join-Path $codeMachineInstallLocation 'Code.exe')).VersionInfo.ProductVersion
+            }
         }
     }
 
-    throw "VSCode is not installed."
+    return @{
+        Path    = $null 
+        Version = $null
+    }
 }
 
-function Install-VSCodeExtension {
+function Test-VSCodeCLIPath 
+{
+    param (
+        [switch]$Insiders,
+        [string]$Version
+    )
+
+    $vsCodeCLIPath = Get-VSCodeCLIPath -Insiders:$Insiders
+    if ($null -eq $vsCodeCLIPath.Path)
+    {
+        return $false
+    }
+
+    if ($Version -and $vsCodeCLIPath.Version -ne $Version)
+    {
+        return $false
+    }
+
+    return $true
+}
+
+function Install-VSCodeExtension
+{
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
@@ -65,11 +105,14 @@ function Install-VSCodeExtension {
         [string]$Version
     )
     
-    begin {
-        function Get-VSCodeExtensionInstallArgument {
+    begin
+    {
+        function Get-VSCodeExtensionInstallArgument
+        {
             param([string]$Name, [string]$Version)
             
-            if ([string]::IsNullOrEmpty($Version)) {
+            if ([string]::IsNullOrEmpty($Version))
+            {
                 return $Name
             }
 
@@ -80,13 +123,15 @@ function Install-VSCodeExtension {
         }
     }
     
-    process {
+    process
+    {
         $installArgument = Get-VSCodeExtensionInstallArgument @PSBoundParameters
         Invoke-VSCode -Command "--install-extension $installArgument"
     }
 }
 
-function Uninstall-VSCodeExtension {
+function Uninstall-VSCodeExtension
+{
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
@@ -96,28 +141,32 @@ function Uninstall-VSCodeExtension {
     Invoke-VSCode -Command "--uninstall-extension $($this.Name)"
 }
 
-function Invoke-VSCode {
+function Invoke-VSCode
+{
     param (
         [Parameter(Mandatory = $true)]
         [string]$Command
     )
 
-    try {
+    try
+    {
         Invoke-Expression "& `"$VSCodeCLIPath`" $Command"
     }
-    catch {
+    catch
+    {
         throw ("Executing {0} with {$Command} failed." -f $VSCodeCLIPath)
     }
 }
 
-function TryGetRegistryValue{
+function TryGetRegistryValue
+{
     param (
         [Parameter(Mandatory = $true)]
         [string]$Key,
 
         [Parameter(Mandatory = $true)]
         [string]$Property
-        )    
+    )    
 
     if (Test-Path -Path $Key)
     {
@@ -135,11 +184,327 @@ function TryGetRegistryValue{
         Write-Verbose "Registry key does not exist."
     }
 }
+
+function Save-WithBitsTransfer {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        $FileUri,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Destination,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        $AppName
+    )
+
+    Remove-Item -Force $Destination -ErrorAction SilentlyContinue
+
+    $bitsDl = Start-BitsTransfer $FileUri -Destination $Destination -Asynchronous
+
+    while (($bitsDL.JobState -eq 'Transferring') -or ($bitsDL.JobState -eq 'Connecting')) {
+        Write-Verbose -Message ("Downloading: $AppName. Status: {0}. PercentComplete: {1}" -f ("$([math]::round($bitsDl.BytesTransferred / 1mb))mb / $([math]::round($bitsDl.BytesTotal / 1mb))mb"), (($($bitsDl.BytesTransferred) / $($bitsDl.BytesTotal) * 100 )) ) 
+    }
+
+    switch ($bitsDl.JobState) {
+
+        'Transferred' {
+            Complete-BitsTransfer -BitsJob $bitsDl
+            break
+        }
+
+        'Error' {
+            throw 'Error downloading installation media.'
+        }
+    }
+}
+
+function Get-CodePlatformInformation 
+{
+    param (
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string] $Version,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $Insiders
+    )
+
+    if ($IsWindows -or $PSVersionTable.PSVersion.Major -lt 6) {
+        $os = 'Windows'
+    }
+    elseif ($IsLinux) {
+        $os = 'Linux'
+    }
+    elseif ($IsMacOS) {
+        $os = 'MacOS'
+    }
+    else {
+        throw 'Could not identify operating system'
+    }
+
+    switch ($os) {
+        'Linux' {
+            # TODO: Add support for Linux
+        }
+
+        'MacOS' {
+            # TODO: Add support for MacOS
+        }
+
+        'Windows' {
+            $ext = 'exe'
+            if ($Insiders) 
+            {
+                # TODO: insiders does not have a direct URL, need to get the URL from the API
+                $url = (Invoke-RestMethod -Uri 'https://update.code.visualstudio.com/api/update/win32-x64/insider/0000000000000000000000000000000000000000').url
+                $dest = Join-Path $env:TEMP "VSCodeSetup-Insiders.$ext"
+            }
+            else 
+            {
+                # TODO: might figure out a way to do user and system installations
+                # info on URLs: https://code.visualstudio.com/docs/supporting/faq#_previous-release-versions
+                if ($Version) 
+                {
+                    $url = "https://update.code.visualstudio.com/$Version/win32-x64/stable" 
+                    $dest = Join-Path $env:TEMP "VSCodeSetup.$version.$ext"
+                }
+                else 
+                {
+                    $url = 'https://update.code.visualstudio.com/latest/win32-x64/stable'
+                    $dest = Join-Path $env:TEMP "VSCodeSetup.$ext"
+                }
+            }
+        }
+    }
+
+    return @{
+        FileUri = $url
+        Version = $Version
+        Extension = $ext
+        OS = $os
+        Destination = $dest
+    }
+}
+
+function Install-VSCode {
+    param (
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string] $Version,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $Insiders
+    )
+
+    $platformInfo = Get-CodePlatformInformation -Version $Version -Insiders:$Insiders
+
+    if (-not (Test-VSCodeCLIPath @PSBoundParameters))
+    {
+        if ($platformInfo.OS -eq 'Windows') {
+            try {
+                $appName = 'Visual Studio Code'
+                Save-WithBitsTransfer -FileUri $platformInfo.FileUri -Destination $platformInfo.Destination -AppName $appName
+    
+                $exeArgs = '/verysilent /tasks=addtopath'
+                $process = Start-Process -FilePath $platformInfo.Destination -ArgumentList $exeArgs -Wait
+            } 
+            catch 
+            {
+                Throw "Failed to install Visual Studio Code. $_"
+            } 
+            finally 
+            {
+                if ($process)
+                {
+                    Remove-Item -Path $platformInfo.Destination -Force
+                }
+            }
+        } 
+        elseif ($platformInfo.OS -eq 'Linux') 
+        {
+            # TODO: Add support for Linux
+        }
+        elseif ($platformInfo.OS -eq 'MacOS') 
+        {
+            # TODO: Add support for MacOS
+        }
+    }
+    
+}
 #endregion Functions
 
 #region DSCResources
+<#
+.SYNOPSIS
+    The `VSCodeInstaller` DSC Resource allows you to install, update, and remove Visual Studio Code. This resource ensures that the specified version of Visual Studio Code is in the desired state.
+
+.PARAMETER Path
+    The path where Visual Studio Code is installed. This is a key property not to be set.
+
+.PARAMETER Version
+    The version of Visual Studio Code to install. If not specified, the latest version will be installed.
+
+.PARAMETER Insiders
+    Indicates whether to install the Insiders version of Visual Studio Code. The default value is `$false`.
+
+.PARAMETER Exist
+    Indicates whether Visual Studio Code should exist. The default value is `$true`.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name VSCodeInstaller -Method Set -Property @{} -ModuleName Microsoft.VSCode.Dsc
+
+    # This installs the latest stable version of Visual Studio Code
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Version = '1.56.2'
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeInstaller -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    # This installs a specific version of Visual Studio Code
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Insiders = $true
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeInstaller -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    # This installs the latest Insiders version of Visual Studio Code
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Exist = $false
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeInstaller -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    # This removes Visual Studio Code
+#>
 [DSCResource()]
-class VSCodeExtension {
+class VSCodeInstaller
+{
+    [DscProperty(Key)]
+    [string] $Path
+
+    [DscProperty()]
+    [string] $Version
+
+    [DscProperty()]
+    [bool] $Insiders = $false
+
+    [DscProperty()]
+    [bool] $Exist = $true
+
+    [void] Set()
+    {
+        if ($this.Test())
+        {
+            return
+        }
+
+        Install-VSCode -Insiders:$this.Insiders -Version $this.Version
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        if ($currentState.Exist -ne $this.Exist)
+        {
+            return $false
+        }
+
+        if ($this.Version -and $this.Version -ne $currentState.Version -or $currentState.Insiders -ne $this.Insiders)
+        {
+            return $false
+        }
+
+        return $true
+    }
+
+    [VSCodeInstaller] Get()
+    {
+        $currentState = Get-VSCodeCLIPath -Insiders:$this.Insiders
+
+        if ($null -ne $currentState.Path)
+        {
+            if ($this.Version -and $this.Version -ne $currentState.Version)
+            {
+                return @{
+                    Path    = $currentState.Path
+                    Version = $this.Version
+                    Insiders = $this.Insiders
+                    Exist   = $false
+                }
+            }
+
+            return $currentState
+        }
+
+        return @{
+            Path    = $this.Path
+            Version = $this.Version
+            Insiders = $this.Insiders
+            Exist   = $false
+        }
+    }
+}
+<#
+.SYNOPSIS
+    The `VSCodeExtension` DSC Resource allows you to install, update, and remove Visual Studio Code extensions. This resource ensures that the specified Visual Studio Code extension is in the desired state.
+
+.PARAMETER Name
+    The name of the Visual Studio Code extension to manage. This is a required parameter.
+
+.PARAMETER Version
+    The version of the Visual Studio Code extension to install. If not specified, the latest version will be installed.
+
+.PARAMETER Exist
+    Indicates whether the extension should exist. The default value is `$true`.
+
+.PARAMETER Insiders
+    Indicates whether to manage the extension for the Insiders version of Visual Studio Code. The default value is `$false`.
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Name = 'ms-python.python'
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    This installs the latest version of the Visual Studio Code extension 'ms-python.python'
+
+.EXAMPLE
+    # Install a specific version of the Visual Studio Code extension 'ms-python.python'
+    PS C:\> $params = @{
+        Name = 'ms-python.python'
+        Version = '2021.5.842923320'
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    This installs a specific version of the Visual Studio Code extension 'ms-python.python'
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Name = 'ms-python.python'
+        Exist = $false
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    This removes the Visual Studio Code extension 'ms-python.python'
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Name = 'ms-python.python'
+        Insiders = $true
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+    
+    This installs the latest version of the Visual Studio Code extension 'ms-python.python' for the Insiders version of Visual Studio Code
+#>
+[DSCResource()]
+class VSCodeExtension
+{
     [DscProperty(Key)]
     [string] $Name
 
@@ -154,21 +519,25 @@ class VSCodeExtension {
 
     static [hashtable] $InstalledExtensions
 
-    VSCodeExtension() {
+    VSCodeExtension()
+    {
     }
 
-    VSCodeExtension([string]$Name, [string]$Version) {
+    VSCodeExtension([string]$Name, [string]$Version)
+    {
         $this.Name = $Name
         $this.Version = $Version
     }
 
     [VSCodeExtension[]] Export([bool]$Insiders)
     {
-        if ($Insiders) {
-            $script:VSCodeCLIPath = Get-VSCodeCLIPath -Insiders
+        if ($Insiders)
+        {
+            $script:VSCodeCLIPath = (Get-VSCodeCLIPath -Insiders).Path
         }
-        else {
-            $script:VSCodeCLIPath = Get-VSCodeCLIPath
+        else
+        {
+            $script:VSCodeCLIPath = (Get-VSCodeCLIPath).Path
         }
 
         $extensionList = (Invoke-VSCode -Command "--list-extensions --show-versions") -Split [Environment]::NewLine
@@ -184,61 +553,74 @@ class VSCodeExtension {
         return $results
     }
 
-    [VSCodeExtension] Get() {
+    [VSCodeExtension] Get()
+    {
         [VSCodeExtension]::GetInstalledExtensions($this.Insiders)
 
         $currentState = [VSCodeExtension]::InstalledExtensions[$this.Name]
-        if ($null -ne $currentState) {
+        if ($null -ne $currentState)
+        {
             return [VSCodeExtension]::InstalledExtensions[$this.Name]
         }
         
         return [VSCodeExtension]@{
-            Name    = $this.Name
-            Version = $this.Version
-            Exist   = $false
+            Name     = $this.Name
+            Version  = $this.Version
+            Exist    = $false
             Insiders = $this.Insiders
         }
     }
 
-    [bool] Test() {
+    [bool] Test()
+    {
         $currentState = $this.Get()
-        if ($currentState.Exist -ne $this.Exist) {
+        if ($currentState.Exist -ne $this.Exist)
+        {
             return $false
         }
 
-        if ($null -ne $this.Version -and $this.Version -ne $currentState.Version) {
+        if ($null -ne $this.Version -and $this.Version -ne $currentState.Version)
+        {
             return $false
         }
 
         return $true
     }
 
-    [void] Set() {
-        if ($this.Test()) {
+    [void] Set()
+    {
+        if ($this.Test())
+        {
             return
         }
 
-        if ($this.Exist) {
+        if ($this.Exist)
+        {
             $this.Install($false)
         }
-        else {
+        else
+        {
             $this.Uninstall($false)
         }
     }
 
-#region VSCodeExtension helper functions
-    static [void] GetInstalledExtensions([bool]$Insiders) {   
+    #region VSCodeExtension helper functions
+    static [void] GetInstalledExtensions([bool]$Insiders)
+    {   
         [VSCodeExtension]::InstalledExtensions = @{}
 
         $extension = [VSCodeExtension]::new()
 
-        foreach ($extension in $extension.Export($Insiders)) {
+        foreach ($extension in $extension.Export($Insiders))
+        {
             [VSCodeExtension]::InstalledExtensions[$extension.Name] = $extension
         }
     }
 
-    [void] Install([bool] $preTest) {
-        if ($preTest -and $this.Test()) {
+    [void] Install([bool] $preTest)
+    {
+        if ($preTest -and $this.Test())
+        {
             return
         }
 
@@ -246,18 +628,21 @@ class VSCodeExtension {
         [VSCodeExtension]::GetInstalledExtensions($this.Insiders)
     }
 
-    [void] Install() {
+    [void] Install()
+    {
         $this.Install($true)
     }
 
-    [void] Uninstall([bool] $preTest) {
+    [void] Uninstall([bool] $preTest)
+    {
         Uninstall-VSCodeExtension -Name $this.Name
         [VSCodeExtension]::GetInstalledExtensions($this.Insiders)
     }
 
-    [void] Uninstall() {
+    [void] Uninstall()
+    {
         $this.Uninstall($true)
     }
-#endregion VSCodeExtension helper functions
+    #endregion VSCodeExtension helper functions
 }
 #endregion DSCResources
