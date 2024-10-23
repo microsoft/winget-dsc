@@ -8,13 +8,15 @@
     Description = 'DSC Resource for Visual Studio Code'
     PowerShellVersion = '7.2'
     DscResourcesToExport = @(
-        'VSCodeExtension'
+        'VSCodeExtension',
+        'VSCodeInstaller'
     )
     PrivateData = @{
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags = @(
-                'PSDscResource_VSCodeExtension'
+                'PSDscResource_VSCodeExtension',
+                'PSDscResource_VSCodeInstaller'
                 )
 
             # Prerelease string of this module
