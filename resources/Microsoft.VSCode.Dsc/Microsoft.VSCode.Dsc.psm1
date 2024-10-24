@@ -138,6 +138,58 @@ function TryGetRegistryValue{
 #endregion Functions
 
 #region DSCResources
+<#
+.SYNOPSIS
+    The `VSCodeExtension` DSC Resource allows you to install, update, and remove Visual Studio Code extensions. This resource ensures that the specified Visual Studio Code extension is in the desired state.
+
+.PARAMETER Name
+    The name of the Visual Studio Code extension to manage. This is a required parameter.
+
+.PARAMETER Version
+    The version of the Visual Studio Code extension to install. If not specified, the latest version will be installed.
+
+.PARAMETER Exist
+    Indicates whether the extension should exist. The default value is `$true`.
+
+.PARAMETER Insiders
+    Indicates whether to manage the extension for the Insiders version of Visual Studio Code. The default value is `$false`.
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Name = 'ms-python.python'
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    This installs the latest version of the Visual Studio Code extension 'ms-python.python'
+
+.EXAMPLE
+    # Install a specific version of the Visual Studio Code extension 'ms-python.python'
+    PS C:\> $params = @{
+        Name = 'ms-python.python'
+        Version = '2021.5.842923320'
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    This installs a specific version of the Visual Studio Code extension 'ms-python.python'
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Name = 'ms-python.python'
+        Exist = $false
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    This removes the Visual Studio Code extension 'ms-python.python'
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Name = 'ms-python.python'
+        Insiders = $true
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+    
+    This installs the latest version of the Visual Studio Code extension 'ms-python.python' for the Insiders version of Visual Studio Code
+#>
 [DSCResource()]
 class VSCodeExtension {
     [DscProperty(Key)]
