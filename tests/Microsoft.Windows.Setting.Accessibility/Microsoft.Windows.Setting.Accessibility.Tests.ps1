@@ -305,11 +305,11 @@ Describe 'ColorFilter'{
         $initialState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $initialState.FilterColor | Should -Be $desiredFilterColor
 
-		#Choose new value at random	
+        #Choose new value at random	
         $newDesiredFilterColor = $desiredFilterColor;
-		while ($newDesiredFilterColor -eq $desiredFilterColor) {$newDesiredFilterColor = [ColorFilters](Get-Random -Maximum 6 -Minimum 1)}
+        while ($newDesiredFilterColor -eq $desiredFilterColor) {$newDesiredFilterColor = [ColorFilters](Get-Random -Maximum 6 -Minimum 1)}
         
-		# Update 'FilterColor'.
+        # Update 'FilterColor'.
         $parameters = @{ FilterColor = $newDesiredFilterColor }
         $testResult = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $false

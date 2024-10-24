@@ -555,7 +555,7 @@ class TextCursor
                 { 
                     throw "IndicatorSize must be between $min and $max. Value $($this.IndicatorSize) was provided." 
                 }
-				Set-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize -PropertyType DWord
+                Set-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize -PropertyType DWord
             }
             
             if (0 -ne $this.IndicatorColor) 
@@ -614,7 +614,7 @@ class ColorFilter
         }
     }
 
-    static [int] GetColor()
+    static [ColorFilters] GetColor()
     {
         $FilterColorArgs = @{  Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::FilterColorProperty)}
         if (-not(DoesRegistryKeyPropertyExist @FilterColorArgs))
@@ -628,16 +628,16 @@ class ColorFilter
         }        
     }
 
-    static [nullable[bool]] GetKeyboardShortcutStatus()
+    static [nullable[bool]] GetHotkeyEnabledStatus()
     {
-        $KeyboardShortcutStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::HotkeyEnabledProperty); }
-        if (-not(DoesRegistryKeyPropertyExist @KeyboardShortcutStatusArgs))
+        $hotkeyEnabledStatusArgs = @{ Path = $global:ColorFilteringRegistryPath; Name = ([ColorFilter]::HotkeyEnabledProperty); }
+        if (-not(DoesRegistryKeyPropertyExist @hotkeyEnabledStatusArgs))
         {
             return $false
         }
         else
         {
-            $colorFilterSetting = (Get-ItemProperty @KeyboardShortcutStatusArgs).HotkeyEnabled
+            $colorFilterSetting = (Get-ItemProperty @hotkeyEnabledStatusArgs).HotkeyEnabled
             return $colorFilterSetting
         }        
     }
@@ -647,7 +647,7 @@ class ColorFilter
         $currentState = [ColorFilter]::new()
         $currentState.FilterEnabled = [ColorFilter]::GetStatus()
         $currentState.FilterColor = [ColorFilter]::GetColor()
-        $currentState.HotkeyEnabled = [ColorFilter]::GetKeyboardShortcutStatus()
+        $currentState.HotkeyEnabled = [ColorFilter]::GetHotkeyEnabledStatus()
         
         return $currentState
     }
