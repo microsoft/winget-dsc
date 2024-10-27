@@ -13,15 +13,15 @@ function Get-Pip3Path
         $machineUninstallRegistry = "HKLM:\SOFTWARE\Python\PythonCore\*\InstallPath"
         $installLocationProperty = "ExecutablePath"
 
-        $pythonExe = TryGetRegistryValue -Key $userUninstallRegistry -Property $installLocationProperty
-        $userInstallLocation = Join-Path (Split-Path $pythonExe -Parent) "Scripts\pip3.exe"
+        $pipExe = TryGetRegistryValue -Key $userUninstallRegistry -Property $installLocationProperty
+        $userInstallLocation = Join-Path (Split-Path $pipExe -Parent) "Scripts\pip3.exe"
         if ($userInstallLocation)
         {
             return $userInstallLocation
         }
 
-        $pythonExe = TryGetRegistryValue -Key $machineUninstallRegistry -Property $installLocationProperty
-        $machineInstallLocation = Join-Path (Split-Path $pythonExe -Parent) "Scripts\pip3.exe"
+        $pipExe = TryGetRegistryValue -Key $machineUninstallRegistry -Property $installLocationProperty
+        $machineInstallLocation = Join-Path (Split-Path $pipExe -Parent) "Scripts\pip3.exe"
         if ($machineInstallLocation)
         {
             return $machineInstallLocation
@@ -29,10 +29,40 @@ function Get-Pip3Path
     }
     elseif ($IsMacOS)
     {
-        # TODO: add support for MacOS
+        $pipExe = Join-Path '/Library' 'Frameworks' 'Python.framework' 'Versions' 'Current' 'bin' 'python'
+
+        if (Test-Path -Path $pipExe)
+        {
+            return $pipExe
+        }
+
+        $pipExe = (Get-Command -Name 'pip3' -ErrorAction SilentlyContinue).Source
+
+        if ($pipExe)
+        {
+            return $pipExe
+        }
     }
-    
-    throw "Pip3 is not installed."
+    elseif ($IsLinux)
+    {
+        $pipExe = Join-Path '/usr/bin' 'pip3'
+
+        if (Test-Path $pipExe)
+        {
+            return $pipExe
+        }
+
+        $pipExe = (Get-Command -Name 'pip3' -ErrorAction SilentlyContinue).Source
+
+        if ($pipExe) 
+        {
+            return $pipExe
+        }
+    }
+    else 
+    {
+        throw "Pip3 is not installed."
+    }
 }
 
 function Assert-Pip3

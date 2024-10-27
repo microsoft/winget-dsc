@@ -88,6 +88,16 @@ extends:
             pwsh: true
             targetType: "inline"
             script: |
+              # This script will install the required modules and software to run the tests
+              . (Join-Path '$(Build.SourcesDirectory)' 'utilities' 'pipelines' 'scripts' 'Set-EnvironmentOnAgent.ps1')
+              
+              $modules = @(
+                @{ Name = 'Pester' },
+                @{ Name = 'PSDSC'}
+              )
+              # TODO: Might move the separate installers relevant to the modules to tests
+              Set-EnvironmentOnAgent -PSModules $modules -InstallLatestDscVersion
+
               $env:PSModulePath += ";$(Build.SourcesDirectory)\resources"
               Invoke-Pester -CI
             workingDirectory: $(Build.SourcesDirectory)\tests\
