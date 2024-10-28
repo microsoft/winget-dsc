@@ -337,7 +337,49 @@ $DotNetCliPath = Get-DotNetPath
 #region Classes
 <#
 .SYNOPSIS
-    This class is used to install and uninstall .NET SDK tools globally or use the tool path directory.
+    The `DotNetToolPackage` DSC Resource allows you to install, update, and uninstall .NET tool packages using the dotnet CLI.
+
+.PARAMETER PackageId
+    The ID of the .NET tool package to manage. This is a required parameter.
+
+    For a list of available .NET tool packages, see the following link: https://www.nuget.org/packages?q=&includeComputedFrameworks=true&packagetype=dotnettool&prerel=true&sortby=relevance
+
+.PARAMETER Version
+    The version of the .NET tool package to install. If not specified, the latest version will be installed.
+
+.PARAMETER Commands
+    An array of commands provided by the .NET tool package. This parameter is optional.
+
+.PARAMETER Prerelease
+    Indicates whether to include prerelease versions of the .NET tool package. The default value is $false.
+
+.PARAMETER ToolPathDirectory
+    The directory where the .NET tool package will be installed. If not specified, the package will be installed globally.
+
+.PARAMETER Exist
+    Indicates whether the package should exist. Defaults to $true.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Get -Property @{ PackageId = 'GitVersion.Tool' }
+
+    This example gets the current state of the .NET tool package 'GitVersion.Tool' in the default directory.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{ 
+        PackageId = 'GitVersion.Tool'; 
+        Version = '5.6.8'; 
+    }
+    
+    This example installs the .NET tool package 'GitVersion.Tool' version 5.6.8 in the default directory.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{ 
+        PackageId = 'PowerShell'; 
+        Prerelease = $true; 
+        ToolPathDirectory = 'C:\tools'; 
+    }
+
+    This example installs the prerelease version of the .NET tool package 'PowerShell' in the 'C:\tools' directory.
 #>
 [DSCResource()]
 class DotNetToolPackage
