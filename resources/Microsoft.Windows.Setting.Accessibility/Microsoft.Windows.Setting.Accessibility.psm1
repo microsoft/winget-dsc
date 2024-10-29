@@ -4,7 +4,8 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-enum TextSize {
+enum TextSize
+{
     KeepCurrentValue
     Small
     Medium
@@ -12,7 +13,8 @@ enum TextSize {
     ExtraLarge
 }
 
-enum MagnificationValue {
+enum MagnificationValue
+{
     KeepCurrentValue
     None
     Low
@@ -20,7 +22,8 @@ enum MagnificationValue {
     High
 }
 
-enum PointerSize {
+enum PointerSize
+{
     KeepCurrentValue
     Normal
     Medium
@@ -28,45 +31,53 @@ enum PointerSize {
     ExtraLarge
 }
 
-if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
+if ([string]::IsNullOrEmpty($env:TestRegistryPath))
+{
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
     $global:MagnifierRegistryPath = 'HKCU:\Software\Microsoft\ScreenMagnifier\'
     $global:PointerRegistryPath = 'HKCU:\Control Panel\Cursors\'
-    $global:ControlPanelAccessibilityRegistryPath= 'HKCU:\Control Panel\Accessibility\'
+    $global:ControlPanelAccessibilityRegistryPath = 'HKCU:\Control Panel\Accessibility\'
     $global:AudioRegistryPath = 'HKCU:\Software\Microsoft\Multimedia\Audio\'
     $global:PersonalizationRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
     $global:NTAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Accessibility\'
     $global:CursorIndicatorAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\CursorIndicator\'
-    $global:ControlPanelDesktopRegistryPath= 'HKCU:\Control Panel\Desktop'
+    $global:ControlPanelDesktopRegistryPath = 'HKCU:\Control Panel\Desktop'
 }
-else {
+else
+{
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]	
-class Text {
+class Text
+{
     [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
     [DscProperty(NotConfigurable)] [int] $SizeValue
 
     hidden [string] $TextScaleFactor = 'TextScaleFactor'
 
-    [Text] Get() {
+    [Text] Get()
+    {
         $currentState = [Text]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor))
+        {
             $currentState.Size = [TextSize]::Small
             $currentState.SizeValue = 96
         }
-        else {
+        else
+        {
             $currentState.SizeValue = [int](Get-ItemPropertyValue -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor)
-            $currentSize = switch ($currentState.sizeValue) {
+            $currentSize = switch ($currentState.sizeValue)
+            {
                 96 { [TextSize]::Small }
                 120 { [TextSize]::Medium }
                 144 { [TextSize]::Large }
                 256 { [TextSize]::ExtraLarge }
             }
 
-            if ($null -ne $currentSize) {
+            if ($null -ne $currentSize)
+            {
                 $currentState.Size = $currentSize
             }
         }
@@ -74,18 +85,23 @@ class Text {
         return $currentState
     }
 
-    [bool] Test() {
+    [bool] Test()
+    {
         $currentState = $this.Get()
-        if ($this.Size -ne [TextSize]::KeepCurrentValue -and $this.Size -ne $currentState.Size) {
+        if ($this.Size -ne [TextSize]::KeepCurrentValue -and $this.Size -ne $currentState.Size)
+        {
             return $false
         }
 
         return $true
     }
 
-    [void] Set() {
-        if ($this.Size -ne [TextSize]::KeepCurrentValue) {
-            $desiredSize = switch ([TextSize]($this.Size)) {
+    [void] Set()
+    {
+        if ($this.Size -ne [TextSize]::KeepCurrentValue)
+        {
+            $desiredSize = switch ([TextSize]($this.Size))
+            {
                 Small { 96 }
                 Medium { 120 }
                 Large { 144 }
@@ -98,7 +114,8 @@ class Text {
 }
 
 [DSCResource()]
-class Magnifier {
+class Magnifier
+{
     [DscProperty(Key)] [MagnificationValue] $Magnification = [MagnificationValue]::KeepCurrentValue
     [DscProperty(Mandatory)] [int] $ZoomIncrement = 25
     [DscProperty()] [bool] $StartMagnify = $false
@@ -108,16 +125,20 @@ class Magnifier {
     hidden [string] $MagnificationProperty = 'Magnification'
     hidden [string] $ZoomIncrementProperty = 'ZoomIncrement'
 
-    [Magnifier] Get() {
+    [Magnifier] Get()
+    {
         $currentState = [Magnifier]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty))
+        {
             $currentState.Magnification = [MagnificationValue]::None
             $currentState.MagnificationLevel = 0         
         }
-        else {
+        else
+        {
             $currentState.MagnificationLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty).Magnification
-            $currentMagnification = switch ($currentState.MagnificationLevel) {
+            $currentMagnification = switch ($currentState.MagnificationLevel)
+            {
                 0 { [MagnificationValue]::None }
                 100 { [MagnificationValue]::Low }
                 200 { [MagnificationValue]::Medium }
@@ -128,11 +149,13 @@ class Magnifier {
             $currentState.Magnification = $currentMagnification 
         }
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty))
+        {
             $currentState.ZoomIncrement = 25
             $currentState.ZoomIncrementLevel = 25
         }
-        else {            
+        else
+        {            
             $currentState.ZoomIncrementLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement
             $currentState.ZoomIncrement = $currentState.ZoomIncrementLevel
         }
@@ -140,19 +163,23 @@ class Magnifier {
         return $currentState
     }
 
-    [bool] Test() {
+    [bool] Test()
+    {
         $currentState = $this.Get()
-        if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue -and $this.Magnification -ne $currentState.Magnification) {
+        if ($this.Magnification -ne [MagnificationValue]::KeepCurrentValue -and $this.Magnification -ne $currentState.Magnification)
+        {
             return $false
         }
-        if ($this.ZoomIncrement -ne $currentState.ZoomIncrement) {
+        if ($this.ZoomIncrement -ne $currentState.ZoomIncrement)
+        {
             return $false
         }
 
         return $true
     }
 
-    [void] Set() {
+    [void] Set()
+    {
         if ($this.Test())
         {
             return
@@ -191,22 +218,27 @@ class Magnifier {
 }
 
 [DSCResource()]
-class MousePointer {
+class MousePointer
+{
     [DscProperty(Key)] [PointerSize] $PointerSize = [PointerSize]::KeepCurrentValue
     [DscProperty(NotConfigurable)] [string] $PointerSizeValue
 
     hidden [string] $PointerSizeProperty = 'CursorBaseSize'
 
-    [MousePointer] Get() {
+    [MousePointer] Get()
+    {
         $currentState = [MousePointer]::new()
         
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty)) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty))
+        {
             $currentState.PointerSize = [PointerSize]::Normal
             $currentState.PointerSizeValue = '32'
         }
-        else {
+        else
+        {
             $currentState.PointerSizeValue = (Get-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty).CursorBaseSize
-            $currentSize = switch ($currentState.PointerSizeValue) {
+            $currentSize = switch ($currentState.PointerSizeValue)
+            {
                 '32' { [PointerSize]::Normal }                
                 '96' { [PointerSize]::Medium }
                 '144' { [PointerSize]::Large }
@@ -220,25 +252,31 @@ class MousePointer {
         return $currentState
     }
 
-    [bool] Test() {
+    [bool] Test()
+    {
         $currentState = $this.Get()
-        if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue -and $this.PointerSize -ne $currentState.PointerSize) {
+        if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue -and $this.PointerSize -ne $currentState.PointerSize)
+        {
             return $false
         }
 
         return $true
     }
 
-    [void] Set() {
-        if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue) {
-            $desiredSize = switch ([PointerSize]($this.PointerSize)) {
+    [void] Set()
+    {
+        if ($this.PointerSize -ne [PointerSize]::KeepCurrentValue)
+        {
+            $desiredSize = switch ([PointerSize]($this.PointerSize))
+            {
                 Normal { '32' }
-                Medium {'96'}
+                Medium { '96' }
                 Large { '144' }
                 ExtraLarge { '256' }
             }
 
-            if (-not (Test-Path -Path $global:PointerRegistryPath)) {
+            if (-not (Test-Path -Path $global:PointerRegistryPath))
+            {
                 New-Item -Path $global:PointerRegistryPath -Force | Out-Null
             }
 
@@ -287,7 +325,7 @@ class VisualEffect
     }
 
     static [int] GetMessageDuration()
-	{
+    {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty)))
         {
             return 5
@@ -345,7 +383,8 @@ class VisualEffect
             {
                 $transparencyValue = if ($this.TransparencyEffects) { 0 } else { 1 }
 				
-                if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty))) {
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty)))
+                {
                     New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
                 }
                 Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
@@ -354,7 +393,7 @@ class VisualEffect
             {
                 $min = 5
                 $max = 300
-                if ($this.MessageDurationInSeconds  -notin $min..$max) 
+                if ($this.MessageDurationInSeconds -notin $min..$max) 
                 { 
                     throw "MessageDurationInSeconds must be between $min and $max. Value $($this.MessageDurationInSeconds) was provided." 
                 }
@@ -440,7 +479,7 @@ class TextCursor
 
     static [bool] GetIndicatorStatus()
     {
-        $indicatorStatusArgs = @{  Path = $global:NTAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorStatusProperty)}
+        $indicatorStatusArgs = @{  Path = $global:NTAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorStatusProperty) }
         if (-not(DoesRegistryKeyPropertyExist @indicatorStatusArgs))
         {
             return $false
@@ -454,7 +493,7 @@ class TextCursor
 
     static [int] GetIndicatorSize()
     {
-        $indicatorSizeArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorSizeProperty)}
+        $indicatorSizeArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorSizeProperty) }
         if (-not(DoesRegistryKeyPropertyExist @indicatorSizeArgs))
         {
             return 1
@@ -468,7 +507,7 @@ class TextCursor
 
     static [int] GetIndicatorColor()
     {
-        $indicatorColorArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorColorProperty)}
+        $indicatorColorArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorColorProperty) }
         if (-not(DoesRegistryKeyPropertyExist @indicatorColorArgs))
         {
             return $false
@@ -541,14 +580,15 @@ class TextCursor
             
             if (0 -ne $this.IndicatorSize) 
             {
-                $indicatorSizeArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorSizeProperty)}
+                $indicatorSizeArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorSizeProperty) }
                 $min = 1
                 $max = 20
-                if ($this.IndicatorSize  -notin $min..$max) 
+                if ($this.IndicatorSize -notin $min..$max) 
                 { 
                     throw "IndicatorSize must be between $min and $max. Value $($this.IndicatorSize) was provided." 
                 }
-                if (-not (DoesRegistryKeyPropertyExist @indicatorSizeArgs)) {
+                if (-not (DoesRegistryKeyPropertyExist @indicatorSizeArgs))
+                {
                     New-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize -PropertyType DWord
                 }
                 Set-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize 
@@ -556,14 +596,15 @@ class TextCursor
             
             if (0 -ne $this.IndicatorColor) 
             {
-                $indicatorColorArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorColorProperty)}
+                $indicatorColorArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorColorProperty) }
                 $min = 1
                 $max = 99999999
-                if ($this.IndicatorColor  -notin $min..$max) 
+                if ($this.IndicatorColor -notin $min..$max) 
                 { 
                     throw "IndicatorColor must be between $min and $max. Value $($this.IndicatorColor) was provided." 
                 }
-                if (-not (DoesRegistryKeyPropertyExist @indicatorColorArgs)) {
+                if (-not (DoesRegistryKeyPropertyExist @indicatorColorArgs))
+                {
                     New-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor -PropertyType DWord
                 }
                 Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor 
@@ -574,7 +615,7 @@ class TextCursor
                 $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
                 $min = 1
                 $max = 20
-                if ($this.Thickness  -notin $min..$max) 
+                if ($this.Thickness -notin $min..$max) 
                 { 
                     throw "Thickness must be between $min and $max. Value $($this.Thickness) was provided." 
                 }
@@ -585,7 +626,8 @@ class TextCursor
 }
 
 #region Functions
-function DoesRegistryKeyPropertyExist {
+function DoesRegistryKeyPropertyExist
+{
     param (
         [Parameter(Mandatory)]
         [string]$Path,
