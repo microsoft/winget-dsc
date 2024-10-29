@@ -61,7 +61,7 @@ function Get-Pip3Path
     }
     else 
     {
-        throw "Pip3 is not installed."
+        throw "Operating system not supported."
     }
 }
 
@@ -87,7 +87,8 @@ function Assert-Pip3
     }
 }
 
-function Get-PackageNameWithVersion {
+function Get-PackageNameWithVersion
+{
     param (
         [Parameter(Mandatory = $true)]
         [string]$PackageName,
@@ -96,7 +97,10 @@ function Get-PackageNameWithVersion {
         [string]$Arguments,
 
         [Parameter(Mandatory = $false)]
-        [string]$Version
+        [string]$Version,
+
+        [Parameter()]
+        [switch]$IsUpdate
     )
 
     if ($PSBoundParameters.ContainsKey('Version') -and -not ([string]::IsNullOrEmpty($Version)))
@@ -105,27 +109,6 @@ function Get-PackageNameWithVersion {
     }
 
     return $packageName
-}
-
-function Invoke-Pip3Update
-{
-    param (
-        [Parameter()]
-        [string]$PackageName,
-
-        [Parameter()]
-        [string]$Arguments,
-
-        [Parameter()]
-        [string]$Version
-    )
-
-    $command = [List[string]]::new()
-    $command.Add("install")
-    $command.Add((Get-PackageNameWithVersion @PSBoundParameters))
-    $command.Add("--force-reinstall")
-    $command.Add($Arguments)
-    return Invoke-Pip3 -command $command
 }
 
 function Invoke-Pip3Install
@@ -138,12 +121,19 @@ function Invoke-Pip3Install
         [string]$Arguments,
 
         [Parameter()]
-        [string]$Version
+        [string]$Version,
+
+        [Parameter()]
+        [switch]$IsUpdate
     )
 
     $command = [List[string]]::new()
     $command.Add("install")
     $command.Add((Get-PackageNameWithVersion @PSBoundParameters))
+    if ($IsUpdate.IsPresent)
+    {
+        $command.Add("--force-reinstall")
+    }
     $command.Add($Arguments)
     return Invoke-Pip3 -command $command
 }
@@ -171,7 +161,8 @@ function Invoke-Pip3Uninstall
     return Invoke-Pip3 -command $command
 }
 
-function GetPip3CurrentState {
+function GetPip3CurrentState
+{
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
@@ -183,28 +174,31 @@ function GetPip3CurrentState {
         [hashtable] $Parameters
     )
 
+    # Filter out the installed packages from the parameters because it is not a valid parameter when calling .ToHashTable() in the class for comparison
     if ($Parameters.ContainsKey('InstalledPackages'))
     {
         $Parameters.Remove('InstalledPackages')
     }
 
     $out = @{
-        Exist = $false
-        Package = $Parameters.Package
-        Version = $Parameters.Version
-        Arguments = $Parameters.Arguments
+        Exist             = $false
+        PackageName       = $Parameters.PackageName
+        Version           = $Parameters.Version
+        Arguments         = $Parameters.Arguments
         InstalledPackages = $Package
     }
 
     foreach ($entry in $Package)
     {
-        if ($entry.name -eq $Parameters.Package)
+        if ($entry.PackageName -eq $Parameters.PackageName)
         {
+            Write-Verbose -Message "Package exist: $($entry.name)"
             $out.Exist = $true
             $out.Version = $entry.version
 
             if ($Parameters.ContainsKey('version') -and $entry.version -ne $Parameters.version)
             {
+                Write-Verbose -Message "Package exist, but version is different: $($entry.version)"
                 $out.Exist = $false
             }
         }
@@ -228,7 +222,16 @@ function GetInstalledPip3Packages
         $command = "& pip3 " + $Arguments
     }
 
-    return Invoke-Expression -Command $command
+    $res = Invoke-Expression -Command $command | ConvertFrom-Json
+
+    $result = $res | ForEach-Object {
+        @{
+            PackageName = $_.name
+            Version     = $_.version
+        }
+    }
+
+    return $result
 }
 
 function Invoke-Pip3
@@ -240,7 +243,7 @@ function Invoke-Pip3
 
     if ($global:usePip3Exe)
     {
-        return Start-Process -FilePath $global:pip3ExePath -ArgumentList $command -Wait -PassThru -WindowStyle hidden
+        return Start-Process -FilePath $global:pip3ExePath -ArgumentList $command -Wait -PassThru -WindowStyle Hidden
     }
     else
     {
@@ -248,14 +251,15 @@ function Invoke-Pip3
     }
 }
 
-function TryGetRegistryValue{
+function TryGetRegistryValue
+{
     param (
         [Parameter(Mandatory = $true)]
         [string]$Key,
 
         [Parameter(Mandatory = $true)]
         [string]$Property
-        )    
+    )    
 
     if (Test-Path -Path $Key)
     {
@@ -325,15 +329,8 @@ Assert-Pip3
 [DSCResource()]
 class Pip3Package
 {
-    # DSCResource requires a key. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
-
-    [DscProperty()]
-    [bool] $Exist = $true
-
-    [DscProperty(Mandatory)]
-    [string]$Package
+    [DscProperty(Key, Mandatory)]
+    [string]$PackageName
 
     [DscProperty()]
     [string]$Version
@@ -341,12 +338,15 @@ class Pip3Package
     [DscProperty()]
     [string]$Arguments
 
+    [DscProperty()]
+    [bool] $Exist = $true
+
     [DscProperty(NotConfigurable)]
     [hashtable[]]$InstalledPackages
 
     [Pip3Package] Get()
     {
-        $this.InstalledPackages = (GetInstalledPip3Packages | ConvertFrom-Json -AsHashtable)
+        $this.InstalledPackages = GetInstalledPip3Packages
         $currentState = GetPip3CurrentState -Package $this.InstalledPackages -Parameters $this.ToHashTable()
 
         return $currentState
@@ -355,14 +355,20 @@ class Pip3Package
     [bool] Test()
     {
         $currentState = $this.Get()
-        if ($currentState.Exist -eq $this.Exist -and $currentState.version -eq $this.Version)
-        {
-            return $true
-        }
-        else
+        if ($currentState.Exist -ne $this.Exist)
         {
             return $false
         }
+
+        if (-not ([string]::IsNullOrEmpty($this.Version)))
+        {
+            if ($this.Version -ne $currentState.Version)
+            {
+                return $false
+            }
+        }
+
+        return $true
     }
 
     [void] Set()
@@ -372,33 +378,32 @@ class Pip3Package
             return 
         }
 
-        $currentPackage = $this.InstalledPackages[$this.Package]
-        if ($currentPackage -and $this.Exist -and $this.Version -ne $currentPackage.version)
+        $currentPackage = $this.InstalledPackages | Where-Object { $_.PackageName -eq $this.PackageName }
+        if ($currentPackage -and $currentPackage.Version -ne $this.Version -and $this.Exist)
         {
-            Invoke-Pip3Update -PackageName $this.Package -Arguments $this.Arguments
+            Invoke-Pip3Install -PackageName $this.PackageName -Version $this.Version -Arguments $this.Arguments -IsUpdate
         }
         elseif ($this.Exist)
         {
-            Invoke-Pip3Install -PackageName $this.Package -Version $this.Version -Arguments $this.Arguments
+            Invoke-Pip3Install -PackageName $this.PackageName -Version $this.Version -Arguments $this.Arguments
         }
         else
         {
-            Invoke-Pip3Uninstall -PackageName $this.Package -Version $this.Version -Arguments $this.Arguments
+            Invoke-Pip3Uninstall -PackageName $this.PackageName -Version $this.Version -Arguments $this.Arguments
         }
     }
 
     static [Pip3Package[]] Export()
     {
-        $packages = GetInstalledPip3Packages | ConvertFrom-Json -AsHashtable
+        $packages = GetInstalledPip3Packages
         $out = [List[Pip3Package]]::new()
         foreach ($package in $packages)
         {
             $in = [Pip3Package]@{
-                SID = $null
-                Package = $package.name
-                Version = $package.version
-                Exist = $true 
-                Arguments = $null
+                PackageName       = $package.Packagename
+                Version           = $package.version
+                Exist             = $true 
+                Arguments         = $null
                 InstalledPackages = $packages
             }
 

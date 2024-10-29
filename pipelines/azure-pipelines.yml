@@ -97,7 +97,8 @@ extends:
               
               $modules = @(
                 @{ Name = 'Pester' },
-                @{ Name = 'PSDSC'}
+                @{ Name = 'PSDSC'}, 
+                @{ Name = 'PSDesiredStateConfiguration'; Version = '2.0.7'}
               )
               # TODO: Might move the separate installers relevant to the modules to tests
               Set-EnvironmentOnAgent -PSModules $modules -InstallLatestDscVersion
