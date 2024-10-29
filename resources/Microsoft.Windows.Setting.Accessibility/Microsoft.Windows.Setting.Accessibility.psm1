@@ -31,6 +31,21 @@ enum PointerSize
     ExtraLarge
 }
 
+[Flags()] enum StickyKeysOptions
+{
+    # https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-stickykeys
+    None = 0x00000000 # 0
+    Active = 0x00000001 # 1
+    Available = 0x00000002 # 2
+    HotkeyActive = 0x00000004 # 4
+    ConfirmHotkey = 0x00000008 # 8
+    HotkeySound = 0x00000010# 16
+    VisualIndicator = 0x00000020 # 32
+    AudibleFeedback = 0x00000040 # 64
+    TriState = 0x00000080 # 128
+    TwoKeysOff = 0x00000100 # 256
+}
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath))
 {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
@@ -42,6 +57,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath))
     $global:NTAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Accessibility\'
     $global:CursorIndicatorAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\CursorIndicator\'
     $global:ControlPanelDesktopRegistryPath = 'HKCU:\Control Panel\Desktop'
+    $global:StickyKeysRegistryPath = 'HKCU:\Control Panel\Accessibility\StickyKeys'
 }
 else
 {
@@ -621,6 +637,177 @@ class TextCursor
                 }
                 Set-ItemProperty @thicknessArgs -Value $this.Thickness 
             }
+        }
+    }
+}
+
+[DSCResource()]
+class StickyKeys
+{
+    # Key required. Do not set.
+    [DscProperty(Key)] [string] $SID
+    [DscProperty()] [nullable[bool]] $Active
+    [DscProperty()] [nullable[bool]] $Available
+    [DscProperty()] [nullable[bool]] $HotkeyActive
+    [DscProperty()] [nullable[bool]] $ConfirmOnHotkeyActivation
+    [DscProperty()] [nullable[bool]] $HotkeySound
+    [DscProperty()] [nullable[bool]] $VisualIndicator
+    [DscProperty()] [nullable[bool]] $AudibleFeedback
+    [DscProperty()] [nullable[bool]] $TriState
+    [DscProperty()] [nullable[bool]] $TwoKeysOff
+
+    static hidden [string] $SettingsProperty = 'Flags'
+
+    static [System.Enum] GetCurrentFlags()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:StickyKeysRegistryPath -Name ([StickyKeys]::SettingsProperty)))
+        {
+            return 0
+        }
+        else
+        {
+            $StickyKeysFlags = [System.Enum]::Parse('StickyKeysOptions', (Get-ItemPropertyValue -Path $global:StickyKeysRegistryPath -Name ([StickyKeys]::SettingsProperty)))
+            return $StickyKeysFlags
+        }
+    }
+
+    [StickyKeys] Get()
+    {
+        $currentFlags = [StickyKeys]::GetCurrentFlags()
+        
+        $currentState = [StickyKeys]::new()
+        $currentState.Active = $currentFlags.HasFlag([StickyKeysOptions]::Active)
+        $currentState.Available = $currentFlags.HasFlag([StickyKeysOptions]::Available)
+        $currentState.HotkeyActive = $currentFlags.HasFlag([StickyKeysOptions]::HotkeyActive)
+        $currentState.ConfirmOnHotkeyActivation = $currentFlags.HasFlag([StickyKeysOptions]::ConfirmHotkey)
+        $currentState.HotkeySound = $currentFlags.HasFlag([StickyKeysOptions]::HotkeySound)
+        $currentState.VisualIndicator = $currentFlags.HasFlag([StickyKeysOptions]::VisualIndicator)
+        $currentState.AudibleFeedback = $currentFlags.HasFlag([StickyKeysOptions]::AudibleFeedback)
+        $currentState.TriState = $currentFlags.HasFlag([StickyKeysOptions]::TriState)
+        $currentState.TwoKeysOff = $currentFlags.HasFlag([StickyKeysOptions]::TwoKeysOff)
+        
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+
+        if (($null -ne $this.Active) -and ($this.Active -ne $currentState.Active))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.Available) -and ($this.Available -ne $currentState.Available))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.HotkeyActive) -and ($this.HotkeyActive -ne $currentState.HotkeyActive))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.ConfirmOnHotkeyActivation) -and ($this.ConfirmOnHotkeyActivation -ne $currentState.ConfirmOnHotkeyActivation))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.HotkeySound) -and ($this.HotkeySound -ne $currentState.HotkeySound))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.VisualIndicator) -and ($this.VisualIndicator -ne $currentState.VisualIndicator))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.AudibleFeedback) -and ($this.AudibleFeedback -ne $currentState.AudibleFeedback))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.TriState) -and ($this.TriState -ne $currentState.TriState))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.TwoKeysOff) -and ($this.TwoKeysOff -ne $currentState.TwoKeysOff))
+        {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set()
+    {
+        # Only make changes if changes are needed
+        if (-not $this.Test())
+        {
+            # If a value isn't set in the DSC, it should remain unchanged, to do this we need the current flags
+            $flags = [StickyKeys]::GetCurrentFlags()
+
+            if ($null -ne $this.Active)
+            {
+                # If the user requested to set the value to true, and the current flag is unset, set the flag, otherwise add no flag
+                # If the user requested to set the value to false, and the current flag is set, unset the flag, otherwise remove no flag
+                # Since $this.Active can only be either true or false, only one of these statements will actually affect the value of $flags
+                $flags += ($this.Active -and !$flags.HasFlag([StickyKeysOptions]::Active)) ? [StickyKeysOptions]::Active : [StickyKeysOptions]::None
+                $flags -= (!$this.Active -and $flags.HasFlag([StickyKeysOptions]::Active)) ? [StickyKeysOptions]::Active : [StickyKeysOptions]::None
+            }
+
+            if ($null -ne $this.Available)
+            {
+                $flags += ($this.Available -and !$flags.HasFlag([StickyKeysOptions]::Available)) ? [StickyKeysOptions]::Available : [StickyKeysOptions]::None
+                $flags -= (!$this.Available -and $flags.HasFlag([StickyKeysOptions]::Available)) ? [StickyKeysOptions]::Available : [StickyKeysOptions]::None
+            }
+
+            if ($null -ne $this.HotkeyActive)
+            {
+                $flags += ($this.HotkeyActive -and !$flags.HasFlag([StickyKeysOptions]::HotkeyActive)) ? [StickyKeysOptions]::HotkeyActive : [StickyKeysOptions]::None
+                $flags -= (!$this.HotkeyActive -and $flags.HasFlag([StickyKeysOptions]::HotkeyActive)) ? [StickyKeysOptions]::HotkeyActive : [StickyKeysOptions]::None
+            }
+
+            if ($null -ne $this.ConfirmOnHotkeyActivation)
+            {
+                $flags += ($this.ConfirmOnHotkeyActivation -and !$flags.HasFlag([StickyKeysOptions]::ConfirmOnHotkeyActivation)) ? [StickyKeysOptions]::ConfirmOnHotkeyActivation : [StickyKeysOptions]::None
+                $flags -= (!$this.ConfirmOnHotkeyActivation -and $flags.HasFlag([StickyKeysOptions]::ConfirmOnHotkeyActivation)) ? [StickyKeysOptions]::ConfirmOnHotkeyActivation : [StickyKeysOptions]::None
+            }
+
+            if ($null -ne $this.HotkeySound)
+            {
+                $flags += ($this.HotkeySound -and !$flags.HasFlag([StickyKeysOptions]::HotkeySound)) ? [StickyKeysOptions]::HotkeySound : [StickyKeysOptions]::None
+                $flags -= (!$this.HotkeySound -and $flags.HasFlag([StickyKeysOptions]::HotkeySound)) ? [StickyKeysOptions]::HotkeySound : [StickyKeysOptions]::None
+            }
+
+            if ($null -ne $this.VisualIndicator)
+            {
+                $flags += ($this.VisualIndicator -and !$flags.HasFlag([StickyKeysOptions]::VisualIndicator)) ? [StickyKeysOptions]::VisualIndicator : [StickyKeysOptions]::None
+                $flags -= (!$this.VisualIndicator -and $flags.HasFlag([StickyKeysOptions]::VisualIndicator)) ? [StickyKeysOptions]::VisualIndicator : [StickyKeysOptions]::None
+            }
+
+            if ($null -ne $this.AudibleFeedback)
+            {
+                $flags += ($this.AudibleFeedback -and !$flags.HasFlag([StickyKeysOptions]::AudibleFeedback)) ? [StickyKeysOptions]::AudibleFeedback : [StickyKeysOptions]::None
+                $flags -= (!$this.AudibleFeedback -and $flags.HasFlag([StickyKeysOptions]::AudibleFeedback)) ? [StickyKeysOptions]::AudibleFeedback : [StickyKeysOptions]::None
+            }
+
+            if ($null -ne $this.TriState)
+            {
+                $flags += ($this.TriState -and !$flags.HasFlag([StickyKeysOptions]::TriState)) ? [StickyKeysOptions]::TriState : [StickyKeysOptions]::None
+                $flags -= (!$this.TriState -and $flags.HasFlag([StickyKeysOptions]::TriState)) ? [StickyKeysOptions]::TriState : [StickyKeysOptions]::None
+            }
+
+            if ($null -ne $this.TwoKeysOff)
+            {
+                $flags += ($this.TwoKeysOff -and !$flags.HasFlag([StickyKeysOptions]::TwoKeysOff)) ? [StickyKeysOptions]::TwoKeysOff : [StickyKeysOptions]::None
+                $flags -= (!$this.TwoKeysOff -and $flags.HasFlag([StickyKeysOptions]::TwoKeysOff)) ? [StickyKeysOptions]::TwoKeysOff : [StickyKeysOptions]::None
+            }
+
+            # Set the value in the registry
+            Set-ItemProperty -Path $global:StickyKeysRegistryPath -Name ([StickyKeys]::SettingsProperty) -Value $flags.GetHashCode()
         }
     }
 }
