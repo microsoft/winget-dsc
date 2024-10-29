@@ -79,7 +79,7 @@ function Assert-Pip3
     if (Test-Path -Path $global:pip3ExePath)
     {
         $global:usePip3Exe = $true;
-        Write-Verbose "Calling pip3.exe from default install location: $global:usePip3Exe"
+        Write-Verbose "Calling pip3.exe from install location: $global:usePip3Exe"
     }
     else
     {
