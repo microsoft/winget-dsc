@@ -13,8 +13,9 @@ BeforeAll {
 
     if ($env:TF_BUILD)
     {
-        Invoke-WebRequest https://raw.githubusercontent.com/KernFerm/Py3.12.1-installer-PS1/refs/heads/main/Py3.12.1-installer.ps1 -UseBasicParsing -OutFile Py3.12.1-installer.ps1
-        .\Py3.12.1-installer.ps1
+        $outFile = Join-Path $env:TEMP 'python.exe'
+        Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.14.0/python-3.14.0a1-amd64.exe" -UseBasicParsing -OutFile $outFile
+        & $outFile /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
     }
 }
 
