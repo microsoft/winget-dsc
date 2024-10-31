@@ -81,33 +81,33 @@ extends:
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.DotNet.Dsc\
                   artifactName: Microsoft.DotNet.Dsc
 
-        steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
-          
-          - task: PowerShell@2
-            displayName: "Run Pester tests for DSC modules"
-            inputs:
-              pwsh: true
-              targetType: "inline"
-              script: |
-                # This script will install the required modules and software to run the tests
-                . (Join-Path '$(Build.SourcesDirectory)' 'utilities' 'pipelines' 'scripts' 'Set-EnvironmentOnAgent.ps1')
-                
-                $modules = @(
-                  @{ Name = 'Pester' },
-                  @{ Name = 'PSDSC'}, 
-                  @{ Name = 'PSDesiredStateConfiguration'; Version = '2.0.7'}
-                )
-                # TODO: Might move the separate installers relevant to the modules to tests
-                Set-EnvironmentOnAgent -PSModules $modules -InstallLatestDscVersion
+          steps:
+            - checkout: self
+              clean: true
+              fetchTags: false
+            
+            - task: PowerShell@2
+              displayName: "Run Pester tests for DSC modules"
+              inputs:
+                pwsh: true
+                targetType: "inline"
+                script: |
+                  # This script will install the required modules and software to run the tests
+                  . (Join-Path '$(Build.SourcesDirectory)' 'utilities' 'pipelines' 'scripts' 'Set-EnvironmentOnAgent.ps1')
+                  
+                  $modules = @(
+                    @{ Name = 'Pester' },
+                    @{ Name = 'PSDSC'}, 
+                    @{ Name = 'PSDesiredStateConfiguration'; Version = '2.0.7'}
+                  )
+                  # TODO: Might move the separate installers relevant to the modules to tests
+                  Set-EnvironmentOnAgent -PSModules $modules -InstallLatestDscVersion
 
-                $env:PSModulePath += ";$(Build.SourcesDirectory)\resources"
-                Invoke-Pester -CI -Path tests
-                
-          - task: PublishTestResults@2
-            inputs:
-              testResultsFormat: "NUnit"
-              testResultsFiles: "**/Test*.xml"
-              failTaskOnFailedTests: true
+                  $env:PSModulePath += ";$(Build.SourcesDirectory)\resources"
+                  Invoke-Pester -CI -Path tests
+                  
+            - task: PublishTestResults@2
+              inputs:
+                testResultsFormat: "NUnit"
+                testResultsFiles: "**/Test*.xml"
+                failTaskOnFailedTests: true
