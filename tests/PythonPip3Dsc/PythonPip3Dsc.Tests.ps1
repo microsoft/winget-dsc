@@ -13,7 +13,7 @@ BeforeAll {
 
     if ($env:TF_BUILD)
     {
-        Invoke-WebRequest https://raw.githubusercontent.com/KernFerm/Py3.12.1-installer-PS1/refs/heads/main/Py3.12.1-installer.ps1 -UseBasicParsing -OutFile Py3.12.1-installer.ps1.ps1
+        Invoke-WebRequest https://raw.githubusercontent.com/KernFerm/Py3.12.1-installer-PS1/refs/heads/main/Py3.12.1-installer.ps1 -UseBasicParsing -OutFile Py3.12.1-installer.ps1
         .\Py3.12.1-installer.ps1
     }
 }
