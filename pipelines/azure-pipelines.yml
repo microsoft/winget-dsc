@@ -93,7 +93,7 @@ extends:
                   targetType: "inline"
                   script: |
                     # This script will install the required modules and software to run the tests
-                    . (Join-Path '$(Build.SourcesDirectory)' 'utilities' 'pipelines' 'scripts' 'Set-EnvironmentOnAgent.ps1')
+                    . (Join-Path '$(Build.SourcesDirectory)' 'utilities' 'scripts' 'Set-EnvironmentOnAgent.ps1')
                     
                     $modules = @(
                       @{ Name = 'Pester' },
