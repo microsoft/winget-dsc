@@ -20,25 +20,26 @@ BeforeAll {
    $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
 }
 
-Describe 'List available DSC resources'{
-   It 'Shows DSC Resources'{
-       $expectedDSCResources = "DeveloperMode", "OsVersion", "ShowSecondsInClock", "EnableDarkMode", "Taskbar", "UserAccessControl", "WindowsExplorer"
-       $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
-       $availableDSCResources.length | Should -Be 7
-       $availableDSCResources | Where-Object {$expectedDSCResources -notcontains $_} | Should -BeNullOrEmpty -ErrorAction Stop
+Describe 'List available DSC resources' {
+   It 'Shows DSC Resources' {
+      $expectedDSCResources = "DeveloperMode", "OsVersion", "ShowSecondsInClock", "EnableDarkMode", "Taskbar", "UserAccessControl", "WindowsExplorer"
+      $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
+      $availableDSCResources.length | Should -Be 7
+      $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
    }
 }
 
-Describe 'Taskbar'{
-   It 'Keeps current value.'{
+Describe 'Taskbar' {
+   It 'Keeps current value.' {
       $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
       $parameters = @{
-         Alignment = 'KeepCurrentValue';
+         Alignment      = 'KeepCurrentValue';
          HideLabelsMode = 'KeepCurrentValue';
-         SearchboxMode = 'KeepCurrentValue';
+         SearchboxMode  = 'KeepCurrentValue';
          TaskViewButton = 'KeepCurrentValue';
-         WidgetsButton = 'KeepCurrentValue'}
+         WidgetsButton  = 'KeepCurrentValue'
+      }
 
       $testResult = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
       $testResult.InDesiredState | Should -Be $true
@@ -61,10 +62,11 @@ Describe 'Taskbar'{
       $desiredWidgetsButton = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
 
       $desiredState = @{ Alignment = $desiredAlignment;
-         HideLabelsMode = $desiredHideLabelsMode;
-         SearchboxMode = $desiredSearchboxMode;
-         TaskViewButton = $desiredTaskViewButton;
-         WidgetsButton = $desiredWidgetsButton}
+         HideLabelsMode            = $desiredHideLabelsMode;
+         SearchboxMode             = $desiredSearchboxMode;
+         TaskViewButton            = $desiredTaskViewButton;
+         WidgetsButton             = $desiredWidgetsButton
+      }
       
       Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
    
@@ -77,14 +79,15 @@ Describe 'Taskbar'{
    }
 }
 
-Describe 'WindowsExplorer'{
-   It 'Keeps current value.'{
+Describe 'WindowsExplorer' {
+   It 'Keeps current value.' {
       $initialState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
       $parameters = @{
          FileExtensions = 'KeepCurrentValue';
-         HiddenFiles = 'KeepCurrentValue';
-         ItemCheckBoxes = 'KeepCurrentValue' }
+         HiddenFiles    = 'KeepCurrentValue';
+         ItemCheckBoxes = 'KeepCurrentValue' 
+      }
 
       $testResult = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
       $testResult.InDesiredState | Should -Be $true
@@ -105,8 +108,9 @@ Describe 'WindowsExplorer'{
 
       $desiredState = @{
          FileExtensions = $desiredFileExtensions;
-         HiddenFiles = $desiredHiddenFiles;
-         ItemCheckBoxes = $desiredItemCheckBoxes}
+         HiddenFiles    = $desiredHiddenFiles;
+         ItemCheckBoxes = $desiredItemCheckBoxes
+      }
       
       Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
    
@@ -117,8 +121,8 @@ Describe 'WindowsExplorer'{
    }
 }
 
-Describe 'UserAccessControl'{
-   It 'Keeps current value.'{
+Describe 'UserAccessControl' {
+   It 'Keeps current value.' {
       $initialState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
       $parameters = @{ AdminConsentPromptBehavior = 'KeepCurrentValue' }
@@ -132,7 +136,7 @@ Describe 'UserAccessControl'{
       $finalState.AdminConsentPromptBehavior | Should -Be $initialState.AdminConsentPromptBehavior
    }
 
-   It 'Sets desired value.'{
+   It 'Sets desired value.' {
       # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
       $desiredAdminConsentPromptBehavior = [AdminConsentPromptBehavior](Get-Random -Maximum 6 -Minimum 1)
 
