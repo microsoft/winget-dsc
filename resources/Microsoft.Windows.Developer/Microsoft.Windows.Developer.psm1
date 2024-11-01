@@ -32,7 +32,8 @@ enum HideTaskBarLabelsBehavior
     Never
 }
 
-enum SearchBoxMode {
+enum SearchBoxMode
+{
     KeepCurrentValue
     Hide
     ShowIconOnly
@@ -40,7 +41,8 @@ enum SearchBoxMode {
     ShowIconAndLabel
 }
 
-enum AdminConsentPromptBehavior {
+enum AdminConsentPromptBehavior
+{
     KeepCurrentValue
     NoCredOrConsentRequired
     RequireCredOnSecureDesktop
@@ -69,7 +71,7 @@ class DeveloperMode
         $this.IsEnabled = IsDeveloperModeEnabled
 
         return @{
-            Ensure = $this.Ensure
+            Ensure    = $this.Ensure
             IsEnabled = $this.IsEnabled
         }
     }
@@ -131,7 +133,7 @@ class OsVersion
 
         return @{
             MinVersion = $this.MinVersion
-            OsVersion = $this.OsVersion
+            OsVersion  = $this.OsVersion
         }
     }
 
@@ -153,10 +155,11 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath))
     $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
     $global:SearchRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\'
     $global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\'
+    $global:RemoteDesktopRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
 }
 else
 {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -545,7 +548,7 @@ class EnableDarkMode
         $appsUseLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name $this.AppsUseLightTheme
         $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name $this.SystemUsesLightTheme
 
-        $isDarkModeEnabled = if ($appsUseLightModeValue -eq 0 -and $systemUsesLightModeValue -eq 0) {[Ensure]::Present} else {[Ensure]::Absent}
+        $isDarkModeEnabled = if ($appsUseLightModeValue -eq 0 -and $systemUsesLightModeValue -eq 0) { [Ensure]::Present } else { [Ensure]::Absent }
         
         return @{
             Ensure = $isDarkModeEnabled
@@ -560,7 +563,7 @@ class EnableDarkMode
 
     [void] Set()
     {
-        $value = if ($this.Ensure -eq [Ensure]::Present) {0} else {1}
+        $value = if ($this.Ensure -eq [Ensure]::Present) { 0 } else { 1 }
         Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme -Value $value
         Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme -Value $value
 
@@ -573,7 +576,8 @@ class EnableDarkMode
 }
 
 [DSCResource()]
-class ShowSecondsInClock {
+class ShowSecondsInClock
+{
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -583,9 +587,11 @@ class ShowSecondsInClock {
 
     hidden [string] $ShowSecondsInSystemClock = 'ShowSecondsInSystemClock'
 
-    [ShowSecondsInClock] Get() {
+    [ShowSecondsInClock] Get()
+    {
         $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock
-        if (-not($exists)) {
+        if (-not($exists))
+        {
             return @{
                 Ensure = [Ensure]::Absent
             }
@@ -598,14 +604,60 @@ class ShowSecondsInClock {
         }
     }
 
-    [bool] Test() {
+    [bool] Test()
+    {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set() {
+    [void] Set()
+    {
         $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
         Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock -Value $value
+    }
+}
+
+[DSCResource()]
+class EnableRemoteDesktop
+{
+    # Key required. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $RemoteDesktopKey = 'fDenyTSConnections'
+
+    [EnableRemoteDesktop] Get()
+    {
+        $exists = DoesRegistryKeyPropertyExist -Path $global:RemoteDesktopRegistryPath -Name $this.RemoteDesktopKey
+        if (-not($exists))
+        {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:RemoteDesktopRegistryPath  -Name $this.RemoteDesktopKey
+        
+        # Since the key is a 'deny' type key, 0 == enabled == Present // 1 == disabled == Absent
+        return @{
+            Ensure = $registryValue ? [Ensure]::Absent : [Ensure]::Present
+        }
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set()
+    {
+        # Since the key is a 'deny' type key, 0 == enabled == Present // 1 == disabled == Absent
+        $value = ($this.Ensure -eq [Ensure]::Present) ? 0 : 1
+        Set-ItemProperty -Path $global:RemoteDesktopRegistryPath -Name $this.RemoteDesktopKey -Value $value
     }
 }
 #endregion DSCResources
