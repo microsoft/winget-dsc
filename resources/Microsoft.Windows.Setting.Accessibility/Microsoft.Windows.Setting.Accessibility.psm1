@@ -61,7 +61,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath))
 }
 else
 {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $global:StickyKeysRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]	
@@ -662,7 +662,7 @@ class StickyKeys
     {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:StickyKeysRegistryPath -Name ([StickyKeys]::SettingsProperty)))
         {
-            return 0
+            return [StickyKeysOptions]::None
         }
         else
         {
@@ -772,8 +772,8 @@ class StickyKeys
 
             if ($null -ne $this.ConfirmOnHotkeyActivation)
             {
-                $flags += ($this.ConfirmOnHotkeyActivation -and !$flags.HasFlag([StickyKeysOptions]::ConfirmOnHotkeyActivation)) ? [StickyKeysOptions]::ConfirmOnHotkeyActivation : [StickyKeysOptions]::None
-                $flags -= (!$this.ConfirmOnHotkeyActivation -and $flags.HasFlag([StickyKeysOptions]::ConfirmOnHotkeyActivation)) ? [StickyKeysOptions]::ConfirmOnHotkeyActivation : [StickyKeysOptions]::None
+                $flags += ($this.ConfirmOnHotkeyActivation -and !$flags.HasFlag([StickyKeysOptions]::ConfirmHotkey)) ? [StickyKeysOptions]::ConfirmHotkey : [StickyKeysOptions]::None
+                $flags -= (!$this.ConfirmOnHotkeyActivation -and $flags.HasFlag([StickyKeysOptions]::ConfirmHotkey)) ? [StickyKeysOptions]::ConfirmHotkey : [StickyKeysOptions]::None
             }
 
             if ($null -ne $this.HotkeySound)

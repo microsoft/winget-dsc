@@ -27,9 +27,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect", "Audio", "TextCursor"
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect", "Audio", "TextCursor", "StickyKeys"
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 6
+        $availableDSCResources.length | Should -Be 7
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -118,8 +118,8 @@ Describe 'MousePointer' {
     }
 }
 
-Describe 'VisualEffect'{
-    It 'AlwaysShowScrollbars.'{
+Describe 'VisualEffect' {
+    It 'AlwaysShowScrollbars.' {
         Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ AlwaysShowScrollbars = $false }
 
         $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
@@ -138,7 +138,7 @@ Describe 'VisualEffect'{
         $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
-    It 'TransparencyEffects.'{
+    It 'TransparencyEffects.' {
         Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ TransparencyEffects = $false }
 
         $initialState = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
@@ -157,7 +157,7 @@ Describe 'VisualEffect'{
         $testResult2 = Invoke-DscResource -Name VisualEffect -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
-   It 'MessageDuration'{
+    It 'MessageDuration' {
         $firstValue = 5 #Key is missing by default, and default value is 5 when not specified. 
         $secondValue = 10
 		
@@ -179,8 +179,8 @@ Describe 'VisualEffect'{
     }
 }
 
-Describe 'Audio'{
-    It 'EnableMonoAudio.'{
+Describe 'Audio' {
+    It 'EnableMonoAudio.' {
         Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ EnableMonoAudio = $false }
 
         $initialState = Invoke-DscResource -Name Audio -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
@@ -201,8 +201,8 @@ Describe 'Audio'{
     }
 }
 
-Describe 'TextCursor'{
-    It 'IndicatorStatus.'{
+Describe 'TextCursor' {
+    It 'IndicatorStatus.' {
         $initialState = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
         $initialState.IndicatorStatus # Should -Be $false
 
@@ -219,7 +219,7 @@ Describe 'TextCursor'{
         $testResult2 = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
-    It 'IndicatorSize.'{ 
+    It 'IndicatorSize.' { 
         Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ IndicatorSize = 1 }
 
         $initialState = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
@@ -238,7 +238,7 @@ Describe 'TextCursor'{
         $testResult2 = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
-    It 'IndicatorColor.'{ 
+    It 'IndicatorColor.' { 
         Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ IndicatorColor = 16711871 }
 
         $initialState = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
@@ -257,7 +257,7 @@ Describe 'TextCursor'{
         $testResult2 = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
-   It 'Thickness'{ #int
+    It 'Thickness' { #int
         $firstValue = 1 #Key is missing by default, and default value is 5 when not specified. 
         $secondValue = 2
 		
@@ -278,6 +278,48 @@ Describe 'TextCursor'{
         $testResult2.InDesiredState | Should -Be $true
     }
 }
+
+Describe 'StickyKeys' {
+    It 'Each property can be set' { 
+        # Get a snapshot of the current state
+        $baselineState = Invoke-DscResource -Name StickyKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        # Get a list of all the properties that can be changed
+        $propertyList = $baselineState.PSObject.Properties.Name | Where-Object { $_ -ne 'SID' }
+
+        # Change each property individually and check each time
+        $propertyList | ForEach-Object {
+            $property = $_ # This is just for code readability
+
+            # Set the desired state of the property to the opposite of whatever it currently is
+            $desiredPropertyState = !($baselineState | Select-Object -ExpandProperty $property)
+
+            # Test the desired state against the current state. Since nothing has changed, the system should never be in the desired state
+            $parameters = @{ $property = $desiredPropertyState }
+            $testResult = Invoke-DscResource -Name StickyKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+            $testResult.InDesiredState | Should -Be $false
+
+            # Set the new state and check that it applied
+            Invoke-DscResource -Name StickyKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+            $finalState = Invoke-DscResource -Name StickyKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+            $($finalState | Select-Object -ExpandProperty $property) | Should -Be $desiredPropertyState
+
+            # Test the desired state against the current state. Now that the change has been applied, it should always be in the desired state
+            $testResult2 = Invoke-DscResource -Name StickyKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+            $testResult2.InDesiredState | Should -Be $true
+        }
+
+        # Set all properties back to the initial state at once
+        $parameterList = $baselineState | Select-Object -Property $propertyList
+        $parameters = @{} # Needs to be a hashtable for seeting them all at once
+        $parameterList.PSObject.Properties | ForEach-Object { $parameters[$_.Name] = $_.Value }
+        $testResult = Invoke-DscResource -Name StickyKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false # Everything should still be opposite from when each property was changed individually
+        Invoke-DscResource -Name StickyKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $testResult2 = Invoke-DscResource -Name StickyKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+}
+
 
 AfterAll {
     $env:TestRegistryPath = ""
