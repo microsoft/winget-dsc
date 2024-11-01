@@ -17,6 +17,11 @@ BeforeAll {
     }
 	
     Import-Module GitDsc
+
+    # Create test folder for cloning into
+    $global:TestGitRoot = Join-Path -Path $env:TEMP -ChildPath $(New-Guid)
+    New-Item -ItemType Directory -Path $global:TestGitRoot -Force
+    $global:HttpsUrl = 'https://github.com/microsoft/winget-dsc.git'
 }
 
 Describe 'List available DSC resources' {
@@ -28,7 +33,26 @@ Describe 'List available DSC resources' {
     }
 }
 
+Describe 'GitClone' {
+    It 'New folder starts without cloned repo' {
+        $initialState = Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Get -Property @{
+            HttpsUrl      = $global:HttpsUrl
+            RootDirectory = $global:TestGitRoot
+        }
+        $initialState.Ensure | Should -Be 'Absent'
+    }
+
+    It 'Able to clone repo' {
+        $desiredState = @{HttpsUrl = $global:HttpsUrl; RootDirectory = $global:TestGitRoot }
+        Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Set -Property $desiredState
+        $finalState = Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Get -Property $desiredState
+        $finalState.Ensure | Should -Be 'Present'
+        $testResult = Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Test -Property $desiredState
+        $testResult.InDesiredState | Should -Be $true
+    }
+}
 
 AfterAll {
     # Clean up cloned folder
+    Remove-Item -Recurse -Force $global:TestGitRoot
 }
