@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 @{
     RootModule           = 'Microsoft.Windows.Setting.Accessibility.psm1'
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '0.2.0'
     GUID                 = '25cce770-4f0a-4387-a26b-4be692e229f9'
     Author               = 'Microsoft Corporation'
     CompanyName          = 'Microsoft Corporation'
@@ -15,8 +15,9 @@
         'MousePointer',
         'VisualEffect',
         'Audio',
-        'TextCursor'
-        'StickyKeys'
+        'TextCursor',
+        'StickyKeys',
+        'ToggleKeys'
     )
     PrivateData          = @{
         PSData = @{
@@ -28,7 +29,8 @@
                 'PSDscResource_VisualEffect',
                 'PSDscResource_Audio',
                 'PSDscResource_TextCursor',
-                'PSDscResource_StickyKeys'
+                'PSDscResource_StickyKeys',
+                'PSDscResource_ToggleKeys'
             )
     
             # Prerelease string of this module

@@ -46,6 +46,19 @@ enum PointerSize
     TwoKeysOff = 0x00000100 # 256
 }
 
+[Flags()] enum ToggleKeysOptions
+{
+    # https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-togglekeys
+    None = 0x00000000 # 0
+    Active = 0x00000001 # 1
+    Available = 0x00000002 # 2
+    HotkeyActive = 0x00000004 # 4
+    ConfirmHotkey = 0x00000008 # 8
+    HotkeySound = 0x00000010# 16
+    VisualIndicator = 0x00000020 # 32
+}
+
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath))
 {
     $global:AccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\'
@@ -58,10 +71,11 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath))
     $global:CursorIndicatorAccessibilityRegistryPath = 'HKCU:\Software\Microsoft\Accessibility\CursorIndicator\'
     $global:ControlPanelDesktopRegistryPath = 'HKCU:\Control Panel\Desktop'
     $global:StickyKeysRegistryPath = 'HKCU:\Control Panel\Accessibility\StickyKeys'
+    $global:ToggleKeysRegistryPath = 'HKCU:\Control Panel\Accessibility\ToggleKeys'
 }
 else
 {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $global:StickyKeysRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $global:StickyKeysRegistryPath = $global:ToggleKeysRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]	
@@ -808,6 +822,138 @@ class StickyKeys
 
             # Set the value in the registry
             Set-ItemProperty -Path $global:StickyKeysRegistryPath -Name ([StickyKeys]::SettingsProperty) -Value $flags.GetHashCode()
+        }
+    }
+}
+
+[DSCResource()]
+class ToggleKeys
+{
+    # Key required. Do not set.
+    [DscProperty(Key)] [string] $SID
+    [DscProperty()] [nullable[bool]] $Active
+    [DscProperty()] [nullable[bool]] $Available
+    [DscProperty()] [nullable[bool]] $HotkeyActive
+    [DscProperty()] [nullable[bool]] $ConfirmOnHotkeyActivation
+    [DscProperty()] [nullable[bool]] $HotkeySound
+    [DscProperty()] [nullable[bool]] $VisualIndicator
+
+    static hidden [string] $SettingsProperty = 'Flags'
+
+    static [System.Enum] GetCurrentFlags()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ToggleKeysRegistryPath -Name ([ToggleKeys]::SettingsProperty)))
+        {
+            return [ToggleKeysOptions]::None
+        }
+        else
+        {
+            $ToggleKeysFlags = [System.Enum]::Parse('ToggleKeysOptions', (Get-ItemPropertyValue -Path $global:StickyKeysRegistryPath -Name ([StickyKeys]::SettingsProperty)))
+            return $ToggleKeysFlags
+        }
+    }
+
+    [ToggleKeys] Get()
+    {
+        $currentFlags = [ToggleKeys]::GetCurrentFlags()
+        
+        $currentState = [ToggleKeys]::new()
+        $currentState.Active = $currentFlags.HasFlag([ToggleKeysOptions]::Active)
+        $currentState.Available = $currentFlags.HasFlag([ToggleKeysOptions]::Available)
+        $currentState.HotkeyActive = $currentFlags.HasFlag([ToggleKeysOptions]::HotkeyActive)
+        $currentState.ConfirmOnHotkeyActivation = $currentFlags.HasFlag([ToggleKeysOptions]::ConfirmHotkey)
+        $currentState.HotkeySound = $currentFlags.HasFlag([ToggleKeysOptions]::HotkeySound)
+        $currentState.VisualIndicator = $currentFlags.HasFlag([ToggleKeysOptions]::VisualIndicator)
+        
+        return $currentState
+    }
+
+    [bool] Test()
+    {
+        $currentState = $this.Get()
+
+        if (($null -ne $this.Active) -and ($this.Active -ne $currentState.Active))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.Available) -and ($this.Available -ne $currentState.Available))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.HotkeyActive) -and ($this.HotkeyActive -ne $currentState.HotkeyActive))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.ConfirmOnHotkeyActivation) -and ($this.ConfirmOnHotkeyActivation -ne $currentState.ConfirmOnHotkeyActivation))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.HotkeySound) -and ($this.HotkeySound -ne $currentState.HotkeySound))
+        {
+            return $false
+        }
+
+        if (($null -ne $this.VisualIndicator) -and ($this.VisualIndicator -ne $currentState.VisualIndicator))
+        {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set()
+    {
+        # Only make changes if changes are needed
+        if (-not $this.Test())
+        {
+            # If a value isn't set in the DSC, it should remain unchanged, to do this we need the current flags
+            $flags = [ToggleKeys]::GetCurrentFlags()
+
+            if ($null -ne $this.Active)
+            {
+                # If the user requested to set the value to true, and the current flag is unset, set the flag, otherwise add no flag
+                # If the user requested to set the value to false, and the current flag is set, unset the flag, otherwise remove no flag
+                # Since $this.Active can only be either true or false, only one of these statements will actually affect the value of $flags
+                $flags += ($this.Active -and !$flags.HasFlag([ToggleKeysOptions]::Active)) ? [ToggleKeysOptions]::Active : [ToggleKeysOptions]::None
+                $flags -= (!$this.Active -and $flags.HasFlag([ToggleKeysOptions]::Active)) ? [ToggleKeysOptions]::Active : [ToggleKeysOptions]::None
+            }
+
+            if ($null -ne $this.Available)
+            {
+                $flags += ($this.Available -and !$flags.HasFlag([ToggleKeysOptions]::Available)) ? [ToggleKeysOptions]::Available : [ToggleKeysOptions]::None
+                $flags -= (!$this.Available -and $flags.HasFlag([ToggleKeysOptions]::Available)) ? [ToggleKeysOptions]::Available : [ToggleKeysOptions]::None
+            }
+
+            if ($null -ne $this.HotkeyActive)
+            {
+                $flags += ($this.HotkeyActive -and !$flags.HasFlag([ToggleKeysOptions]::HotkeyActive)) ? [ToggleKeysOptions]::HotkeyActive : [ToggleKeysOptions]::None
+                $flags -= (!$this.HotkeyActive -and $flags.HasFlag([ToggleKeysOptions]::HotkeyActive)) ? [ToggleKeysOptions]::HotkeyActive : [ToggleKeysOptions]::None
+            }
+
+            if ($null -ne $this.ConfirmOnHotkeyActivation)
+            {
+                $flags += ($this.ConfirmOnHotkeyActivation -and !$flags.HasFlag([ToggleKeysOptions]::ConfirmHotkey)) ? [ToggleKeysOptions]::ConfirmHotkey : [ToggleKeysOptions]::None
+                $flags -= (!$this.ConfirmOnHotkeyActivation -and $flags.HasFlag([ToggleKeysOptions]::ConfirmHotkey)) ? [ToggleKeysOptions]::ConfirmHotkey : [ToggleKeysOptions]::None
+            }
+
+            if ($null -ne $this.HotkeySound)
+            {
+                $flags += ($this.HotkeySound -and !$flags.HasFlag([ToggleKeysOptions]::HotkeySound)) ? [ToggleKeysOptions]::HotkeySound : [ToggleKeysOptions]::None
+                $flags -= (!$this.HotkeySound -and $flags.HasFlag([ToggleKeysOptions]::HotkeySound)) ? [ToggleKeysOptions]::HotkeySound : [ToggleKeysOptions]::None
+            }
+
+            if ($null -ne $this.VisualIndicator)
+            {
+                $flags += ($this.VisualIndicator -and !$flags.HasFlag([ToggleKeysOptions]::VisualIndicator)) ? [ToggleKeysOptions]::VisualIndicator : [ToggleKeysOptions]::None
+                $flags -= (!$this.VisualIndicator -and $flags.HasFlag([ToggleKeysOptions]::VisualIndicator)) ? [ToggleKeysOptions]::VisualIndicator : [ToggleKeysOptions]::None
+            }
+
+            # Set the value in the registry
+            Set-ItemProperty -Path $global:ToggleKeysRegistryPath -Name ([ToggleKeys]::SettingsProperty) -Value $flags.GetHashCode()
         }
     }
 }
