@@ -15,7 +15,7 @@ BeforeAll {
     {
         Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
     }
-	
+
     Import-Module GitDsc
 
     # Create test folder for cloning into
