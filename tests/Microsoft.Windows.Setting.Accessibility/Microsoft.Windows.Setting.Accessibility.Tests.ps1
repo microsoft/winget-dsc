@@ -27,9 +27,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect", "Audio", "TextCursor"
+        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect", "Audio", "TextCursor", "ColorFilter"
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 6
+        $availableDSCResources.length | Should -Be 7
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -275,6 +275,68 @@ Describe 'TextCursor'{
         $finalState.Thickness | Should -Be $secondValue
 
         $testResult2 = Invoke-DscResource -Name TextCursor -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+}
+
+Describe 'ColorFilter'{
+    It 'FilterStatus.'{
+        $initialState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.FilterStatus # Should -Be $false
+
+        # Set 'FilterStatus' to true.
+        $parameters = @{ FilterStatus = $true }
+        $testResult = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
+
+        # Verify the changes are correct.
+        Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.FilterStatus | Should -Be $true
+
+        $testResult2 = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+    It 'FilterColor.'{ 
+        $desiredFilterColor = [ColorFilters](Get-Random -Maximum 6 -Minimum 1)
+        $parameters = @{ FilterColor = $desiredFilterColor }
+        Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+
+        $initialState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.FilterColor | Should -Be $desiredFilterColor
+
+        #Choose new value at random	
+        $newDesiredFilterColor = $desiredFilterColor;
+        while ($newDesiredFilterColor -eq $desiredFilterColor) {$newDesiredFilterColor = [ColorFilters](Get-Random -Maximum 6 -Minimum 1)}
+        
+        # Update 'FilterColor'.
+        $parameters = @{ FilterColor = $newDesiredFilterColor }
+        $testResult = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
+
+        # Verify the changes are correct.
+        Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.FilterColor | Should -Be $newDesiredFilterColor
+
+        $testResult2 = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+    It 'KeyboardShortcutStatus.'{
+        $initialState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.KeyboardShortcutStatus # Should -Be $false
+
+        # Set 'KeyboardShortcutStatus' to true.
+        $parameters = @{ KeyboardShortcutStatus = $true }
+        $testResult = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
+
+        # Verify the changes are correct.
+        Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.KeyboardShortcutStatus | Should -Be $true
+
+        $testResult2 = Invoke-DscResource -Name ColorFilter -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
 }
