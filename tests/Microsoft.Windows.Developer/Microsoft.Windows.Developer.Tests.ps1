@@ -22,9 +22,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
    It 'Shows DSC Resources' {
-      $expectedDSCResources = "DeveloperMode", "OsVersion", "ShowSecondsInClock", "EnableDarkMode", "Taskbar", "UserAccessControl", "WindowsExplorer"
+      $expectedDSCResources = "DeveloperMode", "OsVersion", "ShowSecondsInClock", "EnableDarkMode", "Taskbar", "UserAccessControl", "WindowsExplorer", "EnableRemoteDesktop"
       $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
-      $availableDSCResources.length | Should -Be 7
+      $availableDSCResources.length | Should -Be 8
       $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
    }
 }
@@ -146,6 +146,28 @@ Describe 'UserAccessControl' {
    
       $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.AdminConsentPromptBehavior | Should -Be $desiredAdminConsentPromptBehavior
+   }
+}
+
+Describe 'EnableRemoteDesktop' {
+   It 'Sets Enabled' {
+      $desiredRemoteDesktopBehavior = [Ensure]::Present
+      $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
+      
+      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+   
+      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
+   }
+
+   It 'Sets Disabled' {
+      $desiredRemoteDesktopBehavior = [Ensure]::Absent
+      $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
+      
+      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+   
+      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
    }
 }
 
