@@ -159,7 +159,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath))
 }
 else
 {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
