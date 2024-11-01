@@ -14,17 +14,23 @@ function Get-Pip3Path
         $installLocationProperty = "ExecutablePath"
 
         $pipExe = TryGetRegistryValue -Key $userUninstallRegistry -Property $installLocationProperty
-        $userInstallLocation = Join-Path (Split-Path $pipExe -Parent) "Scripts\pip3.exe"
-        if ($userInstallLocation)
+        if ($null -ne $pipExe)
         {
-            return $userInstallLocation
+            $userInstallLocation = Join-Path (Split-Path $pipExe -Parent) "Scripts\pip3.exe"
+            if ($userInstallLocation)
+            {
+                return $userInstallLocation
+            }
         }
 
         $pipExe = TryGetRegistryValue -Key $machineUninstallRegistry -Property $installLocationProperty
-        $machineInstallLocation = Join-Path (Split-Path $pipExe -Parent) "Scripts\pip3.exe"
-        if ($machineInstallLocation)
+        if ($null -ne $pipExe)
         {
-            return $machineInstallLocation
+            $machineInstallLocation = Join-Path (Split-Path $pipExe -Parent) "Scripts\pip3.exe"
+            if ($machineInstallLocation)
+            {
+                return $machineInstallLocation
+            }
         }
     }
     elseif ($IsMacOS)

@@ -9,14 +9,15 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    Import-Module PythonPip3Dsc -Force -ErrorAction SilentlyContinue
-
+    # Before import module make sure Python is installed
     if ($env:TF_BUILD)
     {
         $outFile = Join-Path $env:TEMP 'python.exe'
         Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.14.0/python-3.14.0a1-amd64.exe" -UseBasicParsing -OutFile $outFile
         & $outFile /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
     }
+
+    Import-Module PythonPip3Dsc -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'List available DSC resources' {
