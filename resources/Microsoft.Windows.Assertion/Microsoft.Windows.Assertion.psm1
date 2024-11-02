@@ -113,7 +113,7 @@ class ProcessorArchitecture
 
     [void] Set()
     {
-        # This resource is only for asserting the System Architecture requirement.
+        # This resource is only for asserting the Processor Architecture requirement.
     }
 }
 
@@ -160,7 +160,7 @@ class OsInstallDate
     [string]$SID
 
     [DscProperty()]
-    [string] $Before = [System.DateTime]::Now 
+    [string] $Before = [System.DateTime]::Now
 
     [DscProperty()]
     [string] $After
@@ -321,7 +321,7 @@ class CsModel
 
     [void] Set()
     {
-        # This resource is only for asserting the Computer Manufacturer requirement.
+        # This resource is only for asserting the Computer Model requirement.
     }
 }
 
@@ -334,7 +334,7 @@ class CsDomain
 
     [DscProperty(Mandatory)]
     [string] $RequiredDomain
-    
+
     [DscProperty()]
     [string] $RequiredRole
 
@@ -422,7 +422,7 @@ class PnPDevice
 
     [DscProperty(Mandatory)]
     [string[]] $FriendlyName
-    
+
     [DscProperty()]
     [string[]] $DeviceClass
 

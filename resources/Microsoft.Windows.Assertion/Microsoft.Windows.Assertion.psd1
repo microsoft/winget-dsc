@@ -10,7 +10,7 @@
     Description          = 'DSC Module for ensuring the system meets certain specifications'
     PowerShellVersion    = '7.2'
     DscResourcesToExport = @(
-        'OsEditionId',       
+        'OsEditionId',
         'SystemArchitecture',
         'ProcessorArchitecture',
         'HyperVisorPresent',
@@ -26,7 +26,7 @@
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags       = @(
-                'PSDscResource_OsEditionId',       
+                'PSDscResource_OsEditionId',
                 'PSDscResource_SystemArchitecture',
                 'PSDscResource_ProcessorArchitecture',
                 'PSDscResource_HyperVisorPresent',
@@ -38,7 +38,7 @@
                 'PSDscResource_PowerShellVersion',
                 'PSDscResource_PnPDevice'
             )
-    
+
             # Prerelease string of this module
             Prerelease = 'alpha'
         }
