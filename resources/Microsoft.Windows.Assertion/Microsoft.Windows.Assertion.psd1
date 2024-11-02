@@ -26,10 +26,17 @@
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags       = @(
-                'PSDscResource_EditionID',                
+                'PSDscResource_OsEditionId',       
                 'PSDscResource_SystemArchitecture',
+                'PSDscResource_ProcessorArchitecture',
                 'PSDscResource_HyperVisorPresent',
-                'PSDscResource_OsInstallDate'
+                'PSDscResource_OsInstallDate',
+                'PSDscResource_OsVersion',
+                'PSDscResource_CsManufacturer',
+                'PSDscResource_CsModel',
+                'PSDscResource_CsDomain',
+                'PSDscResource_PowerShellVersion',
+                'PSDscResource_PnPDevice'
             )
     
             # Prerelease string of this module
