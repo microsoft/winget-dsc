@@ -30,8 +30,8 @@ class OsEditionId
         $this.Edition = Get-ComputerInfo | Select-Object -ExpandProperty WindowsEditionId
 
         return @{
-            RequredEdition = $this.RequiredEdition
-            Edition        = $this.Edition
+            RequiredEdition = $this.RequiredEdition
+            Edition         = $this.Edition
         }
     }
 
@@ -361,7 +361,9 @@ class CsDomain
     [bool] Test()
     {
         $currentState = $this.Get()
-        return ($currentState.Domain -eq $currentState.RequiredDomain) -and (($null -eq $currentState.RequiredRole) -or ($currentState.Role -eq $currentState.RequiredRole))
+        if ($currentState.Domain -ne $currentState.RequiredDomain) { return $false } # If domains don't match
+        if (!$currentState.RequiredRole) { return $true } # RequiredRole is null and domains match
+        return ($currentState.RequiredRole -eq $currentState.Role) # Return whether the roles match
     }
 
     [void] Set()
@@ -433,12 +435,13 @@ class PnPDevice
         $params += $this.DeviceClass ? @{Class = $this.DeviceClass } : @{}
         $params += $this.Status ? @{Status = $this.Status } : @{}
 
-        $pnpDevice = Get-PnpDevice @params
+        $pnpDevice = @(Get-PnpDevice @params)
 
+        # It's possible that multiple PNP devices match, but as long as one matches then the assertion succeeds
         return @{
-            FriendlyName = $pnpDevice ? $pnpDevice.FriendlyName : $null
-            DeviceClass  = $pnpDevice ? $pnpDevice.Class : $null
-            Status       = $pnpDevice ? $pnpDevice.Status : [PnPDeviceState]::UNKNOWN
+            FriendlyName = $pnpDevice ? $pnpDevice[0].FriendlyName : $null
+            DeviceClass  = $pnpDevice ? $pnpDevice[0].Class : $null
+            Status       = $pnpDevice ? $pnpDevice[0].Status : [PnPDeviceState]::UNKNOWN
         }
     }
 
@@ -446,7 +449,8 @@ class PnPDevice
     {
         $currentState = $this.Get()
         # If the device wasn't found with the specified parameters, the FriendlyName in the current state will be null
-        return ($this.FriendlyName -eq $currentState.FriendlyName)
+        # If a device was found, then FriendlyName will not be null
+        return (!!$currentState.FriendlyName)
     }
 
     [void] Set()
