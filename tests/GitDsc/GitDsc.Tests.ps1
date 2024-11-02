@@ -17,11 +17,6 @@ BeforeAll {
     }
 
     Import-Module GitDsc
-
-    # Create test folder for cloning into
-    $global:TestGitRoot = Join-Path -Path $env:TEMP -ChildPath $(New-Guid)
-    New-Item -ItemType Directory -Path $global:TestGitRoot -Force
-    $global:HttpsUrl = 'https://github.com/microsoft/winget-dsc.git'
 }
 
 Describe 'List available DSC resources' {
@@ -33,26 +28,71 @@ Describe 'List available DSC resources' {
     }
 }
 
-Describe 'GitClone' {
-    It 'New folder starts without cloned repo' {
-        $initialState = Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Get -Property @{
-            HttpsUrl      = $global:HttpsUrl
-            RootDirectory = $global:TestGitRoot
-        }
-        $initialState.Ensure | Should -Be 'Absent'
-    }
+InModuleScope -ModuleName GitDsc {
+    Describe 'GitClone' {
 
-    It 'Able to clone repo' {
-        $desiredState = @{HttpsUrl = $global:HttpsUrl; RootDirectory = $global:TestGitRoot }
-        Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Set -Property $desiredState
-        $finalState = Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Get -Property $desiredState
-        $finalState.Ensure | Should -Be 'Present'
-        $testResult = Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Test -Property $desiredState
-        $testResult.InDesiredState | Should -Be $true
+        BeforeAll {
+            Mock Assert-Git { return $true }
+            Mock Invoke-GitClone -Verifiable
+
+            $global:HttpsUrl = 'https://github.com/microsoft/winget-dsc.git'
+            $global:TestGitRoot = Join-Path -Path $env:TEMP -ChildPath $(New-Guid)
+        }
+
+        $script:gitCloneResource = [GitClone]::new()
+        Write-Output $gitCloneResource
+
+        It 'New folder starts without cloned repo' {
+            $gitCloneResource.HttpsUrl = $global:HttpsUrl
+            $gitCloneResource.RootDirectory = $global:TestGitRoot
+            $initialState = $gitCloneResource.Get()
+            $initialState.Ensure | Should -Be 'Absent'
+        }
+
+        It 'Set throws when ensuring absent' {
+            $gitCloneResource.Ensure = [Ensure]::Absent
+            { $gitCloneResource.Set() } | Should -Throw
+        }
+
+        It 'Calls Invoke-GitClone when ensuring present' {
+            $gitCloneResource.HttpsUrl = $global:HttpsUrl
+            $gitCloneResource.RootDirectory = $global:TestGitRoot
+            $gitCloneResource.Ensure = [Ensure]::Present
+            # Run the setter
+            { $gitCloneResource.Set() } | Should -Not -Throw
+            # The setter should create the root directory if it doesn't exist
+            Test-Path $global:TestGitRoot | Should -Be $true
+            # Git clone should have been called once
+            Assert-MockCalled Invoke-GitClone -Exactly 1
+        }
+
+        It 'Test should fail when remote does not match' {
+            Mock Invoke-GitRemote { return 'https://github.com/Trenly/winget-dsc.git' }
+
+            $gitCloneResource.HttpsUrl = $global:HttpsUrl
+            $gitCloneResource.RootDirectory = $global:TestGitRoot
+            $gitCloneResource.Ensure = [Ensure]::Present
+
+            $gitCloneResource.Test() | Should -Be $false
+        }
+
+        It 'Test should succeed when remote matches' {
+            # The folder has to be created here so that the DSC resource can attempt to fetch the remote from within it
+            New-Item -ItemType Directory -Path $(Join-Path -Path $global:TestGitRoot -ChildPath 'winget-dsc') -Force
+
+            Mock Invoke-GitRemote -Verifiable { return 'https://github.com/microsoft/winget-dsc.git' }
+
+            $gitCloneResource.HttpsUrl = $global:HttpsUrl
+            $gitCloneResource.RootDirectory = $global:TestGitRoot
+            $gitCloneResource.Ensure = [Ensure]::Present
+
+            $gitCloneResource.Test() | Should -Be $true
+            Assert-MockCalled Invoke-GitRemote -Exactly 1
+        }
     }
 }
 
 AfterAll {
     # Clean up cloned folder
-    Remove-Item -Recurse -Force $global:TestGitRoot
+    Remove-Item -Recurse -Force $global:TestGitRoot -ErrorAction 'SilentlyContinue'
 }
