@@ -421,17 +421,18 @@ class PnPDevice
     [string]$SID
 
     [DscProperty(Mandatory)]
-    [string] $FriendlyName
+    [string[]] $FriendlyName
     
     [DscProperty()]
-    [string] $DeviceClass
+    [string[]] $DeviceClass
 
     [DscProperty()]
-    [PnPDeviceState] $Status
+    [PnPDeviceState[]] $Status
 
     [PnPDevice] Get()
     {
-        $params = @{FriendlyName = $this.FriendlyName }
+        $params = @{}
+        $params += $this.FriendlyName ? @{FriendlyName = $this.FriendlyName } : @{}
         $params += $this.DeviceClass ? @{Class = $this.DeviceClass } : @{}
         $params += $this.Status ? @{Status = $this.Status } : @{}
 
@@ -439,9 +440,9 @@ class PnPDevice
 
         # It's possible that multiple PNP devices match, but as long as one matches then the assertion succeeds
         return @{
-            FriendlyName = $pnpDevice ? $pnpDevice[0].FriendlyName : $null
-            DeviceClass  = $pnpDevice ? $pnpDevice[0].Class : $null
-            Status       = $pnpDevice ? $pnpDevice[0].Status : [PnPDeviceState]::UNKNOWN
+            FriendlyName = $pnpDevice ? $pnpDevice.FriendlyName : $null
+            DeviceClass  = $pnpDevice ? $pnpDevice.Class : $null
+            Status       = $pnpDevice ? $pnpDevice.Status : [PnPDeviceState]::UNKNOWN
         }
     }
 
