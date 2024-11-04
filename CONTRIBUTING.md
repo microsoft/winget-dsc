@@ -109,14 +109,28 @@ Once the team have approved an issue/spec, development can proceed. If no develo
 
 ### Fork, Clone, Branch and Create your PR
 
-Once you've discussed your proposed feature/fix/etc. with a team member, and you've agreed an approach or a spec has been written and approved, it's time to start development:
+Once you've discussed your proposed feature/fix/etc. with a team member, and you've agreed an approach or a spec has been written and approved, it's time to start development. There are two flows you can follow depending on the proposed feature.
+
+If you're feature (or module) has not yet been created, follow these steps:
 
 1. Fork the repository if you haven't already.
-1. Clone your fork locally.
-1. Create & push a feature branch.
-1. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
-1. Work on your changes.
-1. Build and see if it works.
+2. Clone your fork locally.
+3. Dot-source the `New-DscResourceModule.ps` in your PowerShell session.
+4. Create a new module scaffolding by executing: `New-DscResourceModule -DscResourceModule '<moduleName>' -Description 'DSC Resource for <description>'`
+5. Work on your changes and write tests.
+6. Build and test to see if it works.
+7. Create & push a feature branch.
+8. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
+9. If you are finished with your changes and you want a review, change the state.
+
+When you are working on a fix, you can follow the below steps:
+
+1. Fork the repository if you haven't already.
+2. Clone your fork locally.
+3. Work on your fix and _optionally_ write tests
+4. Build and test to see if it works.
+5. Create & push a feature branch.
+6. Create a [Pull Request (PR)](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) when you are finished with your changes
 
 ### Testing
 
@@ -126,7 +140,8 @@ Testing is a key component in the development workflow.
 
 When you'd like the team to take a look, (even if the work is not yet fully-complete), mark the Draft PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
 
-> ⚠ Remember: **changes you make may affect both the Windows Package Manager and the schema support implemented in our validation pipelines!** Because of this, we will treat community PR's with the same level of scrutiny and rigor as commits submitted to the official Windows source by team members and partners.
+> [!CAUTION]
+> Remember: **changes you make may affect both the Windows Package Manager and the schema support implemented in our validation pipelines!** Because of this, we will treat community PR's with the same level of scrutiny and rigor as commits submitted to the official Windows source by team members and partners.
 
 ### Merge
 
