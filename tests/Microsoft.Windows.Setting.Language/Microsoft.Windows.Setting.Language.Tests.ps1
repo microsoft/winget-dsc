@@ -44,6 +44,15 @@ Describe 'Language' {
         $finalState.Exist | Should -BeFalse
     }
 
+    It 'Export all languages' -Skip:(!$IsWindows) { 
+     
+        $class = [Language]::new()
+
+        $currentLanguages = $class::Export()
+        $currentLanguages | Should -Not -BeNullOrEmpty
+        $currentLanguages.Count | Should -BeGreaterThan 0
+    }
+
     # TODO: Add test if LocaleName is not found
 }
 
