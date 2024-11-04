@@ -123,6 +123,9 @@ If you're feature (or module) has not yet been created, follow these steps:
 8. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
 9. If you are finished with your changes and you want a review, change the state.
 
+> [!TIP]
+> Don't forget to add the `DscResourcesToExport` and `Tags`.
+
 When you are working on a fix or you want to add additional features to an existing module, you can follow the below steps:
 
 1. Fork the repository if you haven't already.
