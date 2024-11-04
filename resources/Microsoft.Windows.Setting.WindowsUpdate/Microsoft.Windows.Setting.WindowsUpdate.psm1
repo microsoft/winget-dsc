@@ -1,5 +1,8 @@
 $global:WindowsUpdateSettingPath = 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
-$global:DeliveryOptimizationSettingPath = 'Registry::HKEY_USERS\S-1-5-20\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Settings' # The network service account using wmiprvse.exe sets values in the user hive
+# The network service account using wmiprvse.exe sets values in the user hive. This is the path to the Delivery Optimization settings in the user hive.
+# It requires elevation to read the values
+# Other settings might be needed e.g. DownloadRateForegroundProvider, DownloadRateBackgroundProvider
+$global:DeliveryOptimizationSettingPath = 'Registry::HKEY_USERS\S-1-5-20\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Settings'
 
 #region Functions
 function DoesRegistryKeyPropertyExist
@@ -149,6 +152,37 @@ function Assert-DownloadRate
         }
     }
 }
+
+function Initialize-WindowsUpdate 
+{
+    $class = [WindowsUpdate]::new()
+
+    $hiddenProperties = $class | Get-Member -Static -Force | Where-Object { $_.MemberType -eq 'Property' } | Select-Object -ExpandProperty Name
+
+    foreach ($p in $hiddenProperties)
+    {
+        $classPropertyName = $p.Replace("Property", "")
+        $dataType = $class | Get-Member | Where-Object { $_.Name -eq $classPropertyName } | Select-Object -ExpandProperty Definition | Select-String -Pattern '\[.*\]' | Select-Object -ExpandProperty Matches | Select-Object -ExpandProperty Value
+
+        $currentValue = [WindowsUpdate]::GetRegistryValue($class::$p)
+        if ($null -eq $currentValue)
+        {
+            if ($dataType -eq '[bool]')
+            {
+                $currentValue = $false
+            }
+
+            if ($dataType -eq '[int]')
+            {
+                $currentValue = 0
+            }
+        }
+        
+        $class.$classPropertyName = $currentValue
+    }
+
+    return $class
+}
 #endregion Functions
 
 #region Classes
@@ -280,22 +314,7 @@ class WindowsUpdate
 
     [WindowsUpdate] Get()
     {
-        $currentState = [WindowsUpdate]::new()
-        $currentState.IsContinuousInnovationOptedIn = [WindowsUpdate]::GetIsContinuousInnovationOptedInStatus()
-        $currentState.AllowMUUpdateService = [WindowsUpdate]::AllowMUUpdateServiceStatus()
-        $currentState.IsExpedited = [WindowsUpdate]::IsExpeditedStatus()
-        $currentState.AllowAutoWindowsUpdateDownloadOverMeteredNetwork = [WindowsUpdate]::AllowAutoWindowsUpdateDownloadOverMeteredNetworkStatus()
-        $currentState.RestartNotificationsAllowed = [WindowsUpdate]::RestartNotificationsAllowedStatus()
-        $currentState.SmartActiveHoursState = [WindowsUpdate]::SmartActiveHoursStateStatus()
-        $currentState.UserChoiceActiveHoursEnd = [WindowsUpdate]::UserChoiceActiveHoursEndStatus()
-        $currentState.UserChoiceActiveHoursStart = [WindowsUpdate]::UserChoiceActiveHoursStartStatus()
-        $currentState.DownloadMode = [WindowsUpdate]::DownloadModeStatus()
-        $currentState.DownloadRateBackgroundBps = [WindowsUpdate]::DownloadRateBackGroundBps()
-        $currentState.DownloadRateForegroundBps = [WindowsUpdate]::DownloadRateForegroundBps()
-        $currentState.DownloadRateBackgroundPct = [WindowsUpdate]::DownloadRateBackgroundPctStatus()
-        $currentState.DownloadRateForegroundPct = [WindowsUpdate]::DownloadRateForegroundPctStatus()
-        $currentState.UploadLimitGBMonth = [WindowsUpdate]::UploadLimitGBMonthStatus()
-        $currentState.UpRatePctBandwidth = [WindowsUpdate]::UpRatePctBandwidthStatus()
+        $currentState = Initialize-WindowsUpdate
         
         return $currentState
     }
@@ -322,201 +341,22 @@ class WindowsUpdate
     }
 
     #region WindowsUpdate helper functions
-    static [bool] GetIsContinuousInnovationOptedInStatus()
+    static [object] GetRegistryValue($PropertyName)
     {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::IsContinuousInnovationOptedInProperty)))
+        $value = $null
+        if ($null -ne $PropertyName)
         {
-            return $false
+            if ((DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name $PropertyName))
+            {
+                $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name $PropertyName | Select-Object -ExpandProperty $PropertyName
+            }
+            elseif ((DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name $PropertyName))
+            {
+                $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name $PropertyName | Select-Object -ExpandProperty $PropertyName
+            }
         }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::IsContinuousInnovationOptedInProperty).IsContinuousInnovationOptedInProperty
-            return $value
-        }        
-    }
 
-    static [bool] AllowMUUpdateServiceStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::AllowMUUpdateServiceProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::AllowMUUpdateServiceProperty).AllowMUUpdateServiceProperty
-            return $value
-        }        
-    }
-
-    static [bool] IsExpeditedStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::IsExpeditedProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::IsExpeditedProperty).IsExpeditedProperty
-            return $value
-        }        
-    }
-
-    static [bool] AllowAutoWindowsUpdateDownloadOverMeteredNetworkStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::AllowAutoWindowsUpdateDownloadOverMeteredNetworkProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::AllowAutoWindowsUpdateDownloadOverMeteredNetworkProperty).AllowAutoWindowsUpdateDownloadOverMeteredNetworkProperty
-            return $value
-        }        
-    }
-
-    static [bool] RestartNotificationsAllowedStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::RestartNotificationsAllowedProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::RestartNotificationsAllowedProperty).RestartNotificationsAllowed
-            return $value
-        }        
-    }
-
-    static [bool] SmartActiveHoursStateStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::SmartActiveHoursStateProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::SmartActiveHoursStateProperty).SmartActiveHoursState
-            return $value
-        }        
-    }
-
-    static [int] UserChoiceActiveHoursEndStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::UserChoiceActiveHoursEndProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            # there is some weird behaviour with integers in the registry, so we need to get the value from the property
-            $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::UserChoiceActiveHoursEndProperty) | Select-Object -ExpandProperty UserChoiceActiveHoursEnd
-            
-            return $value
-        }        
-    }
-
-    static [int] UserChoiceActiveHoursStartStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::UserChoiceActiveHoursStartProperty))) 
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::UserChoiceActiveHoursStartProperty) | Select-Object -ExpandProperty UserChoiceActiveHoursStart
-            return $value
-        }        
-    }
-
-    static [int] DownloadModeStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadModeProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadModeProperty) | Select-Object -ExpandProperty DownloadMode
-            return $value
-        }        
-    }
-
-    static [int] DownloadRateBackGroundBps()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateBackGroundBpsProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateBackGroundBpsProperty) | Select-Object -ExpandProperty DownloadRateBackGroundBps
-            return $value
-        }        
-    }
-
-    static [int] DownloadRateForegroundBps()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateForegroundBpsProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateForegroundBpsProperty) | Select-Object -ExpandProperty DownloadRateForegroundBps
-            return $value
-        }        
-    }
-
-    static [int] DownloadRateBackgroundPctStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateBackgroundPctProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateBackgroundPctProperty) | Select-Object -ExpandProperty DownloadRateBackgroundPct
-            return $value
-        }        
-    }
-
-    static [int] DownloadRateForegroundPctStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateForegroundPctProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateForegroundPctProperty) | Select-Object -ExpandProperty DownloadRateForegroundPct
-            return $value
-        }        
-    }
-
-    static [int] UploadLimitGBMonthStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::UploadLimitGBMonthProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::UploadLimitGBMonthProperty) | Select-Object -ExpandProperty UploadLimitGBMonth
-            return $value
-        }        
-    }
-
-    static [int] UpRatePctBandwidthStatus()
-    {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::UpRatePctBandwidthProperty)))
-        {
-            return $false
-        }
-        else
-        {
-            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::UpRatePctBandwidthProperty) | Select-Object -ExpandProperty UpRatePctBandwidth
-            return $value
-        }        
+        return $value
     }
 
     [hashtable] GetParameters()
