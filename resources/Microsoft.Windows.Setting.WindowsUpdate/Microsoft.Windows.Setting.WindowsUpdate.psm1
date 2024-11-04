@@ -152,6 +152,63 @@ function Assert-DownloadRate
 #endregion Functions
 
 #region Classes
+<#
+.SYNOPSIS
+    The `WindowsUpdate` DSC resource allows you to configure various Windows Update settings, including enabling or disabling specific update services, setting download and upload rates, and configuring active hours for updates.
+
+.PARAMETER SID
+    The security identifier. This is a key property and should not be set manually.
+
+.PARAMETER IsContinuousInnovationOptedIn
+    Indicates whether the device is opted in for continuous innovation updates. This is the setting in Windows Update settings -> Get the latest updates as soon as they're available.
+
+.PARAMETER AllowMUUpdateService
+    Indicates whether the Microsoft Update service is allowed. This is the setting in Windows Update settings -> Advanced options -> Receive updates for other Microsoft products.
+
+.PARAMETER IsExpedited
+    Indicates whether the updates are expedited. This is the setting in Windows Update settings -> Advanced options -> Get me up to date.
+
+.PARAMETER AllowAutoWindowsUpdateDownloadOverMeteredNetwork
+    Indicates whether automatic Windows Update downloads are allowed over metered networks. This is the setting in Windows Update settings -> Advanced options -> Download updates over metered connections.
+
+.PARAMETER RestartNotificationsAllowed
+    Indicates whether restart notifications are allowed. This is the setting in Windows Update settings -> Advanced options -> Notify me when a restart is required to finish updating.
+
+.PARAMETER SmartActiveHoursState
+    Indicates whether smart active hours are enabled.
+
+.PARAMETER UserChoiceActiveHoursEnd
+    The end time for user-chosen active hours.
+
+.PARAMETER UserChoiceActiveHoursStart
+    The start time for user-chosen active hours.
+
+.PARAMETER DownloadMode
+    The download mode for updates. Valid values are 0, 1, and 3. This is the setting in Windows Update settings -> Advanced options -> Delivery Optimization -> Allow downloads from other PCs.
+
+.PARAMETER DownloadRateBackgroundBps
+    The background download rate in bits per second.
+
+.PARAMETER DownloadRateForegroundBps
+    The foreground download rate in bits per second.
+
+.PARAMETER DownloadRateBackgroundPct
+    The background download rate as a percentage.
+
+.PARAMETER DownloadRateForegroundPct
+    The foreground download rate as a percentage.
+
+.PARAMETER UploadLimitGBMonth
+    The upload limit in gigabytes per month.
+
+.PARAMETER UpRatePctBandwidth
+    The upload rate as a percentage of bandwidth.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name WindowsUpdate -Method Get -ModuleName Microsoft.Windows.Setting.WindowsUpdate -Property @{}
+
+    This command gets the current Windows Update settings.
+#>
 [DSCResource()]
 class WindowsUpdate
 {
