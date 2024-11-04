@@ -1,4 +1,5 @@
 $global:WindowsUpdateSettingPath = 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+$global:DeliveryOptimizationSettingPath = 'Registry::HKEY_USERS\S-1-5-20\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Settings' # The network service account using wmiprvse.exe sets values in the user hive
 
 #region Functions
 function DoesRegistryKeyPropertyExist
@@ -65,13 +66,14 @@ function Set-WindowsUpdateRegistryKey
             $value = [int]$value
         }
 
-        if ($typeInfo -eq 'Int32' -and $key -in @('UserChoiceActiveHoursEnd', 'UserChoiceActiveHoursStart'))
-        {
-            if ($value -notin (0..24))
-            {
-                Throw "Value for $key must be between 0 and 24"
-            }
-        }
+        # validate the value of UserChoiceActiveHoursEnd and UserChoiceActiveHoursStart to be between 0 and 24
+        Assert-UserChoiceValue -KeyName $key -Value $value
+
+        # validate the value of DownloadRateBackgroundPct, DownloadRateForegroundPct and UpRatePctBandwith to be between 0 and 100
+        Assert-RatePercentageValue -KeyName $key -Value $value
+
+        # validate the value of UpRatePctBandwith to be between 5 and 500
+        Assert-UpRateValue -KeyName $key -Value $value
 
         if (-not (DoesRegistryKeyPropertyExist -Path $Path -Name $key))
         {
@@ -80,6 +82,71 @@ function Set-WindowsUpdateRegistryKey
 
         Write-Verbose -Message "Setting $key to $($RegistryKeyProperty[$key])"
         Set-ItemProperty -Path $Path -Name $key -Value $value
+    }
+} 
+
+function Assert-UpRateValue 
+{
+    param (
+        [Parameter(Mandatory)]
+        [string] $KeyName,
+
+        [Parameter(Mandatory)]
+        [int] $Value
+    )
+
+    if ($KeyName -eq 'UpRatePctBandwidth' -and $Value -notin (5..500))
+    {
+        Throw "You are specifying a percentage value, which must be between 5 and 500. The value you provided is $Value. Please provide a value between 5 and 500."
+    }
+}
+
+function Assert-RatePercentageValue
+{
+    param (
+        [Parameter(Mandatory)]
+        [string] $KeyName,
+
+        [Parameter(Mandatory)]
+        [int] $Value
+    )
+
+    if ($KeyName -in ('DownloadRateBackgroundPct', 'DownloadRateForegroundPct', 'UpRatePctBandwidth') -and $Value -notin (0..100))
+    {
+        # TODO: It might be beneficial to add `Reasons` and not throw, only return statement
+        Throw "You are specifying a percentage value, which must be between 0 and 100. The value you provided is $Value. Please provide a value between 0 and 100."
+    }
+}
+
+function Assert-UserChoiceValue 
+{
+    param (
+        [Parameter(Mandatory)]
+        [string] $KeyName,
+
+        [Parameter(Mandatory)]
+        [int] $Value
+    )
+
+    if ($KeyName -in ('UserChoiceActiveHoursEnd', 'UserChoiceActiveHoursStart') -and $Value -notin (0..24))
+    {
+        Throw "Value must be between 0 and 24"
+    }
+}
+
+function Assert-DownloadRate
+{
+    param (
+        [Parameter(Mandatory)]
+        [hashtable] $Parameters
+    )
+
+    if ($Parameters.ContainsKey('DownloadRateBackgroundPct') -or $Parameters.ContainsKey('DownloadRateForegroundPct'))
+    {
+        if ($Parameters.ContainsKey('DownloadRateBackgroundBps') -or $Parameters.ContainsKey('DownloadRateForegroundBps'))
+        {
+            Throw "Cannot set both DownloadRateBackgroundPct/DownloadRateForegroundPct and DownloadRateBackgroundBps/DownloadRateForegroundBps"
+        }
     }
 }
 #endregion Functions
@@ -116,7 +183,27 @@ class WindowsUpdate
     [DscProperty()]
     [nullable[int]] $UserChoiceActiveHoursStart
 
-    # TODO: Add delivery options
+    [DscProperty()]
+    [ValidateSet(0, 1, 3)]
+    [nullable[int]] $DownloadMode
+
+    [DscProperty()]
+    [nullable[int]] $DownloadRateBackgroundBps
+
+    [DscProperty()]
+    [nullable[int]] $DownloadRateForegroundBps
+
+    [DscProperty()]
+    [nullable[int]] $DownloadRateBackgroundPct
+
+    [DscProperty()]
+    [nullable[int]] $DownloadRateForegroundPct
+
+    [DscProperty()]
+    [nullable[int]] $UploadLimitGBMonth
+    
+    [DscProperty()]
+    [nullable[int]] $UpRatePctBandwidth
 
     static hidden [string] $IsContinuousInnovationOptedInProperty = 'IsContinuousInnovationOptedIn'
     static hidden [string] $AllowMUUpdateServiceProperty = 'AllowMUUpdateService'
@@ -126,6 +213,13 @@ class WindowsUpdate
     static hidden [string] $SmartActiveHoursStateProperty = 'SmartActiveHoursState'
     static hidden [string] $UserChoiceActiveHoursEndProperty = 'UserChoiceActiveHoursEnd'
     static hidden [string] $UserChoiceActiveHoursStartProperty = 'UserChoiceActiveHoursStart'
+    static hidden [string] $DownloadModeProperty = 'DownloadMode'
+    static hidden [string] $DownloadRateBackgroundBpsProperty = 'DownloadRateBackgroundBps'
+    static hidden [string] $DownloadRateForegroundBpsProperty = 'DownloadRateForegroundBps'
+    static hidden [string] $DownloadRateBackgroundPctProperty = 'DownloadRateBackgroundPct'
+    static hidden [string] $DownloadRateForegroundPctProperty = 'DownloadRateForegroundPct'
+    static hidden [string] $UploadLimitGBMonthProperty = 'UploadLimitGBMonth'
+    static hidden [string] $UpRatePctBandwidthProperty = 'UpRatePctBandwidth'
 
     [WindowsUpdate] Get()
     {
@@ -138,6 +232,13 @@ class WindowsUpdate
         $currentState.SmartActiveHoursState = [WindowsUpdate]::SmartActiveHoursStateStatus()
         $currentState.UserChoiceActiveHoursEnd = [WindowsUpdate]::UserChoiceActiveHoursEndStatus()
         $currentState.UserChoiceActiveHoursStart = [WindowsUpdate]::UserChoiceActiveHoursStartStatus()
+        $currentState.DownloadMode = [WindowsUpdate]::DownloadModeStatus()
+        $currentState.DownloadRateBackgroundBps = [WindowsUpdate]::DownloadRateBackGroundBps()
+        $currentState.DownloadRateForegroundBps = [WindowsUpdate]::DownloadRateForegroundBps()
+        $currentState.DownloadRateBackgroundPct = [WindowsUpdate]::DownloadRateBackgroundPctStatus()
+        $currentState.DownloadRateForegroundPct = [WindowsUpdate]::DownloadRateForegroundPctStatus()
+        $currentState.UploadLimitGBMonth = [WindowsUpdate]::UploadLimitGBMonthStatus()
+        $currentState.UpRatePctBandwidth = [WindowsUpdate]::UpRatePctBandwidthStatus()
         
         return $currentState
     }
@@ -157,6 +258,8 @@ class WindowsUpdate
         }
 
         $parameters = $this.GetParameters()
+
+        Assert-DownloadRate -Parameters $parameters
 
         Set-WindowsUpdateRegistryKey -Path $global:WindowsUpdateSettingPath -RegistryKeyProperty $parameters
     }
@@ -264,6 +367,97 @@ class WindowsUpdate
         else
         {
             $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name ([WindowsUpdate]::UserChoiceActiveHoursStartProperty) | Select-Object -ExpandProperty UserChoiceActiveHoursStart
+            return $value
+        }        
+    }
+
+    static [int] DownloadModeStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadModeProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadModeProperty) | Select-Object -ExpandProperty DownloadMode
+            return $value
+        }        
+    }
+
+    static [int] DownloadRateBackGroundBps()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateBackGroundBpsProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateBackGroundBpsProperty) | Select-Object -ExpandProperty DownloadRateBackGroundBps
+            return $value
+        }        
+    }
+
+    static [int] DownloadRateForegroundBps()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateForegroundBpsProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateForegroundBpsProperty) | Select-Object -ExpandProperty DownloadRateForegroundBps
+            return $value
+        }        
+    }
+
+    static [int] DownloadRateBackgroundPctStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateBackgroundPctProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateBackgroundPctProperty) | Select-Object -ExpandProperty DownloadRateBackgroundPct
+            return $value
+        }        
+    }
+
+    static [int] DownloadRateForegroundPctStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateForegroundPctProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::DownloadRateForegroundPctProperty) | Select-Object -ExpandProperty DownloadRateForegroundPct
+            return $value
+        }        
+    }
+
+    static [int] UploadLimitGBMonthStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::UploadLimitGBMonthProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::UploadLimitGBMonthProperty) | Select-Object -ExpandProperty UploadLimitGBMonth
+            return $value
+        }        
+    }
+
+    static [int] UpRatePctBandwidthStatus()
+    {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::UpRatePctBandwidthProperty)))
+        {
+            return $false
+        }
+        else
+        {
+            $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name ([WindowsUpdate]::UpRatePctBandwidthProperty) | Select-Object -ExpandProperty UpRatePctBandwidth
             return $value
         }        
     }
