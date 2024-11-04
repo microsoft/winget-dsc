@@ -116,6 +116,8 @@ class WindowsUpdate
     [DscProperty()]
     [nullable[int]] $UserChoiceActiveHoursStart
 
+    # TODO: Add delivery options
+
     static hidden [string] $IsContinuousInnovationOptedInProperty = 'IsContinuousInnovationOptedIn'
     static hidden [string] $AllowMUUpdateServiceProperty = 'AllowMUUpdateService'
     static hidden [string] $IsExpeditedProperty = 'IsExpedited'
