@@ -109,7 +109,7 @@ Once the team have approved an issue/spec, development can proceed. If no develo
 
 ### Fork, Clone, Branch and Create your PR
 
-Once you've discussed your proposed feature/fix/etc. with a team member, and you've agreed an approach or a spec has been written and approved, it's time to start development. There are two flows you can follow depending on the proposed feature.
+Once you've discussed your proposed feature/fix/etc. with a team member, and you've agreed an approach or a spec has been written and approved, it's time to start development. There are two flows you can follow depending on the proposed feature or fix.
 
 If you're feature (or module) has not yet been created, follow these steps:
 
@@ -123,11 +123,11 @@ If you're feature (or module) has not yet been created, follow these steps:
 8. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
 9. If you are finished with your changes and you want a review, change the state.
 
-When you are working on a fix, you can follow the below steps:
+When you are working on a fix or you want to add additional features to an existing module, you can follow the below steps:
 
 1. Fork the repository if you haven't already.
 2. Clone your fork locally.
-3. Work on your fix and _optionally_ write tests
+3. Work on your fix or feature, and _optionally_ write tests
 4. Build and test to see if it works.
 5. Create & push a feature branch.
 6. Create a [Pull Request (PR)](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) when you are finished with your changes
