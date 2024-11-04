@@ -53,6 +53,10 @@ extends:
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Setting.Accessibility\
                   artifactName: Microsoft.Windows.Setting.Accessibility
                 - output: pipelineArtifact
+                  displayName: "Publish Pipeline Microsoft.Windows.Setting.Language"
+                  targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Setting.Language\
+                  artifactName: Microsoft.Windows.Setting.Language
+                - output: pipelineArtifact
                   displayName: "Publish Pipeline PythonPip3Dsc"
                   targetPath: $(Build.SourcesDirectory)\resources\PythonPip3Dsc\
                   artifactName: PythonPip3Dsc
