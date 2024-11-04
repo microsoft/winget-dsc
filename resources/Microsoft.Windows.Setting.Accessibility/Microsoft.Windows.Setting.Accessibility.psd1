@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 @{
     RootModule           = 'Microsoft.Windows.Setting.Accessibility.psm1'
-    ModuleVersion        = '0.2.0'
+    ModuleVersion        = '0.1.0'
     GUID                 = '25cce770-4f0a-4387-a26b-4be692e229f9'
     Author               = 'Microsoft Corporation'
     CompanyName          = 'Microsoft Corporation'
