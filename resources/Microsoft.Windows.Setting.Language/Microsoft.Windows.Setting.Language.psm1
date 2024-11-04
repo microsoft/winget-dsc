@@ -41,7 +41,6 @@ function TryGetRegistryValue
 
 function Get-LocaleList
 {
-    # TODO: Add support for older OS versions
     $localeList = Get-WinUserLanguageList
     $out = [List[Language]]::new()
 
