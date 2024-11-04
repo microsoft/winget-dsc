@@ -12,63 +12,6 @@ function Get-OsBuildVersion
     return [System.Environment]::OSVersion.Version.Build
 }
 
-function Set-LocaleByOs 
-{
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$LocaleName
-    )
-
-    if (Test-Win11OrServer2022)
-    {
-        if (Test-LocaleByOs -LocaleName $LocaleName)
-        {
-            Set-WinUserLanguageList -Language $LocaleName
-        }
-    }
-    # TODO: Add support for older OS versions
-    # Challenging to get input method tips for older OS versions
-    else
-    {
-        Throw "This module only supports Windows 11 and Windows Server 2022."
-    }
-}
-
-function Test-Win11OrServer2022 
-{
-    $osBuildVersion = Get-OsBuildVersion
-
-    if ($osBuildVersion -gt 26100 -or $osBuildVersion -gt 20348)
-    {
-        return $true
-    }
-
-    return $false
-}
-
-function Test-LocaleByOs 
-{
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$LocaleName
-    )
-
-    $osBuildVersion = Get-OsBuildVersion
-
-    if ($osBuildVersion -gt 26100 -or $osBuildVersion -gt 20348)
-    {
-        $languageList = Get-WinUserLanguageList
-        if ($languageList.Language -in $LocaleName)
-        {
-            return $true
-        }
-        else 
-        {
-            Throw "Language `"$($LocaleName)`" is not installed. Please make sure the language is installed on the system first."
-        }
-    }
-}
-
 function TryGetRegistryValue
 {
     param (
@@ -184,17 +127,14 @@ class Language
             return
         }
 
-        if (Test-Win11OrServer2022)
+        if ($this.Exist)
         {
-            if ($this.Exist)
-            {
-                # use the LanguagePackManagement module to install the language (requires elevation). International does not have a cmdlet to install language
-                Install-Language -Language $this.LocaleName
-            }
-            else 
-            {
-                Uninstall-Language -Language $this.LocaleName
-            }
+            # use the LanguagePackManagement module to install the language (requires elevation). International does not have a cmdlet to install language
+            Install-Language -Language $this.LocaleName
+        }
+        else 
+        {
+            Uninstall-Language -Language $this.LocaleName
         }
     }
 
@@ -257,7 +197,6 @@ class DisplayLanguage
 
     DisplayLanguage()
     {
-        $this
     }
 
     [DisplayLanguage] Get()
@@ -286,7 +225,7 @@ class DisplayLanguage
         }
 
         # TODO: How do we handle sign out and sign in?
-        Set-LocaleByOs -LocaleName $this.LocaleName
+        Set-WinUserLanguageList -Language $this.LocaleName
 
         # TODO: Exist does not make sense here, we always want a language to exist
     }
