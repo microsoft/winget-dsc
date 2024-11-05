@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 using module Microsoft.DotNet.Dsc
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 <#
@@ -16,15 +16,14 @@ BeforeAll {
 
     $script:toolsDir = Join-Path $env:USERPROFILE 'tools'
 
-    if (-not (Test-Path $toolsDir))
-    {
+    if (-not (Test-Path $toolsDir)) {
         $null = New-Item -ItemType Directory -Path $toolsDir -Force -ErrorAction SilentlyContinue
     }
 }
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "DotNetToolPackage"
+        $expectedDSCResources = 'DotNetToolPackage'
         $availableDSCResources = (Get-DscResource -Module Microsoft.DotNet.Dsc).Name
         $availableDSCResources.count | Should -Be 1
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
@@ -36,9 +35,9 @@ Describe 'DSC operation capabilities' {
         $parameters = @{
             PackageId = 'gitversion.tool'
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.Exist | Should -BeTrue
         $finalState.Version | Should -Not -BeNullOrEmpty
@@ -49,9 +48,9 @@ Describe 'DSC operation capabilities' {
             PackageId  = 'dotnet-ef'
             PreRelease = $true
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.PackageId | Should -Be $parameters.PackageId
         $finalState.PreRelease | Should -BeTrue
@@ -62,9 +61,9 @@ Describe 'DSC operation capabilities' {
             PackageId = 'dotnet-reportgenerator-globaltool'
             Version   = '5.3.9'
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.PackageId | Should -Be $parameters.PackageId
         $finalState.Version | Should -Be $parameters.Version
@@ -75,9 +74,9 @@ Describe 'DSC operation capabilities' {
             PackageId = 'dotnet-reportgenerator-globaltool'
             Version   = '5.3.10'
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.PackageId | Should -Be $parameters.PackageId
         $finalState.Version | Should -Be $parameters.Version
@@ -88,9 +87,9 @@ Describe 'DSC operation capabilities' {
             PackageId = 'PowerShell'
             Version   = '7.2.0-preview.5'
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.PackageId | Should -Be $parameters.PackageId
         $finalState.Version | Should -Be $parameters.Version
@@ -99,7 +98,7 @@ Describe 'DSC operation capabilities' {
 
     It 'Exports resources' -Skip:(!$IsWindows) {
         $obj = [DotNetToolPackage]::Export()
-        
+
         $obj.PackageId.Contains('dotnet-ef') | Should -Be $true
         $obj.PackageId.Contains('dotnet-reportgenerator-globaltool') | Should -Be $true
     }
@@ -108,8 +107,8 @@ Describe 'DSC operation capabilities' {
         $parameters = @{
             PackageId = 'Azure-Core' # not a tool
         }
-        
-        { Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters } | Should -Throw -ExpectedMessage "Executing dotnet.exe with {tool install Azure-Core --global --ignore-failed-sources} failed."
+
+        { Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters } | Should -Throw -ExpectedMessage 'Executing dotnet.exe with {tool install Azure-Core --global --ignore-failed-sources} failed.'
     }
 
     It 'Installs in tool path location with version' -Skip:(!$IsWindows) {
@@ -187,10 +186,10 @@ Describe 'DSC operation capabilities' {
 }
 
 Describe 'DSC helper functions' {
-    Context "Semantic Versioning" {
+    Context 'Semantic Versioning' {
         It 'Parses valid semantic version' {
             $version = '1.2.3'
-            $result = Get-Semver -version $version
+            $result = Get-SemVer -version $version
             $result.Major | Should -Be 1
             $result.Minor | Should -Be 2
             $result.Build | Should -Be 3
@@ -198,7 +197,7 @@ Describe 'DSC helper functions' {
 
         It 'Parses semantic version with alpha' {
             $version = '1.2.3-alpha'
-            $result = Get-Semver -version $version
+            $result = Get-SemVer -version $version
             $result.Major | Should -Be 1
             $result.Minor | Should -Be 2
             $result.Build | Should -Be 3
@@ -207,7 +206,7 @@ Describe 'DSC helper functions' {
 
         It 'Parses semantic version with alpha tag and version' {
             $version = '1.2.3-alpha.123'
-            $result = Get-Semver -version $version
+            $result = Get-SemVer -version $version
             $result.Major | Should -Be 1
             $result.Minor | Should -Be 2
             $result.Build | Should -Be 3
@@ -216,7 +215,7 @@ Describe 'DSC helper functions' {
 
         It 'Parses semantic version with beta tag and version' {
             $version = '1.2.3-beta.11'
-            $result = Get-Semver -version $version
+            $result = Get-SemVer -version $version
             $result.Major | Should -Be 1
             $result.Minor | Should -Be 2
             $result.Build | Should -Be 3
@@ -225,7 +224,7 @@ Describe 'DSC helper functions' {
 
         It 'Parses semantic version with rc and version' {
             $version = '1.2.3-rc.1'
-            $result = Get-Semver -version $version
+            $result = Get-SemVer -version $version
             $result.Major | Should -Be 1
             $result.Minor | Should -Be 2
             $result.Build | Should -Be 3

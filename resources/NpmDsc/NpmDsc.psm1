@@ -1,7 +1,6 @@
 using namespace System.Collections.Generic
 #Region '.\Enum\Ensure.ps1' 0
-enum Ensure
-{
+enum Ensure {
     Absent
     Present
 }
@@ -9,8 +8,7 @@ enum Ensure
 #Region '.\Classes\DSCResources\NpmInstall.ps1' 0
 #using namespace System.Collections.Generic
 [DSCResource()]
-class NpmInstall
-{
+class NpmInstall {
     [DscProperty()]
     [Ensure]$Ensure = [Ensure]::Present
 
@@ -26,12 +24,10 @@ class NpmInstall
     [DscProperty()]
     [string]$Arguments
 
-    [NpmInstall] Get()
-    {
+    [NpmInstall] Get() {
         Assert-Npm
 
-        if (-not([string]::IsNullOrEmpty($this.PackageDirectory)))
-        {
+        if (-not([string]::IsNullOrEmpty($this.PackageDirectory))) {
             Set-PackageDirectory -PackageDirectory $this.PackageDirectory
         }
 
@@ -39,11 +35,9 @@ class NpmInstall
         $currentState.Ensure = [Ensure]::Present
 
         $errorResult = Get-InstalledNpmPackages -Global $this.Global | ConvertFrom-Json | Select-Object -ExpandProperty error
-        if ($errorResult.PSobject.Properties.Name -contains 'code')
-        {
+        if ($errorResult.PSobject.Properties.Name -contains 'code') {
             $errorCode = $errorResult | Select-Object -ExpandProperty code
-            if ($errorCode -eq 'ELSPROBLEMS')
-            {
+            if ($errorCode -eq 'ELSPROBLEMS') {
                 $currentState.Ensure = [Ensure]::Absent
             }
         }
@@ -54,29 +48,21 @@ class NpmInstall
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $this.Ensure -eq $currentState.Ensure
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         $inDesiredState = $this.Test()
-        if ($this.Ensure -eq [Ensure]::Present)
-        {
-            if (-not $inDesiredState)
-            {
+        if ($this.Ensure -eq [Ensure]::Present) {
+            if (-not $inDesiredState) {
                 Install-NpmPackage -Arguments $this.Arguments -Global $this.Global
             }
-        }
-        else
-        {
-            if (-not $inDesiredState)
-            {
+        } else {
+            if (-not $inDesiredState) {
                 $nodeModulesFolder = 'node_modules'
-                if (Test-Path -Path $nodeModulesFolder)
-                {
+                if (Test-Path -Path $nodeModulesFolder) {
                     Remove-Item $nodeModulesFolder -Recurse
                 }
             }
@@ -86,8 +72,7 @@ class NpmInstall
 #EndRegion '.\Classes\DSCResources\NpmInstall.ps1' 77
 #Region '.\Classes\DSCResources\NpmPackage.ps1' 0
 [DSCResource()]
-class NpmPackage
-{
+class NpmPackage {
     [DscProperty()]
     [Ensure]$Ensure = [Ensure]::Present
 
@@ -106,12 +91,10 @@ class NpmPackage
     [DscProperty()]
     [string]$Arguments
 
-    [NpmPackage] Get()
-    {
+    [NpmPackage] Get() {
         Assert-Npm
 
-        if (-not([string]::IsNullOrEmpty($this.PackageDirectory)))
-        {
+        if (-not([string]::IsNullOrEmpty($this.PackageDirectory))) {
             Set-PackageDirectory -PackageDirectory $this.PackageDirectory
         }
 
@@ -119,21 +102,16 @@ class NpmPackage
         $currentState.Ensure = [Ensure]::Absent
 
         $installedPackages = Get-InstalledNpmPackages -Global $this.Global | ConvertFrom-Json | Select-Object -ExpandProperty dependencies
-        if ($installedPackages.PSobject.Properties.Name -contains $this.Name)
-        {
+        if ($installedPackages.PSobject.Properties.Name -contains $this.Name) {
             $installedPackage = $installedPackages | Select-Object -ExpandProperty $this.Name
 
             # Check if version matches if specified.
-            if (-not([string]::IsNullOrEmpty($this.Version)))
-            {
+            if (-not([string]::IsNullOrEmpty($this.Version))) {
                 $installedVersion = $installedPackage.Version
-                if ([System.Version]$installedVersion -eq [System.Version]$this.Version)
-                {
+                if ([System.Version]$installedVersion -eq [System.Version]$this.Version) {
                     $currentState.Ensure = [Ensure]::Present
                 }
-            }
-            else
-            {
+            } else {
                 $currentState.Ensure = [Ensure]::Present
             }
         }
@@ -146,26 +124,19 @@ class NpmPackage
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $this.Ensure -eq $currentState.Ensure
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         $inDesiredState = $this.Test()
-        if ($this.Ensure -eq [Ensure]::Present)
-        {
-            if (-not $inDesiredState)
-            {
+        if ($this.Ensure -eq [Ensure]::Present) {
+            if (-not $inDesiredState) {
                 Install-NpmPackage -PackageName $this.Name -Arguments $this.Arguments -Global $this.Global
             }
-        }
-        else
-        {
-            if (-not $inDesiredState)
-            {
+        } else {
+            if (-not $inDesiredState) {
                 Uninstall-NpmPackage -PackageName $this.Name -Arguments $this.Arguments -Global $this.Global
             }
         }
@@ -173,24 +144,19 @@ class NpmPackage
 }
 #EndRegion '.\Classes\DSCResources\NpmPackage.ps1' 87
 #Region '.\Private\Assert-Npm.ps1' 0
-function Assert-Npm
-{
+function Assert-Npm {
     # Refresh session $path value before invoking 'npm'
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-    try
-    {
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    try {
         Invoke-Npm -Command 'help'
         return
-    }
-    catch
-    {
-        throw "NodeJS is not installed"
+    } catch {
+        throw 'NodeJS is not installed'
     }
 }
 #EndRegion '.\Private\Assert-Npm.ps1' 15
 #Region '.\Private\Invoke-Npm.ps1' 0
-function Invoke-Npm
-{
+function Invoke-Npm {
     param (
         [Parameter(Mandatory = $true)]
         [string]$Command
@@ -200,26 +166,21 @@ function Invoke-Npm
 }
 #EndRegion '.\Private\Invoke-Npm.ps1' 10
 #Region '.\Private\Set-PackageDirectory.ps1' 0
-function Set-PackageDirectory
-{
+function Set-PackageDirectory {
     param (
         [Parameter(Mandatory = $true)]
         [string]$PackageDirectory
     )
 
-    if (Test-Path -Path $PackageDirectory -PathType Container)
-    {
+    if (Test-Path -Path $PackageDirectory -PathType Container) {
         Set-Location -Path $PackageDirectory
-    }
-    else
-    {
+    } else {
         throw "$($PackageDirectory) does not point to a valid directory."
     }
 }
 #EndRegion '.\Private\Set-PackageDirectory.ps1' 17
 #Region '.\Public\Get-InstalledNpmPackages.ps1' 0
-function Get-InstalledNpmPackages
-{
+function Get-InstalledNpmPackages {
     param (
         [Parameter()]
         [bool]$Global
@@ -229,17 +190,15 @@ function Get-InstalledNpmPackages
     $command.Add('list')
     $command.Add('--json')
 
-    if ($Global)
-    {
+    if ($Global) {
         $command.Add('-g')
     }
 
-    return Invoke-Npm -command $command
+    return Invoke-Npm -Command $command
 }
 #EndRegion '.\Public\Get-InstalledNpmPackages.ps1' 19
 #Region '.\Public\Install-NpmPackage.ps1' 0
-function Install-NpmPackage
-{
+function Install-NpmPackage {
     param (
         [Parameter()]
         [string]$PackageName,
@@ -252,22 +211,20 @@ function Install-NpmPackage
     )
 
     $command = [List[string]]::new()
-    $command.Add("install")
+    $command.Add('install')
     $command.Add($PackageName)
 
-    if ($Global)
-    {
-        $command.Add("-g")
+    if ($Global) {
+        $command.Add('-g')
     }
 
     $command.Add($Arguments)
 
-    return Invoke-Npm -command $command
+    return Invoke-Npm -Command $command
 }
 #EndRegion '.\Public\Install-NpmPackage.ps1' 27
 #Region '.\Public\Uninstall-NpmPackage.ps1' 0
-function Uninstall-NpmPackage
-{
+function Uninstall-NpmPackage {
     param (
         [Parameter(Mandatory = $true)]
         [string]$PackageName,
@@ -280,16 +237,15 @@ function Uninstall-NpmPackage
     )
 
     $command = [List[string]]::new()
-    $command.Add("uninstall")
+    $command.Add('uninstall')
     $command.Add($PackageName)
 
-    if ($Global)
-    {
+    if ($Global) {
         $command.Add('-g')
     }
 
     $command.Add($Arguments)
 
-    return Invoke-Npm -command $command
+    return Invoke-Npm -Command $command
 }
 #EndRegion '.\Public\Uninstall-NpmPackage.ps1' 27

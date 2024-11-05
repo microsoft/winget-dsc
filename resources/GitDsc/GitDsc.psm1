@@ -3,14 +3,12 @@
 
 using namespace System.Collections.Generic
 
-enum Ensure
-{
+enum Ensure {
     Absent
     Present
 }
 
-enum ConfigLocation
-{
+enum ConfigLocation {
     none
     global
     system
@@ -23,8 +21,7 @@ Assert-Git
 
 #region DSCResources
 [DSCResource()]
-class GitClone
-{
+class GitClone {
     [DscProperty()]
     [Ensure]$Ensure = [Ensure]::Present
 
@@ -38,16 +35,14 @@ class GitClone
     [DscProperty(Mandatory)]
     [string]$RootDirectory
 
-    [GitClone] Get()
-    {
+    [GitClone] Get() {
         $currentState = [GitClone]::new()
         $currentState.HttpsUrl = $this.HttpsUrl
         $currentState.RootDirectory = $this.RootDirectory
         $currentState.Ensure = [Ensure]::Absent
-        $currentState.RemoteName = ($null -eq $this.RemoteName) ? "origin" : $this.RemoteName
+        $currentState.RemoteName = ($null -eq $this.RemoteName) ? 'origin' : $this.RemoteName
 
-        if (-not(Test-Path -Path $this.RootDirectory))
-        {
+        if (-not(Test-Path -Path $this.RootDirectory)) {
             return $currentState
         }
 
@@ -55,41 +50,33 @@ class GitClone
         $projectName = GetGitProjectName($this.HttpsUrl)
         $expectedDirectory = Join-Path -Path $this.RootDirectory -ChildPath $projectName
 
-        if (Test-Path $expectedDirectory)
-        {
+        if (Test-Path $expectedDirectory) {
             Set-Location -Path $expectedDirectory
-            try 
-            {
+            try {
                 $gitRemoteValue = Invoke-GitRemote("get-url $($currentState.RemoteName)")
-                if ($gitRemoteValue -like $this.HttpsUrl)
-                {
+                if ($gitRemoteValue -like $this.HttpsUrl) {
                     $currentState.Ensure = [Ensure]::Present
                 }
             }
-            catch
-            {
+            catch {
                 # Failed to execute `git remote`. Ensure state is `absent`
             }
         }
 
-        return $currentState;
+        return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
-        if ($this.Ensure -eq [Ensure]::Absent)
-        {
-            throw "This resource does not support removing a cloned repository."
+    [void] Set() {
+        if ($this.Ensure -eq [Ensure]::Absent) {
+            throw 'This resource does not support removing a cloned repository.'
         }
 
-        if (-not(Test-Path $this.RootDirectory))
-        {
+        if (-not(Test-Path $this.RootDirectory)) {
             New-Item -ItemType Directory -Path $this.RootDirectory
         }
 
@@ -99,8 +86,7 @@ class GitClone
 }
 
 [DSCResource()]
-class GitRemote
-{
+class GitRemote {
     [DscProperty()]
     [Ensure]$Ensure = [Ensure]::Present
 
@@ -114,70 +100,57 @@ class GitRemote
     [DscProperty(Mandatory)]
     [string]$ProjectDirectory
 
-    [GitRemote] Get()
-    {
+    [GitRemote] Get() {
         $currentState = [GitRemote]::new()
         $currentState.RemoteName = $this.RemoteName
         $currentState.RemoteUrl = $this.RemoteUrl
         $currentState.ProjectDirectory = $this.ProjectDirectory
 
-        if (-not(Test-Path -Path $this.ProjectDirectory))
-        {
-            throw "Project directory does not exist."
-        } 
+        if (-not(Test-Path -Path $this.ProjectDirectory)) {
+            throw 'Project directory does not exist.'
+        }
 
         Set-Location $this.ProjectDirectory
-        try
-        {
+        try {
             $gitRemoteValue = Invoke-GitRemote("get-url $($this.RemoteName)")
             $currentState.Ensure = ($gitRemoteValue -like $this.RemoteUrl) ? [Ensure]::Present : [Ensure]::Absent
         }
-        catch
-        {
+        catch {
             $currentState.Ensure = [Ensure]::Absent
         }
 
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         Set-Location $this.ProjectDirectory
 
-        if ($this.Ensure -eq [Ensure]::Present)
-        {
-            try
-            {
+        if ($this.Ensure -eq [Ensure]::Present) {
+            try {
                 Invoke-GitRemote("add $($this.RemoteName) $($this.RemoteUrl)")
             }
-            catch
-            {
-                throw "Failed to add remote repository."
+            catch {
+                throw 'Failed to add remote repository.'
             }
         }
-        else
-        {
-            try
-            {
+        else {
+            try {
                 Invoke-GitRemote("remove $($this.RemoteName)")
             }
-            catch
-            {
-                throw "Failed to remove remote repository."
+            catch {
+                throw 'Failed to remove remote repository.'
             }
         }
     }
 }
 
 [DSCResource()]
-class GitConfigUserName
-{
+class GitConfigUserName {
     [DscProperty()]
     [Ensure]$Ensure = [Ensure]::Present
 
@@ -190,64 +163,52 @@ class GitConfigUserName
     [DscProperty()]
     [string]$ProjectDirectory
 
-    [GitConfigUserName] Get()
-    {
+    [GitConfigUserName] Get() {
         $currentState = [GitConfigUserName]::new()
         $currentState.UserName = $this.UserName
         $currentState.ConfigLocation = $this.ConfigLocation
         $currentState.ProjectDirectory = $this.ProjectDirectory
 
-        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system)
-        {
+        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system) {
             # Project directory is not required for --global or --system configurations
-            if ($this.ProjectDirectory)
-            {
-                if (Test-Path -Path $this.ProjectDirectory)
-                {
+            if ($this.ProjectDirectory) {
+                if (Test-Path -Path $this.ProjectDirectory) {
                     Set-Location $this.ProjectDirectory
                 }
-                else
-                {
-                    throw "Project directory does not exist."
+                else {
+                    throw 'Project directory does not exist.'
                 }
             }
-            else
-            {
-                throw "Project directory parameter must be specified for non-system and non-global configurations."
+            else {
+                throw 'Project directory parameter must be specified for non-system and non-global configurations.'
             }
         }
 
-        $configArgs = ConstructGitConfigUserArguments -Arguments "user.name" -ConfigLocation $this.ConfigLocation
+        $configArgs = ConstructGitConfigUserArguments -Arguments 'user.name' -ConfigLocation $this.ConfigLocation
         $result = Invoke-GitConfig($configArgs)
         $currentState.Ensure = ($currentState.UserName -eq $result) ? [Ensure]::Present : [Ensure]::Absent
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
-        if ($this.ConfigLocation -eq [ConfigLocation]::system)
-        {
+    [void] Set() {
+        if ($this.ConfigLocation -eq [ConfigLocation]::system) {
             Assert-IsAdministrator
         }
 
-        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system)
-        {
+        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system) {
             Set-Location $this.ProjectDirectory
         }
 
-        if ($this.Ensure -eq [Ensure]::Present)
-        {
+        if ($this.Ensure -eq [Ensure]::Present) {
             $configArgs = ConstructGitConfigUserArguments -Arguments "user.name '$($this.UserName)'" -ConfigLocation $this.ConfigLocation
         }
-        else
-        {
-            $configArgs = ConstructGitConfigUserArguments -Arguments "--unset user.name" -ConfigLocation $this.ConfigLocation
+        else {
+            $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.name' -ConfigLocation $this.ConfigLocation
         }
 
         Invoke-GitConfig($configArgs)
@@ -255,8 +216,7 @@ class GitConfigUserName
 }
 
 [DSCResource()]
-class GitConfigUserEmail
-{
+class GitConfigUserEmail {
     [DscProperty()]
     [Ensure]$Ensure = [Ensure]::Present
 
@@ -269,64 +229,52 @@ class GitConfigUserEmail
     [DscProperty()]
     [string]$ProjectDirectory
 
-    [GitConfigUserEmail] Get()
-    {
+    [GitConfigUserEmail] Get() {
         $currentState = [GitConfigUserEmail]::new()
         $currentState.UserEmail = $this.UserEmail
         $currentState.ConfigLocation = $this.ConfigLocation
         $currentState.ProjectDirectory = $this.ProjectDirectory
 
-        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system)
-        {
+        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system) {
             # Project directory is not required for --global or --system configurations
-            if ($this.ProjectDirectory)
-            {
-                if (Test-Path -Path $this.ProjectDirectory)
-                {
+            if ($this.ProjectDirectory) {
+                if (Test-Path -Path $this.ProjectDirectory) {
                     Set-Location $this.ProjectDirectory
                 }
-                else
-                {
-                    throw "Project directory does not exist."
+                else {
+                    throw 'Project directory does not exist.'
                 }
             }
-            else
-            {
-                throw "Project directory parameter must be specified for non-system and non-global configurations."
+            else {
+                throw 'Project directory parameter must be specified for non-system and non-global configurations.'
             }
         }
 
-        $configArgs = ConstructGitConfigUserArguments -Arguments "user.email" -ConfigLocation $this.ConfigLocation
+        $configArgs = ConstructGitConfigUserArguments -Arguments 'user.email' -ConfigLocation $this.ConfigLocation
         $result = Invoke-GitConfig($configArgs)
         $currentState.Ensure = ($currentState.UserEmail -eq $result) ? [Ensure]::Present : [Ensure]::Absent
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
-        if ($this.ConfigLocation -eq [ConfigLocation]::system)
-        {
+    [void] Set() {
+        if ($this.ConfigLocation -eq [ConfigLocation]::system) {
             Assert-IsAdministrator
         }
 
-        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system)
-        {
+        if ($this.ConfigLocation -ne [ConfigLocation]::global -and $this.ConfigLocation -ne [ConfigLocation]::system) {
             Set-Location $this.ProjectDirectory
         }
 
-        if ($this.Ensure -eq [Ensure]::Present)
-        {
+        if ($this.Ensure -eq [Ensure]::Present) {
             $configArgs = ConstructGitConfigUserArguments -Arguments "user.email $($this.UserEmail)" -ConfigLocation $this.ConfigLocation
         }
-        else
-        {
-            $configArgs = ConstructGitConfigUserArguments -Arguments "--unset user.email" -ConfigLocation $this.ConfigLocation
+        else {
+            $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.email' -ConfigLocation $this.ConfigLocation
         }
 
         Invoke-GitConfig($configArgs)
@@ -336,73 +284,65 @@ class GitConfigUserEmail
 #endregion DSCResources
 
 #region Functions
-function Assert-Git
-{
+function Assert-Git {
     # Refresh session $path value before invoking 'git'
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-    try
-    {
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    try {
         Invoke-Git -Command 'help'
         return
     }
-    catch
-    {
-        throw "Git is not installed"
+    catch {
+        throw 'Git is not installed'
     }
 }
 
-function GetGitProjectName
-{
+function GetGitProjectName {
     param(
         [Parameter()]
-        [string]$HttpsUrl       
+        [string]$HttpsUrl
     )
 
     $projectName = ($HttpsUrl.split('/')[-1]).split('.')[0]
     return $projectName
 }
 
-function Invoke-GitConfig
-{
+function Invoke-GitConfig {
     param(
         [Parameter()]
         [string]$Arguments
     )
 
     $command = [List[string]]::new()
-    $command.Add("config")
+    $command.Add('config')
     $command.Add($Arguments)
     return Invoke-Git -Command $command
 }
 
-function Invoke-GitRemote
-{
+function Invoke-GitRemote {
     param(
         [Parameter()]
-        [string]$Arguments       
+        [string]$Arguments
     )
 
     $command = [List[string]]::new()
-    $command.Add("remote")
-    $command.Add($Arguments)
-    return Invoke-Git -Command $command 
-}
-
-function Invoke-GitClone
-{
-    param(
-        [Parameter()]
-        [string]$Arguments       
-    )
-
-    $command = [List[string]]::new()
-    $command.Add("clone")
+    $command.Add('remote')
     $command.Add($Arguments)
     return Invoke-Git -Command $command
 }
 
-function Invoke-Git
-{
+function Invoke-GitClone {
+    param(
+        [Parameter()]
+        [string]$Arguments
+    )
+
+    $command = [List[string]]::new()
+    $command.Add('clone')
+    $command.Add($Arguments)
+    return Invoke-Git -Command $command
+}
+
+function Invoke-Git {
     param (
         [Parameter(Mandatory = $true)]
         [string]$Command
@@ -411,8 +351,7 @@ function Invoke-Git
     return Invoke-Expression -Command "git $Command"
 }
 
-function ConstructGitConfigUserArguments
-{
+function ConstructGitConfigUserArguments {
     param(
         [Parameter(Mandatory)]
         [string]$Arguments,
@@ -422,24 +361,21 @@ function ConstructGitConfigUserArguments
     )
 
     $ConfigArguments = $Arguments
-    if ([ConfigLocation]::None -ne $this.ConfigLocation)
-    {
+    if ([ConfigLocation]::None -ne $this.ConfigLocation) {
         $ConfigArguments = "--$($this.ConfigLocation) $($ConfigArguments)"
     }
 
     return $ConfigArguments
 }
 
-function Assert-IsAdministrator
-{
+function Assert-IsAdministrator {
     $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
 
     $adminRole = [System.Security.Principal.WindowsBuiltInRole]::Administrator
 
-    if (-not $windowsPrincipal.IsInRole($adminRole))
-    {
-        throw "This resource must be run as an Administrator to modify system settings."
+    if (-not $windowsPrincipal.IsInRole($adminRole)) {
+        throw 'This resource must be run as an Administrator to modify system settings.'
     }
 }
 
