@@ -288,6 +288,8 @@ configuration:
                   - removeLabel:
                       label: Changes-Requested
                   - removeLabel:
+                      label: GitDsc
+                  - removeLabel:
                       label: Help-Wanted
                   - removeLabel:
                       label: In-PR
@@ -297,6 +299,20 @@ configuration:
                       label: Issue-Docs
                   - removeLabel:
                       label: Issue-Feature
+                  - removeLabel:
+                      label: Microsoft.DotNet.Dsc
+                  - removeLabel:
+                      label: Microsoft.VSCode.Dsc
+                  - removeLabel:
+                      label: Microsoft.Windows.Developer
+                  - removeLabel:
+                      label: Microsoft.Windows.Setting.Accessibility
+                  - removeLabel:
+                      label: Microsoft.Windows.Setting.Language
+                  - removeLabel:
+                      label: Microsoft.Windows.Setting.System
+                  - removeLabel:
+                      label: Microsoft.Windows.Setting
                   #   - removeLabel:
                   #         label: Moderator-Approved
                   - removeLabel:
@@ -306,9 +322,17 @@ configuration:
                   - removeLabel:
                       label: Needs-CLA
                   - removeLabel:
+                      label: New-DSC-Resource
+                  - removeLabel:
+                      label: NpmDsc
+                  - removeLabel:
                       label: Project-File
                   - removeLabel:
                       label: Public-Service-Announcement
+                  - removeLabel:
+                      label: PythonPip3Dsc
+                  - removeLabel:
+                      label: YarnDsc
                   ## TODO: Dismiss All Pull Request Reviews
               # Duplicate of #
               - if:
