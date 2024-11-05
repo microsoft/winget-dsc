@@ -179,14 +179,6 @@ configuration:
               #       - addLabel:
               #             label: Moderator-Approved
               # Needs-Attention
-              # NpmDsc
-              - if:
-                  - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Nn][Pp][Mm]\.[Dd][Ss][Cc]'
-                      isRegex: True
-                then:
-                  - addLabel:
-                      label: NpmDsc
               - if:
                   - commentContains:
                       pattern: '\[[Pp]olicy\]\s+[Nn]eeds[\s-][Aa]ttention'
@@ -219,6 +211,22 @@ configuration:
                 then:
                   - addLabel:
                       label: Needs-CLA
+              # New-DSC-Resource
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Nn]ew[\s-][Dd][Ss][Cc][\s-][Rr]esource'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: New-DSC-Resource
+              # NpmDsc
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Nn][Pp][Mm]\.[Dd][Ss][Cc]'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: NpmDsc
               # PythonPip3Dsc
               - if:
                   - commentContains:
