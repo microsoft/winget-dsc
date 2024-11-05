@@ -101,26 +101,20 @@ class ProcessorArchitecture {
 }
 
 [DSCResource()]
-class HyperVisorPresent {
+class HyperVisor {
 
     [DscProperty(Key)]
     [Ensure] $Ensure
 
-    [DscProperty(NotConfigurable)]
-    [bool] $HyperVisorPresent
-
-    [HyperVisorPresent] Get() {
-        $this.HyperVisorPresent = Get-ComputerInfo | Select-Object -ExpandProperty HyperVisorPresent
-
+    [HyperVisor] Get() {
         return @{
-            Ensure            = $this.Ensure
-            HyperVisorPresent = $this.HyperVisorPresent
+            Ensure = (Get-ComputerInfo | Select-Object -ExpandProperty HyperVisorPresent) ? [Ensure]::Present : [Ensure]::Absent
         }
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        return $currentState.Ensure -eq $currentState.HyperVisorPresent
+        return $currentState.Ensure -eq $this.Ensure
     }
 
     [void] Set() {
@@ -365,9 +359,9 @@ class PnPDevice {
         # It's possible that multiple PNP devices match, but as long as one matches then the assertion succeeds
         return @{
             Ensure       = $pnpDevice ? [Ensure]::Present : [Ensure]::Absent
-            FriendlyName = $pnpDevice ? $pnpDevice.FriendlyName : $null
-            DeviceClass  = $pnpDevice ? $pnpDevice.Class : $null
-            Status       = $pnpDevice ? $pnpDevice.Status : [PnPDeviceState]::UNKNOWN
+            FriendlyName = $this.FriendlyName
+            DeviceClass  = $this.DeviceClass
+            Status       = $this.Status
         }
     }
 

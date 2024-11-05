@@ -12,3 +12,5 @@ worktree
 sortby
 msft
 automerge
+pnp
+RTX

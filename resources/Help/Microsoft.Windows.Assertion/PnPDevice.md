@@ -22,7 +22,7 @@ The `PnPDevice` DSC Resource allows you to check for specific PnP Devices on the
 **Parameter**|**Attribute**|**DataType**|**Description**|**Allowed Values**
 :-----|:-----|:-----|:-----|:-----
 `FriendlyName`|Optional|String[]|The name of the PnP Device to be found|
-`DeviceClass`|Optional|String[]|The PnP Class of the PnP Device to be found.| For exampe: `Display` or `Keyboard` or `PrintQueue`
+`DeviceClass`|Optional|String[]|The PnP Class of the PnP Device to be found.| For example: `Display` or `Keyboard` or `PrintQueue`
 `Status`|Optional|String]]|The current status of the PnP Device to be found|`OK`, `ERROR`, `DEGRADED`, `UNKNOWN`
 
 ## EXAMPLES
@@ -63,7 +63,7 @@ Invoke-DscResource -Name PnPDevice -Method Test -Property $params -ModuleName Mi
 ```powershell
 # Check that a specific device is operational
 $params = @{
-    FrienlyName = 'Follow-You-Printing'
+    FriendlyName = 'Follow-You-Printing'
     DeviceClass = 'PrintQueue'
     Status = 'OK'
 }

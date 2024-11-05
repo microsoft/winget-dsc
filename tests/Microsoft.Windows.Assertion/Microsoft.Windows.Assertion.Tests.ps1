@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 using module Microsoft.Windows.Assertion
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 <#
@@ -11,8 +11,7 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-   if ($null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration))
-   {
+   if ($null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
       Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
    }
    Import-Module Microsoft.Windows.Assertion
@@ -20,7 +19,7 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
    It 'Shows DSC Resources' {
-      $expectedDSCResources = "OsEditionId", "SystemArchitecture", "ProcessorArchitecture", "HyperVisorPresent", "OsInstallDate", "OsVersion", "CsManufacturer", "CsModel", "CsDomain", "PowerShellVersion", "PnPDevice"
+      $expectedDSCResources = 'OsEditionId', 'SystemArchitecture', 'ProcessorArchitecture', 'HyperVisor', 'OsInstallDate', 'OsVersion', 'CsManufacturer', 'CsModel', 'CsDomain', 'PowerShellVersion', 'PnPDevice'
       $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Assertion).Name
       $availableDSCResources.length | Should -Be 11
       $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
@@ -106,25 +105,25 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
 
    }
 
-   Describe 'HyperVisorPresent' {
+   Describe 'HyperVisor' {
       BeforeAll {
          Mock Get-ComputerInfo { return @{HyperVisorPresent = $true } }
       }
 
-      $script:HyperVisorResource = [HyperVisorPresent]::new()
+      $script:HyperVisorResource = [HyperVisor]::new()
 
       It 'Get Current Property' -Tag 'Get' {
          $initialState = $HyperVisorResource.Get()
-         $initialState.HyperVisorPresent | Should -Be $true
+         $initialState.Ensure | Should -Be 'Present'
       }
 
       Context 'Test Current Property' -Tag 'Test' {
          It 'Should match' {
-            $HyperVisorResource.Required = $true
+            $HyperVisorResource.Ensure = 'Present'
             $HyperVisorResource.Test() | Should -Be $true
          }
          It 'Should not match' {
-            $HyperVisorResource.Required = $false
+            $HyperVisorResource.Ensure = 'Absent'
             $HyperVisorResource.Test() | Should -Be $false
          }
       }
@@ -332,11 +331,11 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
 
          # Mock when all parameters are present
-         Mock Get-PnPDevice -ParameterFilter { $FriendlyName -eq "TestName" -and $DeviceClass -eq "TestClass" -and $Status -eq "OK" } -MockWith { return $script:TestPnPDevice }
+         Mock Get-PnPDevice -ParameterFilter { $FriendlyName -eq 'TestName' -and $DeviceClass -eq 'TestClass' -and $Status -eq 'OK' } -MockWith { return $script:TestPnPDevice }
          # Mock when two parameters are present
-         Mock Get-PnPDevice -ParameterFilter { $FriendlyName -eq "TestName" -and $DeviceClass -eq "TestClass" -and [String]::IsNullOrWhiteSpace($Status) } -MockWith { return $script:TestPnPDevice }
+         Mock Get-PnPDevice -ParameterFilter { $FriendlyName -eq 'TestName' -and $DeviceClass -eq 'TestClass' -and [String]::IsNullOrWhiteSpace($Status) } -MockWith { return $script:TestPnPDevice }
          # Mock when one parameter is present
-         Mock Get-PnPDevice -ParameterFilter { $FriendlyName -eq "TestName" -and [String]::IsNullOrWhiteSpace($DeviceClass) -and [String]::IsNullOrWhiteSpace($Status) } -MockWith { return $script:TestPnPDevice }
+         Mock Get-PnPDevice -ParameterFilter { $FriendlyName -eq 'TestName' -and [String]::IsNullOrWhiteSpace($DeviceClass) -and [String]::IsNullOrWhiteSpace($Status) } -MockWith { return $script:TestPnPDevice }
          # Catch-all Mock
          Mock Get-PnPDevice -ParameterFilter { } -MockWith { return @{ FriendlyName = $null; Class = $null; Status = 'UNKNOWN' } }
       }
@@ -351,42 +350,32 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          It 'Should match a device with one property specified' {
             $PnPDeviceResource.FriendlyName = 'TestName'
             $initialState = $PnPDeviceResource.Get()
-            $initialState.FriendlyName | Should -Be 'TestName'
-            $initialState.DeviceClass | Should -Be 'TestClass'
-            $initialState.Status | Should -Be 'OK'
+            $initialState.Ensure | Should -Be 'Present'
          }
          It 'Should match a device with two properties specified' {
             $PnPDeviceResource.FriendlyName = 'TestName'
             $PnPDeviceResource.DeviceClass = 'TestClass'
             $initialState = $PnPDeviceResource.Get()
-            $initialState.FriendlyName | Should -Be 'TestName'
-            $initialState.DeviceClass | Should -Be 'TestClass'
-            $initialState.Status | Should -Be 'OK'
+            $initialState.Ensure | Should -Be 'Present'
          }
          It 'Should match a device with all properties specified' {
             $PnPDeviceResource.FriendlyName = 'TestName'
             $PnPDeviceResource.DeviceClass = 'TestClass'
             $PnPDeviceResource.Status = 'OK'
             $initialState = $PnPDeviceResource.Get()
-            $initialState.FriendlyName | Should -Be 'TestName'
-            $initialState.DeviceClass | Should -Be 'TestClass'
-            $initialState.Status | Should -Be 'OK'
+            $initialState.Ensure | Should -Be 'Present'
          }
          It 'Should not match a device with bad FriendlyName' {
             $PnPDeviceResource.FriendlyName = 'Name'
             $initialState = $PnPDeviceResource.Get()
-            !$initialState.FriendlyName | Should -Be $true
-            !$initialState.DeviceClass | Should -Be $true
-            $initialState.Status | Should -Be 'UNKNOWN'
+            $initialState.Ensure | Should -Be 'Absent'
          }
          It 'Should not match a device with bad status' {
             $PnPDeviceResource.FriendlyName = 'TestName'
             $PnPDeviceResource.DeviceClass = 'TestClass'
             $PnPDeviceResource.Status = 'ERROR'
             $initialState = $PnPDeviceResource.Get()
-            !$initialState.FriendlyName | Should -Be $true
-            !$initialState.DeviceClass | Should -Be $true
-            $initialState.Status | Should -Be 'UNKNOWN'
+            $initialState.Ensure | Should -Be 'Absent'
          }
       }
 
