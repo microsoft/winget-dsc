@@ -16,7 +16,11 @@ BeforeAll {
         Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
     }
 
+    # Because the module asserts that Git is installed before it will load, the function needs to be mocked
+    # This ensures that the tests can run even on a machine that does not have Git installed
+    Mock Assert-Git -ModuleName GitDsc { return $true }
     Import-Module GitDsc
+
 }
 
 Describe 'List available DSC resources' {
@@ -32,9 +36,7 @@ InModuleScope -ModuleName GitDsc {
     Describe 'GitClone' {
 
         BeforeAll {
-            Mock Assert-Git { return $true }
             Mock Invoke-GitClone -Verifiable
-
             $global:HttpsUrl = 'https://github.com/microsoft/winget-dsc.git'
             $global:TestGitRoot = Join-Path -Path $env:TEMP -ChildPath $(New-Guid)
         }
@@ -89,10 +91,13 @@ InModuleScope -ModuleName GitDsc {
             $gitCloneResource.Test() | Should -Be $true
             Assert-MockCalled Invoke-GitRemote -Exactly 1
         }
+
+        AfterAll {
+            # Clean up cloned folder
+            Remove-Item -Recurse -Force $global:TestGitRoot -ErrorAction 'SilentlyContinue'
+        }
     }
 }
 
 AfterAll {
-    # Clean up cloned folder
-    Remove-Item -Recurse -Force $global:TestGitRoot -ErrorAction 'SilentlyContinue'
 }
