@@ -57,8 +57,7 @@ class GitClone {
                 if ($gitRemoteValue -like $this.HttpsUrl) {
                     $currentState.Ensure = [Ensure]::Present
                 }
-            }
-            catch {
+            } catch {
                 # Failed to execute `git remote`. Ensure state is `absent`
             }
         }
@@ -114,8 +113,7 @@ class GitRemote {
         try {
             $gitRemoteValue = Invoke-GitRemote("get-url $($this.RemoteName)")
             $currentState.Ensure = ($gitRemoteValue -like $this.RemoteUrl) ? [Ensure]::Present : [Ensure]::Absent
-        }
-        catch {
+        } catch {
             $currentState.Ensure = [Ensure]::Absent
         }
 
@@ -133,16 +131,13 @@ class GitRemote {
         if ($this.Ensure -eq [Ensure]::Present) {
             try {
                 Invoke-GitRemote("add $($this.RemoteName) $($this.RemoteUrl)")
-            }
-            catch {
+            } catch {
                 throw 'Failed to add remote repository.'
             }
-        }
-        else {
+        } else {
             try {
                 Invoke-GitRemote("remove $($this.RemoteName)")
-            }
-            catch {
+            } catch {
                 throw 'Failed to remove remote repository.'
             }
         }
@@ -174,12 +169,10 @@ class GitConfigUserName {
             if ($this.ProjectDirectory) {
                 if (Test-Path -Path $this.ProjectDirectory) {
                     Set-Location $this.ProjectDirectory
-                }
-                else {
+                } else {
                     throw 'Project directory does not exist.'
                 }
-            }
-            else {
+            } else {
                 throw 'Project directory parameter must be specified for non-system and non-global configurations.'
             }
         }
@@ -206,8 +199,7 @@ class GitConfigUserName {
 
         if ($this.Ensure -eq [Ensure]::Present) {
             $configArgs = ConstructGitConfigUserArguments -Arguments "user.name '$($this.UserName)'" -ConfigLocation $this.ConfigLocation
-        }
-        else {
+        } else {
             $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.name' -ConfigLocation $this.ConfigLocation
         }
 
@@ -240,12 +232,10 @@ class GitConfigUserEmail {
             if ($this.ProjectDirectory) {
                 if (Test-Path -Path $this.ProjectDirectory) {
                     Set-Location $this.ProjectDirectory
-                }
-                else {
+                } else {
                     throw 'Project directory does not exist.'
                 }
-            }
-            else {
+            } else {
                 throw 'Project directory parameter must be specified for non-system and non-global configurations.'
             }
         }
@@ -272,8 +262,7 @@ class GitConfigUserEmail {
 
         if ($this.Ensure -eq [Ensure]::Present) {
             $configArgs = ConstructGitConfigUserArguments -Arguments "user.email $($this.UserEmail)" -ConfigLocation $this.ConfigLocation
-        }
-        else {
+        } else {
             $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.email' -ConfigLocation $this.ConfigLocation
         }
 
@@ -290,8 +279,7 @@ function Assert-Git {
     try {
         Invoke-Git -Command 'help'
         return
-    }
-    catch {
+    } catch {
         throw 'Git is not installed'
     }
 }

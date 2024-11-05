@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 using module GitDsc
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 <#
@@ -11,8 +11,7 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    if ($null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration))
-    {
+    if ($null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
         Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
     }
 
