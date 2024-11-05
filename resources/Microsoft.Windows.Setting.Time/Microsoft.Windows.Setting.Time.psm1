@@ -149,11 +149,7 @@ class Time
 
         if ($currentState.ShowSystemTrayDateTime -ne $this.ShowSystemTrayDateTime)
         {
-            $desiredState = switch ($this.ShowSystemTrayDateTime)
-            {
-                $true { "1" } # 1 = Show
-                $false { "0" } # 0 = Hide
-            }
+            $desiredState = [int]$this.ShowSystemTrayDateTime
 
             if ([string]::IsNullOrEmpty((TryGetRegistryValue -Key $global:SysTrayPath -Property ([Time]::ShowSystemTrayDateTimeProperty))))
             {
@@ -205,7 +201,7 @@ class Time
     static [bool] GetShowSystemTrayDateTimeStatus()
     {
         $value = TryGetRegistryValue -Key $global:SysTrayPath -Property ([Time]::ShowSystemTrayDateTimeProperty)
-        if (([string]::IsNullOrEmpty($value)) -or ($null -eq $value))
+        if (([string]::IsNullOrEmpty($value)))
         {
             # if it is empty, we assume it is set to 1
             return $true
