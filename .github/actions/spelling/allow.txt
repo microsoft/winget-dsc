@@ -12,7 +12,6 @@ github
 https
 Icm
 microsoft
-MSFT
 msftbot
 numpy
 opencode
@@ -37,3 +36,4 @@ prerel
 uilt
 Windo
 ELSPROBLEMS
+requ

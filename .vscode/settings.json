@@ -1,4 +1,8 @@
 {
     "powershell.codeFormatting.preset": "Allman",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "[powershell]": {
+        "files.encoding": "utf8bom",
+        "files.autoGuessEncoding": true
+    }
 }

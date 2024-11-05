@@ -10,3 +10,5 @@ VGpu
 versioning
 worktree
 sortby
+msft
+automerge
