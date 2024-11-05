@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+properties:
+  resources:
+    ########################################################################
+    # Section: Install VS-Code
+    ########################################################################
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: install-vs-code
+      directives:
+        description: Install Microsoft Visual Studio Code
+        allowPrerelease: true
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        Ensure: Present
+    - resource: vscode/VSCodeExtension
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install YAML extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: redhat.vscode-yaml
+        Ensure: Present
+    - resource: vscode/VSCodeExtension
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install EditorConfig extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: EditorConfig.EditorConfig
+        Ensure: Present
+    - resource: vscode/VSCodeExtension
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install PowerShell extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode.powershell
+        Ensure: Present
+    ########################################################################
+    # Section: Install Packages
+    ########################################################################
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: install-git
+      directives:
+        description: Install Git # Although the user probably already has git installed, it's possible that they don't
+        allowPrerelease: true
+      settings:
+        id: Git.Git
+        source: winget
+        Ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: install-git-cli
+      directives:
+        description: Install GitHub CLI
+        allowPrerelease: true
+      settings:
+        id: GitHub.cli
+        source: winget
+        Ensure: Present
+    ########################################################################
+    # Section: Configure Git Remotes
+    ########################################################################
+    - resource: GitDSC/GitRemote
+      id: add-microsoft-upstream
+      directives:
+        description: Add microsoft/winget-dsc as the upstream remote
+        allowPrerelease: true
+      settings:
+        ProjectDirectory: '${WinGetConfigRoot}\..'
+        RemoteName: upstream
+        RemoteUrl: https://github.com/microsoft/winget-pkgs.git
+    ########################################################################
+    # Section: Install PowerShell Modules
+    ########################################################################
+    - resource: PowerShellModule/PSModuleResource
+      id: install-pester
+      directives:
+        description: Install Pester module
+        allowPrerelease: true
+      settings:
+        Module_Name: Pester
+        Ensure: Present
+    - resource: PowerShellModule/PSModuleResource
+      id: install-psscriptanalyzer
+      directives:
+        description: Install PSScriptAnalyzer module
+        allowPrerelease: true
+      settings:
+        Module_Name: PSScriptAnalyzer
+        Ensure: Present
+  configurationVersion: 0.2.0
