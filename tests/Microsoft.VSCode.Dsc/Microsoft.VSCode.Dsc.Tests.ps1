@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 using module Microsoft.VSCode.Dsc
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 <#
@@ -24,7 +24,7 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "VSCodeExtension"
+        $expectedDSCResources = 'VSCodeExtension'
         $availableDSCResources = (Get-DscResource -Module Microsoft.VSCode.Dsc).Name
         $availableDSCResources.count | Should -Be 1
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
