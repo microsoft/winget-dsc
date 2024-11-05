@@ -15,8 +15,10 @@
         'MousePointer',
         'VisualEffect',
         'Audio',
-        'TextCursor'
-        'StickyKeys'
+        'TextCursor',
+        'StickyKeys',
+        'ToggleKeys',
+        'FilterKeys'
     )
     PrivateData          = @{
         PSData = @{
@@ -28,7 +30,9 @@
                 'PSDscResource_VisualEffect',
                 'PSDscResource_Audio',
                 'PSDscResource_TextCursor',
-                'PSDscResource_StickyKeys'
+                'PSDscResource_StickyKeys',
+                'PSDscResource_ToggleKeys',
+                'PSDscResource_FilterKeys'
             )
     
             # Prerelease string of this module
