@@ -91,7 +91,7 @@ else
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $global:StickyKeysRegistryPath = $global:ToggleKeysRegistryPath = $global:FilterKeysRegistryPath = $env:TestRegistryPath
 }
 
-[DSCResource()]	
+[DSCResource()]
 class Text
 {
     [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
@@ -152,7 +152,7 @@ class Text
             }
 
             Set-ItemProperty -Path $global:AccessibilityRegistryPath -Name $this.TextScaleFactor -Value $desiredSize -Type DWORD
-        }		
+        }
     }
 }
 
@@ -175,7 +175,7 @@ class Magnifier
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.MagnificationProperty))
         {
             $currentState.Magnification = [MagnificationValue]::None
-            $currentState.MagnificationLevel = 0         
+            $currentState.MagnificationLevel = 0
         }
         else
         {
@@ -188,8 +188,8 @@ class Magnifier
                 300 { [MagnificationValue]::High }
                 default { [MagnificationValue]::KeepCurrentValue }
             }
-            
-            $currentState.Magnification = $currentMagnification 
+
+            $currentState.Magnification = $currentMagnification
         }
 
         if (-not(DoesRegistryKeyPropertyExist -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty))
@@ -198,7 +198,7 @@ class Magnifier
             $currentState.ZoomIncrementLevel = 25
         }
         else
-        {            
+        {
             $currentState.ZoomIncrementLevel = (Get-ItemProperty -Path $global:MagnifierRegistryPath -Name $this.ZoomIncrementProperty).ZoomIncrement
             $currentState.ZoomIncrement = $currentState.ZoomIncrementLevel
         }
@@ -271,7 +271,7 @@ class MousePointer
     [MousePointer] Get()
     {
         $currentState = [MousePointer]::new()
-        
+
         if (-not(DoesRegistryKeyPropertyExist -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty))
         {
             $currentState.PointerSize = [PointerSize]::Normal
@@ -282,14 +282,14 @@ class MousePointer
             $currentState.PointerSizeValue = (Get-ItemProperty -Path $global:PointerRegistryPath -Name $this.PointerSizeProperty).CursorBaseSize
             $currentSize = switch ($currentState.PointerSizeValue)
             {
-                '32' { [PointerSize]::Normal }                
+                '32' { [PointerSize]::Normal }
                 '96' { [PointerSize]::Medium }
                 '144' { [PointerSize]::Large }
                 '256' { [PointerSize]::ExtraLarge }
                 default { [PointerSize]::KeepCurrentValue }
             }
-            
-            $currentState.PointerSize = $currentSize            
+
+            $currentState.PointerSize = $currentSize
         }
 
         return $currentState
@@ -351,7 +351,7 @@ class VisualEffect
         {
             $dynamicScrollbarsValue = (Get-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty)).DynamicScrollbars
             return ($dynamicScrollbarsValue -eq 0)
-        }        
+        }
     }
 
     static [bool] GetTransparencyStatus()
@@ -386,7 +386,7 @@ class VisualEffect
         $currentState.AlwaysShowScrollbars = [VisualEffect]::GetShowDynamicScrollbarsStatus()
         $currentState.TransparencyEffects = [VisualEffect]::GetTransparencyStatus()
         $currentState.MessageDurationInSeconds = [VisualEffect]::GetMessageDuration()
-        
+
         return $currentState
     }
 
@@ -417,30 +417,30 @@ class VisualEffect
             {
                 New-Item -Path $global:ControlPanelAccessibilityRegistryPath -Force | Out-Null
             }
-            if ($null -ne $this.AlwaysShowScrollbars) 
+            if ($null -ne $this.AlwaysShowScrollbars)
             {
                 $dynamicScrollbarValue = if ($this.AlwaysShowScrollbars) { 0 } else { 1 }
                 Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::DynamicScrollbarsProperty) -Value $dynamicScrollbarValue
             }
-            if ($null -ne $this.TransparencyEffects) 
+            if ($null -ne $this.TransparencyEffects)
             {
                 $transparencyValue = if ($this.TransparencyEffects) { 0 } else { 1 }
-				
+
                 if (-not (DoesRegistryKeyPropertyExist -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty)))
                 {
                     New-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue -PropertyType DWord
                 }
-                Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue 
+                Set-ItemProperty -Path $global:PersonalizationRegistryPath -Name ([VisualEffect]::TransparencySettingProperty) -Value $transparencyValue
             }
-            if (0 -ne $this.MessageDurationInSeconds) 
+            if (0 -ne $this.MessageDurationInSeconds)
             {
                 $min = 5
                 $max = 300
-                if ($this.MessageDurationInSeconds -notin $min..$max) 
-                { 
-                    throw "MessageDurationInSeconds must be between $min and $max. Value $($this.MessageDurationInSeconds) was provided." 
+                if ($this.MessageDurationInSeconds -notin $min..$max)
+                {
+                    throw "MessageDurationInSeconds must be between $min and $max. Value $($this.MessageDurationInSeconds) was provided."
                 }
-                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $this.MessageDurationInSeconds 
+                Set-ItemProperty -Path $global:ControlPanelAccessibilityRegistryPath -Name ([VisualEffect]::MessageDurationProperty) -Value $this.MessageDurationInSeconds
             }
         }
     }
@@ -465,14 +465,14 @@ class Audio
         {
             $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty)).AccessibilityMonoMixState
             return ($AudioMonoSetting -eq 0)
-        }        
+        }
     }
 
     [Audio] Get()
     {
         $currentState = [Audio]::new()
         $currentState.EnableMonoAudio = [Audio]::GetEnableMonoAudioStatus()
-        
+
         return $currentState
     }
 
@@ -498,7 +498,7 @@ class Audio
 
             $monoAudioValue = if ($this.EnableMonoAudio) { 0 } else { 1 }
 
-            Set-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty) -Value $monoAudioValue 
+            Set-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty) -Value $monoAudioValue
         }
     }
 }
@@ -531,7 +531,7 @@ class TextCursor
         {
             $textCursorSetting = (Get-ItemProperty @indicatorStatusArgs).Configuration
             return ($textCursorSetting -eq ([TextCursor]::IndicatorStatusValue))
-        }        
+        }
     }
 
     static [int] GetIndicatorSize()
@@ -545,7 +545,7 @@ class TextCursor
         {
             $textCursorSetting = (Get-ItemProperty @indicatorSizeArgs).IndicatorType
             return $textCursorSetting
-        }        
+        }
     }
 
     static [int] GetIndicatorColor()
@@ -559,7 +559,7 @@ class TextCursor
         {
             $textCursorSetting = (Get-ItemProperty @indicatorColorArgs).IndicatorColor
             return $textCursorSetting
-        }        
+        }
     }
 
     static [int] GetThickness()
@@ -573,7 +573,7 @@ class TextCursor
         {
             $textCursorSetting = (Get-ItemProperty @thicknessArgs).CaretWidth
             return $textCursorSetting
-        }        
+        }
     }
 
     [TextCursor] Get()
@@ -583,7 +583,7 @@ class TextCursor
         $currentState.IndicatorSize = [TextCursor]::GetIndicatorSize()
         $currentState.IndicatorColor = [TextCursor]::GetIndicatorColor()
         $currentState.Thickness = [TextCursor]::GetThickness()
-        
+
         return $currentState
     }
 
@@ -614,55 +614,55 @@ class TextCursor
     {
         if (-not $this.Test())
         {
-            if ($null -ne $this.IndicatorStatus) 
+            if ($null -ne $this.IndicatorStatus)
             {
                 $indicatorStatusArgs = @{ Path = $global:NTAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorStatusProperty); }
                 $textCursorValue = if ($this.IndicatorStatus) { ([TextCursor]::IndicatorStatusValue) } else { "" }
                 Set-ItemProperty @indicatorStatusArgs -Value $textCursorValue
             }
-            
-            if (0 -ne $this.IndicatorSize) 
+
+            if (0 -ne $this.IndicatorSize)
             {
                 $indicatorSizeArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorSizeProperty) }
                 $min = 1
                 $max = 20
-                if ($this.IndicatorSize -notin $min..$max) 
-                { 
-                    throw "IndicatorSize must be between $min and $max. Value $($this.IndicatorSize) was provided." 
+                if ($this.IndicatorSize -notin $min..$max)
+                {
+                    throw "IndicatorSize must be between $min and $max. Value $($this.IndicatorSize) was provided."
                 }
                 if (-not (DoesRegistryKeyPropertyExist @indicatorSizeArgs))
                 {
                     New-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize -PropertyType DWord
                 }
-                Set-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize 
+                Set-ItemProperty @indicatorSizeArgs -Value $this.IndicatorSize
             }
-            
-            if (0 -ne $this.IndicatorColor) 
+
+            if (0 -ne $this.IndicatorColor)
             {
                 $indicatorColorArgs = @{  Path = $global:CursorIndicatorAccessibilityRegistryPath; Name = ([TextCursor]::IndicatorColorProperty) }
                 $min = 1
                 $max = 99999999
-                if ($this.IndicatorColor -notin $min..$max) 
-                { 
-                    throw "IndicatorColor must be between $min and $max. Value $($this.IndicatorColor) was provided." 
+                if ($this.IndicatorColor -notin $min..$max)
+                {
+                    throw "IndicatorColor must be between $min and $max. Value $($this.IndicatorColor) was provided."
                 }
                 if (-not (DoesRegistryKeyPropertyExist @indicatorColorArgs))
                 {
                     New-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor -PropertyType DWord
                 }
-                Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor 
+                Set-ItemProperty @indicatorColorArgs -Value $this.IndicatorColor
             }
-            
-            if (0 -ne $this.Thickness) 
+
+            if (0 -ne $this.Thickness)
             {
                 $thicknessArgs = @{ Path = $global:ControlPanelDesktopRegistryPath; Name = ([TextCursor]::ThicknessProperty); }
                 $min = 1
                 $max = 20
-                if ($this.Thickness -notin $min..$max) 
-                { 
-                    throw "Thickness must be between $min and $max. Value $($this.Thickness) was provided." 
+                if ($this.Thickness -notin $min..$max)
+                {
+                    throw "Thickness must be between $min and $max. Value $($this.Thickness) was provided."
                 }
-                Set-ItemProperty @thicknessArgs -Value $this.Thickness 
+                Set-ItemProperty @thicknessArgs -Value $this.Thickness
             }
         }
     }
@@ -701,7 +701,7 @@ class StickyKeys
     [StickyKeys] Get()
     {
         $currentFlags = [StickyKeys]::GetCurrentFlags()
-        
+
         $currentState = [StickyKeys]::new()
         $currentState.Active = $currentFlags.HasFlag([StickyKeysOptions]::Active)
         $currentState.Available = $currentFlags.HasFlag([StickyKeysOptions]::Available)
@@ -712,7 +712,7 @@ class StickyKeys
         $currentState.AudibleFeedback = $currentFlags.HasFlag([StickyKeysOptions]::AudibleFeedback)
         $currentState.TriState = $currentFlags.HasFlag([StickyKeysOptions]::TriState)
         $currentState.TwoKeysOff = $currentFlags.HasFlag([StickyKeysOptions]::TwoKeysOff)
-        
+
         return $currentState
     }
 
@@ -857,7 +857,7 @@ class ToggleKeys
     [ToggleKeys] Get()
     {
         $currentFlags = [ToggleKeys]::GetCurrentFlags()
-        
+
         $currentState = [ToggleKeys]::new()
         $currentState.Active = $currentFlags.HasFlag([ToggleKeysOptions]::Active)
         $currentState.Available = $currentFlags.HasFlag([ToggleKeysOptions]::Available)
@@ -865,7 +865,7 @@ class ToggleKeys
         $currentState.ConfirmOnHotkeyActivation = $currentFlags.HasFlag([ToggleKeysOptions]::ConfirmHotkey)
         $currentState.HotkeySound = $currentFlags.HasFlag([ToggleKeysOptions]::HotkeySound)
         $currentState.VisualIndicator = $currentFlags.HasFlag([ToggleKeysOptions]::VisualIndicator)
-        
+
         return $currentState
     }
 
@@ -981,7 +981,7 @@ class FilterKeys
     [FilterKeys] Get()
     {
         $currentFlags = [FilterKeys]::GetCurrentFlags()
-        
+
         $currentState = [FilterKeys]::new()
         $currentState.Active = $currentFlags.HasFlag([FilterKeysOptions]::Active)
         $currentState.Available = $currentFlags.HasFlag([FilterKeysOptions]::Available)
@@ -990,7 +990,7 @@ class FilterKeys
         $currentState.HotkeySound = $currentFlags.HasFlag([FilterKeysOptions]::HotkeySound)
         $currentState.VisualIndicator = $currentFlags.HasFlag([FilterKeysOptions]::VisualIndicator)
         $currentState.AudibleFeedback = $currentFlags.HasFlag([FilterKeysOptions]::AudibleFeedback)
-        
+
         return $currentState
     }
 

@@ -14,7 +14,7 @@ BeforeAll {
     Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
     Import-Module Microsoft.VSCode.Dsc
 
-    # Install VSCode 
+    # Install VSCode
     Invoke-WebRequest https://raw.githubusercontent.com/PowerShell/vscode-powershell/main/scripts/Install-VSCode.ps1 -UseBasicParsing -OutFile Install-VSCode.ps1
     .\Install-VSCode.ps1 -BuildEdition Stable-User -Confirm:$false
 
@@ -37,10 +37,10 @@ Describe 'VSCodeExtension' {
             Name = 'ms-vscode.powershell'
         }
         $initialState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
- 
+
         $testResult = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $true
- 
+
         # Invoking set should not change these values.
         Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $parameters
         $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
@@ -53,27 +53,27 @@ Describe 'VSCodeExtension' {
         $desiredState = @{
             Name = 'ms-azure-devops.azure-pipelines'
         }
-        
+
         Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
-     
+
         $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $desiredState
         $finalState.Name | Should -Be $desiredState.Name
         $finalState.Exist | Should -BeTrue
-     }
+    }
 }
 
 Describe 'VSCodeExtension-Insiders' {
     It 'Keeps current extension in Insiders edition.' -Skip:(!$IsWindows) {
         $parameters = @{
-            Name = 'ms-vscode.powershell'
+            Name     = 'ms-vscode.powershell'
             Insiders = $true
         }
 
         $initialState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
- 
+
         $testResult = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Test -Property $parameters
         $testResult.InDesiredState | Should -Be $true
- 
+
         # Invoking set should not change these values.
         Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $parameters
         $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $parameters
@@ -84,16 +84,16 @@ Describe 'VSCodeExtension-Insiders' {
 
     It 'Sets desired extension in Insiders edition' -Skip:(!$IsWindows) {
         $desiredState = @{
-            Name = 'ms-azure-devops.azure-pipelines'
+            Name     = 'ms-azure-devops.azure-pipelines'
             Insiders = $true
         }
-        
+
         Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
-     
+
         $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $desiredState
         $finalState.Name | Should -Be $desiredState.Name
         $finalState.Exist | Should -BeTrue
-     }
+    }
 }
 
 AfterAll {

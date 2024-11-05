@@ -63,7 +63,7 @@ class YarnInstall
 function Assert-Yarn
 {
     # Refresh session $path value before invoking 'npm'
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
     try
     {
         Invoke-Yarn -Command 'help'
@@ -79,7 +79,7 @@ function Invoke-YarnInfo
 {
     param(
         [Parameter()]
-        [string]$Arguments       
+        [string]$Arguments
     )
 
     $command = [List[string]]::new()

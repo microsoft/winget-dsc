@@ -58,7 +58,7 @@ class GitClone
         if (Test-Path $expectedDirectory)
         {
             Set-Location -Path $expectedDirectory
-            try 
+            try
             {
                 $gitRemoteValue = Invoke-GitRemote("get-url $($currentState.RemoteName)")
                 if ($gitRemoteValue -like $this.HttpsUrl)
@@ -124,7 +124,7 @@ class GitRemote
         if (-not(Test-Path -Path $this.ProjectDirectory))
         {
             throw "Project directory does not exist."
-        } 
+        }
 
         Set-Location $this.ProjectDirectory
         try
@@ -339,7 +339,7 @@ class GitConfigUserEmail
 function Assert-Git
 {
     # Refresh session $path value before invoking 'git'
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
     try
     {
         Invoke-Git -Command 'help'
@@ -355,7 +355,7 @@ function GetGitProjectName
 {
     param(
         [Parameter()]
-        [string]$HttpsUrl       
+        [string]$HttpsUrl
     )
 
     $projectName = ($HttpsUrl.split('/')[-1]).split('.')[0]
@@ -379,20 +379,20 @@ function Invoke-GitRemote
 {
     param(
         [Parameter()]
-        [string]$Arguments       
+        [string]$Arguments
     )
 
     $command = [List[string]]::new()
     $command.Add("remote")
     $command.Add($Arguments)
-    return Invoke-Git -Command $command 
+    return Invoke-Git -Command $command
 }
 
 function Invoke-GitClone
 {
     param(
         [Parameter()]
-        [string]$Arguments       
+        [string]$Arguments
     )
 
     $command = [List[string]]::new()

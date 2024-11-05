@@ -36,9 +36,9 @@ Describe 'DSC operation capabilities' {
         $parameters = @{
             PackageId = 'gitversion.tool'
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.Exist | Should -BeTrue
         $finalState.Version | Should -Not -BeNullOrEmpty
@@ -49,9 +49,9 @@ Describe 'DSC operation capabilities' {
             PackageId  = 'dotnet-ef'
             PreRelease = $true
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.PackageId | Should -Be $parameters.PackageId
         $finalState.PreRelease | Should -BeTrue
@@ -62,9 +62,9 @@ Describe 'DSC operation capabilities' {
             PackageId = 'dotnet-reportgenerator-globaltool'
             Version   = '5.3.9'
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.PackageId | Should -Be $parameters.PackageId
         $finalState.Version | Should -Be $parameters.Version
@@ -75,9 +75,9 @@ Describe 'DSC operation capabilities' {
             PackageId = 'dotnet-reportgenerator-globaltool'
             Version   = '5.3.10'
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.PackageId | Should -Be $parameters.PackageId
         $finalState.Version | Should -Be $parameters.Version
@@ -88,9 +88,9 @@ Describe 'DSC operation capabilities' {
             PackageId = 'PowerShell'
             Version   = '7.2.0-preview.5'
         }
-        
+
         Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-     
+
         $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
         $finalState.PackageId | Should -Be $parameters.PackageId
         $finalState.Version | Should -Be $parameters.Version
@@ -99,7 +99,7 @@ Describe 'DSC operation capabilities' {
 
     It 'Exports resources' -Skip:(!$IsWindows) {
         $obj = [DotNetToolPackage]::Export()
-        
+
         $obj.PackageId.Contains('dotnet-ef') | Should -Be $true
         $obj.PackageId.Contains('dotnet-reportgenerator-globaltool') | Should -Be $true
     }
@@ -108,7 +108,7 @@ Describe 'DSC operation capabilities' {
         $parameters = @{
             PackageId = 'Azure-Core' # not a tool
         }
-        
+
         { Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters } | Should -Throw -ExpectedMessage "Executing dotnet.exe with {tool install Azure-Core --global --ignore-failed-sources} failed."
     }
 
