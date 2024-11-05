@@ -3,46 +3,7 @@
 properties:
   resources:
     ########################################################################
-    # Section: Install VS-Code
-    ########################################################################
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: install-vs-code
-      directives:
-        description: Install Microsoft Visual Studio Code
-        allowPrerelease: true
-      settings:
-        id: Microsoft.VisualStudioCode
-        source: winget
-        Ensure: Present
-    - resource: vscode/VSCodeExtension
-      dependsOn:
-        - install-vs-code
-      directives:
-        description: Install YAML extension for VSCode
-        allowPrerelease: true
-      settings:
-        Name: redhat.vscode-yaml
-        Ensure: Present
-    - resource: vscode/VSCodeExtension
-      dependsOn:
-        - install-vs-code
-      directives:
-        description: Install EditorConfig extension for VSCode
-        allowPrerelease: true
-      settings:
-        Name: EditorConfig.EditorConfig
-        Ensure: Present
-    - resource: vscode/VSCodeExtension
-      dependsOn:
-        - install-vs-code
-      directives:
-        description: Install PowerShell extension for VSCode
-        allowPrerelease: true
-      settings:
-        Name: ms-vscode.powershell
-        Ensure: Present
-    ########################################################################
-    # Section: Install Packages
+    # Section: Install Git
     ########################################################################
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: install-git
@@ -54,10 +15,13 @@ properties:
         source: winget
         Ensure: Present
     - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: install-git-cli
+      dependsOn:
+        - install-git
+      id: install-github-cli
       directives:
         description: Install GitHub CLI
         allowPrerelease: true
+        securityContext: elevated
       settings:
         id: GitHub.cli
         source: winget
@@ -74,6 +38,48 @@ properties:
         ProjectDirectory: '${WinGetConfigRoot}\..'
         RemoteName: upstream
         RemoteUrl: https://github.com/microsoft/winget-pkgs.git
+    ########################################################################
+    # Section: Install VS-Code
+    ########################################################################
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: install-vs-code
+      directives:
+        description: Install Microsoft Visual Studio Code
+        allowPrerelease: true
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        Ensure: Present
+    - resource: vscode/VSCodeExtension
+      id: install-vscode-extension_vscode-yaml
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install YAML extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: redhat.vscode-yaml
+        Ensure: Present
+    - resource: vscode/VSCodeExtension
+      id: install-vscode-extension_editorconfig.editorconfig
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install EditorConfig extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: EditorConfig.EditorConfig
+        Ensure: Present
+    - resource: vscode/VSCodeExtension
+      id: install-vsscode-extension_ms-vscode.powershell
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install PowerShell extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode.powershell
+        Ensure: Present
     ########################################################################
     # Section: Install PowerShell Modules
     ########################################################################
