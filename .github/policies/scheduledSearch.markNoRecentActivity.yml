@@ -12,6 +12,7 @@ configuration:
           Search for PR where -
           * Pull Request is Open
           * Pull request does not have the label No-Recent-Activity
+          * Pull request does not have the label Blocking-Issue
           * Pull request has the label Needs-Author-Feedback
           * Has not had activity in the last 5 days
 
@@ -26,6 +27,8 @@ configuration:
           - isOpen
           - isNotLabeledWith:
               label: No-Recent-Activity
+          - isNotLabeledWith:
+              label: Blocking-Issue
           - hasLabel:
               label: Needs-Author-Feedback
           - noActivitySince:
@@ -37,6 +40,7 @@ configuration:
           Search for issues where -
           * Issue is Open
           * Issue does not have the label No-Recent-Activity
+          * Issue does not have the label Blocking-Issue
           * Issue has the label Needs-Author-Feedback
           * Has not had activity in the last 5 days
 
@@ -51,6 +55,8 @@ configuration:
           - isOpen
           - isNotLabeledWith:
               label: No-Recent-Activity
+          - isNotLabeledWith:
+              label: Blocking-Issue
           - hasLabel:
               label: Needs-Author-Feedback
           - noActivitySince:
