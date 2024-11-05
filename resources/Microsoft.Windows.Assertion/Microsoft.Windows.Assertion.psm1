@@ -1,11 +1,15 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-enum PnPDeviceState
-{
+enum Ensure {
+    Present
+    Absent
+}
+
+enum PnPDeviceState {
     OK
     ERROR
     DEGRADED
@@ -13,20 +17,15 @@ enum PnPDeviceState
 }
 
 [DSCResource()]
-class OsEditionId
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class OsEditionId {
 
-    [DscProperty(Mandatory)]
+    [DscProperty(Key)]
     [string] $RequiredEdition
 
     [DscProperty(NotConfigurable)]
     [string] $Edition
 
-    [OsEditionId] Get()
-    {
+    [OsEditionId] Get() {
         $this.Edition = Get-ComputerInfo | Select-Object -ExpandProperty WindowsEditionId
 
         return @{
@@ -35,33 +34,26 @@ class OsEditionId
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Edition -eq $currentState.RequiredEdition
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the Edition ID requirement.
     }
 }
 
 [DSCResource()]
-class SystemArchitecture
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class SystemArchitecture {
 
-    [DscProperty(Mandatory)]
+    [DscProperty(Key)]
     [string] $RequiredArchitecture
 
     [DscProperty(NotConfigurable)]
     [string] $Architecture
 
-    [SystemArchitecture] Get()
-    {
+    [SystemArchitecture] Get() {
         $this.Architecture = Get-ComputerInfo | Select-Object -ExpandProperty OsArchitecture
 
         return @{
@@ -70,33 +62,26 @@ class SystemArchitecture
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Architecture -eq $currentState.RequiredArchitecture
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the System Architecture requirement.
     }
 }
 
 [DSCResource()]
-class ProcessorArchitecture
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class ProcessorArchitecture {
 
-    [DscProperty(Mandatory)]
+    [DscProperty(Key)]
     [string] $RequiredArchitecture
 
     [DscProperty(NotConfigurable)]
     [string] $Architecture
 
-    [ProcessorArchitecture] Get()
-    {
+    [ProcessorArchitecture] Get() {
         $this.Architecture = $env:PROCESSOR_ARCHITECTURE
 
         return @{
@@ -105,61 +90,48 @@ class ProcessorArchitecture
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Architecture -eq $currentState.RequiredArchitecture
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the Processor Architecture requirement.
     }
 }
 
 [DSCResource()]
-class HyperVisorPresent
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class HyperVisorPresent {
 
-    [DscProperty(Mandatory)]
-    [bool] $Required
+    [DscProperty(Key)]
+    [Ensure] $Ensure
 
     [DscProperty(NotConfigurable)]
     [bool] $HyperVisorPresent
 
-    [HyperVisorPresent] Get()
-    {
+    [HyperVisorPresent] Get() {
         $this.HyperVisorPresent = Get-ComputerInfo | Select-Object -ExpandProperty HyperVisorPresent
 
         return @{
-            Required          = $this.Required
+            Ensure            = $this.Ensure
             HyperVisorPresent = $this.HyperVisorPresent
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
-        return $currentState.Required -eq $currentState.HyperVisorPresent
+        return $currentState.Ensure -eq $currentState.HyperVisorPresent
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the presence of a HyperVisor.
     }
 }
 
 [DSCResource()]
-class OsInstallDate
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class OsInstallDate {
 
-    [DscProperty()]
+    [DscProperty(Key)]
     [string] $Before = [System.DateTime]::Now
 
     [DscProperty()]
@@ -168,25 +140,18 @@ class OsInstallDate
     [DscProperty(NotConfigurable)]
     [string] $InstallDate
 
-    [OsInstallDate] Get()
-    {
+    [OsInstallDate] Get() {
         # Try-Catch isn't a good way to do this, but `[System.DateTimeOffset]::TryParse($this.Before, [ref]$parsedBefore)` is erroring
-        try
-        {
+        try {
             $this.Before = $this.Before ? [System.DateTimeOffset]::Parse($this.Before) : $null
-        }
-        catch
-        {
+        } catch {
             throw "'$($this.Before)' is not a valid Date string."
         }
 
         # Try-Catch isn't a good way to do this, but `[System.DateTimeOffset]::TryParse($this.After, [ref]$parsedAfter)` is erroring
-        try
-        {
+        try {
             $this.After = $this.After ? [System.DateTimeOffset]::Parse($this.After) : $null
-        }
-        catch
-        {
+        } catch {
             throw "'$($this.After)' is not a valid Date string."
         }
 
@@ -199,39 +164,31 @@ class OsInstallDate
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         # this.Get() should always return [System.DateTimeOffset] or $null which can be compared directly
         # $null should always be treated as less than a [System.DateTimeOffset]
         return ($currentState.InstallDate -gt $currentState.After) -and ($currentState.InstallDate -lt $currentState.Before)
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the OS Install Date.
     }
 }
 
 # This is the same function from Microsoft.Windows.Developer, just included here as it seemed to make sense
 [DSCResource()]
-class OsVersion
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class OsVersion {
 
-    [DscProperty(Mandatory)]
+    [DscProperty(Key)]
     [string] $MinVersion
 
     [DscProperty(NotConfigurable)]
     [string] $OsVersion
 
-    [OsVersion] Get()
-    {
+    [OsVersion] Get() {
         $parsedVersion = $null
-        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion))
-        {
+        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion)) {
             throw "'$($this.MinVersion)' is not a valid Version string."
         }
 
@@ -243,33 +200,26 @@ class OsVersion
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return [System.Version]$currentState.OsVersion -ge [System.Version]$currentState.MinVersion
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the os version requirement.
     }
 }
 
 [DSCResource()]
-class CsManufacturer
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class CsManufacturer {
 
-    [DscProperty(Mandatory)]
+    [DscProperty(Key)]
     [string] $RequiredManufacturer
 
     [DscProperty(NotConfigurable)]
     [string] $Manufacturer
 
-    [CsManufacturer] Get()
-    {
+    [CsManufacturer] Get() {
         $this.Manufacturer = Get-ComputerInfo | Select-Object -ExpandProperty CsManufacturer
 
         return @{
@@ -278,33 +228,26 @@ class CsManufacturer
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Manufacturer -eq $currentState.RequiredManufacturer
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the Computer Manufacturer requirement.
     }
 }
 
 [DSCResource()]
-class CsModel
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class CsModel {
 
-    [DscProperty(Mandatory)]
+    [DscProperty(Key)]
     [string] $RequiredModel
 
     [DscProperty(NotConfigurable)]
     [string] $Model
 
-    [CsModel] Get()
-    {
+    [CsModel] Get() {
         $this.Model = Get-ComputerInfo | Select-Object -ExpandProperty CsModel
 
         return @{
@@ -313,26 +256,20 @@ class CsModel
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Model -eq $currentState.RequiredModel
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the Computer Model requirement.
     }
 }
 
 [DSCResource()]
-class CsDomain
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class CsDomain {
 
-    [DscProperty(Mandatory)]
+    [DscProperty(Key)]
     [string] $RequiredDomain
 
     [DscProperty()]
@@ -344,8 +281,7 @@ class CsDomain
     [DscProperty(NotConfigurable)]
     [string] $Role
 
-    [CsDomain] Get()
-    {
+    [CsDomain] Get() {
         $domainInfo = Get-ComputerInfo | Select-Object -Property CsDomain, CsDomainRole
         $this.Domain = $domainInfo.CsDomain
         $this.Role = $domainInfo.CsDomainRole
@@ -358,38 +294,30 @@ class CsDomain
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         if ($currentState.Domain -ne $currentState.RequiredDomain) { return $false } # If domains don't match
         if (!$currentState.RequiredRole) { return $true } # RequiredRole is null and domains match
         return ($currentState.RequiredRole -eq $currentState.Role) # Return whether the roles match
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the Computer Domain requirement.
     }
 }
 
 [DSCResource()]
-class PowerShellVersion
-{
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
+class PowerShellVersion {
 
-    [DscProperty(Mandatory)]
+    [DscProperty(Key)]
     [string] $MinVersion
 
     [DscProperty(NotConfigurable)]
     [string] $PowerShellVersion
 
-    [PowerShellVersion] Get()
-    {
+    [PowerShellVersion] Get() {
         $parsedVersion = $null
-        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion))
-        {
+        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion)) {
             throw "'$($this.MinVersion)' is not a valid Version string."
         }
 
@@ -401,24 +329,21 @@ class PowerShellVersion
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return [System.Version]$currentState.PowerShellVersion -ge [System.Version]$currentState.MinVersion
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the PowerShell version requirement.
     }
 }
 
 [DSCResource()]
-class PnPDevice
-{
-    # Key required. Do not set.
+class PnPDevice {
+
     [DscProperty(Key)]
-    [string]$SID
+    [Ensure] $Ensure
 
     [DscProperty(Mandatory)]
     [string[]] $FriendlyName
@@ -429,8 +354,7 @@ class PnPDevice
     [DscProperty()]
     [PnPDeviceState[]] $Status
 
-    [PnPDevice] Get()
-    {
+    [PnPDevice] Get() {
         $params = @{}
         $params += $this.FriendlyName ? @{FriendlyName = $this.FriendlyName } : @{}
         $params += $this.DeviceClass ? @{Class = $this.DeviceClass } : @{}
@@ -440,22 +364,19 @@ class PnPDevice
 
         # It's possible that multiple PNP devices match, but as long as one matches then the assertion succeeds
         return @{
+            Ensure       = $pnpDevice ? [Ensure]::Present : [Ensure]::Absent
             FriendlyName = $pnpDevice ? $pnpDevice.FriendlyName : $null
             DeviceClass  = $pnpDevice ? $pnpDevice.Class : $null
             Status       = $pnpDevice ? $pnpDevice.Status : [PnPDeviceState]::UNKNOWN
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
-        # If the device wasn't found with the specified parameters, the FriendlyName in the current state will be null
-        # If a device was found, then FriendlyName will not be null
-        return (!!$currentState.FriendlyName)
+        return ($currentState.Ensure -eq $this.Ensure)
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the PnP Device requirement.
     }
 }
