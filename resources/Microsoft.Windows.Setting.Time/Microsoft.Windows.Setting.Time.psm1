@@ -147,7 +147,7 @@ class Time
             Set-TimeZone -Id $this.TimeZone    
         }
 
-        if ($currentState.ShowSystemTrayDateTime -ne $this.ShowSystemTrayDateTime)
+        if (($null -ne $this.ShowSystemTrayDateTime) -and ($currentState.ShowSystemTrayDateTime -ne $this.ShowSystemTrayDateTime))
         {
             $desiredState = [int]$this.ShowSystemTrayDateTime
 
