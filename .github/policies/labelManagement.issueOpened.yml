@@ -71,15 +71,15 @@ configuration:
                 pattern: ^$
           - or:
               - filesMatchPattern:
-                  pattern: ^.github\\.*
+                  pattern: ^\.?[\\\/]?.github[\\\/].*
               - filesMatchPattern:
-                  pattern: ^.configurations\\.*
+                  pattern: ^\.?[\\\/]?.configurations[\\\/].*
               - filesMatchPattern:
-                  pattern: ^.vscode\\.*
+                  pattern: ^\.?[\\\/]?.vscode[\\\/].*
               - filesMatchPattern:
-                  pattern: ^doc\\.*
+                  pattern: ^\.?[\\\/]?doc[\\\/].*
               - filesMatchPattern:
-                  pattern: ^Tools\\.*
+                  pattern: ^\.?[\\\/]?Tools[\\\/].*
               - filesMatchPattern:
                   pattern: ^.*\.md$
               - filesMatchPattern:
