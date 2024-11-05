@@ -34,9 +34,9 @@ Describe 'Pip3Package' {
         $desiredState = @{
             PackageName = 'django'
         }
-        
+
         Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Set -Property $desiredState
-     
+
         $finalState = Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Get -Property $desiredState
         $finalState.PackageName | Should -Be $desiredState.PackageName
         $finalState.Exist | Should -BeTrue
@@ -47,13 +47,13 @@ Describe 'Pip3Package' {
             PackageName = 'flask'
             Version     = '3.0.3'
         }
-        
+
         Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Set -Property $desiredState
-     
+
         $finalState = Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Get -Property $desiredState
         $finalState.PackageName | Should -Be $desiredState.PackageName
         $finalState.Exist | Should -BeTrue
-        $finalState.Version | Should -Be $desiredState.Version  
+        $finalState.Version | Should -Be $desiredState.Version
     }
 
     It 'Updates with specific version' -Skip:(!$IsWindows) {
@@ -61,7 +61,7 @@ Describe 'Pip3Package' {
             PackageName = 'requests'
             Version     = '2.32.2'
         }
-        
+
         Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Set -Property $desiredState
 
         # Now update the package to a newer version
@@ -71,7 +71,7 @@ Describe 'Pip3Package' {
         $finalState = Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Get -Property $desiredState
         $finalState.PackageName | Should -Be $desiredState.PackageName
         $finalState.Exist | Should -BeTrue
-        $finalState.Version | Should -Be $desiredState.Version  
+        $finalState.Version | Should -Be $desiredState.Version
     }
 
     It 'Handles non-existent package gracefully' -Skip:(!$IsWindows) {

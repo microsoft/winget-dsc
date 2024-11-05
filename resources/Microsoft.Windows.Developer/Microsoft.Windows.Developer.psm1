@@ -95,7 +95,7 @@ class DeveloperMode
         {
             $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
             $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
-        
+
             if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))
             {
                 throw "Toggling Developer Mode requires this resource to be run as an Administrator."
@@ -259,7 +259,7 @@ class Taskbar
     [bool] Test()
     {
         $currentState = $this.Get()
-        
+
         if ($this.Alignment -ne [Alignment]::KeepCurrentValue -and $currentState.Alignment -ne $this.Alignment)
         {
             return $false
@@ -317,7 +317,7 @@ class Taskbar
                 SearchBox { 2 }
                 ShowIconAndLabel { 3 }
             }
-            
+
             Set-ItemProperty -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode -Value $desiredSearchboxMode
         }
 
@@ -401,7 +401,7 @@ class WindowsExplorer
     [bool] Test()
     {
         $currentState = $this.Get()
-        
+
         if ($this.FileExtensions -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.FileExtensions -ne $this.FileExtensions)
         {
             return $false
@@ -549,7 +549,7 @@ class EnableDarkMode
         $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name $this.SystemUsesLightTheme
 
         $isDarkModeEnabled = if ($appsUseLightModeValue -eq 0 -and $systemUsesLightModeValue -eq 0) { [Ensure]::Present } else { [Ensure]::Absent }
-        
+
         return @{
             Ensure = $isDarkModeEnabled
         }
@@ -598,7 +598,7 @@ class ShowSecondsInClock
         }
 
         $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.ShowSecondsInSystemClock
-        
+
         return @{
             Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
         }
@@ -640,7 +640,7 @@ class EnableRemoteDesktop
         }
 
         $registryValue = Get-ItemPropertyValue -Path $global:RemoteDesktopRegistryPath  -Name $this.RemoteDesktopKey
-        
+
         # Since the key is a 'deny' type key, 0 == enabled == Present // 1 == disabled == Absent
         return @{
             Ensure = $registryValue ? [Ensure]::Absent : [Ensure]::Present

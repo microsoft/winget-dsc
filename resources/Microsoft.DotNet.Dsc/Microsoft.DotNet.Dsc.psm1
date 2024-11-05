@@ -89,9 +89,9 @@ function Get-DotNetToolArguments
         ToolPathDirectory = "--tool-path {0}"
         Downgrade         = '--allow-downgrade'
     }
-    
+
     $PSBoundParameters.GetEnumerator() | ForEach-Object {
-        if ($mappingTable.ContainsKey($_.Key)) 
+        if ($mappingTable.ContainsKey($_.Key))
         {
             if ($_.Value -ne $false -and -not (([string]::IsNullOrEmpty($_.Value))))
             {
@@ -153,7 +153,7 @@ function Get-InstalledDotNetToolPackages
         [ValidateScript({
                 if (-Not ($_ | Test-Path -PathType Container) )
                 {
-                    throw "Directory does not exist" 
+                    throw "Directory does not exist"
                 }
                 return $true
             })]
@@ -210,7 +210,7 @@ function Get-SemVer($version)
     $major = [int]$matches['major']
     $minor = [int]$matches['minor']
     $patch = [int]$matches['patch']
-    
+
     if ($null -eq $matches['pre']) { $pre = @() }
     else { $pre = $matches['pre'].Split(".") }
 
@@ -220,7 +220,7 @@ function Get-SemVer($version)
         $revision = Get-HighestRevision -InputArray $pre
     }
 
-    return [version]$version = "$major.$minor.$patch.$revision" 
+    return [version]$version = "$major.$minor.$patch.$revision"
 }
 
 function Get-HighestRevision
@@ -306,9 +306,9 @@ function Uninstall-DotNetToolPackage
     )
 
     $installArgument = Get-DotNetToolArguments @PSBoundParameters
-    $arguments = "tool uninstall $installArgument" 
+    $arguments = "tool uninstall $installArgument"
     Write-Verbose -Message "Uninstalling dotnet tool package with arguments: $arguments"
-        
+
     Invoke-DotNet -Command $arguments
 }
 
@@ -365,18 +365,18 @@ $DotNetCliPath = Get-DotNetPath
     This example gets the current state of the .NET tool package 'GitVersion.Tool' in the default directory.
 
 .EXAMPLE
-    PS C:\> Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{ 
-        PackageId = 'GitVersion.Tool'; 
-        Version = '5.6.8'; 
+    PS C:\> Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{
+        PackageId = 'GitVersion.Tool';
+        Version = '5.6.8';
     }
-    
+
     This example installs the .NET tool package 'GitVersion.Tool' version 5.6.8 in the default directory.
 
 .EXAMPLE
-    PS C:\> Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{ 
-        PackageId = 'PowerShell'; 
-        Prerelease = $true; 
-        ToolPathDirectory = 'C:\tools'; 
+    PS C:\> Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{
+        PackageId = 'PowerShell';
+        Prerelease = $true;
+        ToolPathDirectory = 'C:\tools';
     }
 
     This example installs the prerelease version of the .NET tool package 'PowerShell' in the 'C:\tools' directory.
@@ -446,7 +446,7 @@ class DotNetToolPackage
 
             return $currentState
         }
-        
+
         return [DotNetToolPackage]@{
             PackageId         = $this.PackageId
             Version           = $this.Version
@@ -515,7 +515,7 @@ class DotNetToolPackage
 
     #region DotNetToolPackage helper functions
     static [void] GetInstalledPackages()
-    {   
+    {
         [DotNetToolPackage]::InstalledPackages = @{}
 
         foreach ($extension in [DotNetToolPackage]::Export())
@@ -525,7 +525,7 @@ class DotNetToolPackage
     }
 
     static [void] GetInstalledPackages([hashtable] $filterProperties)
-    {   
+    {
         [DotNetToolPackage]::InstalledPackages = @{}
 
         foreach ($extension in [DotNetToolPackage]::Export($filterProperties))
@@ -541,7 +541,7 @@ class DotNetToolPackage
             return
         }
 
-        $params = $this.ToHashTable()   
+        $params = $this.ToHashTable()
 
         Update-DotNetToolpackage @params
         [DotNetToolPackage]::GetInstalledPackages()
@@ -553,7 +553,7 @@ class DotNetToolPackage
         {
             return
         }
-        
+
         $this.Uninstall($false)
         $this.Install($false)
         [DotNetToolPackage]::GetInstalledPackages()
@@ -566,7 +566,7 @@ class DotNetToolPackage
             return
         }
 
-        $params = $this.ToHashTable()   
+        $params = $this.ToHashTable()
 
         Install-DotNetToolpackage @params
         [DotNetToolPackage]::GetInstalledPackages()
