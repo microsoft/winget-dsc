@@ -5,7 +5,7 @@ function New-DscResourceModule
         Creates a new DSC (Desired State Configuration) resource module structure.
 
     .DESCRIPTION
-        The function New-DscResourceModule function creates a new DSC resource module structure with the specified name and description. 
+        The function New-DscResourceModule function creates a new DSC resource module structure with the specified name and description.
         It sets up the necessary directory structure for resources and tests within the given base path.
 
     .PARAMETER DscResourceModule
@@ -22,7 +22,8 @@ function New-DscResourceModule
 
         This command creates a new DSC resource module named 'Microsoft.Windows.Language' with the specified description in the default base path.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Low')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPositionalParameters", "", Justification = "Positional parameters are used for simplicity. Targeting PS 7+")]
     param (
         [Parameter(Mandatory)]
         [string]$DscResourceModule,
@@ -67,9 +68,11 @@ function New-DscResourceModule
 
     if (-not (Test-Path $moduleManifestPath))
     {
-        Write-Verbose -Message ("Creating module manifest in: $moduleManifestPath with")
-        Write-Verbose -Message ($moduleManifestParams | ConvertTo-Json -Depth 10 | Out-String)
-        New-ModuleManifest @moduleManifestParams
+        if ($PSCmdlet.ShouldProcess($moduleManifestPath, 'Create module manifest'))
+        {
+            Write-Verbose -Message ($moduleManifestParams | ConvertTo-Json -Depth 10 | Out-String)
+            New-ModuleManifest @moduleManifestParams
+        }
 
         # Workaround for issue: https://github.com/PowerShell/PowerShell/issues/5922
         $fileContent = Get-Content $moduleManifestPath
@@ -80,14 +83,14 @@ function New-DscResourceModule
         $newPrerelease = "Prerelease = 'alpha'"
         $fileContent = $fileContent -replace '# Prerelease = ''''', $newPrerelease
         # TODO: Add tags
-        
+
         Set-Content -Path $moduleManifestPath -Value $fileContent
     }
 
     $psm1Path = Join-Path -Path $resourcePath -ChildPath "$DscResourceModule.psm1"
     if (-not (Test-Path $psm1Path))
     {
-        $null = New-Item -ItemType File -Path $psm1Path -Force    
+        $null = New-Item -ItemType File -Path $psm1Path -Force
     }
 
     $testsFilePath = Join-Path -Path $testsPath -ChildPath "$DscResourceModule.Tests.ps1"
