@@ -28,13 +28,13 @@ class WindowsSandbox
 
     [DscProperty()]
     [string]$SandboxFolder
-    
+
     [DscProperty()]
     [string]$ReadOnly
 
     [DscProperty()]
     [string]$LogonCommand
-    
+
     [DscProperty()]
     [nullable[Int64]]$MemoryInMB
 
@@ -65,7 +65,7 @@ class WindowsSandbox
         $currentState.WsbFilePath = $this.WsbFilePath
         $windowsSandboxProcess = Get-Process WindowsSandbox -ErrorAction SilentlyContinue
         $currentState.Ensure = $windowsSandboxProcess ? [Ensure]::Present : [Ensure]::Absent
-        
+
         return $currentState
     }
 
@@ -84,12 +84,12 @@ class WindowsSandbox
             return
         }
 
-        # Load the existing wsb file if it exists or create a new one.
+        # Load the existing WSB file if it exists or create a new one.
         if ($this.WsbFilePath)
         {
             if (-not(Test-Path -Path $this.WsbFilePath))
             {
-                throw "The provided wsb file does not exist."
+                throw "The provided WSB file does not exist."
             }
 
             $xml = [xml](Get-Content -Path $this.WsbFilePath)
@@ -101,7 +101,7 @@ class WindowsSandbox
             $root = $xml.CreateElement("Configuration")
             $xml.AppendChild($root)
         }
-        
+
         <# Example Windows Sandbox configuration file (xml):
             <Configuration>
             <VGpu>Disable</VGpu>
@@ -122,7 +122,7 @@ class WindowsSandbox
             <PrinterRedirection>Disable</PrinterRedirection>
             <ClipboardRedirection>Enable</ClipboardRedirection>
             <MemoryInMB>2048</MemoryInMB>
-            </Configuration>            
+            </Configuration>
         #>
 
         # Override existing configurations if exists.
@@ -267,7 +267,7 @@ class WindowsSandbox
             $root.VideoInput = ConvertBoolToEnableDisable($this.VideoInput)
         }
 
-        # Export wsb file and run.
+        # Export WSB file and run.
         $windowsSandboxDscTempDir = "$($env:Temp)\WindowsSandboxDsc"
         if (-not (Test-Path -Path $windowsSandboxDscTempDir))
         {

@@ -22,7 +22,7 @@ The `VSCodeExtension` DSC Resource allows you to install, update, and remove Vis
 **Parameter**|**Attribute**|**DataType**|**Description**|**Allowed Values**
 :-----|:-----|:-----|:-----|:-----
 `Name`|Key|String|The name of the Visual Studio Code extension to manage.|To find extensions in VSCode, check out: https://code.visualstudio.com/docs/editor/extension-marketplace#_find-and-install-an-extension
-`Version`|Optional|String|The version of the Visual Studio Code extension to install. If not specified, the latest version will be installed.| For exampe: `1.0.0`
+`Version`|Optional|String|The version of the Visual Studio Code extension to install. If not specified, the latest version will be installed.| For example: `1.0.0`
 `Exist`|Optional|Boolean|Indicates whether the extension should exist. The default value is `$true`.|`$true`, `$false`
 `Insiders`|Optional|Boolean|Indicates whether to manage the extension for the Insiders version of Visual Studio Code. The default value is `$false`.|`$true`, `$false`
 

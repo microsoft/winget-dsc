@@ -4,7 +4,7 @@
 using namespace System.Collections.Generic
 
 #region Functions
-function Get-Pip3Path 
+function Get-Pip3Path
 {
     if ($IsWindows)
     {
@@ -60,12 +60,12 @@ function Get-Pip3Path
 
         $pipExe = (Get-Command -Name 'pip3' -ErrorAction SilentlyContinue).Source
 
-        if ($pipExe) 
+        if ($pipExe)
         {
             return $pipExe
         }
     }
-    else 
+    else
     {
         throw "Operating system not supported."
     }
@@ -162,7 +162,7 @@ function Invoke-Pip3Uninstall
     $command.Add((Get-PackageNameWithVersion @PSBoundParameters))
     $command.Add($Arguments)
 
-    # '--yes' is needed to ignore confrimation required for uninstalls
+    # '--yes' is needed to ignore confirmation required for uninstalls
     $command.Add("--yes")
     return Invoke-Pip3 -command $command
 }
@@ -176,7 +176,7 @@ function GetPip3CurrentState
         [hashtable[]] $Package,
 
         [Parameter(Mandatory = $true)]
-        [AllowNull()] 
+        [AllowNull()]
         [hashtable] $Parameters
     )
 
@@ -265,13 +265,13 @@ function TryGetRegistryValue
 
         [Parameter(Mandatory = $true)]
         [string]$Property
-    )    
+    )
 
     if (Test-Path -Path $Key)
     {
         try
         {
-            return (Get-ItemProperty -Path $Key | Select-Object -ExpandProperty $Property)     
+            return (Get-ItemProperty -Path $Key | Select-Object -ExpandProperty $Property)
         }
         catch
         {
@@ -381,7 +381,7 @@ class Pip3Package
     {
         if ($this.Test())
         {
-            return 
+            return
         }
 
         $currentPackage = $this.InstalledPackages | Where-Object { $_.PackageName -eq $this.PackageName }
@@ -406,9 +406,9 @@ class Pip3Package
         foreach ($package in $packages)
         {
             $in = [Pip3Package]@{
-                PackageName       = $package.Packagename
+                PackageName       = $package.PackageName
                 Version           = $package.version
-                Exist             = $true 
+                Exist             = $true
                 Arguments         = $null
                 InstalledPackages = $packages
             }
