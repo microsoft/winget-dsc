@@ -22,7 +22,7 @@ The `DisplayLanguage` DSC Resource allows you to set the display language on you
 | **Parameter** | **Attribute** | **DataType** | **Description**                                                                                                                           | **Allowed Values**                                                               |
 | ------------- | ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `LocaleName`  | Mandatory     | String       | The name of the language. This is the language tag that represents the language. For example, `en-US` represents English (United States). | Use the `Get-WinUserLanguageList` to see what language pack have been installed. |
-| `Exist`       | Optional      | Boolean      | Indicates whether the extension should exist. The default value is `$true`.                                                               | `$true`, `$false`                                                                |
+| `Exist`       | Optional      | Boolean      | Indicates whether the language should exist. The default value is `$true`.                                                               | `$true`, `$false`                                                                |
 
 ## EXAMPLES
 
