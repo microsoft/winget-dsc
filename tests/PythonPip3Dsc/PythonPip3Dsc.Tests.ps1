@@ -104,4 +104,31 @@ Describe 'Pip3Package' {
         $finalState = Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Get -Property $desiredState
         $finalState.Exist | Should -BeFalse
     }
+
+    It 'Performs whatif operation successfully' -Skip:(!$IsWindows) {
+        $whatIfState = @{
+            PackageName = 'itsdangerous'
+            Version     = '2.2.0'
+        }
+
+        $pipPackage = [Pip3Package]$whatIfState
+        $whatIf = $pipPackage.WhatIf() | ConvertFrom-Json
+        
+
+        $whatIf.PackageName | Should -Be 'itsdangerous'
+        $whatIf._metaData.whatIf | Should -Contain "Would install itsdangerous-$($whatIfState.Version)"
+    }
+
+    It 'Does not return whatif result if package is invalid' -Skip:(!$IsWindows) {
+        $whatIfState = @{
+            PackageName = 'itsdangerouss'
+        }
+
+        $pipPackage = [Pip3Package]$whatIfState
+        $whatIf = $pipPackage.WhatIf() | ConvertFrom-Json
+        
+
+        $whatIf.PackageName | Should -Be 'itsdangerouss'
+        $whatIf._metaData.whatIf | Should -Contain "ERROR: No matching distribution found for $($whatIfState.PackageName)"
+    }
 }

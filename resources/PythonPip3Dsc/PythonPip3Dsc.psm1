@@ -15,10 +15,7 @@ function Invoke-Process
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [string]$ArgumentList,
-
-        [ValidateSet("Full", "StdOut", "StdErr", "ExitCode", "None")]
-        [string]$DisplayLevel
+        [string]$ArgumentList
     )
 
     try
@@ -36,6 +33,7 @@ function Invoke-Process
         $p.Start() | Out-Null
 
         $stOut = @()
+        # using ReadLine() instead of ReadToEnd() for building array object. ReadToEnd() gave different output than ReadLine() in some cases.
         while (-not $p.StandardOutput.EndOfStream)
         {
             $stOut += $p.StandardOutput.ReadLine()
@@ -58,20 +56,12 @@ function Invoke-Process
 
         $p.WaitForExit()
 
-        if (-not([string]::IsNullOrEmpty($DisplayLevel)))
-        {
-            switch ($DisplayLevel)
-            {
-                "Full" { return $result; break }
-                "StdOut" { return $result.StdOut; break }
-                "StdErr" { return $result.StdErr; break }
-                "ExitCode" { return $result.ExitCode; break }
-            }
-        }
+        return $result
     }
     catch
     {
-        exit 1
+        Write-Verbose -Message "Error occurred while executing the command: $FilePath $ArgumentList. Error:"
+        Write-Verbose -Message $stErr
     }
 }
 
@@ -203,9 +193,11 @@ function Invoke-Pip3Install
         [Parameter()]
         [string]$Version,
 
+        # not explicitly used, only to call from lower functions if parameters are passed
         [Parameter()]
         [switch]$IsUpdate,
 
+        # not explicitly used, only to call from lower functions if parameters are passed
         [Parameter()]
         [switch]$DryRun
     )
@@ -335,11 +327,11 @@ function Invoke-Pip3
 
     if ($global:usePip3Exe)
     {
-        return Invoke-Process -FilePath $global:pip3ExePath -ArgumentList $command -DisplayLevel Full
+        return Invoke-Process -FilePath $global:pip3ExePath -ArgumentList $command
     }
     else
     {
-        return Invoke-Process -FilePath pip3 -ArgumentList $command -DisplayLevel Full
+        return Invoke-Process -FilePath pip3 -ArgumentList $command
     }
 }
 
@@ -491,10 +483,16 @@ class Pip3Package
         {
             $whatIfState = Invoke-Pip3Install -PackageName $this.PackageName -Version $this.Version -Arguments $this.Arguments -DryRun
 
+            $whatIfResult = $whatIfState.StdOut
+            if ($whatIfState.ExitCode -ne 0)
+            {
+                $whatIfResult = $whatIfState.StdErr
+            }
+
             $out = @{
                 PackageName = $this.PackageName
                 _metaData   = @{
-                    whatIf = $whatIfState.StdOut
+                    whatIf = $whatIfResult
                 }
             }
         }
