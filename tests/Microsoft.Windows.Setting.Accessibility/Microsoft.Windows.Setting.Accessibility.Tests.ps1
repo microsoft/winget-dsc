@@ -3,7 +3,7 @@
 # Licensed under the MIT License.
 using module Microsoft.Windows.Setting.Accessibility
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 <#
@@ -12,8 +12,7 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    if ($null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration))
-    {
+    if ($null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
         Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
     }
 
@@ -22,12 +21,12 @@ BeforeAll {
     # Create test registry path.
     New-Item -Path TestRegistry:\ -Name TestKey
     # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
-    $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
+    $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace('HKEY_CURRENT_USER', 'HKCU:')
 }
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Text", "Magnifier", "MousePointer", "VisualEffect", "Audio", "TextCursor", "StickyKeys", "ToggleKeys", "FilterKeys"
+        $expectedDSCResources = 'Text', 'Magnifier', 'MousePointer', 'VisualEffect', 'Audio', 'TextCursor', 'StickyKeys', 'ToggleKeys', 'FilterKeys'
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
         $availableDSCResources.length | Should -Be 9
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
@@ -403,5 +402,5 @@ Describe 'FilterKeys' {
 }
 
 AfterAll {
-    $env:TestRegistryPath = ""
+    $env:TestRegistryPath = ''
 }

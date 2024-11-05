@@ -1,39 +1,34 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-enum Ensure
-{
+enum Ensure {
     Absent
     Present
 }
 
-enum Alignment
-{
+enum Alignment {
     KeepCurrentValue
     Left
     Middle
 }
 
-enum ShowHideFeature
-{
+enum ShowHideFeature {
     KeepCurrentValue
     Hide
     Show
 }
 
-enum HideTaskBarLabelsBehavior
-{
+enum HideTaskBarLabelsBehavior {
     KeepCurrentValue
     Always
     WhenFull
     Never
 }
 
-enum SearchBoxMode
-{
+enum SearchBoxMode {
     KeepCurrentValue
     Hide
     ShowIconOnly
@@ -41,8 +36,7 @@ enum SearchBoxMode
     ShowIconAndLabel
 }
 
-enum AdminConsentPromptBehavior
-{
+enum AdminConsentPromptBehavior {
     KeepCurrentValue
     NoCredOrConsentRequired
     RequireCredOnSecureDesktop
@@ -54,8 +48,7 @@ enum AdminConsentPromptBehavior
 
 #region DSCResources
 [DSCResource()]
-class DeveloperMode
-{
+class DeveloperMode {
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -66,8 +59,7 @@ class DeveloperMode
     [DscProperty(NotConfigurable)]
     [bool] $IsEnabled
 
-    [DeveloperMode] Get()
-    {
+    [DeveloperMode] Get() {
         $this.IsEnabled = IsDeveloperModeEnabled
 
         return @{
@@ -76,29 +68,22 @@ class DeveloperMode
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
-        if ($currentState.Ensure -eq [Ensure]::Present)
-        {
+        if ($currentState.Ensure -eq [Ensure]::Present) {
             return $currentState.IsEnabled
-        }
-        else
-        {
+        } else {
             return $currentState.IsEnabled -eq $false
         }
     }
 
-    [void] Set()
-    {
-        if (!$this.Test())
-        {
+    [void] Set() {
+        if (!$this.Test()) {
             $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
             $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
 
-            if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))
-            {
-                throw "Toggling Developer Mode requires this resource to be run as an Administrator."
+            if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
+                throw 'Toggling Developer Mode requires this resource to be run as an Administrator.'
             }
 
             $shouldEnable = $this.Ensure -eq [Ensure]::Present
@@ -109,8 +94,7 @@ class DeveloperMode
 }
 
 [DSCResource()]
-class OsVersion
-{
+class OsVersion {
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -121,11 +105,9 @@ class OsVersion
     [DscProperty(NotConfigurable)]
     [string] $OsVersion
 
-    [OsVersion] Get()
-    {
+    [OsVersion] Get() {
         $parsedVersion = $null
-        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion))
-        {
+        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion)) {
             throw "'$($this.MinVersion)' is not a valid Version string."
         }
 
@@ -137,34 +119,28 @@ class OsVersion
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return [System.Version]$currentState.OsVersion -ge [System.Version]$currentState.MinVersion
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # This resource is only for asserting the os version requirement.
     }
 }
 
-if ([string]::IsNullOrEmpty($env:TestRegistryPath))
-{
+if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
     $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
     $global:SearchRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\'
     $global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\'
     $global:RemoteDesktopRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
-}
-else
-{
+} else {
     $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
-class Taskbar
-{
+class Taskbar {
     [DscProperty()] [Alignment] $Alignment = [Alignment]::KeepCurrentValue
     [DscProperty()] [HideTaskBarLabelsBehavior] $HideLabelsMode = [HideTaskBarLabelsBehavior]::KeepCurrentValue
     [DscProperty()] [SearchBoxMode] $SearchboxMode = [SearchBoxMode]::KeepCurrentValue
@@ -181,31 +157,23 @@ class Taskbar
     hidden [string] $ShowTaskViewButton = 'ShowTaskViewButton'
     hidden [string] $TaskbarDa = 'TaskbarDa'
 
-    [Taskbar] Get()
-    {
+    [Taskbar] Get() {
         $currentState = [Taskbar]::new()
 
         # Alignment
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl)) {
             $currentState.Alignment = [Alignment]::Middle
-        }
-        else
-        {
+        } else {
             $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl)
             $currentState.Alignment = $value -eq 0 ? [Alignment]::Left : [Alignment]::Middle
         }
 
         # HideTaskBarLabels
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel)) {
             $currentState.HideLabelsMode = [HideTaskBarLabelsBehavior]::Always
-        }
-        else
-        {
+        } else {
             $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel)
-            $currentState.HideLabelsMode = switch ($value)
-            {
+            $currentState.HideLabelsMode = switch ($value) {
                 0 { [HideTaskBarLabelsBehavior]::Always }
                 1 { [HideTaskBarLabelsBehavior]::WhenFull }
                 2 { [HideTaskBarLabelsBehavior]::Never }
@@ -213,15 +181,11 @@ class Taskbar
         }
 
         # TaskbarSearchboxMode
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode)) {
             $currentState.SearchboxMode = [SearchBoxMode]::SearchBox
-        }
-        else
-        {
+        } else {
             $value = [int](Get-ItemPropertyValue -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode)
-            $currentState.SearchboxMode = switch ($value)
-            {
+            $currentState.SearchboxMode = switch ($value) {
                 0 { [SearchBoxMode]::Hide }
                 1 { [SearchBoxMode]::ShowIconOnly }
                 2 { [SearchBoxMode]::SearchBox }
@@ -230,25 +194,19 @@ class Taskbar
         }
 
         # TaskViewButton
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton)) {
             # Default behavior if registry key not found.
             $currentState.TaskViewButton = [ShowHideFeature]::Show
-        }
-        else
-        {
+        } else {
             $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton)
             $currentState.TaskViewButton = $value -eq 0 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
         }
 
         # WidgetsButton
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarDa))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarDa)) {
             # Default behavior if registry key not found.
             $currentState.WidgetsButton = [ShowHideFeature]::Show
-        }
-        else
-        {
+        } else {
             $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarDa)
             $currentState.WidgetsButton = $value -eq 0 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
         }
@@ -256,50 +214,40 @@ class Taskbar
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
 
-        if ($this.Alignment -ne [Alignment]::KeepCurrentValue -and $currentState.Alignment -ne $this.Alignment)
-        {
+        if ($this.Alignment -ne [Alignment]::KeepCurrentValue -and $currentState.Alignment -ne $this.Alignment) {
             return $false
         }
 
-        if ($this.HideLabelsMode -ne [HideTaskBarLabelsBehavior]::KeepCurrentValue -and $currentState.HideLabelsMode -ne $this.HideLabelsMode)
-        {
+        if ($this.HideLabelsMode -ne [HideTaskBarLabelsBehavior]::KeepCurrentValue -and $currentState.HideLabelsMode -ne $this.HideLabelsMode) {
             return $false
         }
 
-        if ($this.SearchboxMode -ne [SearchBoxMode]::KeepCurrentValue -and $currentState.SearchboxMode -ne $this.SearchboxMode)
-        {
+        if ($this.SearchboxMode -ne [SearchBoxMode]::KeepCurrentValue -and $currentState.SearchboxMode -ne $this.SearchboxMode) {
             return $false
         }
 
-        if ($this.TaskViewButton -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.TaskViewButton -ne $this.TaskViewButton)
-        {
+        if ($this.TaskViewButton -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.TaskViewButton -ne $this.TaskViewButton) {
             return $false
         }
 
-        if ($this.WidgetsButton -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.WidgetsButton -ne $this.WidgetsButton)
-        {
+        if ($this.WidgetsButton -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.WidgetsButton -ne $this.WidgetsButton) {
             return $false
         }
 
         return $true
     }
 
-    [void] Set()
-    {
-        if ($this.Alignment -ne [Alignment]::KeepCurrentValue)
-        {
+    [void] Set() {
+        if ($this.Alignment -ne [Alignment]::KeepCurrentValue) {
             $desiredAlignment = $this.Alignment -eq [Alignment]::Left ? 0 : 1
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl -Value $desiredAlignment
         }
 
-        if ($this.HideLabelsMode -ne [HideTaskBarLabelsBehavior]::KeepCurrentValue)
-        {
-            $desiredHideLabelsBehavior = switch ($this.HideLabelsMode)
-            {
+        if ($this.HideLabelsMode -ne [HideTaskBarLabelsBehavior]::KeepCurrentValue) {
+            $desiredHideLabelsBehavior = switch ($this.HideLabelsMode) {
                 Always { 0 }
                 WhenFull { 1 }
                 Never { 2 }
@@ -308,10 +256,8 @@ class Taskbar
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarGlomLevel -Value $desiredHideLabelsBehavior
         }
 
-        if ($this.SearchboxMode -ne [SearchBoxMode]::KeepCurrentValue)
-        {
-            $desiredSearchboxMode = switch ([SearchBoxMode]($this.SearchboxMode))
-            {
+        if ($this.SearchboxMode -ne [SearchBoxMode]::KeepCurrentValue) {
+            $desiredSearchboxMode = switch ([SearchBoxMode]($this.SearchboxMode)) {
                 Hide { 0 }
                 ShowIconOnly { 1 }
                 SearchBox { 2 }
@@ -321,20 +267,17 @@ class Taskbar
             Set-ItemProperty -Path $global:SearchRegistryPath -Name $this.SearchboxTaskbarMode -Value $desiredSearchboxMode
         }
 
-        if ($this.TaskViewButton -ne [ShowHideFeature]::KeepCurrentValue)
-        {
+        if ($this.TaskViewButton -ne [ShowHideFeature]::KeepCurrentValue) {
             $desiredTaskViewButtonState = $this.TaskViewButton -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowTaskViewButton -Value $desiredTaskViewButtonState
         }
 
-        if ($this.WidgetsButton -ne [ShowHideFeature]::KeepCurrentValue)
-        {
+        if ($this.WidgetsButton -ne [ShowHideFeature]::KeepCurrentValue) {
             $desiredWidgetsButtonState = $this.WidgetsButton -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskBarDa -Value $desiredWidgetsButtonState
         }
 
-        if ($this.RestartExplorer)
-        {
+        if ($this.RestartExplorer) {
             # Explorer needs to be restarted to enact the changes for HideLabelsMode.
             taskkill /F /IM explorer.exe
             Start-Process explorer.exe
@@ -343,8 +286,7 @@ class Taskbar
 }
 
 [DSCResource()]
-class WindowsExplorer
-{
+class WindowsExplorer {
     [DscProperty()] [ShowHideFeature] $FileExtensions = [ShowHideFeature]::KeepCurrentValue
     [DscProperty()] [ShowHideFeature] $HiddenFiles = [ShowHideFeature]::KeepCurrentValue
     [DscProperty()] [ShowHideFeature] $ItemCheckBoxes = [ShowHideFeature]::KeepCurrentValue
@@ -357,39 +299,29 @@ class WindowsExplorer
     hidden [string] $Hidden = 'Hidden'
     hidden [string] $AutoCheckSelect = 'AutoCheckSelect'
 
-    [WindowsExplorer] Get()
-    {
+    [WindowsExplorer] Get() {
         $currentState = [WindowsExplorer]::new()
 
         # FileExtensions
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.HideFileExt))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.HideFileExt)) {
             $currentState.FileExtensions = [ShowHideFeature]::Show
-        }
-        else
-        {
+        } else {
             $value = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.HideFileExt
             $currentState.FileExtensions = $value -eq 1 ? [ShowHideFeature]::Hide : [ShowHideFeature]::Show
         }
 
         # HiddenFiles
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.Hidden))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.Hidden)) {
             $currentState.HiddenFiles = [ShowHideFeature]::Show
-        }
-        else
-        {
+        } else {
             $value = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.Hidden
             $currentState.HiddenFiles = $value -eq 1 ? [ShowHideFeature]::Show : [ShowHideFeature]::Hide
         }
 
         # ItemCheckboxes
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.AutoCheckSelect))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.AutoCheckSelect)) {
             $currentState.ItemCheckBoxes = [ShowHideFeature]::Show
-        }
-        else
-        {
+        } else {
             $value = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.AutoCheckSelect
             $currentState.ItemCheckBoxes = $value -eq 1 ? [ShowHideFeature]::Show : [ShowHideFeature]::Hide
         }
@@ -398,50 +330,41 @@ class WindowsExplorer
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
 
-        if ($this.FileExtensions -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.FileExtensions -ne $this.FileExtensions)
-        {
+        if ($this.FileExtensions -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.FileExtensions -ne $this.FileExtensions) {
             return $false
         }
 
-        if ($this.HiddenFiles -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.HiddenFiles -ne $this.HiddenFiles)
-        {
+        if ($this.HiddenFiles -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.HiddenFiles -ne $this.HiddenFiles) {
             return $false
         }
 
-        if ($this.ItemCheckBoxes -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.ItemCheckBoxes -ne $this.ItemCheckBoxes)
-        {
+        if ($this.ItemCheckBoxes -ne [ShowHideFeature]::KeepCurrentValue -and $currentState.ItemCheckBoxes -ne $this.ItemCheckBoxes) {
             return $false
         }
 
         return $true
     }
 
-    [void] Set()
-    {
-        if ($this.FileExtensions -ne [ShowHideFeature]::KeepCurrentValue)
-        {
+    [void] Set() {
+        if ($this.FileExtensions -ne [ShowHideFeature]::KeepCurrentValue) {
             $desiredFileExtensions = $this.FileExtensions -eq [ShowHideFeature]::Show ? 0 : 1
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HideFileExt -Value $desiredFileExtensions
         }
 
-        if ($this.HiddenFiles -ne [ShowHideFeature]::KeepCurrentValue)
-        {
+        if ($this.HiddenFiles -ne [ShowHideFeature]::KeepCurrentValue) {
             $desiredHiddenFiles = $this.HiddenFiles -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.Hidden -Value $desiredHiddenFiles
         }
 
-        if ($this.ItemCheckBoxes -ne [ShowHideFeature]::KeepCurrentValue)
-        {
+        if ($this.ItemCheckBoxes -ne [ShowHideFeature]::KeepCurrentValue) {
             $desiredItemCheckBoxes = $this.ItemCheckBoxes -eq [ShowHideFeature]::Show ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.AutoCheckSelect -Value $desiredItemCheckBoxes
         }
 
-        if ($this.RestartExplorer)
-        {
+        if ($this.RestartExplorer) {
             # Explorer needs to be restarted to enact the changes.
             taskkill /F /IM explorer.exe
             Start-Process explorer.exe
@@ -450,8 +373,7 @@ class WindowsExplorer
 }
 
 [DSCResource()]
-class UserAccessControl
-{
+class UserAccessControl {
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -463,19 +385,14 @@ class UserAccessControl
 
     # NOTE: 'EnableLUA' is another registry key that disables UAC prompts, but requires a reboot and opens everything in admin mode.
 
-    [UserAccessControl] Get()
-    {
+    [UserAccessControl] Get() {
         $currentState = [UserAccessControl]::new()
 
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin))
-        {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin)) {
             $currentState.AdminConsentPromptBehavior = [AdminConsentPromptBehavior]::RequireConsentForNonWindowsBinaries
-        }
-        else
-        {
+        } else {
             $value = [int](Get-ItemPropertyValue -Path $global:UACRegistryPath -Name $this.ConsentPromptBehaviorAdmin)
-            $currentState.AdminConsentPromptBehavior = switch ($value)
-            {
+            $currentState.AdminConsentPromptBehavior = switch ($value) {
                 0 { [AdminConsentPromptBehavior]::NoCredOrConsentRequired }
                 1 { [AdminConsentPromptBehavior]::RequireCredOnSecureDesktop }
                 2 { [AdminConsentPromptBehavior]::RequireConsentOnSecureDesktop }
@@ -488,24 +405,19 @@ class UserAccessControl
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
 
-        if ($this.AdminConsentPromptBehavior -ne [AdminConsentPromptBehavior]::KeepCurrentValue -and $currentState.AdminConsentPromptBehavior -ne $this.AdminConsentPromptBehavior)
-        {
+        if ($this.AdminConsentPromptBehavior -ne [AdminConsentPromptBehavior]::KeepCurrentValue -and $currentState.AdminConsentPromptBehavior -ne $this.AdminConsentPromptBehavior) {
             return $false
         }
 
         return $true
     }
 
-    [void] Set()
-    {
-        if ($this.AdminConsentPromptBehavior -ne [AdminConsentPromptBehavior]::KeepCurrentValue)
-        {
-            $desiredState = switch ([AdminConsentPromptBehavior]($this.AdminConsentPromptBehavior))
-            {
+    [void] Set() {
+        if ($this.AdminConsentPromptBehavior -ne [AdminConsentPromptBehavior]::KeepCurrentValue) {
+            $desiredState = switch ([AdminConsentPromptBehavior]($this.AdminConsentPromptBehavior)) {
                 NoCredOrConsentRequired { 0 }
                 RequireCredOnSecureDesktop { 1 }
                 RequireConsentOnSecureDesktop { 2 }
@@ -520,8 +432,7 @@ class UserAccessControl
 }
 
 [DSCResource()]
-class EnableDarkMode
-{
+class EnableDarkMode {
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -535,18 +446,16 @@ class EnableDarkMode
     hidden [string] $AppsUseLightTheme = 'AppsUseLightTheme'
     hidden [string] $SystemUsesLightTheme = 'SystemUsesLightTheme'
 
-    [EnableDarkMode] Get()
-    {
+    [EnableDarkMode] Get() {
         $exists = (DoesRegistryKeyPropertyExist -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme) -and (DoesRegistryKeyPropertyExist -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme)
-        if (-not($exists))
-        {
+        if (-not($exists)) {
             return @{
                 Ensure = [Ensure]::Absent
             }
         }
 
-        $appsUseLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name $this.AppsUseLightTheme
-        $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath  -Name $this.SystemUsesLightTheme
+        $appsUseLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme
+        $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme
 
         $isDarkModeEnabled = if ($appsUseLightModeValue -eq 0 -and $systemUsesLightModeValue -eq 0) { [Ensure]::Present } else { [Ensure]::Absent }
 
@@ -555,20 +464,17 @@ class EnableDarkMode
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         $value = if ($this.Ensure -eq [Ensure]::Present) { 0 } else { 1 }
         Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme -Value $value
         Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme -Value $value
 
-        if ($this.RestartExplorer)
-        {
+        if ($this.RestartExplorer) {
             # Explorer needs to be restarted to enact the changes.
             Stop-Process -ProcessName Explorer
         }
@@ -576,8 +482,7 @@ class EnableDarkMode
 }
 
 [DSCResource()]
-class ShowSecondsInClock
-{
+class ShowSecondsInClock {
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -587,39 +492,34 @@ class ShowSecondsInClock
 
     hidden [string] $ShowSecondsInSystemClock = 'ShowSecondsInSystemClock'
 
-    [ShowSecondsInClock] Get()
-    {
+    [ShowSecondsInClock] Get() {
         $exists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock
-        if (-not($exists))
-        {
+        if (-not($exists)) {
             return @{
                 Ensure = [Ensure]::Absent
             }
         }
 
-        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath  -Name $this.ShowSecondsInSystemClock
+        $registryValue = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock
 
         return @{
             Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
         Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.ShowSecondsInSystemClock -Value $value
     }
 }
 
 [DSCResource()]
-class EnableRemoteDesktop
-{
+class EnableRemoteDesktop {
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -629,17 +529,15 @@ class EnableRemoteDesktop
 
     hidden [string] $RemoteDesktopKey = 'fDenyTSConnections'
 
-    [EnableRemoteDesktop] Get()
-    {
+    [EnableRemoteDesktop] Get() {
         $exists = DoesRegistryKeyPropertyExist -Path $global:RemoteDesktopRegistryPath -Name $this.RemoteDesktopKey
-        if (-not($exists))
-        {
+        if (-not($exists)) {
             return @{
                 Ensure = [Ensure]::Absent
             }
         }
 
-        $registryValue = Get-ItemPropertyValue -Path $global:RemoteDesktopRegistryPath  -Name $this.RemoteDesktopKey
+        $registryValue = Get-ItemPropertyValue -Path $global:RemoteDesktopRegistryPath -Name $this.RemoteDesktopKey
 
         # Since the key is a 'deny' type key, 0 == enabled == Present // 1 == disabled == Absent
         return @{
@@ -647,14 +545,12 @@ class EnableRemoteDesktop
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # Since the key is a 'deny' type key, 0 == enabled == Present // 1 == disabled == Absent
         $value = ($this.Ensure -eq [Ensure]::Present) ? 0 : 1
         Set-ItemProperty -Path $global:RemoteDesktopRegistryPath -Name $this.RemoteDesktopKey -Value $value
@@ -666,29 +562,23 @@ class EnableRemoteDesktop
 $AppModelUnlockRegistryKeyPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
 $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
 
-function IsDeveloperModeEnabled
-{
-    try
-    {
+function IsDeveloperModeEnabled {
+    try {
         $property = Get-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName
         return $property.AllowDevelopmentWithoutDevLicense -eq 1
-    }
-    catch
-    {
+    } catch {
         # This will throw an exception if the registry path or property does not exist.
-        return $false;
+        return $false
     }
 }
 
-function SetDeveloperMode
-{
+function SetDeveloperMode {
     param (
         [Parameter(Mandatory)]
         [bool]$Enable
     )
 
-    if (-not (Test-Path -Path $AppModelUnlockRegistryKeyPath))
-    {
+    if (-not (Test-Path -Path $AppModelUnlockRegistryKeyPath)) {
         New-Item -Path $AppModelUnlockRegistryKeyPath -Force | Out-Null
     }
 
@@ -696,8 +586,7 @@ function SetDeveloperMode
     New-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName -Value $developerModeValue -PropertyType DWORD -Force | Out-Null
 }
 
-function DoesRegistryKeyPropertyExist
-{
+function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]
         [string]$Path,
@@ -707,7 +596,7 @@ function DoesRegistryKeyPropertyExist
     )
 
     # Get-ItemProperty will return $null if the registry key property does not exist.
-    $itemProperty = Get-ItemProperty -Path $Path  -Name $Name -ErrorAction SilentlyContinue
+    $itemProperty = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
     return $null -ne $itemProperty
 }
 
