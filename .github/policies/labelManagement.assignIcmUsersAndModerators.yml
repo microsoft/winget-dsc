@@ -6,32 +6,32 @@ resource: repository
 disabled: false
 where:
 configuration:
-    resourceManagementConfiguration:
-        eventResponderTasks:
-            - description: >-
-                  When any label below is added to a PR
-                  * Assign the ICM users
-            - if:
-                  - payloadType: Pull_Request
-                  - or:
-                        - labelAdded:
-                              label: Needs-Attention
-                        - labelAdded:
-                              label: Internal-Error
-                        - labelAdded:
-                              label: Author-Not-Authorized
-              then:
-                  - assignTo:
-                        user: ryfu-msft
-              #   - assignIcmUsers:
-              #       teamId: 85579
-              #       primary: True
-              #       secondary: False
-              #   - assignIcmUsers:
-              #       teamId: 85579
-              #       primary: False
-              #       secondary: True
-              # The policy service should trigger even when the label was added by the policy service
-              triggerOnOwnActions: true
+  resourceManagementConfiguration:
+    eventResponderTasks:
+      - description: >-
+          When any label below is added to a PR
+          * Assign the ICM users
+      - if:
+          - payloadType: Pull_Request
+          - or:
+              - labelAdded:
+                  label: Needs-Attention
+              - labelAdded:
+                  label: Internal-Error
+              - labelAdded:
+                  label: Author-Not-Authorized
+        then:
+          - assignTo:
+              user: ryfu-msft
+        #   - assignIcmUsers:
+        #       teamId: 85579
+        #       primary: True
+        #       secondary: False
+        #   - assignIcmUsers:
+        #       teamId: 85579
+        #       primary: False
+        #       secondary: True
+        # The policy service should trigger even when the label was added by the policy service
+        triggerOnOwnActions: true
 onFailure:
 onSuccess:
