@@ -79,6 +79,7 @@ jobs:
           extra_dictionaries: cspell:software-terms/src/software-terms.txt
             cspell:filetypes/filetypes.txt
             cspell:powershell/powershell.txt
+            https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/win32/src/generator/win32.txt
           check_extra_dictionaries: ''
 
   comment-push:
