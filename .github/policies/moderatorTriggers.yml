@@ -66,6 +66,14 @@ configuration:
                       label: Needs-Attention
                   - addLabel:
                       label: Blocking-Issue
+              # GitDsc
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Gg]it\.[Dd][Ss][Cc]'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: GitDsc
               # Help-Wanted
               - if:
                   - commentContains:
@@ -106,6 +114,62 @@ configuration:
                 then:
                   - addLabel:
                       label: Issue-Feature
+              # Microsoft.DotNet.Dsc
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Dd]otnet\.[Dd][Ss][Cc]'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.DotNet.Dsc
+              # Microsoft.VSCode.Dsc
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Vv][Ss][Cc]ode\.[Dd][Ss][Cc]'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.VSCode.Dsc
+              # Microsoft.Windows.Developer
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Dd]eveloper'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.Windows.Developer
+              # Microsoft.Windows.Setting.Accessibility
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings?\.[Aa]ccessibility'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.Windows.Setting.Accessibility
+              # Microsoft.Windows.Setting.Language
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings?\.[Ll]anguage'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.Windows.Setting.Language
+              # Microsoft.Windows.Setting.System
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings?\.[Ss]ystem'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.Windows.Setting.System
+              # Microsoft.Windows.Setting
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings?'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.Windows.Setting
               # Moderator-Approved
               # - if:
               #       - commentContains:
@@ -115,6 +179,14 @@ configuration:
               #       - addLabel:
               #             label: Moderator-Approved
               # Needs-Attention
+              # NpmDsc
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Nn][Pp][Mm]\.[Dd][Ss][Cc]'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: NpmDsc
               - if:
                   - commentContains:
                       pattern: '\[[Pp]olicy\]\s+[Nn]eeds[\s-][Aa]ttention'
@@ -147,6 +219,14 @@ configuration:
                 then:
                   - addLabel:
                       label: Needs-CLA
+              # PythonPip3Dsc
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Pp]ython[Pp]ip3?[Dd][Ss][Cc]'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: PythonPip3Dsc
               # PSA
               - if:
                   - commentContains:
@@ -155,6 +235,14 @@ configuration:
                 then:
                   - addLabel:
                       label: Public-Service-Announcement
+              # YarnDsc
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Yy]arn\.[Dd][Ss][Cc]'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: YarnDsc
               # Unblocked
               - if:
                   - commentContains:
