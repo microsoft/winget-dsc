@@ -85,8 +85,7 @@
         'GitClone',
         'GitRemote',
         'GitConfigUserName',
-        'GitConfigUserEmail',
-        'GitConfigFile'
+        'GitConfigUserEmail'
     )
 
     # List of all modules packaged with this module
@@ -99,9 +98,22 @@
     PrivateData          = @{
 
         PSData = @{
+
+            # Tags applied to this module. These help with module discovery in online galleries.
+            Tags       = @(
+                'PSDscResource_GitClone',
+                'PSDscResource_GitRemote',
+                'PSDscResource_GitConfigUserName',
+                'PSDscResource_GitConfigUserEmail'
+            )
+
             # A URL to the license for this module.
             # LicenseUri = ''
-            Tags       = @('PSDscResource_GitClone', 'PSDscResource_GitRemote', 'PSDscResource_GitConfigUserName', 'PSDscResource_GitConfigUserEmail')
+
+            # A URL to the main website for this project.
+            # ProjectUri = ''
+
+            # A URL to an icon representing this module.
             # IconUri = ''
 
             # ReleaseNotes of this module
@@ -120,13 +132,6 @@
 
     } # End of PrivateData hashtable
 
-    # HelpInfo URI of this module
-    # HelpInfoURI = ''
-
-    # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-    # DefaultCommandPrefix = ''
-
-}
     # HelpInfo URI of this module
     # HelpInfoURI = ''
 
