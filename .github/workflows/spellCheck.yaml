@@ -77,8 +77,8 @@ jobs:
           use_magic_file: 1
           extra_dictionary_limit: 10
           extra_dictionaries: cspell:software-terms/src/software-terms.txt
-            cspell:filetypes/src/filetypes.txt
-            cspell:powershell/src/powershell.txt
+            cspell:filetypes/filetypes.txt
+            cspell:powershell/powershell.txt
           check_extra_dictionaries: ''
 
   comment-push:
