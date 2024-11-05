@@ -1,6 +1,12 @@
 wildcards
 ssh
-api
 Amd
 usr
 screenshots
+currentstate
+Scrollbars
+Searchbox
+VGpu
+versioning
+worktree
+sortby

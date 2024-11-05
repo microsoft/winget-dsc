@@ -38,7 +38,7 @@
 
 # s.b. nonexistent
 \bnon existing\b
-\b[Nn]o[nt][- ]existent\b
+# \b[Nn]o[nt][- ]existent\b
 
 # s.b. preexisting
 [Pp]re[- ]existing

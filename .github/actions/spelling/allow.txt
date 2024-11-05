@@ -3,6 +3,7 @@ apps
 appwiz
 appx
 arp
+checkbox
 checkboxes
 cla
 codeowner
@@ -28,3 +29,11 @@ website
 winget
 workflows
 yml
+gitversion
+globaltool
+nonexistentpackage
+inaries
+prerel
+uilt
+Windo
+ELSPROBLEMS

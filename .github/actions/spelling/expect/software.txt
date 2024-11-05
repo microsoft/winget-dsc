@@ -1,8 +1,8 @@
-numpy
-pypi
 vscode
-Npm
-npm
-Django
 Linux
 dotnet
+dotnettool
+cspell
+NUnit
+reportgenerator
+Toolpackage

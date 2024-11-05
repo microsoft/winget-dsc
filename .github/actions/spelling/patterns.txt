@@ -56,3 +56,15 @@
 
 # Variations on URI
 [Ui][Rr][IiLl]
+
+# Variations on WSB
+[Ww][Ss][Bb]
+
+# GUIDS
+\w{8}-(?:\w{4}-){3}\w{12}
+
+# Resource Names
+name\:\s+.+$
+
+# Commit Hashes
+[0-9a-f]{40}
