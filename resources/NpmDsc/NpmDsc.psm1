@@ -176,7 +176,7 @@ class NpmPackage
 function Assert-Npm
 {
     # Refresh session $path value before invoking 'npm'
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
     try
     {
         Invoke-Npm -Command 'help'

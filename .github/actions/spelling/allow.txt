@@ -1,6 +1,5 @@
 admins
 apps
-appsandfeaturesentries
 appwiz
 appx
 arp
@@ -10,12 +9,15 @@ codeowner
 codeowners
 github
 https
+Icm
 microsoft
 MSFT
 msftbot
+numpy
 opencode
 opensource
 toolset
+UAC
 unassign
 ubuntu
 uninstall
