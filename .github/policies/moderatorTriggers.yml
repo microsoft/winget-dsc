@@ -69,7 +69,7 @@ configuration:
               # GitDsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Gg]it\.[Dd][Ss][Cc]'
+                      pattern: '\[[Pp]olicy\]\s+[Gg]it[Dd][Ss][Cc]'
                       isRegex: True
                 then:
                   - addLabel:
@@ -117,7 +117,7 @@ configuration:
               # Microsoft.DotNet.Dsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Dd]otnet\.[Dd][Ss][Cc]'
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Dd]ot[Nn]et\.[Dd][Ss][Cc]'
                       isRegex: True
                 then:
                   - addLabel:
@@ -246,7 +246,7 @@ configuration:
               # YarnDsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Yy]arn\.[Dd][Ss][Cc]'
+                      pattern: '\[[Pp]olicy\]\s+[Yy]arn[Dd][Ss][Cc]'
                       isRegex: True
                 then:
                   - addLabel:
