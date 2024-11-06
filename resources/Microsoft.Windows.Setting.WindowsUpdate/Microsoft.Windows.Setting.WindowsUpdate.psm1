@@ -5,8 +5,7 @@ $global:WindowsUpdateSettingPath = 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Se
 $global:DeliveryOptimizationSettingPath = 'Registry::HKEY_USERS\S-1-5-20\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Settings'
 
 #region Functions
-function DoesRegistryKeyPropertyExist
-{
+function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]
         [string]$Path,
@@ -20,8 +19,7 @@ function DoesRegistryKeyPropertyExist
     return $null -ne $itemProperty
 }
 
-function Test-WindowsUpdateRegistryKey 
-{
+function Test-WindowsUpdateRegistryKey {
     param (
         [Parameter(Mandatory)]
         [hashtable] $RegistryKeyProperty,
@@ -31,11 +29,9 @@ function Test-WindowsUpdateRegistryKey
     )
 
     $result = $true
-    foreach ($key in $RegistryKeyProperty.Keys)
-    {
+    foreach ($key in $RegistryKeyProperty.Keys) {
         $value = $RegistryKeyProperty[$key]
-        if ($value -ne $CurrentState.$key)
-        {
+        if ($value -ne $CurrentState.$key) {
             $result = $false
         }
     }
@@ -43,8 +39,7 @@ function Test-WindowsUpdateRegistryKey
     return $result
 }
 
-function Set-WindowsUpdateRegistryKey
-{
+function Set-WindowsUpdateRegistryKey {
     param (
         [Parameter(Mandatory)]
         [string]$Path,
@@ -54,32 +49,19 @@ function Set-WindowsUpdateRegistryKey
         [hashtable] $RegistryKeyProperty
     )
 
-    if (-not (Test-Path -Path $Path))
-    {
+    if (-not (Test-Path -Path $Path)) {
         $null = New-Item -Path $Path -Force
     }
 
-    foreach ($key in $RegistryKeyProperty.Keys)
-    {
+    foreach ($key in $RegistryKeyProperty.Keys) {
         $value = $RegistryKeyProperty[$key]
         $typeInfo = $value.GetType().Name
 
-        if ($typeInfo -eq 'Boolean')
-        {
+        if ($typeInfo -eq 'Boolean') {
             $value = [int]$value
         }
 
-        # validate the value of UserChoiceActiveHoursEnd and UserChoiceActiveHoursStart to be between 0 and 24
-        Assert-UserChoiceValue -KeyName $key -Value $value
-
-        # validate the value of DownloadRateBackgroundPct, DownloadRateForegroundPct and UpRatePctBandwith to be between 0 and 100
-        Assert-RatePercentageValue -KeyName $key -Value $value
-
-        # validate the value of UpRatePctBandwith to be between 5 and 500
-        Assert-UpRateValue -KeyName $key -Value $value
-
-        if (-not (DoesRegistryKeyPropertyExist -Path $Path -Name $key))
-        {
+        if (-not (DoesRegistryKeyPropertyExist -Path $Path -Name $key)) {
             $null = New-ItemProperty -Path $Path -Name $key -Value $value -PropertyType 'DWord' -Force  
         }
 
@@ -88,92 +70,35 @@ function Set-WindowsUpdateRegistryKey
     }
 } 
 
-function Assert-UpRateValue 
-{
-    param (
-        [Parameter(Mandatory)]
-        [string] $KeyName,
-
-        [Parameter(Mandatory)]
-        [int] $Value
-    )
-
-    if ($KeyName -eq 'UpRatePctBandwidth' -and $Value -notin (5..500))
-    {
-        Throw "You are specifying a percentage value, which must be between 5 and 500. The value you provided is $Value. Please provide a value between 5 and 500."
-    }
-}
-
-function Assert-RatePercentageValue
-{
-    param (
-        [Parameter(Mandatory)]
-        [string] $KeyName,
-
-        [Parameter(Mandatory)]
-        [int] $Value
-    )
-
-    if ($KeyName -in ('DownloadRateBackgroundPct', 'DownloadRateForegroundPct', 'UpRatePctBandwidth') -and $Value -notin (0..100))
-    {
-        # TODO: It might be beneficial to add `Reasons` and not throw, only return statement
-        Throw "You are specifying a percentage value, which must be between 0 and 100. The value you provided is $Value. Please provide a value between 0 and 100."
-    }
-}
-
-function Assert-UserChoiceValue 
-{
-    param (
-        [Parameter(Mandatory)]
-        [string] $KeyName,
-
-        [Parameter(Mandatory)]
-        [int] $Value
-    )
-
-    if ($KeyName -in ('UserChoiceActiveHoursEnd', 'UserChoiceActiveHoursStart') -and $Value -notin (0..24))
-    {
-        Throw "Value must be between 0 and 24"
-    }
-}
-
-function Assert-DownloadRate
-{
+function Assert-DownloadRate {
     param (
         [Parameter(Mandatory)]
         [hashtable] $Parameters
     )
 
-    if ($Parameters.ContainsKey('DownloadRateBackgroundPct') -or $Parameters.ContainsKey('DownloadRateForegroundPct'))
-    {
-        if ($Parameters.ContainsKey('DownloadRateBackgroundBps') -or $Parameters.ContainsKey('DownloadRateForegroundBps'))
-        {
-            Throw "Cannot set both DownloadRateBackgroundPct/DownloadRateForegroundPct and DownloadRateBackgroundBps/DownloadRateForegroundBps"
+    if ($Parameters.ContainsKey('DownloadRateBackgroundPct') -or $Parameters.ContainsKey('DownloadRateForegroundPct')) {
+        if ($Parameters.ContainsKey('DownloadRateBackgroundBps') -or $Parameters.ContainsKey('DownloadRateForegroundBps')) {
+            Throw 'Cannot set both DownloadRateBackgroundPct/DownloadRateForegroundPct and DownloadRateBackgroundBps/DownloadRateForegroundBps'
         }
     }
 }
 
-function Initialize-WindowsUpdate 
-{
+function Initialize-WindowsUpdate {
     $class = [WindowsUpdate]::new()
 
     $hiddenProperties = $class | Get-Member -Static -Force | Where-Object { $_.MemberType -eq 'Property' } | Select-Object -ExpandProperty Name
 
-    foreach ($p in $hiddenProperties)
-    {
-        $classPropertyName = $p.Replace("Property", "")
+    foreach ($p in $hiddenProperties) {
+        $classPropertyName = $p.Replace('Property', '')
         $dataType = $class | Get-Member | Where-Object { $_.Name -eq $classPropertyName } | Select-Object -ExpandProperty Definition | Select-String -Pattern '\[.*\]' | Select-Object -ExpandProperty Matches | Select-Object -ExpandProperty Value
 
         $currentValue = [WindowsUpdate]::GetRegistryValue($class::$p)
-        if ($null -eq $currentValue)
-        {
-            if ($dataType -eq '[bool]')
-            {
+        if ($null -eq $currentValue) {
+            if ($dataType -eq '[bool]') {
                 $currentValue = $false
             }
 
-            if ($dataType -eq '[int]')
-            {
+            if ($dataType -eq '[int]') {
                 $currentValue = 0
             }
         }
@@ -244,8 +169,7 @@ function Initialize-WindowsUpdate
     This command gets the current Windows Update settings.
 #>
 [DSCResource()]
-class WindowsUpdate
-{
+class WindowsUpdate {
     # Key required. Do not set.
     [DscProperty(Key)] 
     [string] $SID
@@ -269,9 +193,11 @@ class WindowsUpdate
     [nullable[bool]] $SmartActiveHoursState
 
     [DscProperty()]
+    [ValidateRange(0, 24)]
     [nullable[int]] $UserChoiceActiveHoursEnd
 
     [DscProperty()]
+    [ValidateRange(0, 24)]
     [nullable[int]] $UserChoiceActiveHoursStart
 
     [DscProperty()]
@@ -285,15 +211,19 @@ class WindowsUpdate
     [nullable[int]] $DownloadRateForegroundBps
 
     [DscProperty()]
+    [ValidateRange(0, 100)]
     [nullable[int]] $DownloadRateBackgroundPct
 
     [DscProperty()]
+    [ValidateRange(0, 100)]
     [nullable[int]] $DownloadRateForegroundPct
 
     [DscProperty()]
+    [ValidateRange(5, 500)]
     [nullable[int]] $UploadLimitGBMonth
     
     [DscProperty()]
+    [ValidateRange(0, 100)]
     [nullable[int]] $UpRatePctBandwidth
 
     static hidden [string] $IsContinuousInnovationOptedInProperty = 'IsContinuousInnovationOptedIn'
@@ -312,24 +242,20 @@ class WindowsUpdate
     static hidden [string] $UploadLimitGBMonthProperty = 'UploadLimitGBMonth'
     static hidden [string] $UpRatePctBandwidthProperty = 'UpRatePctBandwidth'
 
-    [WindowsUpdate] Get()
-    {
+    [WindowsUpdate] Get() {
         $currentState = Initialize-WindowsUpdate
         
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         $settableProperties = $this.GetParameters()
         return (Test-WindowsUpdateRegistryKey -RegistryKeyProperty $settableProperties -CurrentState $currentState)
     }
 
-    [void] Set()
-    {
-        if ($this.Test())
-        {
+    [void] Set() {
+        if ($this.Test()) {
             return
         }
 
@@ -341,17 +267,12 @@ class WindowsUpdate
     }
 
     #region WindowsUpdate helper functions
-    static [object] GetRegistryValue($PropertyName)
-    {
+    static [object] GetRegistryValue($PropertyName) {
         $value = $null
-        if ($null -ne $PropertyName)
-        {
-            if ((DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name $PropertyName))
-            {
+        if ($null -ne $PropertyName) {
+            if ((DoesRegistryKeyPropertyExist -Path $global:WindowsUpdateSettingPath -Name $PropertyName)) {
                 $value = Get-ItemProperty -Path $global:WindowsUpdateSettingPath -Name $PropertyName | Select-Object -ExpandProperty $PropertyName
-            }
-            elseif ((DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name $PropertyName))
-            {
+            } elseif ((DoesRegistryKeyPropertyExist -Path $global:DeliveryOptimizationSettingPath -Name $PropertyName)) {
                 $value = Get-ItemProperty -Path $global:DeliveryOptimizationSettingPath -Name $PropertyName | Select-Object -ExpandProperty $PropertyName
             }
         }
@@ -359,13 +280,10 @@ class WindowsUpdate
         return $value
     }
 
-    [hashtable] GetParameters()
-    {
+    [hashtable] GetParameters() {
         $parameters = @{}
-        foreach ($property in $this.PSObject.Properties)
-        {
-            if (-not ([string]::IsNullOrEmpty($property.Value)))
-            {
+        foreach ($property in $this.PSObject.Properties) {
+            if (-not ([string]::IsNullOrEmpty($property.Value))) {
                 $parameters[$property.Name] = $property.Value
             }
         }
