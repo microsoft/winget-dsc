@@ -1,22 +1,19 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-enum Ensure
-{
+enum Ensure {
     Absent
     Present
 }
 
-$global:WindowsSandboxExePath = "C:\Windows\System32\WindowsSandbox.exe"
+$global:WindowsSandboxExePath = 'C:\Windows\System32\WindowsSandbox.exe'
 
-if (-not(Test-Path -Path $global:WindowsSandboxExePath))
-{
-    throw "Windows Sandbox feature is not enabled."
+if (-not(Test-Path -Path $global:WindowsSandboxExePath)) {
+    throw 'Windows Sandbox feature is not enabled.'
 }
 
 #region DSCResources
 [DSCResource()]
-class WindowsSandbox
-{
+class WindowsSandbox {
     [DscProperty(Key)]
     [Ensure]$Ensure = [Ensure]::Present
 
@@ -28,13 +25,13 @@ class WindowsSandbox
 
     [DscProperty()]
     [string]$SandboxFolder
-    
+
     [DscProperty()]
     [string]$ReadOnly
 
     [DscProperty()]
     [string]$LogonCommand
-    
+
     [DscProperty()]
     [nullable[Int64]]$MemoryInMB
 
@@ -59,49 +56,41 @@ class WindowsSandbox
     [DscProperty()]
     [nullable[bool]]$VideoInput
 
-    [WindowsSandbox] Get()
-    {
+    [WindowsSandbox] Get() {
         $currentState = [WindowsSandbox]::new()
         $currentState.WsbFilePath = $this.WsbFilePath
         $windowsSandboxProcess = Get-Process WindowsSandbox -ErrorAction SilentlyContinue
         $currentState.Ensure = $windowsSandboxProcess ? [Ensure]::Present : [Ensure]::Absent
-        
+
         return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
         return $currentState.Ensure -eq $this.Ensure
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         # If ensure absent, stop the current Windows Sandbox process.
-        if ($this.Ensure -eq [Ensure]::Absent)
-        {
+        if ($this.Ensure -eq [Ensure]::Absent) {
             Stop-Process -Name 'WindowsSandboxClient' -Force
             return
         }
 
-        # Load the existing wsb file if it exists or create a new one.
-        if ($this.WsbFilePath)
-        {
-            if (-not(Test-Path -Path $this.WsbFilePath))
-            {
-                throw "The provided wsb file does not exist."
+        # Load the existing WSB file if it exists or create a new one.
+        if ($this.WsbFilePath) {
+            if (-not(Test-Path -Path $this.WsbFilePath)) {
+                throw 'The provided WSB file does not exist.'
             }
 
             $xml = [xml](Get-Content -Path $this.WsbFilePath)
             $root = $xml.Configuration
-        }
-        else
-        {
+        } else {
             $xml = New-Object -TypeName System.Xml.XmlDocument
-            $root = $xml.CreateElement("Configuration")
+            $root = $xml.CreateElement('Configuration')
             $xml.AppendChild($root)
         }
-        
+
         <# Example Windows Sandbox configuration file (xml):
             <Configuration>
             <VGpu>Disable</VGpu>
@@ -122,155 +111,131 @@ class WindowsSandbox
             <PrinterRedirection>Disable</PrinterRedirection>
             <ClipboardRedirection>Enable</ClipboardRedirection>
             <MemoryInMB>2048</MemoryInMB>
-            </Configuration>            
+            </Configuration>
         #>
 
         # Override existing configurations if exists.
-        if ($this.HostFolder)
-        {
-            if (-not(Test-Path -Path $this.HostFolder))
-            {
-                throw "Specified host folder path does not exist."
+        if ($this.HostFolder) {
+            if (-not(Test-Path -Path $this.HostFolder)) {
+                throw 'Specified host folder path does not exist.'
             }
 
             # Remove existing mapped folder
-            if ($root.MappedFolders)
-            {
-                $existingMappedFolders = $root.SelectSingleNode("MappedFolders")
+            if ($root.MappedFolders) {
+                $existingMappedFolders = $root.SelectSingleNode('MappedFolders')
                 $root.RemoveChild($existingMappedFolders)
             }
 
             # Create Mapped Folders element
-            $mappedFoldersElement = $xml.CreateElement("MappedFolders")
-            $mappedFolderElement = $xml.CreateElement("MappedFolder")
-            $hostFolderElement = $xml.CreateElement("HostFolder")
+            $mappedFoldersElement = $xml.CreateElement('MappedFolders')
+            $mappedFolderElement = $xml.CreateElement('MappedFolder')
+            $hostFolderElement = $xml.CreateElement('HostFolder')
             $mappedFolderElement.AppendChild($hostFolderElement)
             $mappedFoldersElement.AppendChild($mappedFolderElement)
             $root.AppendChild($mappedFoldersElement)
             $root.MappedFolders.MappedFolder.HostFolder = $this.HostFolder
 
-            if ($this.SandboxFolder)
-            {
-                $sandboxFolderElement = $xml.CreateElement("SandboxFolder")
+            if ($this.SandboxFolder) {
+                $sandboxFolderElement = $xml.CreateElement('SandboxFolder')
                 $mappedFolderElement.AppendChild($sandboxFolderElement)
                 $root.MappedFolders.MappedFolder.SandboxFolder = $this.SandboxFolder
             }
 
-            if ($this.ReadOnly)
-            {
-                $readOnlyElement = $xml.CreateElement("ReadOnly")
+            if ($this.ReadOnly) {
+                $readOnlyElement = $xml.CreateElement('ReadOnly')
                 $mappedFolderElement.AppendChild($readOnlyElement)
                 $root.MappedFolders.MappedFolder.ReadOnly = 'true'
             }
         }
 
-        if ($this.LogonCommand)
-        {
-            if ($root.LogonCommand)
-            {
+        if ($this.LogonCommand) {
+            if ($root.LogonCommand) {
                 $existingLogonCommand = $root.SelectSingleNode('LogonCommand')
                 $root.RemoveChild($existingLogonCommand)
             }
 
             $logonCommandElement = $xml.CreateElement('LogonCommand')
-            $commandElement = $xml.CreateElement("Command")
+            $commandElement = $xml.CreateElement('Command')
             $logonCommandElement.AppendChild($commandElement)
             $root.AppendChild($logonCommandElement)
             $root.LogonCommand.Command = $this.LogonCommand
         }
 
-        if ($this.MemoryInMB)
-        {
-            if ($null -eq $root.MemoryInMB)
-            {
-                $memoryElement = $xml.CreateElement("MemoryInMB")
+        if ($this.MemoryInMB) {
+            if ($null -eq $root.MemoryInMB) {
+                $memoryElement = $xml.CreateElement('MemoryInMB')
                 $root.AppendChild($memoryElement)
             }
 
             $root.MemoryInMB = $this.MemoryInMB
         }
 
-        if ($null -ne $this.vGPU)
-        {
-            if ($null -eq $root.vGPU)
-            {
-                $vGPUElement = $xml.CreateElement("vGPU")
+        if ($null -ne $this.vGPU) {
+            if ($null -eq $root.vGPU) {
+                $vGPUElement = $xml.CreateElement('vGPU')
                 $root.AppendChild($vGPUElement)
             }
 
             $root.vGPU = ConvertBoolToEnableDisable($this.vGPU)
         }
 
-        if ($null -ne $this.AudioInput)
-        {
-            if ($null -eq $root.AudioInput)
-            {
-                $audioInputElement = $xml.CreateElement("AudioInput")
+        if ($null -ne $this.AudioInput) {
+            if ($null -eq $root.AudioInput) {
+                $audioInputElement = $xml.CreateElement('AudioInput')
                 $root.AppendChild($audioInputElement)
             }
 
             $root.AudioInput = ConvertBoolToEnableDisable($this.AudioInput)
         }
 
-        if ($null -ne $this.ClipboardRedirection)
-        {
-            if ($null -eq $root.ClipboardRedirection)
-            {
-                $clipboardRedirectionElement = $xml.CreateElement("ClipboardRedirection")
+        if ($null -ne $this.ClipboardRedirection) {
+            if ($null -eq $root.ClipboardRedirection) {
+                $clipboardRedirectionElement = $xml.CreateElement('ClipboardRedirection')
                 $root.AppendChild($clipboardRedirectionElement)
             }
 
             $root.ClipboardRedirection = ConvertBoolToEnableDisable($this.ClipboardRedirection)
         }
 
-        if ($null -ne $this.Networking)
-        {
-            if ($null -eq $root.Networking)
-            {
-                $networkingElement = $xml.CreateElement("Networking")
+        if ($null -ne $this.Networking) {
+            if ($null -eq $root.Networking) {
+                $networkingElement = $xml.CreateElement('Networking')
                 $root.AppendChild($networkingElement)
             }
 
             $root.Networking = ConvertBoolToEnableDisable($this.Networking)
         }
 
-        if ($null -ne $this.PrinterRedirection)
-        {
-            if ($null -eq $root.PrinterRedirection)
-            {
-                $printerRedirectionElement = $xml.CreateElement("PrinterRedirection")
+        if ($null -ne $this.PrinterRedirection) {
+            if ($null -eq $root.PrinterRedirection) {
+                $printerRedirectionElement = $xml.CreateElement('PrinterRedirection')
                 $root.AppendChild($printerRedirectionElement)
             }
 
             $root.PrinterRedirection = ConvertBoolToEnableDisable($this.PrinterRedirection)
         }
 
-        if ($null -ne $this.ProtectedClient)
-        {
-            if ($null -eq $root.ProtectedClient)
-            {
-                $protectedClientElement = $xml.CreateElement("ProtectedClient")
+        if ($null -ne $this.ProtectedClient) {
+            if ($null -eq $root.ProtectedClient) {
+                $protectedClientElement = $xml.CreateElement('ProtectedClient')
                 $root.AppendChild($protectedClientElement)
             }
 
             $root.ProtectedClient = ConvertBoolToEnableDisable($this.ProtectedClient)
         }
 
-        if ($null -ne $this.VideoInput)
-        {
-            if ($null -eq $root.VideoInput)
-            {
-                $videoInputElement = $xml.CreateElement("VideoInput")
+        if ($null -ne $this.VideoInput) {
+            if ($null -eq $root.VideoInput) {
+                $videoInputElement = $xml.CreateElement('VideoInput')
                 $root.AppendChild($videoInputElement)
             }
 
             $root.VideoInput = ConvertBoolToEnableDisable($this.VideoInput)
         }
 
-        # Export wsb file and run.
+        # Export WSB file and run.
         $windowsSandboxDscTempDir = "$($env:Temp)\WindowsSandboxDsc"
-        if (-not (Test-Path -Path $windowsSandboxDscTempDir))
-        {
+        if (-not (Test-Path -Path $windowsSandboxDscTempDir)) {
             New-Item -ItemType Directory -Path $windowsSandboxDscTempDir
         }
 
@@ -285,8 +250,7 @@ class WindowsSandbox
 
 #region Functions
 
-function ConvertBoolToEnableDisable()
-{
+function ConvertBoolToEnableDisable() {
     param (
         [Parameter()]
         [bool]$value
