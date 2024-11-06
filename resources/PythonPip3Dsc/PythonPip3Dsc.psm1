@@ -205,7 +205,7 @@ function Invoke-Pip3Uninstall {
     $command.Add((Get-PackageNameWithVersion @PSBoundParameters))
     $command.Add($Arguments)
 
-    # '--yes' is needed to ignore confrimation required for uninstalls
+    # '--yes' is needed to ignore conformation required for uninstalls
     $command.Add('--yes')
     return Invoke-Pip3 -command $command
 }
