@@ -4,6 +4,61 @@
 using namespace System.Collections.Generic
 
 #region Functions
+function Invoke-Process {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilePath,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$ArgumentList
+    )
+
+    try {
+        $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+        $pinfo.FileName = $FilePath
+        $pinfo.RedirectStandardError = $true
+        $pinfo.RedirectStandardOutput = $true
+        $pinfo.UseShellExecute = $false
+        $pinfo.WindowStyle = 'Hidden'
+        $pinfo.CreateNoWindow = $true
+        $pinfo.Arguments = $ArgumentList
+        $p = New-Object System.Diagnostics.Process
+        $p.StartInfo = $pinfo
+        $p.Start() | Out-Null
+
+        $stOut = @()
+        # using ReadLine() instead of ReadToEnd() for building array object. ReadToEnd() gave different output than ReadLine() in some cases.
+        while (-not $p.StandardOutput.EndOfStream) {
+            $stOut += $p.StandardOutput.ReadLine()
+        }
+
+        $stErr = @()
+        while (-not $p.StandardError.EndOfStream) {
+            $stErr += $p.StandardError.ReadLine()  
+        }
+
+        $result = [pscustomobject]@{
+            Title     = ($MyInvocation.MyCommand).Name
+            Command   = $FilePath
+            Arguments = $ArgumentList
+            StdOut    = $stOut
+            StdErr    = $stErr
+            ExitCode  = $p.ExitCode
+        }
+
+        $p.WaitForExit()
+
+        return $result
+    } catch {
+        Write-Verbose -Message "Error occurred while executing the command: $FilePath $ArgumentList. Error:"
+        Write-Verbose -Message $stErr
+    }
+}
+
 function Get-Pip3Path {
     if ($IsWindows) {
         # Note: When installing 64-bit version, the registry key: HKLM:\SOFTWARE\Wow6432Node\Python\PythonCore\*\InstallPath was empty.
@@ -226,9 +281,9 @@ function Invoke-Pip3 {
     )
 
     if ($global:usePip3Exe) {
-        return Start-Process -FilePath $global:pip3ExePath -ArgumentList $command -Wait -PassThru -WindowStyle Hidden
+        return Invoke-Process -FilePath $global:pip3ExePath -ArgumentList $command
     } else {
-        return Start-Process -FilePath pip3 -ArgumentList $command -Wait -PassThru -WindowStyle hidden
+        return Invoke-Process -FilePath pip3 -ArgumentList $command
     }
 }
 
