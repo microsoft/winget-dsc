@@ -1,0 +1,8 @@
+vscode
+Linux
+dotnet
+dotnettool
+cspell
+NUnit
+reportgenerator
+Toolpackage

@@ -8,8 +8,7 @@ Assert-Yarn
 
 #region DSCResources
 [DSCResource()]
-class YarnInstall
-{
+class YarnInstall {
     # DSCResource requires a key. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -23,16 +22,11 @@ class YarnInstall
     [DscProperty(NotConfigurable)]
     [string[]]$Dependencies
 
-    [YarnInstall] Get()
-    {
-        if (-not([string]::IsNullOrEmpty($this.PackageDirectory)))
-        {
-            if (Test-Path -Path $this.PackageDirectory -PathType Container)
-            {
+    [YarnInstall] Get() {
+        if (-not([string]::IsNullOrEmpty($this.PackageDirectory))) {
+            if (Test-Path -Path $this.PackageDirectory -PathType Container) {
                 Set-Location -Path $this.PackageDirectory
-            }
-            else
-            {
+            } else {
                 throw "$($this.PackageDirectory) does not point to a valid directory."
             }
         }
@@ -41,17 +35,15 @@ class YarnInstall
         $currentState.Dependencies = Invoke-YarnInfo -Arguments '--name-only --json' | ConvertFrom-Json
         $currentState.Arguments = $this.Arguments
         $currentState.PackageDirectory = $this.PackageDirectory
-        return $currentState;
+        return $currentState
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         # Yarn install is inherently idempotent as it will also resolve package dependencies. Set to $false
         return $false
     }
 
-    [void] Set()
-    {
+    [void] Set() {
         $currentState = $this.Get()
         Invoke-YarnInstall -Arguments $currentState.Arguments
     }
@@ -60,49 +52,42 @@ class YarnInstall
 #endregion DSCResources
 
 #region Functions
-function Assert-Yarn
-{
+function Assert-Yarn {
     # Refresh session $path value before invoking 'npm'
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-    try
-    {
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    try {
         Invoke-Yarn -Command 'help'
         return
-    }
-    catch
-    {
-        throw "Yarn is not installed"
+    } catch {
+        throw 'Yarn is not installed'
     }
 }
 
-function Invoke-YarnInfo
-{
+function Invoke-YarnInfo {
     param(
         [Parameter()]
-        [string]$Arguments       
+        [string]$Arguments
     )
 
     $command = [List[string]]::new()
-    $command.Add("info")
+    $command.Add('info')
     $command.Add($Arguments)
     return Invoke-Yarn -Command $command
 }
 
-function Invoke-YarnInstall
-{
+function Invoke-YarnInstall {
     param (
         [Parameter()]
         [string]$Arguments
     )
 
     $command = [List[string]]::new()
-    $command.Add("install")
+    $command.Add('install')
     $command.Add($Arguments)
     return Invoke-Yarn -Command $command
 }
 
-function Invoke-Yarn
-{
+function Invoke-Yarn {
     param (
         [Parameter(Mandatory = $true)]
         [string]$Command
