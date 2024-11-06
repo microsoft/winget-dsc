@@ -3,17 +3,15 @@
 
 using namespace System.Collections.Generic
 
-$global:LocaleNameRegistryPath = "HKCU:\Control Panel\International"
-$global:LocaleUserProfilePath = "HKCU:\Control Panel\International\User Profile"
+$global:LocaleNameRegistryPath = 'HKCU:\Control Panel\International'
+$global:LocaleUserProfilePath = 'HKCU:\Control Panel\International\User Profile'
 
 #region Functions
-function Get-OsBuildVersion 
-{
+function Get-OsBuildVersion {
     return [System.Environment]::OSVersion.Version.Build
 }
 
-function TryGetRegistryValue
-{
+function TryGetRegistryValue {
     param (
         [Parameter(Mandatory = $true)]
         [string]$Key,
@@ -22,43 +20,33 @@ function TryGetRegistryValue
         [string]$Property
     )    
 
-    if (Test-Path -Path $Key)
-    {
-        try
-        {
+    if (Test-Path -Path $Key) {
+        try {
             return (Get-ItemProperty -Path $Key | Select-Object -ExpandProperty $Property)     
-        }
-        catch
-        {
+        } catch {
             Write-Verbose "Property `"$($Property)`" could not be found."
         }
-    }
-    else
-    {
-        Write-Verbose "Registry key does not exist."
+    } else {
+        Write-Verbose 'Registry key does not exist.'
     }
 }
 
-function Get-LocaleList
-{
+function Get-LocaleList {
     $localeList = Get-WinUserLanguageList
     $out = [List[Language]]::new()
 
-    foreach ($locale in $localeList)
-    {
-        $langague = [Language]::new($locale.LanguageTag, $true)
-        $out.Add($langague)
+    foreach ($locale in $localeList) {
+        $language = [Language]::new($locale.LanguageTag, $true)
+        $out.Add($language)
     }
 
     # section to include other languages that can be installed
     # helpful for users to discover what packages can be installed
-    $allLangues = [System.Globalization.CultureInfo]::GetCultures("AllCultures")
-    foreach ($culture in $allLangues)
-    {
-        if ($out.LocaleName -notcontains $culture.Name -and -not ([string]::IsNullOrEmpty($culture.Name)))  
-        {
-            $langague = [Language]::new($culture.Name, $false)
-            $out.Add($langague)
+    $allLangues = [System.Globalization.CultureInfo]::GetCultures('AllCultures')
+    foreach ($culture in $allLangues) {
+        if ($out.LocaleName -notcontains $culture.Name -and -not ([string]::IsNullOrEmpty($culture.Name))) {
+            $language = [Language]::new($culture.Name, $false)
+            $out.Add($language)
         }
     }
 
@@ -84,8 +72,7 @@ function Get-LocaleList
     This example installs the English (United States) language on the local machine.
 #>
 [DscResource()]
-class Language 
-{
+class Language {
     [DscProperty(Key)]
     [string] $LocaleName
 
@@ -94,73 +81,59 @@ class Language
 
     static [hashtable] $InstalledLocality
 
-    Language()
-    {
+    Language() {
         [Language]::GetInstalledLocality()
     }
 
-    Language([string] $LocaleName, [bool] $Exist)
-    {
+    Language([string] $LocaleName, [bool] $Exist) {
         $this.LocaleName = $LocaleName
         $this.Exist = $Exist
     }
 
-    [Language] Get()
-    {
+    [Language] Get() {
         $keyExist = [Language]::InstalledLocality.ContainsKey(($this.LocaleName))
 
         $currentState = [Language]::InstalledLocality[$this.LocaleName]
 
-        if (-not $keyExist)
-        {
+        if (-not $keyExist) {
             return [Language]::new($this.LocaleName, $false)
         }
         
         return $currentState
     }
 
-    [void] Set()
-    {
-        if ($this.Test())
-        {
+    [void] Set() {
+        if ($this.Test()) {
             return
         }
 
-        if ($this.Exist)
-        {
+        if ($this.Exist) {
             # use the LanguagePackManagement module to install the language (requires elevation). International does not have a cmdlet to install language
             Install-Language -Language $this.LocaleName
-        }
-        else 
-        {
+        } else {
             Uninstall-Language -Language $this.LocaleName
         }
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
 
-        if ($currentState.Exist -ne $this.Exist)
-        {
+        if ($currentState.Exist -ne $this.Exist) {
             return $false
         }
         
         return $true
     }
 
-    static [Language[]] Export()
-    {
+    static [Language[]] Export() {
         return Get-LocaleList
     }
 
     #region Language helper functions
-    static [void] GetInstalledLocality()
-    {   
+    static [void] GetInstalledLocality() {   
         [Language]::InstalledLocality = @{}
 
-        foreach ($locality in [Language]::Export())
-        {
+        foreach ($locality in [Language]::Export()) {
             [Language]::InstalledLocality[$locality.LocaleName] = $locality
         }
     }
@@ -183,8 +156,7 @@ class Language
     This example sets the display language to English (United States) on the user.
 #>
 [DscResource()]
-class DisplayLanguage
-{
+class DisplayLanguage {
     
     [DscProperty(Key)]
     [string] $LocaleName
@@ -194,18 +166,15 @@ class DisplayLanguage
 
     hidden [string] $KeyName = 'LocaleName'
 
-    DisplayLanguage()
-    {
+    DisplayLanguage() {
     }
 
-    [DisplayLanguage] Get()
-    {
+    [DisplayLanguage] Get() {
         $currentState = [DisplayLanguage]::new()
 
         # check if user profile contains display language
-        $userProfileLanguageDict = TryGetRegistryValue -Key (Join-path $global:LocaleUserProfilePath $this.LocaleName) -Property 'CachedLanguageName'
-        if ((TryGetRegistryValue -Key $global:LocaleNameRegistryPath -Property $this.KeyName) -ne $this.LocaleName -and ($null -ne $userProfileLanguageDict))
-        {
+        $userProfileLanguageDict = TryGetRegistryValue -Key (Join-Path $global:LocaleUserProfilePath $this.LocaleName) -Property 'CachedLanguageName'
+        if ((TryGetRegistryValue -Key $global:LocaleNameRegistryPath -Property $this.KeyName) -ne $this.LocaleName -and ($null -ne $userProfileLanguageDict)) {
             $currentState.Exist = $false
             return $currentState
         }
@@ -216,10 +185,8 @@ class DisplayLanguage
         }
     }
 
-    [void] Set()
-    {
-        if ($this.Test())
-        {
+    [void] Set() {
+        if ($this.Test()) {
             return
         }
 
@@ -229,12 +196,10 @@ class DisplayLanguage
         # TODO: Exist does not make sense here, we always want a language to exist
     }
 
-    [bool] Test()
-    {
+    [bool] Test() {
         $currentState = $this.Get()
 
-        if ($currentState.Exist -ne $this.Exist)
-        {
+        if ($currentState.Exist -ne $this.Exist) {
             return $false
         }
         
