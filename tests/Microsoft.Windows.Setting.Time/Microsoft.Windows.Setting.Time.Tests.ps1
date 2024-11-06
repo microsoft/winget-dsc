@@ -49,7 +49,7 @@ Describe 'Time' {
     }
 
     It 'Set Time Zone' {
-        $desiredState = @{ TimeZone = "Pacific Standard Time" }
+        $desiredState = @{ TimeZone = "PacificStandardTime" }
       
         Invoke-DscResource -Name Time -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property $desiredState
    
@@ -67,9 +67,17 @@ Describe 'Time' {
         # Test the state
         $object.Test() | Should -Be $true
     }
+
+    It 'Disable clock notify change' {
+        $desiredState = @{ NotifyClockChange = $false }
+      
+        Invoke-DscResource -Name Time -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property $desiredState
+   
+        $finalState = Invoke-DscResource -Name Time -ModuleName Microsoft.Windows.Setting.Time -Method Test -Property @{}
+        $finalState.InDesiredState | Should -Be $true
+    }
 }
 AfterAll {
     # Restore the original state
-    Write-Host -Object ("Restoring the original state")
     Invoke-DscResource -Name Time -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property $global:Parameters
 }
