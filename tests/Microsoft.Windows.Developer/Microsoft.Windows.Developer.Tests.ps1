@@ -67,9 +67,9 @@ Describe 'Taskbar' {
          TaskViewButton            = $desiredTaskViewButton;
          WidgetsButton             = $desiredWidgetsButton
       }
-      
+
       Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-   
+
       $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Alignment | Should -Be $desiredAlignment
       $finalState.HideLabelsMode | Should -Be $desiredHideLabelsMode
@@ -86,12 +86,12 @@ Describe 'WindowsExplorer' {
       $parameters = @{
          FileExtensions = 'KeepCurrentValue';
          HiddenFiles    = 'KeepCurrentValue';
-         ItemCheckBoxes = 'KeepCurrentValue' 
+         ItemCheckBoxes = 'KeepCurrentValue'
       }
 
       $testResult = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
       $testResult.InDesiredState | Should -Be $true
-      
+
       # Invoking set should not change these values.
       Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
       $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
@@ -111,9 +111,9 @@ Describe 'WindowsExplorer' {
          HiddenFiles    = $desiredHiddenFiles;
          ItemCheckBoxes = $desiredItemCheckBoxes
       }
-      
+
       Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-   
+
       $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.FileExtensions | Should -Be $desiredFileExtensions
       $finalState.HiddenFiles | Should -Be $desiredHiddenFiles
@@ -129,7 +129,7 @@ Describe 'UserAccessControl' {
 
       $testResult = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
       $testResult.InDesiredState | Should -Be $true
-      
+
       # Invoking set should not change these values.
       Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
       $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
@@ -141,9 +141,9 @@ Describe 'UserAccessControl' {
       $desiredAdminConsentPromptBehavior = [AdminConsentPromptBehavior](Get-Random -Maximum 6 -Minimum 1)
 
       $desiredState = @{ AdminConsentPromptBehavior = $desiredAdminConsentPromptBehavior }
-      
+
       Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-   
+
       $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.AdminConsentPromptBehavior | Should -Be $desiredAdminConsentPromptBehavior
    }
@@ -153,9 +153,9 @@ Describe 'EnableRemoteDesktop' {
    It 'Sets Enabled' {
       $desiredRemoteDesktopBehavior = [Ensure]::Present
       $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
-      
+
       Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-   
+
       $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
    }
@@ -163,9 +163,9 @@ Describe 'EnableRemoteDesktop' {
    It 'Sets Disabled' {
       $desiredRemoteDesktopBehavior = [Ensure]::Absent
       $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
-      
+
       Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-   
+
       $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
    }
