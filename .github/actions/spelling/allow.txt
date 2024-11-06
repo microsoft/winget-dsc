@@ -41,3 +41,7 @@ whatif
 pscustomobject
 itsdangerouss
 itsdangerouss
+Bandwith
+PCs
+wmiprvse
+
