@@ -97,13 +97,13 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags       = @('PSDscResource_Pip3Package')
+            Tags            = @('PSDscResource_Pip3Package')
 
             # A URL to the license for this module.
-            LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
+            LicenseUri      = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/microsoft/winget-dsc'
+            ProjectUri      = 'https://github.com/microsoft/winget-dsc'
 
             # A URL to an icon representing this module.
             # IconUri = ''
@@ -112,13 +112,14 @@
             # ReleaseNotes = ''
 
             # Prerelease string of this module
-            Prerelease = 'alpha'
+            Prerelease      = 'alpha'
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false
 
             # External dependent modules of this module
             # ExternalModuleDependencies = @()
+            DscCapabilities = @('Get', 'Set', 'Test', 'Export', 'WhatIf')
 
         } # End of PSData hashtable
 
@@ -131,4 +132,3 @@
     # DefaultCommandPrefix = ''
 
 }
-

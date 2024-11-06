@@ -37,3 +37,7 @@ uilt
 Windo
 ELSPROBLEMS
 requ
+whatif
+pscustomobject
+itsdangerouss
+itsdangerouss
