@@ -56,7 +56,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $SystemArchitectureResource.Architecture = 'Value'
-            { $SystemArchitectureResource.Set() } | Should -Throw
+            { $SystemArchitectureResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
    }
@@ -90,7 +90,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $OsEditionResource.Edition = 'Value'
-            { $OsEditionResource.Set() } | Should -Throw
+            { $OsEditionResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
    }
@@ -125,7 +125,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $ProcessorArchitectureResource.Architecture = 'Value'
-            { $ProcessorArchitectureResource.Set() } | Should -Throw
+            { $ProcessorArchitectureResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
 
@@ -164,7 +164,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $HyperVisorResource.Ensure = 'Absent'
-            { $HyperVisorResource.Set() } | Should -Throw
+            { $HyperVisorResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
    }
@@ -222,7 +222,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $OsInstallDateResource.Before = 'Friday, November 1, 2024 12:00:00 AM'
-            { $OsInstallDateResource.Set() } | Should -Throw
+            { $OsInstallDateResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
    }
@@ -262,7 +262,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $OsVersionResource.MinVersion = '2.0.0'
-            { $OsVersionResource.Set() } | Should -Throw
+            { $OsVersionResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
    }
@@ -296,7 +296,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $CsManufacturerResource.Manufacturer = 'Value'
-            { $CsManufacturerResource.Set() } | Should -Throw
+            { $CsManufacturerResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
    }
@@ -330,7 +330,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $CsModelResource.Model = 'Value'
-            { $CsModelResource.Set() } | Should -Throw
+            { $CsModelResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
    }
@@ -379,7 +379,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $CsDomainResource.Domain = 'Domain'
-            { $CsDomainResource.Set() } | Should -Throw
+            { $CsDomainResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
    }
@@ -420,7 +420,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          }
          It 'Should throw otherwise' {
             $PowerShellVersionResource.MinVersion = '7.2.1'
-            { $PowerShellVersionResource.Set() } | Should -Throw
+            { $PowerShellVersionResource.Set() } | Should -Throw 'Assertion Failed. *'
          }
       }
 
@@ -428,7 +428,6 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          $global:PSVersionTable.PSVersion = $script:OriginalPsVersion
       }
    }
-
 
    Describe 'PnPDevice' {
       BeforeAll {
