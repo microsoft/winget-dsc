@@ -20,23 +20,16 @@ enum PnPDeviceState {
 class OsEditionId {
 
     [DscProperty(Key)]
-    [string] $RequiredEdition
-
-    [DscProperty(NotConfigurable)]
     [string] $Edition
 
     [OsEditionId] Get() {
-        $this.Edition = Get-ComputerInfo | Select-Object -ExpandProperty WindowsEditionId
-
-        return @{
-            RequiredEdition = $this.RequiredEdition
-            Edition         = $this.Edition
-        }
+        $currentState = [OsEditionId]::new()
+        $currentState.Edition = Get-ComputerInfo | Select-Object -ExpandProperty WindowsEditionId
+        return $currentState
     }
 
     [bool] Test() {
-        $currentState = $this.Get()
-        return $currentState.Edition -eq $currentState.RequiredEdition
+        return $this.Get().Edition -eq $this.Edition
     }
 
     [void] Set() {
@@ -48,23 +41,16 @@ class OsEditionId {
 class SystemArchitecture {
 
     [DscProperty(Key)]
-    [string] $RequiredArchitecture
-
-    [DscProperty(NotConfigurable)]
     [string] $Architecture
 
     [SystemArchitecture] Get() {
-        $this.Architecture = Get-ComputerInfo | Select-Object -ExpandProperty OsArchitecture
-
-        return @{
-            RequiredArchitecture = $this.RequiredArchitecture
-            Architecture         = $this.Architecture
-        }
+        $currentState = [SystemArchitecture]::new()
+        $currentState.Architecture = Get-ComputerInfo | Select-Object -ExpandProperty OsArchitecture
+        return $currentState
     }
 
     [bool] Test() {
-        $currentState = $this.Get()
-        return $currentState.Architecture -eq $currentState.RequiredArchitecture
+        return $this.Get().Architecture -eq $this.Architecture
     }
 
     [void] Set() {
@@ -76,23 +62,16 @@ class SystemArchitecture {
 class ProcessorArchitecture {
 
     [DscProperty(Key)]
-    [string] $RequiredArchitecture
-
-    [DscProperty(NotConfigurable)]
     [string] $Architecture
 
     [ProcessorArchitecture] Get() {
-        $this.Architecture = $env:PROCESSOR_ARCHITECTURE
-
-        return @{
-            RequiredArchitecture = $this.RequiredArchitecture
-            Architecture         = $this.Architecture
-        }
+        $currentState = [ProcessorArchitecture]::new()
+        $currentState.Architecture = $env:PROCESSOR_ARCHITECTURE
+        return $currentState
     }
 
     [bool] Test() {
-        $currentState = $this.Get()
-        return $currentState.Architecture -eq $currentState.RequiredArchitecture
+        return $this.Get().Architecture -eq $this.Architecture
     }
 
     [void] Set() {
@@ -107,14 +86,13 @@ class HyperVisor {
     [Ensure] $Ensure
 
     [HyperVisor] Get() {
-        return @{
-            Ensure = (Get-ComputerInfo | Select-Object -ExpandProperty HyperVisorPresent) ? [Ensure]::Present : [Ensure]::Absent
-        }
+        $currentState = [HyperVisor]::new()
+        $currentState.Ensure = (Get-ComputerInfo | Select-Object -ExpandProperty HyperVisorPresent) ? [Ensure]::Present : [Ensure]::Absent
+        return $currentState
     }
 
     [bool] Test() {
-        $currentState = $this.Get()
-        return $currentState.Ensure -eq $this.Ensure
+        return $this.Get().Ensure -eq $this.Ensure
     }
 
     [void] Set() {
@@ -126,7 +104,7 @@ class HyperVisor {
 class OsInstallDate {
 
     [DscProperty(Key)]
-    [string] $Before = [System.DateTime]::Now
+    [string] $Before
 
     [DscProperty()]
     [string] $After
@@ -135,34 +113,34 @@ class OsInstallDate {
     [string] $InstallDate
 
     [OsInstallDate] Get() {
+        $currentState = [OsInstallDate]::new()
+
         # Try-Catch isn't a good way to do this, but `[System.DateTimeOffset]::TryParse($this.Before, [ref]$parsedBefore)` is erroring
         try {
-            $this.Before = $this.Before ? [System.DateTimeOffset]::Parse($this.Before) : $null
+            if ($this.Before) { [System.DateTimeOffset]::Parse($this.Before) }
         } catch {
             throw "'$($this.Before)' is not a valid Date string."
         }
 
         # Try-Catch isn't a good way to do this, but `[System.DateTimeOffset]::TryParse($this.After, [ref]$parsedAfter)` is erroring
         try {
-            $this.After = $this.After ? [System.DateTimeOffset]::Parse($this.After) : $null
+            if ($this.After) { [System.DateTimeOffset]::Parse($this.After) }
         } catch {
             throw "'$($this.After)' is not a valid Date string."
         }
 
-        $this.InstallDate = [System.DateTimeOffset]::Parse($(Get-ComputerInfo | Select-Object -ExpandProperty OsInstallDate))
-
-        return @{
-            Before      = $this.Before
-            After       = $this.After
-            InstallDate = $this.InstallDate
-        }
+        $currentState.Before = $this.Before
+        $currentState.After = $this.After
+        $currentState.InstallDate = Get-ComputerInfo | Select-Object -ExpandProperty OsInstallDate
+        return $currentState
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        # this.Get() should always return [System.DateTimeOffset] or $null which can be compared directly
-        # $null should always be treated as less than a [System.DateTimeOffset]
-        return ($currentState.InstallDate -gt $currentState.After) -and ($currentState.InstallDate -lt $currentState.Before)
+        return (
+            [System.DateTimeOffset]$currentState.InstallDate -gt [System.DateTimeOffset]$this.After -and
+            [System.DateTimeOffset]$currentState.InstallDate -lt [System.DateTimeOffset]$this.Before
+        )
     }
 
     [void] Set() {
@@ -181,22 +159,19 @@ class OsVersion {
     [string] $OsVersion
 
     [OsVersion] Get() {
-        $parsedVersion = $null
-        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion)) {
+
+        if ($this.MinVersion -and ![System.Version]::TryParse($this.MinVersion, [ref]$null)) {
             throw "'$($this.MinVersion)' is not a valid Version string."
         }
 
-        $this.OsVersion = Get-ComputerInfo | Select-Object -ExpandProperty OsVersion
-
-        return @{
-            MinVersion = $this.MinVersion
-            OsVersion  = $this.OsVersion
-        }
+        $currentState = [OsVersion]::new()
+        $currentState.MinVersion = $this.MinVersion
+        $currentState.OsVersion = Get-ComputerInfo | Select-Object -ExpandProperty OsVersion
+        return $currentState
     }
 
     [bool] Test() {
-        $currentState = $this.Get()
-        return [System.Version]$currentState.OsVersion -ge [System.Version]$currentState.MinVersion
+        return [System.Version]$this.Get().OsVersion -ge [System.Version]$this.MinVersion
     }
 
     [void] Set() {
@@ -208,23 +183,16 @@ class OsVersion {
 class CsManufacturer {
 
     [DscProperty(Key)]
-    [string] $RequiredManufacturer
-
-    [DscProperty(NotConfigurable)]
     [string] $Manufacturer
 
     [CsManufacturer] Get() {
-        $this.Manufacturer = Get-ComputerInfo | Select-Object -ExpandProperty CsManufacturer
-
-        return @{
-            RequiredManufacturer = $this.RequiredManufacturer
-            Manufacturer         = $this.Manufacturer
-        }
+        $currentState = [CsManufacturer]::new()
+        $currentState.Manufacturer = Get-ComputerInfo | Select-Object -ExpandProperty CsManufacturer
+        return $currentState
     }
 
     [bool] Test() {
-        $currentState = $this.Get()
-        return $currentState.Manufacturer -eq $currentState.RequiredManufacturer
+        return $this.Get().Manufacturer -eq $this.Manufacturer
     }
 
     [void] Set() {
@@ -236,23 +204,16 @@ class CsManufacturer {
 class CsModel {
 
     [DscProperty(Key)]
-    [string] $RequiredModel
-
-    [DscProperty(NotConfigurable)]
     [string] $Model
 
     [CsModel] Get() {
-        $this.Model = Get-ComputerInfo | Select-Object -ExpandProperty CsModel
-
-        return @{
-            RequiredModel = $this.RequiredModel
-            Model         = $this.Model
-        }
+        $currentState = [CsModel]::new()
+        $currentState.Model = Get-ComputerInfo | Select-Object -ExpandProperty CsModel
+        return $currentState
     }
 
     [bool] Test() {
-        $currentState = $this.Get()
-        return $currentState.Model -eq $currentState.RequiredModel
+        return $this.Get().Model -eq $this.Model
     }
 
     [void] Set() {
@@ -264,35 +225,25 @@ class CsModel {
 class CsDomain {
 
     [DscProperty(Key)]
-    [string] $RequiredDomain
-
-    [DscProperty()]
-    [string] $RequiredRole
-
-    [DscProperty(NotConfigurable)]
     [string] $Domain
 
-    [DscProperty(NotConfigurable)]
+    [DscProperty()]
     [string] $Role
 
     [CsDomain] Get() {
         $domainInfo = Get-ComputerInfo | Select-Object -Property CsDomain, CsDomainRole
-        $this.Domain = $domainInfo.CsDomain
-        $this.Role = $domainInfo.CsDomainRole
 
-        return @{
-            RequiredDomain = $this.RequiredDomain
-            Domain         = $this.Domain
-            RequiredRole   = $this.RequiredRole
-            Role           = $this.Role
-        }
+        $currentState = [CsDomain]::new()
+        $currentState.Domain = $domainInfo.CsDomain
+        $currentState.Role = $domainInfo.CsDomainRole
+        return $currentState
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        if ($currentState.Domain -ne $currentState.RequiredDomain) { return $false } # If domains don't match
-        if (!$currentState.RequiredRole) { return $true } # RequiredRole is null and domains match
-        return ($currentState.RequiredRole -eq $currentState.Role) # Return whether the roles match
+        if ($currentState.Domain -ne $this.Domain) { return $false } # If domains don't match
+        if (!$this.Role) { return $true } # Required Role is null and domains match
+        return ($currentState.Role -eq $this.Role) # Return whether the roles match
     }
 
     [void] Set() {
@@ -310,17 +261,15 @@ class PowerShellVersion {
     [string] $PowerShellVersion
 
     [PowerShellVersion] Get() {
-        $parsedVersion = $null
-        if (![System.Version]::TryParse($this.MinVersion, [ref]$parsedVersion)) {
+
+        if ($this.MinVersion -and ![System.Version]::TryParse($this.MinVersion, [ref]$null)) {
             throw "'$($this.MinVersion)' is not a valid Version string."
         }
 
-        $this.PowerShellVersion = $global:PSVersionTable.PSVersion
-
-        return @{
-            MinVersion        = $this.MinVersion
-            PowerShellVersion = $this.PowerShellVersion
-        }
+        $currentState = [PowerShellVersion]::new()
+        $currentState.MinVersion = $this.MinVersion
+        $currentState.PowerShellVersion = $global:PSVersionTable.PSVersion
+        return $currentState
     }
 
     [bool] Test() {
@@ -339,7 +288,7 @@ class PnPDevice {
     [DscProperty(Key)]
     [Ensure] $Ensure
 
-    [DscProperty(Mandatory)]
+    [DscProperty()]
     [string[]] $FriendlyName
 
     [DscProperty()]
@@ -357,17 +306,16 @@ class PnPDevice {
         $pnpDevice = @(Get-PnpDevice @params)
 
         # It's possible that multiple PNP devices match, but as long as one matches then the assertion succeeds
-        return @{
-            Ensure       = $pnpDevice ? [Ensure]::Present : [Ensure]::Absent
-            FriendlyName = $this.FriendlyName
-            DeviceClass  = $this.DeviceClass
-            Status       = $this.Status
-        }
+        $currentState = [PnPDevice]::new()
+        $currentState.Ensure = $pnpDevice ? [Ensure]::Present : [Ensure]::Absent
+        $currentState.FriendlyName = $this.FriendlyName
+        $currentState.DeviceClass = $this.DeviceClass
+        $currentState.Status = $this.Status
+        return $currentState
     }
 
     [bool] Test() {
-        $currentState = $this.Get()
-        return ($currentState.Ensure -eq $this.Ensure)
+        return $this.Get().Ensure -eq $this.Ensure
     }
 
     [void] Set() {

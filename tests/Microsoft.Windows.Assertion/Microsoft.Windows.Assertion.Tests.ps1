@@ -35,23 +35,18 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       $script:SystemArchitectureResource = [SystemArchitecture]::new()
 
       It 'Get Current Property' -Tag 'Get' {
-         $initialState = $SystemArchitectureResource.Get()
-         $initialState.Architecture | Should -Be 'TestValue'
+         $SystemArchitectureResource.Get().Architecture | Should -Be 'TestValue'
       }
 
       Context 'Test Current Property' -Tag 'Test' {
          It 'Should match' {
-            $SystemArchitectureResource.RequiredArchitecture = 'TestValue'
+            $SystemArchitectureResource.Architecture = 'TestValue'
             $SystemArchitectureResource.Test() | Should -Be $true
          }
          It 'Should not match' {
-            $SystemArchitectureResource.RequiredArchitecture = 'Value'
+            $SystemArchitectureResource.Architecture = 'Value'
             $SystemArchitectureResource.Test() | Should -Be $false
          }
-      }
-
-      AfterAll {
-
       }
    }
 
@@ -63,17 +58,16 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       $script:OsEditionResource = [OsEditionId]::new()
 
       It 'Get Current Property' -Tag 'Get' {
-         $initialState = $OsEditionResource.Get()
-         $initialState.Edition | Should -Be 'TestValue'
+         $OsEditionResource.Get().Edition | Should -Be 'TestValue'
       }
 
       Context 'Test Current Property' -Tag 'Test' {
          It 'Should match' {
-            $OsEditionResource.RequiredEdition = 'TestValue'
+            $OsEditionResource.Edition = 'TestValue'
             $OsEditionResource.Test() | Should -Be $true
          }
          It 'Should not match' {
-            $OsEditionResource.RequiredEdition = 'Value'
+            $OsEditionResource.Edition = 'Value'
             $OsEditionResource.Test() | Should -Be $false
          }
       }
@@ -88,19 +82,22 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       $script:ProcessorArchitectureResource = [ProcessorArchitecture]::new()
 
       It 'Get Current Property' -Tag 'Get' {
-         $initialState = $ProcessorArchitectureResource.Get()
-         $initialState.Architecture | Should -Be 'TestValue'
+         $ProcessorArchitectureResource.Get().Architecture | Should -Be 'TestValue'
       }
 
       Context 'Test Current Property' -Tag 'Test' {
          It 'Should match' {
-            $ProcessorArchitectureResource.RequiredArchitecture = 'TestValue'
+            $ProcessorArchitectureResource.Architecture = 'TestValue'
             $ProcessorArchitectureResource.Test() | Should -Be $true
          }
          It 'Should not match' {
-            $ProcessorArchitectureResource.RequiredArchitecture = 'Value'
+            $ProcessorArchitectureResource.Architecture = 'Value'
             $ProcessorArchitectureResource.Test() | Should -Be $false
          }
+      }
+
+      AfterAll {
+         $env:PROCESSOR_ARCHITECTURE = $script:CurrentArchitecture
       }
 
    }
@@ -113,8 +110,7 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       $script:HyperVisorResource = [HyperVisor]::new()
 
       It 'Get Current Property' -Tag 'Get' {
-         $initialState = $HyperVisorResource.Get()
-         $initialState.Ensure | Should -Be 'Present'
+         $HyperVisorResource.Get().Ensure | Should -Be 'Present'
       }
 
       Context 'Test Current Property' -Tag 'Test' {
@@ -137,10 +133,11 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
 
       $script:OsInstallDateResource = [OsInstallDate]::new()
 
-      It 'Default Before to todays date' -Tag 'Get' {
+      It 'Get Current Property' -Tag 'Get' {
          $initialState = $OsInstallDateResource.Get()
+         [String]::IsNullOrEmpty($initialState.Before) | Should -Be $true
+         [String]::IsNullOrEmpty($initialState.After) | Should -Be $true
          $initialState.InstallDate | Should -Be $([System.DateTimeOffset]::Parse($script:MockOsInstallDate))
-         ([System.DateTimeOffset]$initialState.Before).Date | Should -Be $(([System.DateTimeOffset]::Now).Date)
       }
 
       Context 'Test Current Property' -Tag 'Test' {
@@ -180,9 +177,8 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       $script:OsVersionResource = [OsVersion]::new()
 
       It 'Get Current Property' -Tag 'Get' {
-         $OsVersionResource.MinVersion = '0.0'
          $initialState = $OsVersionResource.Get()
-         $initialState.MinVersion | Should -Be '0.0'
+         [String]::IsNullOrEmpty($initialState.MinVersion) | Should -Be $true
          $initialState.OsVersion | Should -Be '1.2.0'
       }
 
@@ -210,17 +206,16 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       $script:CsManufacturerResource = [CsManufacturer]::new()
 
       It 'Get Current Property' -Tag 'Get' {
-         $initialState = $CsManufacturerResource.Get()
-         $initialState.Manufacturer | Should -Be 'TestValue'
+         $CsManufacturerResource.Get().Manufacturer | Should -Be 'TestValue'
       }
 
       Context 'Test Current Property' -Tag 'Test' {
          It 'Should match' {
-            $CsManufacturerResource.RequiredManufacturer = 'TestValue'
+            $CsManufacturerResource.Manufacturer = 'TestValue'
             $CsManufacturerResource.Test() | Should -Be $true
          }
          It 'Should not match' {
-            $CsManufacturerResource.RequiredManufacturer = 'Value'
+            $CsManufacturerResource.Manufacturer = 'Value'
             $CsManufacturerResource.Test() | Should -Be $false
          }
       }
@@ -234,17 +229,16 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       $script:CsModelResource = [CsModel]::new()
 
       It 'Get Current Property' -Tag 'Get' {
-         $initialState = $CsModelResource.Get()
-         $initialState.Model | Should -Be 'TestValue'
+         $CsModelResource.Get().Model | Should -Be 'TestValue'
       }
 
       Context 'Test Current Property' -Tag 'Test' {
          It 'Should match' {
-            $CsModelResource.RequiredModel = 'TestValue'
+            $CsModelResource.Model = 'TestValue'
             $CsModelResource.Test() | Should -Be $true
          }
          It 'Should not match' {
-            $CsModelResource.RequiredModel = 'Value'
+            $CsModelResource.Model = 'Value'
             $CsModelResource.Test() | Should -Be $false
          }
       }
@@ -265,21 +259,21 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
 
       Context 'Test Current Property' -Tag 'Test' {
          It 'Domain is specified and role is null should match' {
-            $CsDomainResource.RequiredDomain = 'TestDomain'
+            $CsDomainResource.Domain = 'TestDomain'
             $CsDomainResource.Test() | Should -Be $true
          }
          It 'Domain is specified and role is null should not match' {
-            $CsDomainResource.RequiredDomain = 'Domain'
+            $CsDomainResource.Domain = 'Domain'
             $CsDomainResource.Test() | Should -Be $false
          }
          It 'Domain and role specified should match' {
-            $CsDomainResource.RequiredDomain = 'TestDomain'
-            $CsDomainResource.RequiredRole = 'TestRole'
+            $CsDomainResource.Domain = 'TestDomain'
+            $CsDomainResource.Role = 'TestRole'
             $CsDomainResource.Test() | Should -Be $true
          }
          It 'Domain and role specified should not match' {
-            $CsDomainResource.RequiredDomain = 'TestDomain'
-            $CsDomainResource.RequiredRole = 'Role'
+            $CsDomainResource.Domain = 'TestDomain'
+            $CsDomainResource.Role = 'Role'
             $CsDomainResource.Test() | Should -Be $false
          }
       }
@@ -294,9 +288,8 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       $script:PowerShellVersionResource = [PowerShellVersion]::new()
 
       It 'Get Current Property' -Tag 'Get' {
-         $PowerShellVersionResource.MinVersion = '0.0'
          $initialState = $PowerShellVersionResource.Get()
-         $initialState.MinVersion | Should -Be '0.0'
+         [String]::IsNullOrEmpty($initialState.MinVersion) | Should -Be $true
          $initialState.PowerShellVersion | Should -Be '7.2.0.0'
       }
 
