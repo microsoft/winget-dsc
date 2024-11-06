@@ -34,6 +34,8 @@ class OsEditionId {
 
     [void] Set() {
         # This resource is only for asserting the Edition ID requirement.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. Expected '$($this.Edition)' but received '$($this.Get().Edition)'")
     }
 }
 
@@ -55,6 +57,8 @@ class SystemArchitecture {
 
     [void] Set() {
         # This resource is only for asserting the System Architecture requirement.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. Expected '$($this.Architecture)' but received '$($this.Get().Architecture)'")
     }
 }
 
@@ -76,6 +80,8 @@ class ProcessorArchitecture {
 
     [void] Set() {
         # This resource is only for asserting the Processor Architecture requirement.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. Expected '$($this.Architecture)' but received '$($this.Get().Architecture)'")
     }
 }
 
@@ -97,6 +103,8 @@ class HyperVisor {
 
     [void] Set() {
         # This resource is only for asserting the presence of a HyperVisor.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. Expected '$($this.Ensure)' but received '$($this.Get().Ensure)'")
     }
 }
 
@@ -137,14 +145,15 @@ class OsInstallDate {
 
     [bool] Test() {
         $currentState = $this.Get()
-        return (
-            [System.DateTimeOffset]$currentState.InstallDate -gt [System.DateTimeOffset]$this.After -and
-            [System.DateTimeOffset]$currentState.InstallDate -lt [System.DateTimeOffset]$this.Before
-        )
+        if ($this.Before -and [System.DateTimeOffset]$currentState.InstallDate -gt [System.DateTimeOffset]$this.Before) { return $false } # The IntallDate was later than the specified 'Before' date
+        if ($this.After -and [System.DateTimeOffset]$currentState.InstallDate -lt [System.DateTimeOffset]$this.After) { return $false } # The InstallDate was earlier than the specified 'After' date
+        return $true
     }
 
     [void] Set() {
         # This resource is only for asserting the OS Install Date.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. '$($this.Before)' >= '$($this.Get().InstallDate)' >= '$($this.After)' evaluated to 'False'")
     }
 }
 
@@ -176,6 +185,8 @@ class OsVersion {
 
     [void] Set() {
         # This resource is only for asserting the os version requirement.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. '$($this.Get().OsVersion)' >= '$($this.MinVersion)' evaluated to 'False'")
     }
 }
 
@@ -197,6 +208,8 @@ class CsManufacturer {
 
     [void] Set() {
         # This resource is only for asserting the Computer Manufacturer requirement.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. Expected '$($this.Manufacturer)' but received '$($this.Get().Manufacturer)'")
     }
 }
 
@@ -218,6 +231,8 @@ class CsModel {
 
     [void] Set() {
         # This resource is only for asserting the Computer Model requirement.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. Expected '$($this.Model)' but received '$($this.Get().Model)'")
     }
 }
 
@@ -248,6 +263,9 @@ class CsDomain {
 
     [void] Set() {
         # This resource is only for asserting the Computer Domain requirement.
+        if ($this.Test()) { return }
+        $currentState = $this.Get()
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. Expected '$($this.Domain)<$($this.Role)>' but received '$($currentState.Domain)<$($currentState.Role)>'")
     }
 }
 
@@ -279,6 +297,8 @@ class PowerShellVersion {
 
     [void] Set() {
         # This resource is only for asserting the PowerShell version requirement.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New("Assertion Failed. '$($this.Get().PowerShellVersion)' >= '$($this.MinVersion)' evaluated to 'False'")
     }
 }
 
@@ -320,5 +340,14 @@ class PnPDevice {
 
     [void] Set() {
         # This resource is only for asserting the PnP Device requirement.
+        if ($this.Test()) { return }
+        throw [System.Configuration.ConfigurationException]::New('Assertion Failed. ' +
+            $( if ($this.Ensure -eq [Ensure]::Present) {
+                    'No PnP devices found which matched the parameters'
+                } else {
+                    'One or more PnP devices found which matched the parameters'
+                }
+            )
+        )
     }
 }

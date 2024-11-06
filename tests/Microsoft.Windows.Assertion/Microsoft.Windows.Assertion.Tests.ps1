@@ -48,6 +48,17 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
             $SystemArchitectureResource.Test() | Should -Be $false
          }
       }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $SystemArchitectureResource.Architecture = 'TestValue'
+            { $SystemArchitectureResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $SystemArchitectureResource.Architecture = 'Value'
+            { $SystemArchitectureResource.Set() } | Should -Throw
+         }
+      }
    }
 
    Describe 'OsEditionId' {
@@ -69,6 +80,17 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          It 'Should not match' {
             $OsEditionResource.Edition = 'Value'
             $OsEditionResource.Test() | Should -Be $false
+         }
+      }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $OsEditionResource.Edition = 'TestValue'
+            { $OsEditionResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $OsEditionResource.Edition = 'Value'
+            { $OsEditionResource.Set() } | Should -Throw
          }
       }
    }
@@ -93,6 +115,17 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          It 'Should not match' {
             $ProcessorArchitectureResource.Architecture = 'Value'
             $ProcessorArchitectureResource.Test() | Should -Be $false
+         }
+      }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $ProcessorArchitectureResource.Architecture = 'TestValue'
+            { $ProcessorArchitectureResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $ProcessorArchitectureResource.Architecture = 'Value'
+            { $ProcessorArchitectureResource.Set() } | Should -Throw
          }
       }
 
@@ -121,6 +154,17 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          It 'Should not match' {
             $HyperVisorResource.Ensure = 'Absent'
             $HyperVisorResource.Test() | Should -Be $false
+         }
+      }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $HyperVisorResource.Ensure = 'Present'
+            { $HyperVisorResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $HyperVisorResource.Ensure = 'Absent'
+            { $HyperVisorResource.Set() } | Should -Throw
          }
       }
    }
@@ -167,6 +211,20 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
             { $OsInstallDateResource.Test() } | Should -Throw
          }
       }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         BeforeAll {
+            $script:OsInstallDateResource = [OsInstallDate]::new() # Reset properties from the -Tag 'Test' methods
+         }
+         It 'Should succeed when setting is not required' {
+            $OsInstallDateResource.Before = 'Sunday, November 3, 2024 12:00:00 AM'
+            { $OsInstallDateResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $OsInstallDateResource.Before = 'Friday, November 1, 2024 12:00:00 AM'
+            { $OsInstallDateResource.Set() } | Should -Throw
+         }
+      }
    }
 
    Describe 'OsVersion' {
@@ -188,12 +246,23 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
             $OsVersionResource.Test() | Should -Be $true
          }
          It 'Should fail' {
-            $OsVersionResource.MinVersion = '1.2.1'
+            $OsVersionResource.MinVersion = '2.0.0'
             $OsVersionResource.Test() | Should -Be $false
          }
          It 'Should throw if MinVersion is not a version' {
             $OsVersionResource.MinVersion = 'This is not a version'
             { $OsVersionResource.Test() } | Should -Throw
+         }
+      }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $OsVersionResource.MinVersion = '1.0.0'
+            { $OsVersionResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $OsVersionResource.MinVersion = '2.0.0'
+            { $OsVersionResource.Set() } | Should -Throw
          }
       }
    }
@@ -219,6 +288,17 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
             $CsManufacturerResource.Test() | Should -Be $false
          }
       }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $CsManufacturerResource.Manufacturer = 'TestValue'
+            { $CsManufacturerResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $CsManufacturerResource.Manufacturer = 'Value'
+            { $CsManufacturerResource.Set() } | Should -Throw
+         }
+      }
    }
 
    Describe 'CsModel' {
@@ -240,6 +320,17 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          It 'Should not match' {
             $CsModelResource.Model = 'Value'
             $CsModelResource.Test() | Should -Be $false
+         }
+      }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $CsModelResource.Model = 'TestValue'
+            { $CsModelResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $CsModelResource.Model = 'Value'
+            { $CsModelResource.Set() } | Should -Throw
          }
       }
    }
@@ -277,6 +368,20 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
             $CsDomainResource.Test() | Should -Be $false
          }
       }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         BeforeAll {
+            $script:CsDomainResource = [CsDomain]::new() # Reset properties from the -Tag 'Test' methods
+         }
+         It 'Should succeed when setting is not required' {
+            $CsDomainResource.Domain = 'TestDomain'
+            { $CsDomainResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $CsDomainResource.Domain = 'Domain'
+            { $CsDomainResource.Set() } | Should -Throw
+         }
+      }
    }
 
    Describe 'PowerShellVersion' {
@@ -305,6 +410,17 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
          It 'Should throw if MinVersion is not a version' {
             $PowerShellVersionResource.MinVersion = 'This is not a version'
             { $PowerShellVersionResource.Test() } | Should -Throw
+         }
+      }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $PowerShellVersionResource.MinVersion = '7.2'
+            { $PowerShellVersionResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw otherwise' {
+            $PowerShellVersionResource.MinVersion = '7.2.1'
+            { $PowerShellVersionResource.Set() } | Should -Throw
          }
       }
 
@@ -375,29 +491,58 @@ InModuleScope -ModuleName Microsoft.Windows.Assertion {
       Context 'Test Current Property' -Tag 'Test' {
          It 'Should match a device with one property specified' {
             $PnPDeviceResource.FriendlyName = 'TestName'
+            $PnPDeviceResource.Ensure = 'Present'
             $PnPDeviceResource.Test() | Should -Be $true
          }
          It 'Should match a device with two properties specified' {
             $PnPDeviceResource.FriendlyName = 'TestName'
             $PnPDeviceResource.DeviceClass = 'TestClass'
+            $PnPDeviceResource.Ensure = 'Present'
             $PnPDeviceResource.Test() | Should -Be $true
          }
          It 'Should match a device with all properties specified' {
             $PnPDeviceResource.FriendlyName = 'TestName'
             $PnPDeviceResource.DeviceClass = 'TestClass'
             $PnPDeviceResource.Status = 'OK'
+            $PnPDeviceResource.Ensure = 'Present'
             $PnPDeviceResource.Test() | Should -Be $true
          }
          It 'Should not match a device with bad FriendlyName' {
             $PnPDeviceResource.FriendlyName = 'Name'
             $PnPDeviceResource.Status = 'OK'
+            $PnPDeviceResource.Ensure = 'Present'
             $PnPDeviceResource.Test() | Should -Be $false
          }
          It 'Should not match a device with bad status' {
             $PnPDeviceResource.FriendlyName = 'TestName'
             $PnPDeviceResource.DeviceClass = 'TestClass'
             $PnPDeviceResource.Status = 'ERROR'
+            $PnPDeviceResource.Ensure = 'Present'
             $PnPDeviceResource.Test() | Should -Be $false
+         }
+         It 'Should match a device with bad status being absent' {
+            $PnPDeviceResource.FriendlyName = 'TestName'
+            $PnPDeviceResource.DeviceClass = 'TestClass'
+            $PnPDeviceResource.Status = 'ERROR'
+            $PnPDeviceResource.Ensure = 'Absent'
+            $PnPDeviceResource.Test() | Should -Be $true
+         }
+      }
+
+      Context 'Set Current Property' -Tag 'Set' {
+         It 'Should succeed when setting is not required' {
+            $PnPDeviceResource.FriendlyName = 'TestName'
+            { $PnPDeviceResource.Set() } | Should -Not -Throw
+         }
+         It 'Should throw with One or more PnP devices when ensuring absent' {
+            $PnPDeviceResource.FriendlyName = 'TestName'
+            $PnPDeviceResource.Ensure = 'Absent'
+            { $PnPDeviceResource.Set() } | Should -Throw 'Assertion Failed. One or more PnP devices found which matched the parameters'
+         }
+         It 'Should throw with no PnP devices when ensuring present' {
+            $PnPDeviceResource.FriendlyName = 'Name'
+            $PnPDeviceResource.Ensure = 'Present'
+            { $PnPDeviceResource.Set() } | Should -Throw 'Assertion Failed. No PnP devices found which matched the parameters'
          }
       }
    }
