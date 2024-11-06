@@ -53,3 +53,15 @@ Myanmar
 Systray
 timezones
 Ulaanbaatar
+EAfrica
+EAustralia
+EEurope
+ESouth
+NCentral
+Ntp
+Qyzylorda
+WAustralia
+WCentral
+WEurope
+WMongolia
+WStandard

@@ -197,7 +197,7 @@ function Get-ValidTimeZone {
 
         return $list[$trimmedVersion.IndexOf($TimeZone)]
     } else {
-        throw 'Invalid time zone. Please provide a valid time zone from the list of time zones (Get-TimeZone -ListAvailable).Id.'
+        throw 'Invalid time zone. Please provide a valid time zone without spaces and special characters.'
     }
 }
 
