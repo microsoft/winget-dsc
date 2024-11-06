@@ -1,6 +1,6 @@
 using module PythonPip3Dsc
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 <#
@@ -10,10 +10,9 @@ Set-StrictMode -Version Latest
 
 BeforeAll {
     # Before import module make sure Python is installed
-    if ($env:TF_BUILD)
-    {
+    if ($env:TF_BUILD) {
         $outFile = Join-Path $env:TEMP 'python.exe'
-        Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.14.0/python-3.14.0a1-amd64.exe" -UseBasicParsing -OutFile $outFile
+        Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.14.0/python-3.14.0a1-amd64.exe' -UseBasicParsing -OutFile $outFile
         & $outFile /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
     }
 
@@ -22,7 +21,7 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = "Pip3Package"
+        $expectedDSCResources = 'Pip3Package'
         $availableDSCResources = (Get-DscResource -Module PythonPip3Dsc).Name
         $availableDSCResources.count | Should -Be 1
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
@@ -34,9 +33,9 @@ Describe 'Pip3Package' {
         $desiredState = @{
             PackageName = 'django'
         }
-        
+
         Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Set -Property $desiredState
-     
+
         $finalState = Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Get -Property $desiredState
         $finalState.PackageName | Should -Be $desiredState.PackageName
         $finalState.Exist | Should -BeTrue
@@ -47,13 +46,13 @@ Describe 'Pip3Package' {
             PackageName = 'flask'
             Version     = '3.0.3'
         }
-        
+
         Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Set -Property $desiredState
-     
+
         $finalState = Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Get -Property $desiredState
         $finalState.PackageName | Should -Be $desiredState.PackageName
         $finalState.Exist | Should -BeTrue
-        $finalState.Version | Should -Be $desiredState.Version  
+        $finalState.Version | Should -Be $desiredState.Version
     }
 
     It 'Updates with specific version' -Skip:(!$IsWindows) {
@@ -61,7 +60,7 @@ Describe 'Pip3Package' {
             PackageName = 'requests'
             Version     = '2.32.2'
         }
-        
+
         Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Set -Property $desiredState
 
         # Now update the package to a newer version
@@ -71,7 +70,7 @@ Describe 'Pip3Package' {
         $finalState = Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Get -Property $desiredState
         $finalState.PackageName | Should -Be $desiredState.PackageName
         $finalState.Exist | Should -BeTrue
-        $finalState.Version | Should -Be $desiredState.Version  
+        $finalState.Version | Should -Be $desiredState.Version
     }
 
     It 'Handles non-existent package gracefully' -Skip:(!$IsWindows) {

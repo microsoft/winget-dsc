@@ -41,9 +41,9 @@ Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Met
 ### EXAMPLE 2
 
 ```powershell
-Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{ 
-    PackageId = 'GitVersion.Tool'; 
-    Version = '5.6.8'; 
+Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{
+    PackageId = 'GitVersion.Tool';
+    Version = '5.6.8';
 }
 
 # This example installs the .NET tool package 'GitVersion.Tool' version 5.6.8 in the default directory.
@@ -52,10 +52,10 @@ Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Met
 ### EXAMPLE 3
 
 ```powershell
-Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{ 
-    PackageId = 'PowerShell'; 
-    Prerelease = $true; 
-    ToolPathDirectory = 'C:\tools'; 
+Invoke-DscResource -ModuleName Microsoft.DotNet.Dsc -Name DotNetToolPackage -Method Set -Property @{
+    PackageId = 'PowerShell';
+    Prerelease = $true;
+    ToolPathDirectory = 'C:\tools';
 }
 
 # This example installs the prerelease version of the .NET tool package 'PowerShell' in the 'C:\tools' directory.
