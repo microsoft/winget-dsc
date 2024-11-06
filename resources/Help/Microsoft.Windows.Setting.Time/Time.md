@@ -19,11 +19,12 @@ This `Time` DSC Resource allows you to manage the time zone, automatic time zone
 
 ## PARAMETERS
 
-| **Parameter**              | **Attribute** | **DataType** | **Description**                                                                                                                 | **Allowed Values**                                                |
-| -------------------------- | ------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `TimeZone`                 | Key           | String       | Specifies the time zone to set on the machine.                                                                                  | Any valid time zone identifier from `Get-TimeZone -ListAvailable` |
-| `SetTimeZoneAutomatically` | Optional      | Boolean      | The method to use to set the time zone automatically. The value should be either `NTP` or `NoSync`. The default value is `NTP`. | `NTP`, `NoSync`                                                   |
-| `ShowSystemTrayClock`      | Optional      | Boolean      | Whether to show the date and time in the system tray. The value should be a boolean. The default value is `$true`.              | `$true`, `$false`                                                 |
+| **Parameter**                | **Attribute** | **DataType** | **Description**                                                                                                    | **Allowed Values**                                                 |
+| ---------------------------- | ------------- | ------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `TimeZone`                   | Key           | String       | Specifies the time zone to set on the machine.                                                                     | Any valid time zone identifier from `Get-TimeZone -ListAvailable`  |
+| `SetTimeZoneAutomatically`   | Optional      | Boolean      | The method to use to set the time zone automatically. The value should be a boolean.                               | `NTP`, `NoSync`                                  `$true`, `$false` |
+| `ShowSystemTrayClock`        | Optional      | Boolean      | Whether to show the date and time in the system tray. The value should be a boolean. The default value is `$true`. | `$true`, `$false`                                                  |
+| `$NotifyClockChangeProperty` | Optional      | Boolean      | Whether to notify the user when the time changes. The value should be a boolean.                                   | `$true`, `$false`                                                  |
 
 
 ## EXAMPLES
