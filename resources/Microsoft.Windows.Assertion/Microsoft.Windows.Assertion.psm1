@@ -145,7 +145,7 @@ class OsInstallDate {
 
     [bool] Test() {
         $currentState = $this.Get()
-        if ($this.Before -and [System.DateTimeOffset]$currentState.InstallDate -gt [System.DateTimeOffset]$this.Before) { return $false } # The IntallDate was later than the specified 'Before' date
+        if ($this.Before -and [System.DateTimeOffset]$currentState.InstallDate -gt [System.DateTimeOffset]$this.Before) { return $false } # The InstallDate was later than the specified 'Before' date
         if ($this.After -and [System.DateTimeOffset]$currentState.InstallDate -lt [System.DateTimeOffset]$this.After) { return $false } # The InstallDate was earlier than the specified 'After' date
         return $true
     }
