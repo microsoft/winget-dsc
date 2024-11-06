@@ -50,8 +50,8 @@ properties:
         id: Microsoft.VisualStudioCode
         source: winget
         Ensure: Present
-    - resource: vscode/VSCodeExtension
-      id: install-vscode-extension_vscode-yaml
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: install_vscode-yaml
       dependsOn:
         - install-vs-code
       directives:
@@ -59,9 +59,9 @@ properties:
         allowPrerelease: true
       settings:
         Name: redhat.vscode-yaml
-        Ensure: Present
-    - resource: vscode/VSCodeExtension
-      id: install-vscode-extension_editorconfig.editorconfig
+        Exist: true
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: install_editorconfig.editorconfig
       dependsOn:
         - install-vs-code
       directives:
@@ -69,9 +69,9 @@ properties:
         allowPrerelease: true
       settings:
         Name: EditorConfig.EditorConfig
-        Ensure: Present
-    - resource: vscode/VSCodeExtension
-      id: install-vsscode-extension_ms-vscode.powershell
+        Exist: true
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: install_ms-vscode.powershell
       dependsOn:
         - install-vs-code
       directives:
@@ -79,7 +79,7 @@ properties:
         allowPrerelease: true
       settings:
         Name: ms-vscode.powershell
-        Ensure: Present
+        Exist: true
     ########################################################################
     # Section: Install PowerShell Modules
     ########################################################################
