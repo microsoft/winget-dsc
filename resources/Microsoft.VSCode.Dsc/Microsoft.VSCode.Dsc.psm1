@@ -97,7 +97,7 @@ function Invoke-VSCode {
 
     try {
         Invoke-Expression "& `"$VSCodeCLIPath`" $Command"
-        $commandInvocationSuccess = $LASTEXITCODE ? $false : $true # Set the success based on whether or not the command returned successfullt
+        $commandInvocationSuccess = $LASTEXITCODE ? $false : $true # Set the success based on whether or not the command returned successfully
     } catch {
         $commandInvocationSuccess = $false
     } finally {
