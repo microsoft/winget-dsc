@@ -43,8 +43,8 @@ function Get-LocaleList {
     $out = [List[Language]]::new()
 
     foreach ($locale in $localeList) {
-        $langague = [Language]::new($locale.LanguageTag, $true)
-        $out.Add($langague)
+        $language = [Language]::new($locale.LanguageTag, $true)
+        $out.Add($language)
     }
 
     # section to include other languages that can be installed
@@ -52,8 +52,8 @@ function Get-LocaleList {
     $allLangues = [System.Globalization.CultureInfo]::GetCultures('AllCultures')
     foreach ($culture in $allLangues) {
         if ($out.LocaleName -notcontains $culture.Name -and -not ([string]::IsNullOrEmpty($culture.Name))) {
-            $langague = [Language]::new($culture.Name, $false)
-            $out.Add($langague)
+            $language = [Language]::new($culture.Name, $false)
+            $out.Add($language)
         }
     }
 
