@@ -3,9 +3,6 @@
 
 using namespace System.Collections.Generic
 
-$global:LocaleNameRegistryPath = 'HKCU:\Control Panel\International'
-$global:LocaleUserProfilePath = 'HKCU:\Control Panel\International\User Profile'
-
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:LocaleNameRegistryPath = 'HKCU:\Control Panel\International'
     $global:LocaleUserProfilePath = 'HKCU:\Control Panel\International\User Profile'
