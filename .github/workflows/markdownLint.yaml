@@ -1,4 +1,20 @@
-on: [push, pull_request]
+name: Markdown Lint
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  pull_request_target:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+    types:
+      - 'opened'
+      - 'reopened'
+      - 'synchronize'
 
 jobs:
   lint:
