@@ -97,8 +97,11 @@ function Invoke-VSCode {
 
     try {
         Invoke-Expression "& `"$VSCodeCLIPath`" $Command"
+        $commandInvocationSuccess = $LASTEXITCODE ? $false : $true # Set the success based on whether or not the command returned successfullt
     } catch {
-        throw ("Executing {0} with {$Command} failed." -f $VSCodeCLIPath)
+        $commandInvocationSuccess = $false
+    } finally {
+        if (!$commandInvocationSuccess) { throw [System.Configuration.ConfigurationException]::new("Executing '$VSCodeCLIPath $Command' failed.") }
     }
 }
 
