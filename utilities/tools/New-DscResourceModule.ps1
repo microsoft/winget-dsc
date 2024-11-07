@@ -69,6 +69,9 @@ $moduleManifestParams = @{
     CmdletsToExport   = @()
     VariablesToExport = @()
     AliasesToExport   = @()
+    LicenseUri        = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
+    ProjectUri        = 'https://github.com/microsoft/winget-dsc'
+    Prerelease        = 'alpha'
 }
 
 if ($DscResourceToExport) {
@@ -81,18 +84,6 @@ if (-not (Test-Path $moduleManifestPath)) {
         Write-Verbose -Message ($moduleManifestParams | ConvertTo-Json -Depth 10 | Out-String)
         New-ModuleManifest @moduleManifestParams
     }
-
-    # Workaround for issue: https://github.com/PowerShell/PowerShell/issues/5922
-    $fileContent = Get-Content $moduleManifestPath
-    $newLicenseUri = "LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'"
-    $fileContent = $fileContent -replace '# LicenseUri = ''''', $newLicenseUri
-    $newProjectUri = "ProjectUri = 'https://github.com/microsoft/winget-dsc'"
-    $fileContent = $fileContent -replace '# ProjectUri = ''''', $newProjectUri
-    $newPrerelease = "Prerelease = 'alpha'"
-    $fileContent = $fileContent -replace '# Prerelease = ''''', $newPrerelease
-    # TODO: Add tags
-
-    Set-Content -Path $moduleManifestPath -Value $fileContent
 }
 
 $psm1Path = Join-Path -Path $resourcePath -ChildPath "$DscResourceModule.psm1"
