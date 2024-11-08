@@ -313,6 +313,39 @@ class VSCodeExtension {
     [void] Uninstall() {
         $this.Uninstall($true)
     }
+
+    static [hashtable] GetResourceInfo() {
+        return @{
+            Description = 'The `VSCodeExtension` DSC Resource allows you to install, update, and remove Visual Studio Code extensions. This resource ensures that the specified Visual Studio Code extension is in the desired state.'
+            # TODO: Add other fields like Synopsis, Notes, etc.
+        }
+    }
+
+    static [hashtable] GetResourcePropertyInfo() {
+        # TODO: We can add JSON schemas for the properties and additionally allowed values if needed
+        return @{
+            Name     = @{
+                Description = 'The name of the Visual Studio Code extension to manage.'
+                Type        = 'string'
+                Required    = $true
+            }
+            Version  = @{
+                Description = 'The version of the Visual Studio Code extension to install. If not specified, the latest version will be installed.'
+                Type        = 'string'
+                Required    = $false
+            }
+            Exist    = @{
+                Description = 'Indicates whether the extension should exist. The default value is `$true`.'
+                Type        = 'bool'
+                Required    = $false
+            }
+            Insiders = @{
+                Description = 'Indicates whether to manage the extension for the Insiders version of Visual Studio Code. The default value is `$false`.'
+                Type        = 'bool'
+                Required    = $false
+            }
+        }
+    }
     #endregion VSCodeExtension helper functions
 }
 #endregion DSCResources
