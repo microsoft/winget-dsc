@@ -401,6 +401,28 @@ Describe 'FilterKeys' {
     }
 }
 
+Describe 'EyeControl' {
+    It 'Enable EyeControl.' {
+        Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ Ensure = 'Absent' }
+
+        $initialState = Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.Ensure | Should -Be 'Absent'
+
+        # Test enabled
+        $parameters = @{ Ensure = 'Present' }
+        $testResult = Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
+
+        # Set enabled
+        Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.Ensure | Should -Be 'Present'
+
+        $testResult2 = Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+}
+
 AfterAll {
     $env:TestRegistryPath = ''
 }
