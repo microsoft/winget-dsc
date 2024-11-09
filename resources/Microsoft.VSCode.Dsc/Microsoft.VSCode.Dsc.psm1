@@ -95,14 +95,32 @@ function Invoke-VSCode {
         [string]$Command
     )
 
-    try {
-        Invoke-Expression "& `"$VSCodeCLIPath`" $Command"
-        $commandInvocationSuccess = $LASTEXITCODE ? $false : $true # Set the success based on whether or not the command returned successfully
-    } catch {
-        $commandInvocationSuccess = $false
-    } finally {
-        if (!$commandInvocationSuccess) { throw [System.Configuration.ConfigurationException]::new("Executing '$VSCodeCLIPath $Command' failed.") }
+    $stdErrTempFile = "$env:TEMP\$((New-Guid).Guid)"
+    $stdOutTempFile = "$env:TEMP\$((New-Guid).Guid)"
+    $invocationSuccess = $true
+
+    $processParams = @{
+        FilePath               = $VSCodeCLIPath
+        ArgumentList           = "$Command"
+        RedirectStandardError  = $stdErrTempFile
+        RedirectStandardOutput = $stdOutTempFile
+        Wait                   = $true
+        PassThru               = $true
+        NoNewWindow            = $true
     }
+
+    $invocation = Start-Process @processParams
+    $invocationErrors = Get-Content $stdErrTempFile -Raw -ErrorAction SilentlyContinue
+    $invocationErrors = $invocationErrors -Replace '\n', '\n '
+    $invocationOutput = Get-Content $stdOutTempFile -ErrorAction SilentlyContinue
+    Remove-Item -Path $stdErrTempFile -ErrorAction Ignore
+    Remove-Item -Path $stdOutTempFile -ErrorAction Ignore
+
+    if (![string]::IsNullOrWhiteSpace($invocationErrors)) { $invocationSuccess = $false }
+    if ($invocation.ExitCode) { $invocationSuccess = $false }
+    if (!$invocationSuccess) { throw [System.Configuration.ConfigurationException]::new("Executing '$VSCodeCLIPath $Command' failed. Command Output: '$invocationErrors'") }
+
+    return $invocationOutput
 }
 
 function TryGetRegistryValue {
