@@ -26,9 +26,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = 'Text', 'Magnifier', 'MousePointer', 'VisualEffect', 'Audio', 'TextCursor', 'StickyKeys', 'ToggleKeys', 'FilterKeys'
+        $expectedDSCResources = 'Text', 'Magnifier', 'MousePointer', 'VisualEffect', 'Audio', 'TextCursor', 'StickyKeys', 'ToggleKeys', 'FilterKeys', 'EyeControl'
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 9
+        $availableDSCResources.length | Should -Be 10
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
