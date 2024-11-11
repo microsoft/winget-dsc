@@ -1,0 +1,102 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+properties:
+  resources:
+    ########################################################################
+    # Section: Install Git
+    ########################################################################
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: install-git
+      directives:
+        description: Install Git # Although the user probably already has git installed, it's possible that they don't
+        allowPrerelease: true
+      settings:
+        id: Git.Git
+        source: winget
+        Ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      dependsOn:
+        - install-git
+      id: install-github-cli
+      directives:
+        description: Install GitHub CLI
+        allowPrerelease: true
+        securityContext: elevated
+      settings:
+        id: GitHub.cli
+        source: winget
+        Ensure: Present
+    ########################################################################
+    # Section: Configure Git Remotes
+    ########################################################################
+    - resource: GitDSC/GitRemote
+      id: add-microsoft-upstream
+      directives:
+        description: Add microsoft/winget-dsc as the upstream remote
+        allowPrerelease: true
+      settings:
+        ProjectDirectory: '${WinGetConfigRoot}\..'
+        RemoteName: upstream
+        RemoteUrl: https://github.com/microsoft/winget-pkgs.git
+    ########################################################################
+    # Section: Install VS-Code
+    ########################################################################
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: install-vs-code
+      directives:
+        description: Install Microsoft Visual Studio Code
+        allowPrerelease: true
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        Ensure: Present
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: install_vscode-yaml
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install YAML extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: redhat.vscode-yaml
+        Exist: true
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: install_editorconfig.editorconfig
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install EditorConfig extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: EditorConfig.EditorConfig
+        Exist: true
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: install_ms-vscode.powershell
+      dependsOn:
+        - install-vs-code
+      directives:
+        description: Install PowerShell extension for VSCode
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode.powershell
+        Exist: true
+    ########################################################################
+    # Section: Install PowerShell Modules
+    ########################################################################
+    - resource: PowerShellModule/PSModuleResource
+      id: install-pester
+      directives:
+        description: Install Pester module
+        allowPrerelease: true
+      settings:
+        Module_Name: Pester
+        Ensure: Present
+    - resource: PowerShellModule/PSModuleResource
+      id: install-psscriptanalyzer
+      directives:
+        description: Install PSScriptAnalyzer module
+        allowPrerelease: true
+      settings:
+        Module_Name: PSScriptAnalyzer
+        Ensure: Present
+  configurationVersion: 0.2.0
