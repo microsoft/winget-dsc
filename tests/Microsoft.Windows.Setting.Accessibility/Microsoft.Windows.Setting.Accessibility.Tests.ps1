@@ -26,9 +26,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = 'Text', 'Magnifier', 'MousePointer', 'VisualEffect', 'Audio', 'TextCursor', 'StickyKeys', 'ToggleKeys', 'FilterKeys'
+        $expectedDSCResources = 'Text', 'Magnifier', 'MousePointer', 'VisualEffect', 'Audio', 'TextCursor', 'StickyKeys', 'ToggleKeys', 'FilterKeys', 'EyeControl'
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Accessibility).Name
-        $availableDSCResources.length | Should -Be 9
+        $availableDSCResources.length | Should -Be 10
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -397,6 +397,28 @@ Describe 'FilterKeys' {
         $testResult.InDesiredState | Should -Be $false # Everything should still be opposite from when each property was changed individually
         Invoke-DscResource -Name FilterKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
         $testResult2 = Invoke-DscResource -Name FilterKeys -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult2.InDesiredState | Should -Be $true
+    }
+}
+
+Describe 'EyeControl' {
+    It 'Enable EyeControl.' {
+        Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property @{ Ensure = 'Absent' }
+
+        $initialState = Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $initialState.Ensure | Should -Be 'Absent'
+
+        # Test enabled
+        $parameters = @{ Ensure = 'Present' }
+        $testResult = Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $false
+
+        # Set enabled
+        Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Get -Property @{}
+        $finalState.Ensure | Should -Be 'Present'
+
+        $testResult2 = Invoke-DscResource -Name EyeControl -ModuleName Microsoft.Windows.Setting.Accessibility -Method Test -Property $parameters
         $testResult2.InDesiredState | Should -Be $true
     }
 }
