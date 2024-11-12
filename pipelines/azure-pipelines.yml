@@ -36,7 +36,7 @@ extends:
         displayName: Manual Approval
         jobs:
         - ${{ if eq(parameters.Microsoft_Windows_Developer, false) }}:
-          - template: /azure-pipelines/templates/manual-trigger.yml@self
+          - template: /pipelines/templates/manual-trigger.yml@self
             parameters:
               publishTarget: Microsoft.Windows.Developer to PSGallery
       - stage: Microsoft_Windows_Developer
