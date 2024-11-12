@@ -5,7 +5,7 @@ trigger: none
 
 parameters: # parameters are shown up in ADO UI in a build queue time
 
-- name: 'Microsoft.Windows.Developer'
+- name: 'Microsoft_Windows_Developer'
   displayName: 'Publish Microsoft.Windows.Developer to PSGallery'
   type: boolean
   default: false
@@ -32,24 +32,20 @@ extends:
       skipBuildTagsForGitHubPullRequests: true
 
     stages:
-      - stage: Manual Approval
+      - stage: Manual_Approval
         displayName: Manual Approval
-        dependsOn: []
         jobs:
-        - ${{ if eq(parameters.Microsoft.Windows.Developer, false) }}:
-          - template: /azure-pipelines/templates/manual-trigger.yml@self
+        - ${{ if eq(parameters.Microsoft_Windows_Developer, false) }}:
+          - template: /pipelines/templates/manual-trigger.yml@self
             parameters:
-              publishTarget: Microsoft.Windows.Developer PSGallery
-        - template: /azure-pipelines/templates/jobs/publish/store.yml@self
-          parameters:
-            runImmediately: ${{ parameters.msstore }}
-      - stage: Publish pipeline artifact
+              publishTarget: Microsoft.Windows.Developer to PSGallery
+      - stage: Microsoft_Windows_Developer
         jobs:
-        - job: Publish pipeline artifact
+        - job: publish_artifact
           displayName: 'Publish Microsoft.Windows.Developer'
           templateContext:
             outputs:
               - output: pipelineArtifact
-                displayName: Publish ${{ parameters.buildName }}
+                displayName: Publish Microsoft.Windows.Developer
                 targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Developer\
                 artifactName: Microsoft.Windows.Developer
