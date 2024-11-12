@@ -35,9 +35,9 @@ extends:
       skipBuildTagsForGitHubPullRequests: true
 
     stages:
-      - stage:  
+      - stage: Prepare
         jobs:
-        - job: Prepare
+        - job: Prepare_Sign
           displayName: Prepare and sign ${{ parameters.moduleName }}
           steps:
           - task: NuGetToolInstaller@1
@@ -112,9 +112,10 @@ extends:
                 {
                     $notValid
                     throw "A file is not signed"
-                }
+                } 
         - job: publish_artifact
           displayName: Publish ${{ parameters.moduleName }}
+          dependsOn: Prepare_Sign
           templateContext:
             outputs:
               - output: pipelineArtifact
@@ -123,6 +124,7 @@ extends:
                 artifactName: ${{ parameters.moduleName }}
       - stage: Publish
         displayName: Manual Approval
+        dependsOn: Prepare
         trigger: manual
         jobs:
         - job: Execute_Publish_Module
