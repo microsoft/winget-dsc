@@ -124,7 +124,6 @@ extends:
                 artifactName: ${{ parameters.moduleName }}
       - stage: Publish
         displayName: Manual Approval
-        dependsOn: Prepare
         trigger: manual
         jobs:
         - job: Execute_Publish_Module
