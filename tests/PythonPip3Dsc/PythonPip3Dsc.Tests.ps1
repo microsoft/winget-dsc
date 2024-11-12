@@ -125,7 +125,7 @@ Describe 'Pip3Package' {
 
     It 'Does not return whatif result if package is invalid' -Skip:(!$IsWindows) {
         $whatIfState = @{
-            PackageName = 'itsdangerouss'
+            PackageName = 'its-dangerous'
         }
 
         $pipPackage = [Pip3Package]$whatIfState
