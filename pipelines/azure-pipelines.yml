@@ -35,7 +35,7 @@ extends:
       skipBuildTagsForGitHubPullRequests: true
 
     stages:
-      - stage: Publish ${{ parameters.moduleName }}
+      - stage: Prepare module 
         jobs:
         - job: prepare_module
           displayName: Prepare and sign ${{ parameters.moduleName }}
@@ -121,7 +121,7 @@ extends:
                 displayName: Publish ${{ parameters.moduleName }} artifact
                 targetPath: ToPublish\${{ parameters.moduleName }}
                 artifactName: ${{ parameters.moduleName }}
-      - stage: Publish to the gallery
+      - stage: Publish to the PowerShell Gallery
         displayName: Manual Approval
         trigger: manual
         jobs:
