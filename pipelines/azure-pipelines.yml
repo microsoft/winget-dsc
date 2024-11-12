@@ -34,7 +34,6 @@ extends:
     stages:
       - stage: Manual_Approval
         displayName: Manual Approval
-        dependsOn: []
         jobs:
         - ${{ if eq(parameters.Microsoft_Windows_Developer, false) }}:
           - template: /azure-pipelines/templates/manual-trigger.yml@self
