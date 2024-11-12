@@ -32,7 +32,7 @@ extends:
       skipBuildTagsForGitHubPullRequests: true
 
     stages:
-      - stage: Manual Approval
+      - stage: Manual_Approval
         displayName: Manual Approval
         dependsOn: []
         jobs:
@@ -40,9 +40,9 @@ extends:
           - template: /azure-pipelines/templates/manual-trigger.yml@self
             parameters:
               publishTarget: Microsoft.Windows.Developer to PSGallery
-      - stage: Publish pipeline artifact
+      - stage: Microsoft_Windows_Developer
         jobs:
-        - job: Publish pipeline artifact
+        - job: publish_artifact
           displayName: 'Publish Microsoft.Windows.Developer'
           templateContext:
             outputs:
