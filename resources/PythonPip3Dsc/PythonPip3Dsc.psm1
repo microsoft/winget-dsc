@@ -38,7 +38,7 @@ function Invoke-Process {
 
         $stErr = @()
         while (-not $p.StandardError.EndOfStream) {
-            $stErr += $p.StandardError.ReadLine()  
+            $stErr += $p.StandardError.ReadLine()
         }
 
         $result = [pscustomobject]@{
@@ -132,16 +132,8 @@ function Get-PackageNameWithVersion {
         [string]$PackageName,
 
         [Parameter(Mandatory = $false)]
-        [string]$Arguments,
-
-        [Parameter(Mandatory = $false)]
-        [string]$Version,
-
-        [Parameter()]
-        [switch]$IsUpdate,
-
-        [Parameter()]
-        [switch]$DryRun
+        [AllowNull()]
+        [string]$Version
     )
 
     if ($PSBoundParameters.ContainsKey('Version') -and -not ([string]::IsNullOrEmpty($Version))) {
@@ -162,18 +154,16 @@ function Invoke-Pip3Install {
         [Parameter()]
         [string]$Version,
 
-        # not explicitly used, only to call from lower functions if parameters are passed
         [Parameter()]
         [switch]$IsUpdate,
 
-        # not explicitly used, only to call from lower functions if parameters are passed
         [Parameter()]
         [switch]$DryRun
     )
 
     $command = [List[string]]::new()
     $command.Add('install')
-    $command.Add((Get-PackageNameWithVersion @PSBoundParameters))
+    $command.Add((Get-PackageNameWithVersion -PackageName $PackageName -Version $Version))
     if ($IsUpdate.IsPresent) {
         $command.Add('--force-reinstall')
     }
@@ -184,7 +174,7 @@ function Invoke-Pip3Install {
     $command.Add($Arguments)
     Write-Verbose -Message "Executing 'pip' install with command: $command"
     $result = Invoke-Pip3 -command $command
-    
+
     return $result
 }
 
@@ -202,7 +192,7 @@ function Invoke-Pip3Uninstall {
 
     $command = [List[string]]::new()
     $command.Add('uninstall')
-    $command.Add((Get-PackageNameWithVersion @PSBoundParameters))
+    $command.Add((Get-PackageNameWithVersion -PackageName $PackageName -Version $Version))
     $command.Add($Arguments)
 
     # '--yes' is needed to ignore conformation required for uninstalls
@@ -409,7 +399,7 @@ class Pip3Package {
         }
     }
 
-    [string] WhatIf() {  
+    [string] WhatIf() {
         if ($this.Exist) {
             $whatIfState = Invoke-Pip3Install -PackageName $this.PackageName -Version $this.Version -Arguments $this.Arguments -DryRun
 
@@ -428,7 +418,7 @@ class Pip3Package {
             # Uninstall does not have --dry-run param
             $out = @{}
         }
-        
+
         return ($out | ConvertTo-Json -Depth 10 -Compress)
     }
 
