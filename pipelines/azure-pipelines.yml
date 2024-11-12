@@ -121,25 +121,25 @@ extends:
                 displayName: Publish ${{ parameters.moduleName }} artifact
                 targetPath: ToPublish\${{ parameters.moduleName }}
                 artifactName: ${{ parameters.moduleName }}
-      - stage: Manual_Approval
+      - stage: Publish to the gallery
         displayName: Manual Approval
-        steps:
-        - template: /pipelines/templates/manual-trigger.yml@self
-          parameters:
-            publishTarget: ${{ parameters.moduleName }}  to PSGallery
-        - task: PowerShell@2
-          displayName: Publish Module
-          inputs:
-            targetType: inline
-            pwsh: true
-            script: |
-              $moduleFolder = "ToPublish\${{ parameters.moduleName }}"
-              
-              # List out all items in module folder
-              Get-ChildItem -Path $moduleFolder -Recurse
-              
-              $moduleFolderPath = (Resolve-Path $moduleFolder).Path
-              
-              Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey $(DscSamplesNugetApiKey) -verbose
-              displayName: Publish ${{ parameters.moduleName }}'      
+        trigger: manual
+        jobs:
+        - job: Execute_Publish_Module
+          steps:
+          - task: PowerShell@2
+            displayName: Publish Module
+            inputs:
+              targetType: inline
+              pwsh: true
+              script: |
+                $moduleFolder = "ToPublish\${{ parameters.moduleName }}"
+                
+                # List out all items in module folder
+                Get-ChildItem -Path $moduleFolder -Recurse
+                
+                $moduleFolderPath = (Resolve-Path $moduleFolder).Path
+                
+                Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey $(DscSamplesNugetApiKey) -verbose
+                displayName: Publish ${{ parameters.moduleName }}'      
                 
