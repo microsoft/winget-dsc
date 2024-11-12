@@ -13,4 +13,3 @@ sortby
 msft
 automerge
 Workaround
-its-dangerous

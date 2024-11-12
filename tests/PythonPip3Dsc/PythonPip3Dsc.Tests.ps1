@@ -127,14 +127,14 @@ Describe 'Pip3Package' {
 
     It 'Does not return whatif result if package is invalid' -Skip:(!$IsWindows) {
         $whatIfState = @{
-            PackageName = 'its-dangerous'
+            PackageName = 'invalidPackageName'
         }
 
         $pipPackage = [Pip3Package]$whatIfState
         $whatIf = $pipPackage.WhatIf() | ConvertFrom-Json
         
 
-        $whatIf.PackageName | Should -Be 'its-dangerous'
+        $whatIf.PackageName | Should -Be 'invalidPackageName'
         $whatIf._metaData.whatIf | Should -Contain "ERROR: No matching distribution found for $($whatIfState.PackageName)"
     }
 }
