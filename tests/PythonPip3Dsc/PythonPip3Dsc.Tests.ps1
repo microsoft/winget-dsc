@@ -116,7 +116,7 @@ Describe 'Pip3Package' {
         # Uninstall to make sure it is not present
         $pipPackage.Set()
 
-        $whatIf.Exist = $true
+        $pipPackage.Exist = $true
 
         # Call whatif to see if it "will" install
         $whatIf = $pipPackage.WhatIf() | ConvertFrom-Json
