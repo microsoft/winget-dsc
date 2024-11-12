@@ -35,9 +35,9 @@ extends:
       skipBuildTagsForGitHubPullRequests: true
 
     stages:
-      - stage: Prepare module 
+      - stage:  
         jobs:
-        - job: prepare_module
+        - job: Prepare
           displayName: Prepare and sign ${{ parameters.moduleName }}
           steps:
           - task: NuGetToolInstaller@1
@@ -121,7 +121,7 @@ extends:
                 displayName: Publish ${{ parameters.moduleName }} artifact
                 targetPath: ToPublish\${{ parameters.moduleName }}
                 artifactName: ${{ parameters.moduleName }}
-      - stage: Publish to the PowerShell Gallery
+      - stage: Publish
         displayName: Manual Approval
         trigger: manual
         jobs:
