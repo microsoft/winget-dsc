@@ -37,3 +37,5 @@ uilt
 Windo
 ELSPROBLEMS
 requ
+whatif
+pscustomobject
