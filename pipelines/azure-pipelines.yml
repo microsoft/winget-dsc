@@ -146,6 +146,8 @@ extends:
               $moduleFolder = "$(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}"
               Get-ChildItem -Path $moduleFolder -Recurse
               $moduleFolderPath = (Resolve-Path $moduleFolder).Path
-              Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey ${env:DSCSAMPLESNUGETAPIKEY} -verbose
+              Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey $env:api_key -verbose
             displayName: Publish ${{ parameters.moduleName }}'
+            env:
+              api_key: $(DscSamplesNugetApiKey)
                 
