@@ -9,7 +9,6 @@ msft
 NPH
 Peet
 rfc
-SAMPLESNUGETAPIKEY
 screenshots
 Scrollbars
 Searchbox
@@ -21,5 +20,4 @@ usr
 versioning
 VGpu
 wildcards
-Workaround
 worktree
