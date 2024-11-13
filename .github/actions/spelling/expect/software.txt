@@ -6,3 +6,4 @@ cspell
 NUnit
 reportgenerator
 Toolpackage
+markdownlint
