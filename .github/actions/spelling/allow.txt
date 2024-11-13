@@ -38,6 +38,7 @@ Windo
 ELSPROBLEMS
 requ
 whatif
-pscustomobject+
+pscustomobject
+VGpu
 wildcards
 worktree
