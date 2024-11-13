@@ -38,4 +38,6 @@ Windo
 ELSPROBLEMS
 requ
 whatif
-pscustomobject
+pscustomobject+
+wildcards
+worktree
