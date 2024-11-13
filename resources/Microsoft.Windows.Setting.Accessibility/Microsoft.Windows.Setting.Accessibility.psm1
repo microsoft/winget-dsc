@@ -4,6 +4,11 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+enum Ensure {
+    Absent
+    Present
+}
+
 enum TextSize {
     KeepCurrentValue
     Small
@@ -78,8 +83,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:StickyKeysRegistryPath = 'HKCU:\Control Panel\Accessibility\StickyKeys'
     $global:ToggleKeysRegistryPath = 'HKCU:\Control Panel\Accessibility\ToggleKeys'
     $global:FilterKeysRegistryPath = 'HKCU:\Control Panel\Accessibility\Keyboard Response'
+    $global:EyeControlRegistryPath = 'HKCU:\Software\Microsoft\input\EC\'
 } else {
-    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $global:StickyKeysRegistryPath = $global:ToggleKeysRegistryPath = $global:FilterKeysRegistryPath = $env:TestRegistryPath
+    $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $global:StickyKeysRegistryPath = $global:ToggleKeysRegistryPath = $global:FilterKeysRegistryPath = $global:EyeControlRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -888,6 +894,37 @@ class FilterKeys {
             # Set the value in the registry
             Set-ItemProperty -Path $global:FilterKeysRegistryPath -Name ([FilterKeys]::SettingsProperty) -Value $flags.GetHashCode()
         }
+    }
+}
+
+[DscResource()]
+class EyeControl {
+    [DscProperty(Key)] [Ensure] $Ensure
+    hidden [string] $SettingsProperty = 'Enabled'
+
+    [EyeControl] Get() {
+        $currentState = [EyeControl]::new()
+
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:EyeControlRegistryPath -Name $this.SettingsProperty)) {
+            $currentState.Ensure = [Ensure]::Absent
+        } else {
+            $currentState.Ensure = [int]((Get-ItemPropertyValue -Path $global:EyeControlRegistryPath -Name $this.SettingsProperty) -eq 1)
+        }
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        return $this.Get().Ensure -eq $this.Ensure
+    }
+
+    [void] Set() {
+        # Only make changes if changes are needed
+        if ($this.Test()) { return }
+        if (-not (DoesRegistryKeyPropertyExist -Path $global:EyeControlRegistryPath -Name $this.SettingsProperty)) {
+            New-ItemProperty -Path $global:EyeControlRegistryPath -Name $this.SettingsProperty -PropertyType DWord
+        }
+        Set-ItemProperty -Path $global:EyeControlRegistryPath -Name $this.SettingsProperty -Value $([int]$this.Ensure)
     }
 }
 
