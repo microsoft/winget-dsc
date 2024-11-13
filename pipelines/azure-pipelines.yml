@@ -113,28 +113,39 @@ extends:
                     $notValid
                     throw "A file is not signed"
                 } 
-        - job: publish_artifact
-          displayName: Publish ${{ parameters.moduleName }}
-          dependsOn: Prepare_Sign
-          templateContext:
-            outputs:
-              - output: pipelineArtifact
-                displayName: Publish ${{ parameters.moduleName }} artifact
-                targetPath: ToPublish\${{ parameters.moduleName }}
-                artifactName: ${{ parameters.moduleName }}
+          - task: CopyFiles@2
+            displayName: Copy files to be published to staging directory
+            inputs:
+              SourceFolder: ToPublish\${{ parameters.moduleName }}
+              targetFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.moduleName }}
+              flattenFolders: true
+              contents: |
+                *.psm1
+                *.psd1
+          - task: 1ES.PublishPipelineArtifact@1
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/${{ parameters.moduleName }}
+              artifactName: ${{ parameters.moduleName }}
+              displayName: Publish Module Artifact
+
       - stage: Publish
         displayName: Manual Approval
         trigger: manual
         jobs:
         - job: Execute_Publish_Module
           steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: current
+              artifactName: ${{ parameters.moduleName }}
+              targetPath: $(Pipeline.Workspace)
           - task: PowerShell@2
             displayName: Publish Module
             inputs:
               targetType: inline
               pwsh: true
               script: |
-                $moduleFolder = "ToPublish\${{ parameters.moduleName }}"
+                $moduleFolder = "$(Pipeline.Workspace)\${{ parameters.moduleName }}"
                 
                 # List out all items in module folder
                 Get-ChildItem -Path $moduleFolder -Recurse
