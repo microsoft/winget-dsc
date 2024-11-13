@@ -115,13 +115,12 @@ If you're feature (or module) has not yet been created, follow these steps:
 
 1. Fork the repository if you haven't already.
 2. Clone your fork locally.
-3. Dot-source the `New-DscResourceModule.ps` in your PowerShell session.
-4. Create a new module scaffolding by executing: `New-DscResourceModule -DscResourceModule '<moduleName>' -Description 'DSC Resource for <description>'`
-5. Work on your changes and write tests.
-6. Build and test to see if it works.
-7. Create & push a feature branch.
-8. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
-9. If you are finished with your changes and you want a review, change the state.
+3. Open a PowerShell terminal session and execute: `.\utilities\tools\New-DscResourceModule.ps1 -DscResourceModule '<moduleName>' -Description 'DSC Resource for <description>'`
+4. Work on your changes and write tests.
+5. Build and test to see if it works.
+6. Create & push a feature branch.
+7. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
+8. If you are finished with your changes and you want a review, change the state.
 
 > [!TIP]
 > Don't forget to add the `DscResourcesToExport` and `Tags`.
