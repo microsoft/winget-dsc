@@ -1,7 +1,6 @@
 {
     "recommendations": [
         "redhat.vscode-yaml",
-        "EditorConfig.EditorConfig",
-        "DavidAnson.vscode-markdownlint"
+        "EditorConfig.EditorConfig"
     ]
 }
