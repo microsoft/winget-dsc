@@ -11,6 +11,7 @@ codeowners
 github
 https
 Icm
+markdownlint
 microsoft
 msftbot
 numpy
