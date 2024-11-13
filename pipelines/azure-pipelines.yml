@@ -138,20 +138,16 @@ extends:
             inputs:
               buildType: current
               artifactName: ${{ parameters.moduleName }}
-              targetPath: $(Pipeline.Workspace)
-          - task: PowerShell@2
-            displayName: Publish Module
-            inputs:
-              targetType: inline
-              pwsh: true
-              script: |
-                $moduleFolder = "$(Pipeline.Workspace)\${{ parameters.moduleName }}"
-                
-                # List out all items in module folder
-                Get-ChildItem -Path $moduleFolder -Recurse
-                
-                $moduleFolderPath = (Resolve-Path $moduleFolder).Path
-                
-                Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey $(DscSamplesNugetApiKey) -verbose
-                displayName: Publish ${{ parameters.moduleName }}'      
+              targetPath: $(System.DefaultWorkingDirectory)
+              itemPattern: |
+                *.psm1
+                *.psd1
+          - pwsh: |
+              $moduleFolder = $(System.DefaultWorkingDirectory)\${{ parameters.moduleName }}
+              Get-ChildItem -Path $moduleFolder -Recurse
+              $moduleFolderPath = (Resolve-Path $moduleFolder).Path
+              Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey $NugetApiKey -verbose
+            displayName: Publish ${{ parameters.moduleName }}'
+            env:
+              NugetApiKey: $(DscSamplesNugetApiKey)             
                 
