@@ -18,7 +18,8 @@
         'TextCursor',
         'StickyKeys',
         'ToggleKeys',
-        'FilterKeys'
+        'FilterKeys',
+        'EyeControl'
     )
     PrivateData          = @{
         PSData = @{
@@ -32,7 +33,8 @@
                 'PSDscResource_TextCursor',
                 'PSDscResource_StickyKeys',
                 'PSDscResource_ToggleKeys',
-                'PSDscResource_FilterKeys'
+                'PSDscResource_FilterKeys',
+                'PSDscResource_EyeControl'
             )
 
             # Prerelease string of this module

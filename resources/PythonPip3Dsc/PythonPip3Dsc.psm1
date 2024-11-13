@@ -4,6 +4,61 @@
 using namespace System.Collections.Generic
 
 #region Functions
+function Invoke-Process {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilePath,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$ArgumentList
+    )
+
+    try {
+        $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+        $pinfo.FileName = $FilePath
+        $pinfo.RedirectStandardError = $true
+        $pinfo.RedirectStandardOutput = $true
+        $pinfo.UseShellExecute = $false
+        $pinfo.WindowStyle = 'Hidden'
+        $pinfo.CreateNoWindow = $true
+        $pinfo.Arguments = $ArgumentList
+        $p = New-Object System.Diagnostics.Process
+        $p.StartInfo = $pinfo
+        $p.Start() | Out-Null
+
+        $stOut = @()
+        # using ReadLine() instead of ReadToEnd() for building array object. ReadToEnd() gave different output than ReadLine() in some cases.
+        while (-not $p.StandardOutput.EndOfStream) {
+            $stOut += $p.StandardOutput.ReadLine()
+        }
+
+        $stErr = @()
+        while (-not $p.StandardError.EndOfStream) {
+            $stErr += $p.StandardError.ReadLine()
+        }
+
+        $result = [pscustomobject]@{
+            Title     = ($MyInvocation.MyCommand).Name
+            Command   = $FilePath
+            Arguments = $ArgumentList
+            StdOut    = $stOut
+            StdErr    = $stErr
+            ExitCode  = $p.ExitCode
+        }
+
+        $p.WaitForExit()
+
+        return $result
+    } catch {
+        Write-Verbose -Message "Error occurred while executing the command: $FilePath $ArgumentList. Error:"
+        Write-Verbose -Message $stErr
+    }
+}
+
 function Get-Pip3Path {
     if ($IsWindows) {
         # Note: When installing 64-bit version, the registry key: HKLM:\SOFTWARE\Wow6432Node\Python\PythonCore\*\InstallPath was empty.
@@ -77,13 +132,8 @@ function Get-PackageNameWithVersion {
         [string]$PackageName,
 
         [Parameter(Mandatory = $false)]
-        [string]$Arguments,
-
-        [Parameter(Mandatory = $false)]
-        [string]$Version,
-
-        [Parameter()]
-        [switch]$IsUpdate
+        [AllowNull()]
+        [string]$Version
     )
 
     if ($PSBoundParameters.ContainsKey('Version') -and -not ([string]::IsNullOrEmpty($Version))) {
@@ -105,17 +155,27 @@ function Invoke-Pip3Install {
         [string]$Version,
 
         [Parameter()]
-        [switch]$IsUpdate
+        [switch]$IsUpdate,
+
+        [Parameter()]
+        [switch]$DryRun
     )
 
     $command = [List[string]]::new()
     $command.Add('install')
-    $command.Add((Get-PackageNameWithVersion @PSBoundParameters))
+    $command.Add((Get-PackageNameWithVersion -PackageName $PackageName -Version $Version))
     if ($IsUpdate.IsPresent) {
         $command.Add('--force-reinstall')
     }
+    if ($DryRun.IsPresent) {
+        $command.Add('--dry-run')
+    }
+
     $command.Add($Arguments)
-    return Invoke-Pip3 -command $command
+    Write-Verbose -Message "Executing 'pip' install with command: $command"
+    $result = Invoke-Pip3 -command $command
+
+    return $result
 }
 
 function Invoke-Pip3Uninstall {
@@ -132,10 +192,10 @@ function Invoke-Pip3Uninstall {
 
     $command = [List[string]]::new()
     $command.Add('uninstall')
-    $command.Add((Get-PackageNameWithVersion @PSBoundParameters))
+    $command.Add((Get-PackageNameWithVersion -PackageName $PackageName -Version $Version))
     $command.Add($Arguments)
 
-    # '--yes' is needed to ignore confirmation required for uninstalls
+    # '--yes' is needed to ignore conformation required for uninstalls
     $command.Add('--yes')
     return Invoke-Pip3 -command $command
 }
@@ -211,9 +271,9 @@ function Invoke-Pip3 {
     )
 
     if ($global:usePip3Exe) {
-        return Start-Process -FilePath $global:pip3ExePath -ArgumentList $command -Wait -PassThru -WindowStyle Hidden
+        return Invoke-Process -FilePath $global:pip3ExePath -ArgumentList $command
     } else {
-        return Start-Process -FilePath pip3 -ArgumentList $command -Wait -PassThru -WindowStyle hidden
+        return Invoke-Process -FilePath pip3 -ArgumentList $command
     }
 }
 
@@ -337,6 +397,29 @@ class Pip3Package {
         } else {
             Invoke-Pip3Uninstall -PackageName $this.PackageName -Version $this.Version -Arguments $this.Arguments
         }
+    }
+
+    [string] WhatIf() {
+        if ($this.Exist) {
+            $whatIfState = Invoke-Pip3Install -PackageName $this.PackageName -Version $this.Version -Arguments $this.Arguments -DryRun
+
+            $whatIfResult = $whatIfState.StdOut
+            if ($whatIfState.ExitCode -ne 0) {
+                $whatIfResult = $whatIfState.StdErr
+            }
+
+            $out = @{
+                PackageName = $this.PackageName
+                _metaData   = @{
+                    whatIf = $whatIfResult
+                }
+            }
+        } else {
+            # Uninstall does not have --dry-run param
+            $out = @{}
+        }
+
+        return ($out | ConvertTo-Json -Depth 10 -Compress)
     }
 
     static [Pip3Package[]] Export() {
