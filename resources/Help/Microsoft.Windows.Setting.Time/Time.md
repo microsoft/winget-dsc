@@ -26,7 +26,6 @@ This `Time` DSC Resource allows you to manage the time zone, automatic time zone
 | `ShowSystemTrayClock`        | Optional      | Boolean      | Whether to show the date and time in the system tray. The value should be a boolean. The default value is `$true`. | `$true`, `$false`                                                  |
 | `$NotifyClockChangeProperty` | Optional      | Boolean      | Whether to notify the user when the time changes. The value should be a boolean.                                   | `$true`, `$false`                                                  |
 
-
 ## EXAMPLES
 
 ### EXAMPLE 1
