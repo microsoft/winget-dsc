@@ -132,18 +132,18 @@ extends:
         displayName: Manual Approval
         trigger: manual
         jobs:
-        - job: Execute_Publish_Module
+        - job: PublishToGallery
           steps:
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: current
               artifactName: ${{ parameters.moduleName }}
-              targetPath: $(System.DefaultWorkingDirectory)
+              targetPath: $(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}
               itemPattern: |
                 *.psm1
                 *.psd1
           - pwsh: |
-              $moduleFolder = Join-Path -Path $(System.DefaultWorkingDirectory) -ChildPath ${{ parameters.moduleName }}
+              $moduleFolder = "$(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}"
               Get-ChildItem -Path $moduleFolder -Recurse
               $moduleFolderPath = (Resolve-Path $moduleFolder).Path
               Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey $NugetApiKey -verbose
