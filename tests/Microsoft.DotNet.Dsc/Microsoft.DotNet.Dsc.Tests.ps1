@@ -86,7 +86,7 @@ Describe 'DSC operation capabilities' {
     It 'Exports resources' -Skip:(!$IsWindows) {
         $obj = [DotNetToolPackage]::Export()
 
-        $obj.PackageId.Contains('dotnet-ef') | Should -Be $true
+        $obj.PackageId.Contains('gitversion.tool') | Should -Be $true
         $obj.PackageId.Contains('dotnet-reportgenerator-globaltool') | Should -Be $true
     }
 
