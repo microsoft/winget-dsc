@@ -1,8 +1,12 @@
-$global:WindowsUpdateSettingPath = 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
-# The network service account using wmiprvse.exe sets values in the user hive. This is the path to the Delivery Optimization settings in the user hive.
-# It requires elevation to read the values
-# Other settings might be needed e.g. DownloadRateForegroundProvider, DownloadRateBackgroundProvider
-$global:DeliveryOptimizationSettingPath = 'Registry::HKEY_USERS\S-1-5-20\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Settings'
+if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
+    $global:WindowsUpdateSettingPath = 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+    # The network service account using wmiprvse.exe sets values in the user hive. This is the path to the Delivery Optimization settings in the user hive.
+    # It requires elevation to read the values
+    # Other settings might be needed e.g. DownloadRateForegroundProvider, DownloadRateBackgroundProvider
+    $global:DeliveryOptimizationSettingPath = 'Registry::HKEY_USERS\S-1-5-20\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Settings'
+} else {
+    $global:WindowsUpdateSettingPath = $global:DeliveryOptimizationSettingPath = $env:TestRegistryPath
+}
 
 #region Functions
 function DoesRegistryKeyPropertyExist {
@@ -62,13 +66,13 @@ function Set-WindowsUpdateRegistryKey {
         }
 
         if (-not (DoesRegistryKeyPropertyExist -Path $Path -Name $key)) {
-            $null = New-ItemProperty -Path $Path -Name $key -Value $value -PropertyType 'DWord' -Force  
+            $null = New-ItemProperty -Path $Path -Name $key -Value $value -PropertyType 'DWord' -Force
         }
 
         Write-Verbose -Message "Setting $key to $($RegistryKeyProperty[$key])"
         Set-ItemProperty -Path $Path -Name $key -Value $value
     }
-} 
+}
 
 function Assert-DownloadRate {
     param (
@@ -102,7 +106,7 @@ function Initialize-WindowsUpdate {
                 $currentValue = 0
             }
         }
-        
+
         $class.$classPropertyName = $currentValue
     }
 
@@ -171,9 +175,9 @@ function Initialize-WindowsUpdate {
 [DSCResource()]
 class WindowsUpdate {
     # Key required. Do not set.
-    [DscProperty(Key)] 
+    [DscProperty(Key)]
     [string] $SID
-    
+
     [DscProperty()]
     [nullable[bool]] $IsContinuousInnovationOptedIn
 
@@ -221,7 +225,7 @@ class WindowsUpdate {
     [DscProperty()]
     [ValidateRange(5, 500)]
     [nullable[int]] $UploadLimitGBMonth
-    
+
     [DscProperty()]
     [ValidateRange(0, 100)]
     [nullable[int]] $UpRatePctBandwidth
@@ -244,7 +248,7 @@ class WindowsUpdate {
 
     [WindowsUpdate] Get() {
         $currentState = Initialize-WindowsUpdate
-        
+
         return $currentState
     }
 
