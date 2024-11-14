@@ -18,3 +18,12 @@ psobject
 webcam
 websites
 workaround
+AKV
+Authenticode
+esrp
+gtm
+NPH
+Peet
+rfc
+SFP
+Signtool
