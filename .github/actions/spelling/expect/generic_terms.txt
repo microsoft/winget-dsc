@@ -13,8 +13,3 @@ sortby
 msft
 automerge
 Workaround
-webcam
-psobject
-websites
-workaround
-keyvalue
