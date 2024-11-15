@@ -81,7 +81,7 @@
     # AliasesToExport      = '*'
 
     # DSC resources to export from this module
-    DscResourcesToExport = @('Time')
+    DscResourcesToExport = @('TimeZone', 'Clock')
 
     # List of all modules packaged with this module
     # ModuleList = @()
@@ -95,7 +95,7 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags       = @('PSDscResource_Time')
+            Tags       = @('PSDscResource_TimeZone', 'PSDscResource_Clock')
 
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
