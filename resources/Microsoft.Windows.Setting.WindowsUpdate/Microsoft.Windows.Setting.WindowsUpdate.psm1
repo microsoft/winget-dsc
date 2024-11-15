@@ -54,7 +54,7 @@ function Set-WindowsUpdateRegistryKey {
     )
 
     if (-not (Test-Path -Path $Path)) {
-        $null = New-Item -Path $Path -Force
+        New-Item -Path $Path -Force | Out-Null
     }
 
     foreach ($key in $RegistryKeyProperty.Keys) {
@@ -67,6 +67,16 @@ function Set-WindowsUpdateRegistryKey {
 
         if (-not (DoesRegistryKeyPropertyExist -Path $Path -Name $key)) {
             $null = New-ItemProperty -Path $Path -Name $key -Value $value -PropertyType 'DWord' -Force
+        }
+
+        if ($key -eq 'UploadLimitGBMonth') {
+            if ($value -lt 5) {
+                Throw 'UploadLimitGBMonth must be greater than or equal to 5.'
+            }
+        }
+
+        if ($key -eq 'RestartNotificationsAllowed') {
+            $key = 'RestartNotificationsAllowed2'
         }
 
         Write-Verbose -Message "Setting $key to $($RegistryKeyProperty[$key])"
@@ -105,6 +115,10 @@ function Initialize-WindowsUpdate {
             if ($dataType -eq '[int]') {
                 $currentValue = 0
             }
+        }
+
+        if ($classPropertyName -eq 'RestartNotificationsAllowed2') {
+            $classPropertyName = 'RestartNotificationsAllowed'
         }
 
         $class.$classPropertyName = $currentValue
@@ -198,10 +212,12 @@ class WindowsUpdate {
 
     [DscProperty()]
     [ValidateRange(0, 24)]
+    [AllowNull()]
     [nullable[int]] $UserChoiceActiveHoursEnd
 
     [DscProperty()]
     [ValidateRange(0, 24)]
+    [AllowNull()]
     [nullable[int]] $UserChoiceActiveHoursStart
 
     [DscProperty()]
@@ -223,7 +239,7 @@ class WindowsUpdate {
     [nullable[int]] $DownloadRateForegroundPct
 
     [DscProperty()]
-    [ValidateRange(5, 500)]
+    [ValidateRange(0, 500)]
     [nullable[int]] $UploadLimitGBMonth
 
     [DscProperty()]
@@ -234,7 +250,7 @@ class WindowsUpdate {
     static hidden [string] $AllowMUUpdateServiceProperty = 'AllowMUUpdateService'
     static hidden [string] $IsExpeditedProperty = 'IsExpedited'
     static hidden [string] $AllowAutoWindowsUpdateDownloadOverMeteredNetworkProperty = 'AllowAutoWindowsUpdateDownloadOverMeteredNetwork'
-    static hidden [string] $RestartNotificationsAllowedProperty = 'RestartNotificationsAllowed2'
+    static hidden [string] $RestartNotificationsAllowed2Property = 'RestartNotificationsAllowed2'
     static hidden [string] $SmartActiveHoursStateProperty = 'SmartActiveHoursState'
     static hidden [string] $UserChoiceActiveHoursEndProperty = 'UserChoiceActiveHoursEnd'
     static hidden [string] $UserChoiceActiveHoursStartProperty = 'UserChoiceActiveHoursStart'
