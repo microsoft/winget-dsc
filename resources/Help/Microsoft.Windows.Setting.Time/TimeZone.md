@@ -19,10 +19,11 @@ This `Time` DSC Resource allows you to manage the time zone, automatic time zone
 
 ## PARAMETERS
 
-| **Parameter**              | **Attribute** | **DataType** | **Description**                                                                      | **Allowed Values**                                                |
-| -------------------------- | ------------- | ------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `TimeZone`                 | Key           | String       | Specifies the time zone to set on the machine.                                       | Any valid time zone identifier from `Get-TimeZone -ListAvailable` |
-| `SetTimeZoneAutomatically` | Optional      | Boolean      | The method to use to set the time zone automatically. The value should be a boolean. | `$true`, `$false`                                                 |
+| **Parameter**              | **Attribute** | **DataType** | **Description**                                                                                                                                                                                                          | **Allowed Values**                                                |
+| -------------------------- | ------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `TimeZone`                 | Key           | String       | Specifies the time zone to set on the machine.                                                                                                                                                                           | Any valid time zone identifier from `Get-TimeZone -ListAvailable` |
+| `SetTimeZoneAutomatically` | Optional      | Boolean      | Whether to set the time zone automatically. The value should be a boolean. You can find the setting in `Settings -> Time & Language -> Date & Time -> Set time automatically.                                       |     `$true`, `$false`                                                              |
+| `AdjustForDayLightSaving`  | Optional      | Boolean      | Whether to adjust for daylight saving time. The value should be a boolean. You can find the setting in `Settings -> Time & Language -> Date & Time -> Adjust for daylight saving time automatically. | `$true`, `$false` |
 
 
 ## EXAMPLES

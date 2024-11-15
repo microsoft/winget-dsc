@@ -51,6 +51,18 @@ Describe 'TimeZone' {
         # Test the state
         $object.Test() | Should -Be $true
     }
+
+    It 'Disable daylight saving' {
+        $desiredState = @{
+            TimeZone                = (Get-TimeZone).Id
+            AdjustForDaylightSaving = $false
+        }
+
+        Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Test -Property @{}
+        $finalState.InDesiredState | Should -Be $true
+    }
 }
 
 Describe 'Clock' {

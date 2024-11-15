@@ -1,9 +1,8 @@
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:tzAutoUpdatePath = 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters'
-    $global:SysTrayPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-    $global:AdditionalClockPath = 'HKCU:\Control Panel\TimeDate'
+    $global:timeZoneInformationPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation'
 } else {
-    $global:tzAutoUpdatePath = $global:SysTrayPath = $global:AdditionalClockPath = $env:TestRegistryPath
+    $global:tzAutoUpdatePath = $global:timeZoneInformationPath = $env:TestRegistryPath
 }
 
 #region Functions
@@ -53,8 +52,11 @@ function Get-ValidTimeZone {
 .PARAMETER TimeZone
     The time zone to set on the machine. The value should be a valid time zone ID from the list of time zones (Get-TimeZone -ListAvailable).Id. The default value is the current time zone.
 
-.PARAMETER NotifyClockChange
-    Whether to notify the user when the time changes. The value should be a boolean.
+.PARAMETER SetTimeZoneAutomatically
+    Whether to set the time zone automatically. The value should be a boolean. You can find the setting in `Settings -> Time & Language -> Date & Time -> Set time automatically.
+
+.PARAMETER AdjustForDaylightSaving
+    Whether to adjust for daylight saving time. The value should be a boolean. You can find the setting in `Settings -> Time & Language -> Date & Time -> Adjust for daylight saving time automatically.
 
 .EXAMPLE
     PS C:\> Invoke-DscResource -Name Time -Method Set -Property @{ TimeZone = "Pacific Standard Time"}
@@ -74,12 +76,21 @@ class TimeZone {
     [DscProperty()]
     [nullable[bool]] $SetTimeZoneAutomatically
 
+    [DscProperty()]
+    [nullable[bool]] $AdjustForDaylightSaving
+
     static hidden [string] $SetTimeZoneAutomaticallyProperty = 'Type'
+    static hidden [string] $AdjustForDaylightSavingProperty = 'DynamicDaylightTimeDisabled'
+
+    TimeZone() {
+        $this.TimeZone = (Get-TimeZone).Id
+    }
 
     [TimeZone] Get() {
         $currentState = [TimeZone]::New()
-        $currentState.SetTimeZoneAutomatically = [TimeZone]::GetTimeZoneAutoUpdateStatus()
         $currentState.TimeZone = (Get-TimeZone).Id
+        $currentState.SetTimeZoneAutomatically = [TimeZone]::GetTimeZoneAutoUpdateStatus()
+        $currentState.AdjustForDaylightSaving = [TimeZone]::GetDayLightSavingStatus()
 
         return $currentState
     }
@@ -91,14 +102,20 @@ class TimeZone {
 
         $currentState = $this.Get()
 
+        if ($currentState.TimeZone -ne $this.TimeZone) {
+            Set-TimeZone -Id (Get-ValidTimeZone -TimeZone $this.TimeZone)
+        }
+
         if ($currentState.SetTimeZoneAutomatically -ne $this.SetTimeZoneAutomatically) {
             $desiredState = $this.SetTimeAutomatically ? [TimeZone]::NtpEnabled : [TimeZone]::NtpDisabled
 
             Set-ItemProperty -Path $global:tzAutoUpdatePath -Name ([TimeZone]::SetTimeZoneAutomaticallyProperty) -Value $desiredState
         }
 
-        if ($currentState.TimeZone -ne $this.TimeZone) {
-            Set-TimeZone -Id (Get-ValidTimeZone -TimeZone $this.TimeZone)
+        if ($currentState.AdjustForDaylightSaving -ne $this.AdjustForDaylightSaving) {
+            $desiredState = $this.AdjustForDaylightSaving ? 0 : 1
+
+            Set-ItemProperty -Path $global:timeZoneInformationPath -Name ([TimeZone]::AdjustForDaylightSavingProperty) -Value $desiredState
         }
     }
 
@@ -113,6 +130,10 @@ class TimeZone {
             return $false
         }
 
+        if (($null -ne $this.AdjustForDaylightSaving) -and ($this.AdjustForDaylightSaving -ne $currentState.AdjustForDaylightSaving)) {
+            return $false
+        }
+
         return $true
     }
 
@@ -121,9 +142,19 @@ class TimeZone {
         # key should actually always be present, but we'll check anyway
         $keyValue = TryGetRegistryValue -Key $global:tzAutoUpdatePath -Property ([TimeZone]::SetTimeZoneAutomaticallyProperty)
         if ($null -eq $keyValue) {
-            return $true # if it is not present, we assume it is enabled with NTP
+            return $true
         } else {
             return ($keyValue -eq 1)
+        }
+    }
+
+    static [bool] GetDayLightSavingStatus() {
+        # key should actually always be present, but we'll check anyway
+        $keyValue = TryGetRegistryValue -Key $global:timeZoneInformationPath -Property ([TimeZone]::SetTimeZoneAutomaticallyProperty)
+        if ($null -eq $keyValue) {
+            return $true
+        } else {
+            return ($keyValue -eq 0)
         }
     }
 
@@ -139,6 +170,13 @@ class TimeZone {
         return $parameters
     }
     #endRegion Time helper functions
+}
+
+if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
+    $global:SysTrayPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+    $global:AdditionalClockPath = 'HKCU:\Control Panel\TimeDate'
+} else {
+    $global:SysTrayPath = $global:AdditionalClockPath = $env:TestRegistryPath
 }
 
 <#
@@ -267,3 +305,4 @@ class Clock {
     #endRegion Clock helper functions
 }
 #endRegion Classes
+
