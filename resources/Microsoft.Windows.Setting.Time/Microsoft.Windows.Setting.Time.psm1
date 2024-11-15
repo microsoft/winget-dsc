@@ -87,8 +87,7 @@ class TimeZone {
     }
 
     [TimeZone] Get() {
-        $currentState = [TimeZone]::New()
-        $currentState.TimeZone = (Get-TimeZone).Id
+        $currentState = [TimeZone]::new()
         $currentState.SetTimeZoneAutomatically = [TimeZone]::GetTimeZoneAutoUpdateStatus()
         $currentState.AdjustForDaylightSaving = [TimeZone]::GetDayLightSavingStatus()
 
