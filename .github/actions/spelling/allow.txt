@@ -44,3 +44,5 @@ pscustomobject
 VGpu
 wildcards
 worktree
+PCs
+wmiprvse
