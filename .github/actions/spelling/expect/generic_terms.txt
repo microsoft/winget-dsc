@@ -19,3 +19,5 @@ ssh
 usr
 versioning
 VGpu
+Ntp
+Systray
