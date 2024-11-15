@@ -95,8 +95,8 @@ function Invoke-VSCode {
         [string]$Command
     )
 
-    $stdErrTempFile = "$env:TEMP\$((New-Guid).Guid)"
-    $stdOutTempFile = "$env:TEMP\$((New-Guid).Guid)"
+    $stdErrTempFile = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath (New-Guid).Guid
+    $stdOutTempFile = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath (New-Guid).Guid
     $invocationSuccess = $true
 
     $processParams = @{
