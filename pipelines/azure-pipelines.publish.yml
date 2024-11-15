@@ -1,0 +1,153 @@
+# winget-dsc pipeline to publish module artifacts
+name: '$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(Date:yyyyMMdd)-$(Rev:r)'
+
+trigger: none
+
+parameters: # parameters are shown up in ADO UI in a build queue time
+
+- name: moduleName
+  displayName: 'Name of the module to publish to the PSGallery'
+  type: string
+
+- name: moduleVersion
+  displayName: 'Version of the module'
+  type: string
+
+resources:
+  repositories:
+    - repository: self
+      type: git
+      ref: refs/heads/main
+    - repository: 1ESPipelineTemplates
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: windows-2022
+      os: windows
+    customBuildTags:
+      - ES365AIMigrationTooling
+    settings:
+      skipBuildTagsForGitHubPullRequests: true
+
+    stages:
+      - stage: Prepare
+        jobs:
+        - job: Prepare_Sign
+          displayName: Prepare and sign ${{ parameters.moduleName }}
+          steps:
+          - task: NuGetToolInstaller@1
+            displayName: 'Use NuGet 6.x'
+            inputs:
+              versionSpec: 6.x
+          - task: PowerShell@2
+            displayName: Replace module version
+            inputs:
+              targetType: inline
+              pwsh: true
+              script: |
+                $manifestContent = (Get-Content -path $(Build.SourcesDirectory)\resources\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psd1 -Raw)
+                
+                $newManifestContent = $manifestContent -replace "'0.1.0'", "'${{ parameters.moduleVersion }}'"
+                
+                Set-Content -path $(Build.SourcesDirectory)\resources\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psd1 -Value $newManifestContent
+                
+                New-Item ToSign -Type Directory
+                Set-Content -path ToSign\${{ parameters.moduleName }}.psd1 -Value $newManifestContent
+                Get-Content ToSign\${{ parameters.moduleName }}.psd1 -Raw
+                
+                Copy-Item -Path "$(Build.SourcesDirectory)\resources\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psm1" -Destination "ToSign\${{ parameters.moduleName }}.psm1" -Force            
+          - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
+            displayName: 'Sign manifest'
+            inputs:
+              ConnectedServiceName: AppInstallerESRPCodeSigning
+              AppRegistrationClientId: '32216f16-efc9-4013-9fae-c6a2c54a3fc0'
+              AppRegistrationTenantId: '72f988bf-86f1-41af-91ab-2d7cd011db47'
+              AuthAKVName: PeetDevOpsKeyVault
+              AuthCertName: ESRPAuth
+              AuthSignCertName: ESRPRequestSigning
+              FolderPath: '$(System.DefaultWorkingDirectory)\ToSign\'
+              Pattern: '*'
+              signConfigType: inlineSignParams
+              inlineOperation: |
+                          [
+                            {
+                                "KeyCode" : "CP-230012",
+                                "OperationCode" : "SigntoolSign",
+                                "Parameters" : {
+                                    "OpusName" : "Microsoft",
+                                    "OpusInfo" : "http://www.microsoft.com",
+                                    "FileDigest" : "/fd \"SHA256\"",
+                                    "PageHash" : "/NPH",
+                                    "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                                },
+                                "ToolName" : "sign",
+                                "ToolVersion" : "1.0"
+                            },
+                            {
+                                "KeyCode" : "CP-230012",
+                                "OperationCode" : "SigntoolVerify",
+                                "Parameters" : {},
+                                "ToolName" : "sign",
+                                "ToolVersion" : "1.0"
+                            }
+                          ]
+          - task: PowerShell@2
+            displayName: Copy Signed Files and Validate signature
+            inputs:
+              targetType: inline
+              pwsh: true
+              script: |
+                New-Item ToPublish\${{ parameters.moduleName }} -Type Directory
+                $moduleFolder = "ToPublish\${{ parameters.moduleName }}"
+                Copy-Item -Path "ToSign\${{ parameters.moduleName }}.psm1" -Destination "ToPublish\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psm1" -Force
+                Copy-Item -Path "ToSign\${{ parameters.moduleName }}.psd1" -Destination "ToPublish\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psd1" -Force
+                
+                $notValid = Get-ChildItem $moduleFolder -Recurse -Attributes !Directory | Get-AuthenticodeSignature | where { $_.Status -ne 'Valid' }
+                if ($null -ne $notValid)
+                {
+                    $notValid
+                    throw "A file is not signed"
+                } 
+          - task: CopyFiles@2
+            displayName: Copy files to be published to staging directory
+            inputs:
+              SourceFolder: ToPublish\${{ parameters.moduleName }}
+              targetFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.moduleName }}
+              flattenFolders: true
+              contents: |
+                *.psm1
+                *.psd1
+          - task: 1ES.PublishPipelineArtifact@1
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/${{ parameters.moduleName }}
+              artifactName: ${{ parameters.moduleName }}
+              displayName: Publish Module Artifact
+
+      - stage: Publish
+        displayName: Manual Approval
+        trigger: manual
+        jobs:
+        - job: PublishToGallery
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: current
+              artifactName: ${{ parameters.moduleName }}
+              targetPath: $(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}
+              itemPattern: |
+                *.psm1
+                *.psd1
+          - pwsh: |
+              $moduleFolder = "$(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}"
+              Get-ChildItem -Path $moduleFolder -Recurse
+              $moduleFolderPath = (Resolve-Path $moduleFolder).Path
+              Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey $env:api_key -verbose
+            displayName: Publish ${{ parameters.moduleName }}'
+            env:
+              api_key: $(DscSamplesNugetApiKey)
+                

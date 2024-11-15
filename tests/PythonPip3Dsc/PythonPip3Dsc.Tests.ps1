@@ -120,7 +120,6 @@ Describe 'Pip3Package' {
 
         # Call whatif to see if it "will" install
         $whatIf = $pipPackage.WhatIf() | ConvertFrom-Json
-
         $whatIf.PackageName | Should -Be 'itsdangerous'
         $whatIf._metaData.whatIf | Should -Contain "Would install itsdangerous-$($whatIfState.Version)"
     }
@@ -132,7 +131,6 @@ Describe 'Pip3Package' {
 
         $pipPackage = [Pip3Package]$whatIfState
         $whatIf = $pipPackage.WhatIf() | ConvertFrom-Json
-
 
         $whatIf.PackageName | Should -Be 'invalidPackageName'
         $whatIf._metaData.whatIf | Should -Contain "ERROR: No matching distribution found for $($whatIfState.PackageName)"
