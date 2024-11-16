@@ -336,6 +336,7 @@ $DotNetCliPath = Get-DotNetPath
     }
 
     This example installs the prerelease version of the .NET tool package 'PowerShell' in the 'C:\tools' directory.
+    NOTE: When the version in the feed is for example v7.4.5-preview1 and the highest is v7.4.6, the highest will be installed.
 #>
 [DSCResource()]
 class DotNetToolPackage {
