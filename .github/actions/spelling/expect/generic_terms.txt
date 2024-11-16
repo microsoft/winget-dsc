@@ -19,3 +19,4 @@ ssh
 usr
 versioning
 VGpu
+ADDLOCAL
