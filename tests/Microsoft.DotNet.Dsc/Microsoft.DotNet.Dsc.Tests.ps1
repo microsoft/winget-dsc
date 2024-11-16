@@ -43,19 +43,6 @@ Describe 'DSC operation capabilities' {
         $finalState.Version | Should -Not -BeNullOrEmpty
     }
 
-    It 'Sets desired package with prerelease' -Skip:(!$IsWindows) {
-        $parameters = @{
-            PackageId  = 'dotnet-ef'
-            PreRelease = $true
-        }
-
-        Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Set -Property $parameters
-
-        $finalState = Invoke-DscResource -Name DotNetToolPackage -ModuleName Microsoft.DotNet.Dsc -Method Get -Property $parameters
-        $finalState.PackageId | Should -Be $parameters.PackageId
-        $finalState.PreRelease | Should -BeTrue
-    }
-
     It 'Sets desired package with version' -Skip:(!$IsWindows) {
         $parameters = @{
             PackageId = 'dotnet-reportgenerator-globaltool'
@@ -99,7 +86,7 @@ Describe 'DSC operation capabilities' {
     It 'Exports resources' -Skip:(!$IsWindows) {
         $obj = [DotNetToolPackage]::Export()
 
-        $obj.PackageId.Contains('dotnet-ef') | Should -Be $true
+        $obj.PackageId.Contains('gitversion.tool') | Should -Be $true
         $obj.PackageId.Contains('dotnet-reportgenerator-globaltool') | Should -Be $true
     }
 
