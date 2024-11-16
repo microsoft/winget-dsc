@@ -41,7 +41,7 @@ BeforeAll {
 
     Import-Module NpmDsc -Force -ErrorAction SilentlyContinue
 
-    # Reduce the nois for npm
+    # Reduce the noise for npm
     $env:NODE_OPTIONS = '--disable-warning=ExperimentalWarning'
 }
 
