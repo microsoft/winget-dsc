@@ -114,6 +114,8 @@ Describe 'NpmPackage' {
         $npmPackage = [NpmPackage]$whatIfState
         $whatIf = $npmPackage.WhatIf() | ConvertFrom-Json
 
+        Write-Verbose -Message ($whatIf | ConvertTo-Json -Depth 5 | Out-String) -Verbose
+
         $whatIf.Name | Should -Be 'invalidPackageName'
         $whatIf._metaData.whatIf | Should -Contain "error 404 Not Found - GET https://registry.npmjs.org/$($whatIfState.Name) - Not found"
     }
