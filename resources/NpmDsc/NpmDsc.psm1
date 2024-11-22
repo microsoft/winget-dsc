@@ -105,19 +105,48 @@ function Uninstall-NpmPackage {
     return Invoke-Npm -Command $command
 }
 
-function GetNpmWhatIfResponse {
-    if ($IsWindows) {
+function GetNpmPath {
+    $npmPath = if ($IsWindows) {
         $npmCacheDir = Join-Path $env:LOCALAPPDATA 'npm-cache' '_logs'
+        $globalNpmCacheDir = Join-Path $env:SystemDrive 'npm' 'cache' '_logs'
         if (Test-Path $npmCacheDir -ErrorAction SilentlyContinue) {
-            $errorMessages = Get-NpmErrorMessages -LogPath $npmCacheDir
+            $npmCacheDir
+        }
+        elseif (Test-Path $globalNpmCacheDir -ErrorAction SilentlyContinue) {
+            $globalNpmCacheDir
+        } else {
+            $result = (Invoke-Npm -Command 'config list --json' | ConvertFrom-Json -ErrorAction SilentlyContinue).cache
+            if (Test-Path $result -ErrorAction SilentlyContinue) {
+                $result
+            }
+            else {
+                return $null
+            }
         }
     }
-
-    if ($IsLinux -or $IsMacOS) {
+    elseif ($IsLinux -or $IsMacOS) {
         $npmCacheDir = Join-Path $env:HOME '.npm/_logs'
         if (Test-Path $npmCacheDir -ErrorAction SilentlyContinue) {
-            $errorMessages = Get-NpmErrorMessages -LogPath $npmCacheDir
+            $npmCacheDir
         }
+        else {
+            return $null
+        }
+    }
+    else {
+        throw 'Unsupported platform'
+    }
+
+    return $npmPath
+}
+
+function GetNpmWhatIfResponse {
+    $npmPath = GetNpmPath
+    $errorMessages = if ($null -ne $npmPath) {
+        Get-NpmErrorMessages -LogPath $npmPath
+    }
+    else {
+        @('No what-if response found.')
     }
 
     return $errorMessages
@@ -132,6 +161,8 @@ function Get-NpmErrorMessages {
 
     $lastLog = (Get-ChildItem $LogPath -Filter '*.log' | Sort-Object LastWriteTime -Descending)[0]
 
+    Write-Verbose -Message "Found logging cache entry: $($lastLog.FullName)"
+
     $errorMessages = @()
     if ($lastLog) {
         $logContent = Get-Content $lastLog.FullName
@@ -144,6 +175,10 @@ function Get-NpmErrorMessages {
             if ($regex.Matches($cleanedLine)) {
                 $errorMessages += $cleanedLine
             }
+        }
+
+        if ([string]::IsNullOrEmpty($errorMessages)) {
+            $errorMessages = @('No what-if response found.')
         }
 
         return $errorMessages

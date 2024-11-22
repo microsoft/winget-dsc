@@ -9,7 +9,9 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    # Before import module make sure Python is installed
+    # Before import module make sure NpmDsc is installed
+    Import-Module NpmDsc -Force -ErrorAction SilentlyContinue
+
     if ($env:TF_BUILD) {
         $versionsUri = 'https://nodejs.org/dist/index.json'
         Write-Verbose -Message "Checking NodeJS versions from $versionsUri" -Verbose
@@ -37,9 +39,11 @@ BeforeAll {
         Start-Process 'msiexec.exe' -ArgumentList $arguments -Wait -NoNewWindow
 
         Write-Verbose -Message ("Finished installing NodeJS: '{0}'" -f (node --version)) -Verbose
-    }
 
-    Import-Module NpmDsc -Force -ErrorAction SilentlyContinue
+        # Clean up the npm cache log directory
+        $logFiles = Get-ChildItem (GetNpmPath) -Filter '*.log' -Recurse -ErrorAction SilentlyContinue
+        $logFiles | Remove-Item -Force -ErrorAction SilentlyContinue
+    }
 
     # Reduce the noise for npm
     $env:NODE_OPTIONS = '--disable-warning=ExperimentalWarning'
