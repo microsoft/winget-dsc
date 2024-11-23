@@ -21,9 +21,9 @@ The `PnPDevice` DSC Resource allows you to check for specific PnP Devices on the
 
 **Parameter**|**Attribute**|**DataType**|**Description**|**Allowed Values**
 :-----|:-----|:-----|:-----|:-----
-`FriendlyName`|Optional|String[]|The name of the PnP Device to be found|
+`FriendlyName`|Optional|String[]|The name of the PnP Device to be found|--
 `DeviceClass`|Optional|String[]|The PnP Class of the PnP Device to be found.| For example: `Display` or `Keyboard` or `PrintQueue`
-`Status`|Optional|String]]|The current status of the PnP Device to be found|`OK`, `ERROR`, `DEGRADED`, `UNKNOWN`
+`Status`|Optional|String[]|The current status of the PnP Device to be found|`OK`, `ERROR`, `DEGRADED`, `UNKNOWN`
 
 ## EXAMPLES
 
