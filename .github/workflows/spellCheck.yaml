@@ -77,11 +77,11 @@ jobs:
           use_magic_file: 1
           extra_dictionary_limit: 10
           extra_dictionaries:
-            https://github.com/streetsidesoftware/cspell-dicts/raw/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/software-terms/src/software-terms.txt
+            https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/software-terms/src/software-terms.txt
             https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/filetypes/src/filetypes.txt
             https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/powershell/src/powershell.txt
             https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/win32/src/generator/win32.txt
-            https://github.com/streetsidesoftware/cspell-dicts/raw/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/python/src/common_packages.txt
+            https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/python/src/common_packages.txt
           check_extra_dictionaries: ''
 
   comment-push:
