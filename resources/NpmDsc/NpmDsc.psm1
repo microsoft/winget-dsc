@@ -106,34 +106,29 @@ function Uninstall-NpmPackage {
 }
 
 function GetNpmPath {
-    $npmPath = if ($IsWindows) {
+    if ($IsWindows) {
         $npmCacheDir = Join-Path $env:LOCALAPPDATA 'npm-cache' '_logs'
         $globalNpmCacheDir = Join-Path $env:SystemDrive 'npm' 'cache' '_logs'
         if (Test-Path $npmCacheDir -ErrorAction SilentlyContinue) {
-            $npmCacheDir
-        }
-        elseif (Test-Path $globalNpmCacheDir -ErrorAction SilentlyContinue) {
-            $globalNpmCacheDir
+            return $npmCacheDir
+        } elseif (Test-Path $globalNpmCacheDir -ErrorAction SilentlyContinue) {
+            return $globalNpmCacheDir
         } else {
             $result = (Invoke-Npm -Command 'config list --json' | ConvertFrom-Json -ErrorAction SilentlyContinue).cache
             if (Test-Path $result -ErrorAction SilentlyContinue) {
-                $result
-            }
-            else {
+                return $result
+            } else {
                 return $null
             }
         }
-    }
-    elseif ($IsLinux -or $IsMacOS) {
+    } elseif ($IsLinux -or $IsMacOS) {
         $npmCacheDir = Join-Path $env:HOME '.npm/_logs'
         if (Test-Path $npmCacheDir -ErrorAction SilentlyContinue) {
-            $npmCacheDir
-        }
-        else {
+            return $npmCacheDir
+        } else {
             return $null
         }
-    }
-    else {
+    } else {
         throw 'Unsupported platform'
     }
 
@@ -142,10 +137,9 @@ function GetNpmPath {
 
 function GetNpmWhatIfResponse {
     $npmPath = GetNpmPath
-    $errorMessages = if ($null -ne $npmPath) {
-        Get-NpmErrorMessages -LogPath $npmPath
-    }
-    else {
+    if ($null -ne $npmPath) {
+        return (Get-NpmErrorMessages -LogPath $npmPath)
+    } else {
         @('No what-if response found.')
     }
 
