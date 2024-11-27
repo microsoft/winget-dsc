@@ -1,6 +1,6 @@
 # DSC Resources for WinGet Configuration
 
-This project is intended to support WinGet Configuration. Some of these Desired State Configuration (DSC) Resources are exploratory and may not be published in the PowerShell Gallery. Other resources may be moved to their own projects or removed entirely.  [Samples](https://aka.ms/dsc.yaml) for using these resources are available in the [Dev Home](https://github.com/microsoft/devhome) repository.
+This project is intended to support WinGet Configuration. Some of these Desired State Configuration (DSC) Resources are exploratory and may not be published in the PowerShell Gallery. Other resources may be moved to their own projects or removed entirely. Samples for using these resources are available in the [samples](./samples/) directory. They are also available via the URL: `https://aka.ms/dsc.yaml`
 
 ## Contributing
 
