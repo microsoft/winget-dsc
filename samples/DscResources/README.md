@@ -15,4 +15,3 @@ Create a new instance of Windows Sandbox by either providing a custom .wsb file 
 ### [Microsoft.Windows.Developer](https://www.powershellgallery.com/packages/Microsoft.Windows.Developer/0.1.3-alpha)
 
 Modify various Windows Settings such as showing seconds in clock, hiding file extensions, or showing the task view button...
-

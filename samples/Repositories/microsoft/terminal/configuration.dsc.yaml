@@ -17,7 +17,7 @@ properties:
         source: winget
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
-        description: Install Windows 11 (10.0.22621.0) SDK 
+        description: Install Windows 11 (10.0.22621.0) SDK
         allowPrerelease: true
       settings:
         id: Microsoft.WindowsSDK
@@ -38,7 +38,7 @@ properties:
         allowPrerelease: true
       settings:
         productId: Microsoft.VisualStudio.Product.Community
-        channelId: VisualStudio.17.Release                  
+        channelId: VisualStudio.17.Release
         vsConfigFile: '${WinGetConfigRoot}\..\.vsconfig'
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
@@ -48,4 +48,3 @@ properties:
         id: Microsoft.DotNet.Framework.DeveloperPack_4
         source: winget
   configurationVersion: 0.2.0
-  

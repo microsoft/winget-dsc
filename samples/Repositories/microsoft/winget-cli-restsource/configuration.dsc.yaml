@@ -25,7 +25,7 @@ properties:
         allowPrerelease: true
       settings:
         productId: Microsoft.VisualStudio.Product.Professional
-        channelId: VisualStudio.16.Release             
+        channelId: VisualStudio.16.Release
         components:
           - Microsoft.VisualStudio.Workload.ManagedDesktop
           - Microsoft.VisualStudio.Workload.Azure
