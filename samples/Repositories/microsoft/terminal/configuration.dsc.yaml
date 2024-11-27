@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+# Reference: https://github.com/microsoft/terminal#prerequisites
+properties:
+  resources:
+    - resource: Microsoft.Windows.Developer/DeveloperMode
+      directives:
+        description: Enable Developer Mode
+        allowPrerelease: true
+      settings:
+        Ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install PowerShell 7
+        allowPrerelease: true
+      settings:
+        id: Microsoft.PowerShell
+        source: winget
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Windows 11 (10.0.22621.0) SDK 
+        allowPrerelease: true
+      settings:
+        id: Microsoft.WindowsSDK
+        source: winget
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: vsPackage
+      directives:
+        description: Install Visual Studio 2022 (any edition is OK)
+        allowPrerelease: true
+      settings:
+        id: Microsoft.VisualStudio.2022.Community
+        source: winget
+    - resource: Microsoft.VisualStudio.DSC/VSComponents
+      dependsOn:
+        - vsPackage
+      directives:
+        description: Install required VS workloads
+        allowPrerelease: true
+      settings:
+        productId: Microsoft.VisualStudio.Product.Community
+        channelId: VisualStudio.17.Release                  
+        vsConfigFile: '${WinGetConfigRoot}\..\.vsconfig'
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install .NET Framework Targeting Pack 4.8
+        allowPrerelease: true
+      settings:
+        id: Microsoft.DotNet.Framework.DeveloperPack_4
+        source: winget
+  configurationVersion: 0.2.0
+  
