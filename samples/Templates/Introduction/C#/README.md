@@ -33,4 +33,4 @@ The following two options are available for running a WinGet Configuration file 
 
 ## Issues with Configuration file
 
-If you experience an issue with running the provided WinGet Configuration file, you can submit a [new issue report](https://github.com/microsoft/devhome/issues/new/choose), or [search existing issues](https://github.com/microsoft/devhome/issues) for a pre-existing issue filed by another user.
+If you experience an issue with running the provided WinGet Configuration file, you can submit a [new issue report](https://github.com/microsoft/devhome/issues/new/choose), or [search existing issues](https://github.com/microsoft/devhome/issues) for a preexisting issue filed by another user.
