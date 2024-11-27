@@ -6,8 +6,9 @@
 # Mount C:\Sandbox on the local filesystem into the Sandbox filesystem.       #
 # The Logon command performs the following steps in Windows PowerShell:       #
 # 1. Set the execution policy to RemoteSigned                                 #
-# 2. Download and install App Installer (WinGet) and it's dependencies        #
-############################################################################### 
+# 2. Download and install Microsoft.WinGet.Client PowerShell Module           #
+# 3. Use Repair-WinGetPackageManager cmdlet to bootstrap WinGet               #
+###############################################################################
 
 properties:
   resources:
@@ -19,24 +20,23 @@ properties:
         Name: Containers-DisposableClientVM
         Ensure: Present
     - resource: Microsoft.WindowsSandbox.DSC/WindowsSandbox
-      dependsOn: 
+      dependsOn:
         - WindowsSandbox
       directives:
         description: Create Windows Sandbox with Winget installed
         allowPrerelease: true
       settings:
-        Ensure: Present        
+        Ensure: Present
         HostFolder: C:\Sandbox
         SandboxFolder: C:\Sandbox
         LogonCommand: >
           cmd /c start powershell -NoExit -Command "$progressPreference = 'silentlyContinue';
           Write-Host 'Setting execution policy to remote signed...' `n;
           Set-ExecutionPolicy RemoteSigned -Force;
-          Write-Host 'Downloading WinGet and its dependencies...' `n;
-          Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle;
-          Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx;
-          Invoke-WebRequest -Uri https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx -OutFile Microsoft.UI.Xaml.2.8.x64.appx;
-          Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx;
-          Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx;
-          Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle;
+          Write-Host "Installing WinGet PowerShell module from PSGallery...";
+          Install-PackageProvider -Name NuGet -Force | Out-Null;
+          Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null;
+          Write-Host "Using Repair-WinGetPackageManager cmdlet to bootstrap WinGet...";
+          Repair-WinGetPackageManager;
+          Write-Host "Done.";
   configurationVersion: 0.2.0
