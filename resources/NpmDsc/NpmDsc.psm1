@@ -131,8 +131,6 @@ function GetNpmPath {
     } else {
         throw 'Unsupported platform'
     }
-
-    return $npmPath
 }
 
 function GetNpmWhatIfResponse {
@@ -140,10 +138,8 @@ function GetNpmWhatIfResponse {
     if ($null -ne $npmPath) {
         return (Get-NpmErrorMessages -LogPath $npmPath)
     } else {
-        @('No what-if response found.')
+        return @('No what-if response found.')
     }
-
-    return $errorMessages
 }
 
 function Get-NpmErrorMessages {
