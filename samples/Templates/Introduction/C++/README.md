@@ -1,4 +1,5 @@
 # Understanding WinGet Configuration Files
+
 This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) (*configuration.dsc.yaml*) that will work with the WinGet command line interface (`winget configure --file [path: configuration.dsc.yaml]`) or can be run using [Microsoft Dev Home](https://learn.microsoft.com/windows/dev-home/) Device Configuration.
 
 When run, the `configuration.dsc.yaml` file will install the following list of applications:

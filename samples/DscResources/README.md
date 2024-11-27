@@ -1,3 +1,5 @@
+# DscResources
+
 ## Sample Configurations for Specific DSC Resources
 
 The sample configurations provided in this directory showcase how to create WinGet configuration files utilizing DSC resources for more specific scenarios.

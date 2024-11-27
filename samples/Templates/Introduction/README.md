@@ -1,4 +1,7 @@
-This directory contains different [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration files](https://learn.microsoft.com/windows/package-manager/configuration/) that will be used for setting up your device for a specific software development language. These files are designed specifically for providing an introduction to software development, creating the default *Hello World* project, without having to focus on understanding the complexities of what needs to be installed, and how should it be configured.
+# Setting up your device for Software Development
+
+This directory contains different [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration files](https://learn.microsoft.com/windows/package-manager/configuration/) that will be used for setting up your device for a specific software development language.
+These files are designed specifically for providing an introduction to software development, creating the default *Hello World* project, without having to focus on understanding the complexities of what needs to be installed, and how should it be configured.
 
 ## Language specific folders (Naming Standard)
 
