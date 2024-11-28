@@ -38,6 +38,7 @@ uilt
 Windo
 ELSPROBLEMS
 requ
+PDevice
 whatif
 pscustomobject
 VGpu
