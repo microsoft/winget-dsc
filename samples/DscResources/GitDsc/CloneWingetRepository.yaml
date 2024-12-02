@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+########################################################################################
+# This configuration will clone the winget-cli repository to a specified location.     #
+# PowerShell module: GitDsc (v0.1.3-alpha)                                             #
+########################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Git
+        allowPrerelease: true
+      settings:
+        id: Git.Git
+        source: winget
+    - resource: GitDsc/GitClone
+      directives:
+        description: Clone the winget-cli repository
+        allowPrerelease: true
+      settings:
+        HttpsUrl: https://github.com/microsoft/winget-cli.git
+        RootDirectory: '${WingetConfigRoot}/SampleRepos/'
+    # - resource: GitDsc/GitRemote
+    #   directives:
+    #     description: Add a remote repository to the cloned winget-cli repository.
+    #     allowPrerelease: true
+    #   settings:
+    #     RemoteName: exampleName
+    #     RemoteUrl: https://github.com/exampleName/winget-cli.git
+    #     ProjectDirectory: '${WingetConfigRoot}/SampleRepos/winget-cli'
+  configurationVersion: 0.2.0

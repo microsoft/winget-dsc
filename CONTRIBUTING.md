@@ -8,7 +8,9 @@ The Windows Package Manager team is active in this GitHub Repository. In fact, w
 
 When the team finds issues we file them in the repository. When we propose new ideas or think-up new features, we file new feature requests. When we work on fixes or features, we create branches and work on those improvements. And when PRs are reviewed, we review in public - including all the good, the bad, and the ugly parts.
 
-The point of doing all this work in public is to ensure that we are holding ourselves to a high degree of transparency, and so that the community sees that we apply the same processes and hold ourselves to the same quality-bar as we do to community-submitted issues and PRs. We also want to make sure that we expose our team culture and "tribal knowledge" that is inherent in any closely-knit team, which often contains considerable value to those new to the project who are trying to figure out "why the heck does this thing look/work like this???"
+The point of doing all this work in public is to ensure that we are holding ourselves to a high degree of transparency, and so that the community sees that we apply the same processes and hold ourselves to the same quality-bar as we do to community-submitted issues and PRs.
+
+We also want to make sure that we expose our team culture and "tribal knowledge" that is inherent in any closely-knit team, which often contains considerable value to those new to the project who are trying to figure out "why the heck does this thing look/work like this???"
 
 ### Repository Bot
 
@@ -21,6 +23,7 @@ We drive the bot by tagging issues with specific labels which cause the bot engi
 Therefore, if you do file issues, or create PRs, please keep an eye on your GitHub notifications. If you do not respond to requests for information, your issues/PRs may be closed automatically.
 
 ---
+
 ## Reporting Security Issues
 
 **Please do not report security vulnerabilities through public GitHub issues.** Instead, please report them to the Microsoft Security Response Center (MSRC). See [SECURITY.md](./SECURITY.md) for more information.
@@ -109,14 +112,30 @@ Once the team have approved an issue/spec, development can proceed. If no develo
 
 ### Fork, Clone, Branch and Create your PR
 
-Once you've discussed your proposed feature/fix/etc. with a team member, and you've agreed an approach or a spec has been written and approved, it's time to start development:
+Once you've discussed your proposed feature/fix/etc. with a team member, and you've agreed an approach or a spec has been written and approved, it's time to start development. There are two flows you can follow depending on the proposed feature or fix.
+
+If you're feature (or module) has not yet been created, follow these steps:
 
 1. Fork the repository if you haven't already.
-1. Clone your fork locally.
-1. Create & push a feature branch.
-1. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
-1. Work on your changes.
-1. Build and see if it works.
+2. Clone your fork locally.
+3. Open a PowerShell terminal session and execute: `.\utilities\tools\New-DscResourceModule.ps1 -DscResourceModule '<moduleName>' -Description 'DSC Resource for <description>'`
+4. Work on your changes and write tests.
+5. Build and test to see if it works.
+6. Create & push a feature branch.
+7. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/).
+8. If you are finished with your changes and you want a review, change the state.
+
+> [!TIP]
+> Don't forget to add the `DscResourcesToExport` and `Tags`.
+
+When you are working on a fix or you want to add additional features to an existing module, you can follow the below steps:
+
+1. Fork the repository if you haven't already.
+2. Clone your fork locally.
+3. Work on your fix or feature, and _optionally_ write tests
+4. Build and test to see if it works.
+5. Create & push a feature branch.
+6. Create a [Pull Request (PR)](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) when you are finished with your changes
 
 ### Testing
 
@@ -126,7 +145,8 @@ Testing is a key component in the development workflow.
 
 When you'd like the team to take a look, (even if the work is not yet fully-complete), mark the Draft PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
 
-> ⚠ Remember: **changes you make may affect both the Windows Package Manager and the schema support implemented in our validation pipelines!** Because of this, we will treat community PR's with the same level of scrutiny and rigor as commits submitted to the official Windows source by team members and partners.
+> [!CAUTION]
+> Remember: **changes you make may affect both the Windows Package Manager and the schema support implemented in our validation pipelines!** Because of this, we will treat community PR's with the same level of scrutiny and rigor as commits submitted to the official Windows source by team members and partners.
 
 ### Merge
 

@@ -19,13 +19,13 @@ The `Pip3Package` DSC Resource allows you to install, update, and uninstall Pyth
 
 ## PARAMETERS
 
-**Parameter**|**Attribute**|**DataType**|**Description**|**Allowed Values**
-:-----|:-----|:-----|:-----|:-----
-`SID`|Key, Mandatory|String|The security identifier. This is a key property and should not be set manually.|
-`Exist`|Optional|Boolean|Indicates whether the package should exist. Defaults to `$true`.| `$true` or `$false`
-`Package`|Mandatory|String|The name of the Python package to manage. This is a mandatory property.| For a list of Python packages, see https://pypi.org/.
-`Version`|Optional|String|The version of the Python package to manage. If not specified, the latest version will be used.| For example: `5.1.2`
-`Arguments`|Optional|String|Additional arguments to pass to pip3.| Add arguments like `--debug`
+| **Parameter** | **Attribute**  | **DataType** | **Description**                                                                                 | **Allowed Values**                                    |
+| ------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `SID`         | Key, Mandatory | String       | The security identifier. This is a key property and should not be set manually.                 | pack have been installed.                             |
+| `Exist`       | Optional       | Boolean      | Indicates whether the package should exist. Defaults to `$true`.                                | `$true` or `$false`                                   |
+| `Package`     | Mandatory      | String       | The name of the Python package to manage. This is a mandatory property.                         | For a list of Python packages, see <https://pypi.org> |
+| `Version`     | Optional       | String       | The version of the Python package to manage. If not specified, the latest version will be used. | For example: `5.1.2`                                  |
+| `Arguments`   | Optional       | String       | Additional arguments to pass to pip3.                                                           | Add arguments like `--debug`                          |
 
 ## EXAMPLES
 

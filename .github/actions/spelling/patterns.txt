@@ -68,3 +68,9 @@ name\:\s+.+$
 
 # Commit Hashes
 [0-9a-f]{40}
+
+# Github User Content
+/[-a-z0-9]+\.githubusercontent\.com/[-a-zA-Z0-9?&=_\/.]*
+
+# GitHub SHAs (markdown)
+(?:\[`?[0-9a-f]+`?\]\(https:/|)/(?:www\.|)github\.com(?:/[^/\s"]+){2,}(?:/[^/\s")]+)(?:[0-9a-f]+(?:[-0-9a-zA-Z/#.]*|)\b|)

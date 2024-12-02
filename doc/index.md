@@ -7,7 +7,7 @@ ms.topic: overview
 
 WinGet Desired State Configuration (DSC) consist out of PowerShell class-based DSC resources targeting PowerShell 7.2+. Each module exposes classes that help you configure your machine in the desired state. The DSC resources is developed around the `Get-Test-Set` methods. If applicable, the team attempts to implement new methods known to newer versions of DSC.
 
-> To learn more about the newer DSC version, check out https://learn.microsoft.com/en-us/powershell/dsc/overview?view=dsc-3.0
+> To learn more about the newer DSC version, check out <https://learn.microsoft.com/en-us/powershell/dsc/overview?view=dsc-3.0>
 
 ## Getting started
 

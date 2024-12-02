@@ -1,0 +1,11 @@
+globs:
+  - "**/*.md"
+
+noProgress: true
+
+# Show found files on stdout (only valid at root)
+showFound: true
+
+ignores:
+  - "PRIVACY.md"
+  - ".github/*.md"
