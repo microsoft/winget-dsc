@@ -1,11 +1,11 @@
---------  ----------  ----------------------------------  ------------------------------------------------
-external  help        file:                               Microsoft.Windows.Setting.Language.psm1-Help.xml
-Module    Name:       Microsoft.Windows.Setting.Language
-ms.date:  11/04/2024
-online    version:
-schema:   2.0.0
-title:    Language
---------  ----------  ----------------------------------  ------------------------------------------------
+---
+external help file: Microsoft.Windows.Setting.Language.psm1-Help.xml
+Module Name: Microsoft.Windows.Setting.Language
+ms.date: 11/04/2024
+online version:
+schema: 2.0.0
+title: Language
+---
 
 # Language
 
