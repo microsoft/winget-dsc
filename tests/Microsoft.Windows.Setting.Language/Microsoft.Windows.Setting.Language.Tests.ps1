@@ -1,6 +1,6 @@
 using module Microsoft.Windows.Setting.Language
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 <#
@@ -14,7 +14,7 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = @("Language", "DisplayLanguage")
+        $expectedDSCResources = @('Language', 'DisplayLanguage')
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Language).Name
         $availableDSCResources.count | Should -Be 2
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
@@ -38,9 +38,9 @@ Describe 'Language' {
             LocaleName = 'en-GB'
         }
         
-        Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Set -Property $desiredState
+        Invoke-DscResource -Name Language -ModuleName Microsoft.Windows.Setting.Language -Method Set -Property $desiredState
      
-        $finalState = Invoke-DscResource -Name Pip3Package -ModuleName PythonPip3Dsc -Method Get -Property $desiredState
+        $finalState = Invoke-DscResource -Name Language -ModuleName Microsoft.Windows.Setting.Language -Method Get -Property $desiredState
         $finalState.Exist | Should -BeFalse
     }
 

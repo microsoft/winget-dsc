@@ -11,9 +11,6 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
 }
 
 #region Functions
-function Get-OsBuildVersion {
-    return [System.Environment]::OSVersion.Version.Build
-}
 
 function TryGetRegistryValue {
     param (
@@ -46,8 +43,8 @@ function Get-LocaleList {
 
     # section to include other languages that can be installed
     # helpful for users to discover what packages can be installed
-    $allLangues = [System.Globalization.CultureInfo]::GetCultures('AllCultures')
-    foreach ($culture in $allLangues) {
+    $allLanguages = [System.Globalization.CultureInfo]::GetCultures('AllCultures')
+    foreach ($culture in $allLanguages) {
         if ($out.LocaleName -notcontains $culture.Name -and -not ([string]::IsNullOrEmpty($culture.Name))) {
             $language = [Language]::new($culture.Name, $false)
             $out.Add($language)
