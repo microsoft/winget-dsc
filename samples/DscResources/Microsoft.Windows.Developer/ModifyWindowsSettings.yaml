@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration will modify various Windows Settings.                #
+# PowerShell module: Microsoft.Windows.Developer (v0.2.1-alpha)           #
+###########################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.Windows.Developer/Taskbar
+      directives:
+        description: Modify taskbar settings
+        allowPrerelease: true
+      settings:
+        Alignment: Left # [KeepCurrentValue, Middle]
+        HideLabelsMode: Never # [KeepCurrentValue, WhenFull, Always]
+        SearchBoxMode: ShowIconAndLabel # [KeepCurrentValue, ShowIconOnly, SearchBox, Hide]
+        TaskViewButton: Show # [KeepCurrentValue, Hide]
+        WidgetsButton: Show # [KeepCurrentValue, Hide]
+        RestartExplorer: True # Use caution when setting `RestartExplorer: true` as this will force explorer to close. Required for `HideLabelsMode`.
+    - resource: Microsoft.Windows.Developer/WindowsExplorer
+      directives:
+        description: Modify Windows Explorer settings
+        allowPrerelease: true
+      settings:
+        FileExtensions: Hide # [KeepCurrentValue, Hide]
+        HiddenFiles: Hide # [KeepCurrentValue, Hide]
+        ItemCheckBoxes: Hide # [KeepCurrentValue, Hide]
+        RestartExplorer: True # Use caution when setting `RestartExplorer: true` as this will force explorer to close. Required for all WindowsExplorer settings.
+    - resource: Microsoft.Windows.Developer/ShowSecondsInClock
+      directives:
+        description: Show seconds in clock
+        allowPrerelease: true
+      settings:
+        Ensure: Present
+    - resource: Microsoft.Windows.Developer/EnableDarkMode
+      directives:
+        description: Disable dark mode
+        allowPrerelease: true
+      settings:
+        Ensure: Absent
+        # Use caution when setting `RestartExplorer: true` as this will force explorer to close.
+        RestartExplorer: true # Required to apply changes
+  configurationVersion: 0.2.0
