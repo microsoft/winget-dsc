@@ -5,44 +5,81 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 #region Functions
+function Search-UninstallRegistry {
+    [CmdletBinding(DefaultParameterSetName = 'User')]
+    param (
+        [Parameter(ParameterSetName = 'User', Mandatory = $true)]
+        [switch] $User,
+
+        [Parameter(ParameterSetName = 'Machine', Mandatory = $true)]
+        [switch] $Machine,
+
+        [Parameter(Mandatory = $true)]
+        [string] $DisplayName
+    )
+
+    switch ($PSCmdlet.ParameterSetName) {
+        'User' {
+            $Path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
+        }
+        'Machine' {
+            $Path = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
+        }
+    }
+
+    $UninstallKeys = Get-ChildItem -Path $Path
+    foreach ($key in $UninstallKeys) {
+        $value = Get-ItemProperty -Path $key.PSPath
+
+        if ($value.DisplayName -eq $DisplayName) {
+            return $value
+        }
+    }
+}
+
 function Get-VSCodeCLIPath {
     param (
         [switch]$Insiders
     )
 
-    # Product Codes for VSCode and VSCode Insider:
-    $vsCodeUserProductCode = '{771FD6B0-FA20-440A-A002-3B3BAC16DC50}_is1'
-    $vsCodeMachineProductCode = '{EA457B21-F73E-494C-ACAB-524FDE069978}_is1'
+    if ($IsLinux) {
+        if ($Insiders) {
+            $InstallLocation = Join-Path ($env:PATH.Split([System.IO.Path]::PathSeparator) -match 'Microsoft VS Code Insiders') 'code-insiders'
+            if (Test-Path $InstallLocation) {
+                return $InstallLocation
 
-    $vsCodeInsidersUserProductCode = '{217B4C08-948D-4276-BFBB-BEE930AE5A2C}_is1'
-    $vsCodeInsidersMachineProductCode = '{1287CAD5-7C8D-410D-88B9-0D1EE4A83FF2}_is1'
-
-    # Note: WOW6432 registry not checked as no uninstall entry was found.
-    $userUninstallRegistry = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
-    $machineUninstallRegistry = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
-    $installLocationProperty = 'InstallLocation'
-
-    if ($Insiders) {
-        $cmdPath = 'bin\code-insiders.cmd'
-        $insidersUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\$($vsCodeInsidersUserProductCode)" -Property $installLocationProperty
-        if ($insidersUserInstallLocation) {
-            return $insidersUserInstallLocation + $cmdPath
+            }
+        } else {
+            $InstallLocation = Join-Path ($env:PATH.Split([System.IO.Path]::PathSeparator) -match 'Microsoft VS Code') 'code'
+            if (Test-Path $InstallLocation) {
+                return $InstallLocation
+            }
         }
+    }
 
-        $insidersMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\$($vsCodeInsidersMachineProductCode)" -Property $installLocationProperty
-        if ($insidersMachineInstallLocation) {
-            return $insidersMachineInstallLocation + $cmdPath
-        }
-    } else {
-        $cmdPath = 'bin\code.cmd'
-        $codeUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\$($vsCodeUserProductCode)" -Property $installLocationProperty
-        if ($codeUserInstallLocation) {
-            return $codeUserInstallLocation + $cmdPath
-        }
+    if ($IsWindows) {
+        if ($Insiders) {
+            $cmdPath = 'bin\code-insiders.cmd'
+            $insidersUserInstallLocation = Search-UninstallRegistry -User -DisplayName 'Microsoft Visual Studio Code Insiders (User)'
+            if ($insidersUserInstallLocation) {
+                return $insidersUserInstallLocation.InstallLocation + $cmdPath
+            }
 
-        $codeMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\$($vsCodeMachineProductCode)" -Property $installLocationProperty
-        if ($codeMachineInstallLocation) {
-            return $codeMachineInstallLocation + $cmdPath
+            $insidersMachineInstallLocation = Search-UninstallRegistry -Machine -DisplayName 'Microsoft Visual Studio Code Insiders'
+            if ($insidersMachineInstallLocation) {
+                return $insidersMachineInstallLocation.InstallLocation + $cmdPath
+            }
+        } else {
+            $cmdPath = 'bin\code.cmd'
+            $codeUserInstallLocation = Search-UninstallRegistry -User -DisplayName 'Microsoft Visual Studio Code (User)'
+            if ($codeUserInstallLocation) {
+                return $codeUserInstallLocation.InstallLocation + $cmdPath
+            }
+
+            $codeMachineInstallLocation = Search-UninstallRegistry -Machine -DisplayName 'Microsoft Visual Studio Code (User)'
+            if ($codeMachineInstallLocation) {
+                return $codeMachineInstallLocation + $cmdPath
+            }
         }
     }
 
