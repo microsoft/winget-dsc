@@ -69,3 +69,7 @@ Hmmss
 MMdd
 MMdd
 dbaeumer
+toolsai
+vsextensions
+vsixmanifest
+vspackage
