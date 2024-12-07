@@ -32,8 +32,8 @@ Describe 'List available DSC resources' {
 }
 
 Describe 'TimeZone' {
-    It 'Set Time Zone' {
-        $desiredState = @{ TimeZone = 'Pacific Standard Time' }
+    It 'Set Time Zone only by Id' {
+        $desiredState = @{ Id = 'Pacific Standard Time' }
 
         Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property $desiredState
 
@@ -41,21 +41,29 @@ Describe 'TimeZone' {
         $finalState.InDesiredState | Should -Be $true
     }
 
-    It 'Set automatic time zone not synchronize' {
-        $object = [TimeZone]::new()
-        $object.SetTimeZoneAutomatically = 'NoSync'
+    It 'Set Time Zone automatically' {
+        $desiredState = @{ Id = 'W. Europe Standard Time'; SetTimeZoneAutomatically = $true }
 
-        # Set the state
-        $object.Set()
+        Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property $desiredState
 
-        # Test the state
-        $object.Test() | Should -Be $true
+        $finalState = Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Test -Property @{}
+        $finalState.InDesiredState | Should -Be $true
+    }
+
+    It 'Disable Time automatically' {
+        $desiredState = @{ Id = 'W. Europe Standard Time'; SetTimeAutomatically = $false }
+
+        Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Test -Property @{}
+        $finalState.InDesiredState | Should -Be $true
     }
 
     It 'Disable daylight saving' {
         $desiredState = @{
-            TimeZone                = (Get-TimeZone).Id
-            AdjustForDaylightSaving = $false
+            Id                       = (Get-TimeZone -ListAvailable | Where-Object { $_.SupportsDaylightSavingTime -eq $true } | Select-Object -First 1 -ExpandProperty Id)
+            SetTimeZoneAutomatically = $false
+            AdjustForDaylightSaving  = $false
         }
 
         Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property $desiredState

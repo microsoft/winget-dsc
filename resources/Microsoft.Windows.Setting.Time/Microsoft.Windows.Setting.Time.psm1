@@ -1,5 +1,6 @@
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
-    $global:tzAutoUpdatePath = 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters'
+    $global:tzAutoUpdatePath = 'HKLM:\System\CurrentControlSet\Services\tzautoupdate'
+    $global:w32TimePath = 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters'
     $global:timeZoneInformationPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation'
 } else {
     $global:tzAutoUpdatePath = $global:timeZoneInformationPath = $env:TestRegistryPath
@@ -39,57 +40,93 @@ function Get-ValidTimeZone {
 
     return $timeZoneId
 }
+
+function Set-DaylightSavingTime {
+    param (
+        [Parameter()]
+        [switch] $Enable,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Id
+    )
+
+    $command = $Enable.IsPresent ? ('tzutil /s "{0}"' -f $Id) : ('tzutil /s "{0}_dstoff"' -f $Id)
+
+    Invoke-Expression -Command $command
+
+    if ($LASTEXITCODE -ne 0) {
+        throw [System.Configuration.ConfigurationException]::new("Failed to set daylight saving time. Error: $LASTEXITCODE")
+    }
+}
 #endRegion Functions
 
 #region Classes
 <#
 .SYNOPSIS
-    This `Time` DSC Resource allows you to manage the time zone, automatic time zone update, and system tray date/time visibility settings on a Windows machine.
+    This `TimeZone` DSC Resource allows you to manage the time zone, automatic time zone update, and system tray date/time visibility settings on a Windows machine.
 
 .DESCRIPTION
-    This `Time` DSC Resource allows you to manage the time zone, automatic time zone update, and system tray date/time visibility settings on a Windows machine.
+    This `TimeZone` DSC Resource allows you to manage the time zone, automatic time zone update, and system tray date/time visibility settings on a Windows machine.
 
-.PARAMETER TimeZone
-    The time zone to set on the machine. The value should be a valid time zone ID from the list of time zones (Get-TimeZone -ListAvailable).Id. The default value is the current time zone.
+.PARAMETER Id
+    The Id to set on the machine. The value should be a valid time zone ID from the list of time zones (Get-TimeZone -ListAvailable).Id. The default value is the current time zone.
 
 .PARAMETER SetTimeZoneAutomatically
-    Whether to set the time zone automatically. The value should be a boolean. You can find the setting in `Settings -> Time & Language -> Date & Time -> Set time automatically.
+    Whether to set the time zone automatically. The value should be a boolean. You can find the setting in `Settings -> Time & Language -> Date & Time -> Set time zone automatically.
+
+.PARAMETER SetTimeAutomatically
+    Whether to set the time automatically. The value should be a boolean. You can find the setting in `Settings -> Time & Language -> Date & Time -> Set time automatically.
 
 .PARAMETER AdjustForDaylightSaving
     Whether to adjust for daylight saving time. The value should be a boolean. You can find the setting in `Settings -> Time & Language -> Date & Time -> Adjust for daylight saving time automatically.
 
 .EXAMPLE
-    PS C:\> Invoke-DscResource -Name Time -Method Set -Property @{ TimeZone = "Pacific Standard Time"}
+    PS C:\> Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Set -Property @{ TimeZone = "Pacific Standard Time"}
 
     This example sets the time zone to Pacific Standard Time.
 
 .EXAMPLE
-    PS C:\> Invoke-DscResource -Name Time -Method Get -Property {}
+    PS C:\> Invoke-DscResource -Name TimeZone -ModuleName Microsoft.Windows.Setting.Time -Method Get -Property {}
 
     This example gets the current time settings on the machine.
 #>
 [DscResource()]
 class TimeZone {
     [DscProperty(Key)]
-    [string] $TimeZone
+    [string] $Id
 
     [DscProperty()]
     [nullable[bool]] $SetTimeZoneAutomatically
 
     [DscProperty()]
+    [nullable[bool]] $SetTimeAutomatically
+
+    [DscProperty()]
     [nullable[bool]] $AdjustForDaylightSaving
 
-    static hidden [string] $SetTimeZoneAutomaticallyProperty = 'Type'
+    static hidden [string] $SetTimeZoneAutomaticallyProperty = 'Start'
+    static hidden [string] $SetTimeAutomaticallyProperty = 'Type'
     static hidden [string] $AdjustForDaylightSavingProperty = 'DynamicDaylightTimeDisabled'
+    static hidden [string] $NtpEnabled = 'NTP'
+    static hidden [string] $NtpDisabled = 'NoSync'
+    static hidden [bool] $SupportsDaylightSavingProperty = $false
 
     TimeZone() {
-        $this.TimeZone = (Get-TimeZone).Id
+        $timeZone = Get-TimeZone
+        $this.Id = $timeZone.Id
+
+        # We set the SupportsDaylightSavingProperty to the value that is supported by the current time zone
+        [TimeZone]::SupportsDaylightSavingProperty = $timeZone.SupportsDaylightSavingTime ? $true : $false
     }
 
     [TimeZone] Get() {
         $currentState = [TimeZone]::new()
-        $currentState.SetTimeZoneAutomatically = [TimeZone]::GetTimeZoneAutoUpdateStatus()
-        $currentState.AdjustForDaylightSaving = [TimeZone]::GetDayLightSavingStatus()
+        $currentState.SetTimeZoneAutomatically = [TimeZone]::GetTimeZoneAutomaticallyStatus()
+        $currentState.SetTimeAutomatically = [TimeZone]::GetTimeAutomaticallyStatus()
+
+        if ($currentState::SupportsDaylightSavingProperty) {
+            $currentState.AdjustForDaylightSaving = [TimeZone]::GetDayLightSavingStatus()
+        }
 
         return $currentState
     }
@@ -101,27 +138,39 @@ class TimeZone {
 
         $currentState = $this.Get()
 
-        if ($currentState.TimeZone -ne $this.TimeZone) {
-            Set-TimeZone -Id (Get-ValidTimeZone -TimeZone $this.TimeZone)
+        if ($currentState.Id -ne $this.Id) {
+            Set-TimeZone -Id (Get-ValidTimeZone -TimeZone $this.Id)
         }
 
-        if ($currentState.SetTimeZoneAutomatically -ne $this.SetTimeZoneAutomatically) {
-            $desiredState = $this.SetTimeAutomatically ? [TimeZone]::NtpEnabled : [TimeZone]::NtpDisabled
+        if (($null -ne $this.SetTimeZoneAutomatically) -and ($this.SetTimeZoneAutomatically -ne $currentState.SetTimeZoneAutomatically)) {
+            $desiredState = $this.SetTimeZoneAutomatically ? 3 : 4
 
             Set-ItemProperty -Path $global:tzAutoUpdatePath -Name ([TimeZone]::SetTimeZoneAutomaticallyProperty) -Value $desiredState
         }
 
-        if ($currentState.AdjustForDaylightSaving -ne $this.AdjustForDaylightSaving) {
-            $desiredState = $this.AdjustForDaylightSaving ? 0 : 1
+        if (($null -ne $this.SetTimeAutomatically) -and ($this.SetTimeAutomatically -ne $currentState.SetTimeAutomatically)) {
+            $desiredState = $this.SetTimeAutomatically ? [TimeZone]::NtpEnabled : [TimeZone]::NtpDisabled
 
-            Set-ItemProperty -Path $global:timeZoneInformationPath -Name ([TimeZone]::AdjustForDaylightSavingProperty) -Value $desiredState
+            Set-ItemProperty -Path $global:w32TimePath -Name ([TimeZone]::SetTimeAutomaticallyProperty) -Value $desiredState
+        }
+
+        if ($currentState::SupportsDaylightSavingProperty -and ($null -ne $this.AdjustForDaylightSaving)) {
+            $desiredState = @{
+                Id     = $this.Id
+                Enable = $this.AdjustForDaylightSaving
+            }
+
+            if ($this.AdjustForDaylightSaving -ne $currentState.AdjustForDaylightSaving) {
+                # Falling back on tzutil because the amount of registry keys to modify is too high, plus difficult to determine which one to modify
+                Set-DaylightSavingTime @desiredState
+            }
         }
     }
 
     [bool] Test() {
         $currentState = $this.Get()
 
-        if (($null -ne $this.TimeZone) -and ($this.TimeZone -ne $currentState.TimeZone)) {
+        if ($this.Id -ne $currentState.Id) {
             return $false
         }
 
@@ -129,27 +178,40 @@ class TimeZone {
             return $false
         }
 
-        if (($null -ne $this.AdjustForDaylightSaving) -and ($this.AdjustForDaylightSaving -ne $currentState.AdjustForDaylightSaving)) {
+        if (($null -ne $this.SetTimeAutomatically) -and ($this.SetTimeAutomatically -ne $currentState.SetTimeAutomatically)) {
             return $false
+        }
+
+        if ($currentState::SupportsDaylightSavingProperty -and ($null -ne $this.AdjustForDaylightSaving)) {
+            if ($this.AdjustForDaylightSaving -ne $currentState.AdjustForDaylightSaving) {
+                return $false
+            }
         }
 
         return $true
     }
 
-    #region Time helper functions
-    static [bool] GetTimeZoneAutoUpdateStatus() {
-        # key should actually always be present, but we'll check anyway
+    #region TimeZone helper functions
+    static [bool] GetTimeZoneAutomaticallyStatus() {
         $keyValue = TryGetRegistryValue -Key $global:tzAutoUpdatePath -Property ([TimeZone]::SetTimeZoneAutomaticallyProperty)
         if ($null -eq $keyValue) {
             return $true
         } else {
-            return ($keyValue -eq 1)
+            return ($keyValue -eq 3)
+        }
+    }
+
+    static [bool] GetTimeAutomaticallyStatus() {
+        $keyValue = TryGetRegistryValue -Key $global:w32TimePath -Property ([TimeZone]::SetTimeAutomaticallyProperty)
+        if ($null -eq $keyValue) {
+            return $true
+        } else {
+            return ($keyValue -eq 'NTP')
         }
     }
 
     static [bool] GetDayLightSavingStatus() {
-        # key should actually always be present, but we'll check anyway
-        $keyValue = TryGetRegistryValue -Key $global:timeZoneInformationPath -Property ([TimeZone]::SetTimeZoneAutomaticallyProperty)
+        $keyValue = TryGetRegistryValue -Key $global:timeZoneInformationPath -Property ([TimeZone]::AdjustForDaylightSavingProperty)
         if ($null -eq $keyValue) {
             return $true
         } else {
@@ -168,7 +230,7 @@ class TimeZone {
 
         return $parameters
     }
-    #endRegion Time helper functions
+    #endRegion TimeZone helper functions
 }
 
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
@@ -302,6 +364,7 @@ class Clock {
         return $parameters
     }
     #endRegion Clock helper functions
+
 }
 #endRegion Classes
 
