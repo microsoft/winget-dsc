@@ -19,9 +19,6 @@ ssh
 usr
 versioning
 VGpu
-<<<<<<< HEAD
 Ntp
 Systray
-=======
 ADDLOCAL
->>>>>>> b9c45c87b2a62b479e107979ab3714073a765e8e
