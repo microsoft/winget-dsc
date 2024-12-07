@@ -22,3 +22,6 @@ VGpu
 Ntp
 Systray
 ADDLOCAL
+dstoff
+tzautoupdate
+tzutil
