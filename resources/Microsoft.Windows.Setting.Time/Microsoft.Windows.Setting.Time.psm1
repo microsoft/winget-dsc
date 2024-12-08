@@ -41,6 +41,20 @@ function Get-ValidTimeZone {
     return $timeZoneId
 }
 
+function Test-LocationSettingPermission {
+    # On Windows 11, the HKLM is the location services, whereas HKCU is the Let apps access your location setting
+    $registryKeys = @('HKLM:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location', 'HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location', 'HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location\windows.immersivecontrolpanel*')
+    foreach ($key in $registryKeys) {
+        $res = Get-ItemProperty -Path $key -Name 'Value' -ErrorAction SilentlyContinue
+        if ($res.Value -ne 'Allow') {
+            # TODO: Or should we throw an error?
+            return $false
+        }
+    }
+
+    return $true
+}
+
 function Set-DaylightSavingTime {
     param (
         [Parameter()]
@@ -145,7 +159,9 @@ class TimeZone {
         if (($null -ne $this.SetTimeZoneAutomatically) -and ($this.SetTimeZoneAutomatically -ne $currentState.SetTimeZoneAutomatically)) {
             $desiredState = $this.SetTimeZoneAutomatically ? 3 : 4
 
-            Set-ItemProperty -Path $global:tzAutoUpdatePath -Name ([TimeZone]::SetTimeZoneAutomaticallyProperty) -Value $desiredState
+            if (Test-LocationSettingPermission) {
+                Set-ItemProperty -Path $global:tzAutoUpdatePath -Name ([TimeZone]::SetTimeZoneAutomaticallyProperty) -Value $desiredState
+            }
         }
 
         if (($null -ne $this.SetTimeAutomatically) -and ($this.SetTimeAutomatically -ne $currentState.SetTimeAutomatically)) {
