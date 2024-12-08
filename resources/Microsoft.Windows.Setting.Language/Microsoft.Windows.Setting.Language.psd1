@@ -81,7 +81,7 @@
     # AliasesToExport      = '*'
 
     # DSC resources to export from this module
-    DscResourcesToExport = @('Language', 'DisplayLanguage')
+    DscResourcesToExport = @('Language', 'DisplayLanguage', 'Region')
 
     # List of all modules packaged with this module
     # ModuleList = @()

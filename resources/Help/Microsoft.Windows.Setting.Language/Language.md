@@ -21,16 +21,16 @@ The `Language` DSC Resource allows you to install, update, and uninstall languag
 
 | **Parameter** | **Attribute** | **DataType** |                                                              **Description**                                                              |                                  **Allowed Values**                                   |
 | ------------- | ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `LocaleName`  | Mandatory     | String       | The name of the language. This is the language tag that represents the language. For example, `en-US` represents English (United States). | Use the `Get-LocaleList` function or Export() method to get a list of allowed values. |
+| `LanguageId`  | Mandatory     | String       | The name of the language. This is the language tag that represents the language. For example, `en-US` represents English (United States). | To get a full list of languages available, use the `[System.Globalization.CultureInfo]::GetCultures('AllCultures')` method. |
 | `Exist`       | Optional      | Boolean      | Indicates whether the language should exist. The default value is `$true`.                                                                | `$true`, `$false`                                                                     |
 
 ## EXAMPLES
 
-### EXAMPLE 1
+### EXAMPLE 1 - Install the English (United States) language
 
 ```powershell
 $params = @{
-    LocaleName = 'en-US'
+    LanguageId = 'en-US'
 }
 Invoke-DscResource -Name Language -Method Set -Property $params -ModuleName Microsoft.Windows.Setting.Language
 ```

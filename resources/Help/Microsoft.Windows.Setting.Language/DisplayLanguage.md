@@ -19,18 +19,18 @@ The `DisplayLanguage` DSC Resource allows you to set the display language on you
 
 ## PARAMETERS
 
-| **Parameter** | **Attribute** | **DataType** | **Description**                                                                                                                           | **Allowed Values**                                                               |
-| ------------- | ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `LocaleName`  | Mandatory     | String       | The name of the language. This is the language tag that represents the language. For example, `en-US` represents English (United States). | Use the `Get-WinUserLanguageList` to see which language packs have been installed. |
-| `Exist`       | Optional      | Boolean      | Indicates whether the language should exist. The default value is `$true`.                                                               | `$true`, `$false`                                                                |
+| **Parameter** | **Attribute** | **DataType** | **Description**                                                                                                                           | **Allowed Values**                                                                 |
+| ------------- | ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `Name`        | Mandatory     | String       | The name of the language. This is the language tag that represents the language. For example, `en-US` represents English (United States). | Use the `Get-WinUserLanguageList` to see which language packs have been installed. |
+| `Exist`       | Optional      | Boolean      | Indicates whether the language should exist. The default value is `$true`.                                                                | `$true`, `$false`                                                                  |
 
 ## EXAMPLES
 
-### EXAMPLE 1
+### EXAMPLE 1 - Set the display language to English (United States)
 
 ```powershell
 $params = @{
-    LocaleName = 'en-US'
+    Name = 'en-US'
 }
 Invoke-DscResource -Name DisplayLanguage -Method Set -Property $params -ModuleName Microsoft.Windows.Setting.Language
 ```
