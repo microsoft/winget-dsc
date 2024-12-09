@@ -29,7 +29,17 @@ properties:
     ########################################################################
     # Section: Configure Git Remotes
     ########################################################################
+    - resource: GitDSC/GitClone
+      id: clone-winget-dsc
+      directives:
+        description: Clone the microsoft/winget-dsc repository
+        allowPrerelease: true
+      settings:
+        HttpsUrl: https://github.com/microsoft/winget-dsc.git
+        RootDirectory: '${WinGetConfigRoot}\..'
     - resource: GitDSC/GitRemote
+      dependsOn:
+        - clone-winget-dsc
       id: add-microsoft-upstream
       directives:
         description: Add microsoft/winget-dsc as the upstream remote
@@ -37,7 +47,7 @@ properties:
       settings:
         ProjectDirectory: '${WinGetConfigRoot}\..'
         RemoteName: upstream
-        RemoteUrl: https://github.com/microsoft/winget-pkgs.git
+        RemoteUrl: https://github.com/microsoft/winget-dsc.git
     ########################################################################
     # Section: Install VS-Code
     ########################################################################
