@@ -102,24 +102,24 @@ properties:
         id: Microsoft.PowerShell
         source: winget
         Ensure: Present
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: install-python-12
-      directives:
-        description: Install Python 3.12
-        allowPrerelease: true
-      settings:
-        id: Python.Python.3.12
-        source: winget
-        Ensure: Present
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: install-nodejs
-      directives:
-        description: Install Node.js
-        allowPrerelease: true
-      settings:
-        id: OpenJS.NodeJS
-        source: winget
-        Ensure: Present
+    # - resource: Microsoft.WinGet.DSC/WinGetPackage
+    #   id: install-python-12
+    #   directives:
+    #     description: Install Python 3.12
+    #     allowPrerelease: true
+    #   settings:
+    #     id: Python.Python.3.12
+    #     source: winget
+    #     Ensure: Present
+    # - resource: Microsoft.WinGet.DSC/WinGetPackage
+    #   id: install-nodejs
+    #   directives:
+    #     description: Install Node.js
+    #     allowPrerelease: true
+    #   settings:
+    #     id: OpenJS.NodeJS
+    #     source: winget
+    #     Ensure: Present
     ########################################################################
     # Section: Install PowerShell Modules
     ########################################################################
