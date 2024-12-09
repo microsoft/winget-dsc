@@ -60,6 +60,15 @@ properties:
         id: Microsoft.VisualStudioCode
         source: winget
         Ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: install-powershell
+      directives:
+        description: Install PowerShell
+        allowPrerelease: true
+      settings:
+        id: Microsoft.PowerShell
+        source: winget
+        Ensure: Present
     - resource: Microsoft.VSCode.Dsc/VSCodeExtension
       id: install_vscode-yaml
       dependsOn:
@@ -100,6 +109,7 @@ properties:
         allowPrerelease: true
       settings:
         Module_Name: Pester
+        RequiredVersion: 5.6.1 # Pester ships in-box, that's why we need to specify the version
         Ensure: Present
     - resource: PowerShellModule/PSModuleResource
       id: install-psscriptanalyzer
@@ -108,5 +118,6 @@ properties:
         allowPrerelease: true
       settings:
         Module_Name: PSScriptAnalyzer
+        RequiredVersion: 1.23.0 # This module might still not be installed because PowerShell extension includes it
         Ensure: Present
   configurationVersion: 0.2.0
