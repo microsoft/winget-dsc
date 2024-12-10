@@ -29,17 +29,9 @@ properties:
     ########################################################################
     # Section: Configure Git Remotes
     ########################################################################
-    - resource: GitDSC/GitClone
-      id: clone-winget-dsc
-      directives:
-        description: Clone the microsoft/winget-dsc repository
-        allowPrerelease: true
-      settings:
-        HttpsUrl: https://github.com/microsoft/winget-dsc.git
-        RootDirectory: '${WinGetConfigRoot}\..'
+    # Resource expects the repository already to be cloned to your local machine. If not, use the `GitDSC/GitClone` in conjunction
     - resource: GitDSC/GitRemote
       dependsOn:
-        - clone-winget-dsc
       id: add-microsoft-upstream
       directives:
         description: Add microsoft/winget-dsc as the upstream remote
@@ -91,7 +83,7 @@ properties:
         Name: ms-vscode.powershell
         Exist: true
     ########################################################################
-    # Section: Required dependencies to run Pester tests
+    # Section: Required dependencies to run DSC resources / tests
     ########################################################################
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: install-powershell
@@ -102,24 +94,6 @@ properties:
         id: Microsoft.PowerShell
         source: winget
         Ensure: Present
-    # - resource: Microsoft.WinGet.DSC/WinGetPackage
-    #   id: install-python-12
-    #   directives:
-    #     description: Install Python 3.12
-    #     allowPrerelease: true
-    #   settings:
-    #     id: Python.Python.3.12
-    #     source: winget
-    #     Ensure: Present
-    # - resource: Microsoft.WinGet.DSC/WinGetPackage
-    #   id: install-nodejs
-    #   directives:
-    #     description: Install Node.js
-    #     allowPrerelease: true
-    #   settings:
-    #     id: OpenJS.NodeJS
-    #     source: winget
-    #     Ensure: Present
     ########################################################################
     # Section: Install PowerShell Modules
     ########################################################################
