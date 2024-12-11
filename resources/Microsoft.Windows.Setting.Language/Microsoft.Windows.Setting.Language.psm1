@@ -3,6 +3,10 @@
 
 using namespace System.Collections.Generic
 
+# Import the LanguagePackManagement module for helper functions
+Import-Module LanguagePackManagement -Force -ErrorAction SilentlyContinue
+
+#region Functions
 function Test-LanguagePackAvailability {
     param (
         [Parameter(Mandatory = $true)]

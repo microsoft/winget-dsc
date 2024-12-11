@@ -10,6 +10,8 @@ Set-StrictMode -Version Latest
 
 BeforeAll {
     Import-Module Microsoft.Windows.Setting.Language -Force -ErrorAction SilentlyContinue
+    # Import the lanuage pack for functions
+    Import-Module LanguagePackManagement -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'List available DSC resources' {
@@ -24,7 +26,7 @@ Describe 'List available DSC resources' {
 Describe 'Language' {
     It 'Install a preferred language' -Skip:(!$IsWindows) {
         $desiredState = @{
-            LocaleName = 'en-GB'
+            LanguageId = 'en-GB'
         }
 
         Invoke-DscResource -Name Language -ModuleName Microsoft.Windows.Setting.Language -Method Set -Property $desiredState
@@ -35,7 +37,7 @@ Describe 'Language' {
 
     It 'Uninstall a preferred language' -Skip:(!$IsWindows) {
         $desiredState = @{
-            LocaleName = 'en-GB'
+            LanguageId = 'en-GB'
         }
 
         Invoke-DscResource -Name Language -ModuleName Microsoft.Windows.Setting.Language -Method Set -Property $desiredState
@@ -57,7 +59,7 @@ Describe 'Language' {
 Describe 'DisplayLanguage' {
     It 'Set a preferred language' -Skip:(!$IsWindows) {
         $desiredState = @{
-            LocaleName = 'en-US'
+            Name = 'en-US'
         }
 
         Invoke-DscResource -Name DisplayLanguage -ModuleName Microsoft.Windows.Setting.Language -Method Set -Property $desiredState
