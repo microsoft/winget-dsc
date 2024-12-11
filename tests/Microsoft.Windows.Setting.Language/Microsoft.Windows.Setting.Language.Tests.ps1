@@ -10,7 +10,7 @@ Set-StrictMode -Version Latest
 
 BeforeAll {
     Import-Module Microsoft.Windows.Setting.Language -Force -ErrorAction SilentlyContinue
-    # Import the lanuage pack for functions
+    # Import the language pack for functions
     Import-Module LanguagePackManagement -Force -ErrorAction SilentlyContinue
 }
 
