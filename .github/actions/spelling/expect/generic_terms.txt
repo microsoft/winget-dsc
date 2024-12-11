@@ -19,4 +19,9 @@ ssh
 usr
 versioning
 VGpu
+Ntp
+Systray
 ADDLOCAL
+dstoff
+tzautoupdate
+tzutil
