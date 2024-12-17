@@ -81,7 +81,7 @@ extends:
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.DotNet.Dsc\
                   artifactName: Microsoft.DotNet.Dsc
                 - output: pipelineArtifact
-                  displayName: "Publish Pipeline Microsoft.Windows.Assertion"
+                  displayName: 'Publish Pipeline Microsoft.Windows.Assertion'
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Assertion\
                   artifactName: Microsoft.Windows.Assertion"
 
@@ -96,6 +96,11 @@ extends:
                   pwsh: true
                   targetType: 'inline'
                   script: |
+                    $InstalledPesterModules = (Get-Module -ListAvailable -Name Pester)
+                    if ($InstalledPesterModules -and $InstalledPesterModules[0].Version -lt [System.Version]::Parse('5.6.1')) {
+                        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+                        Install-Module -Name Pester -RequiredVersion 5.6.1 -Force -SkipPublisherCheck
+                    }
                     $env:PSModulePath += ";$(Build.SourcesDirectory)\resources"
                     Invoke-Pester -CI
                   workingDirectory: $(Build.SourcesDirectory)\tests\
