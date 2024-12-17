@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+# Reference: https://github.com/tastejs/todomvc
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: npm
+      directives:
+        description: Install Node version 14+
+        allowPrerelease: true
+      settings:
+        id: OpenJS.NodeJS
+        source: winget
+    - resource: NpmDsc/NpmInstall
+      dependsOn:
+        - npm
+      directives:
+        description: Run 'npm install'
+        allowPrerelease: true
+      settings:
+        PackageDirectory: '${WinGetConfigRoot}\..\'
+  configurationVersion: 0.2.0

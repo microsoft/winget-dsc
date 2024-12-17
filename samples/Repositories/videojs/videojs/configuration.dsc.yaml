@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+# Reference: https://github.com/videojs/video.js/blob/main/CONTRIBUTING.md#building-videojs-locally
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: npm
+      directives:
+        description: Install Node
+        allowPrerelease: true
+      settings:
+        id: OpenJS.NodeJS
+        source: winget
+    - resource: NpmDsc/NpmInstall
+      dependsOn:
+        - npm
+      directives:
+        description: Run 'npm install'
+        allowPrerelease: true
+      settings:
+        Ensure: 'Present'
+        PackageDirectory: '${WinGetConfigRoot}\..\'
+  configurationVersion: 0.2.0

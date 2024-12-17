@@ -21,3 +21,4 @@ versioning
 VGpu
 pnp
 RTX
+ADDLOCAL
