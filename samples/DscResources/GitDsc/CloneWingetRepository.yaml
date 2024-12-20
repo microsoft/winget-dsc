@@ -10,7 +10,6 @@ properties:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
         description: Install Git
-        allowPrerelease: true
       settings:
         id: Git.Git
         source: winget
@@ -20,7 +19,7 @@ properties:
         allowPrerelease: true
       settings:
         HttpsUrl: https://github.com/microsoft/winget-cli.git
-        RootDirectory: '${WingetConfigRoot}/SampleRepos/'
+        RootDirectory: "${WingetConfigRoot}/SampleRepos/"
     # - resource: GitDsc/GitRemote
     #   directives:
     #     description: Add a remote repository to the cloned winget-cli repository.

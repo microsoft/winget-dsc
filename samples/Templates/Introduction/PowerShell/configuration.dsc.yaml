@@ -6,7 +6,6 @@ properties:
       id: Visual Studio Code
       directives:
         description: Install Visual Studio Code
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudioCode
         source: winget
