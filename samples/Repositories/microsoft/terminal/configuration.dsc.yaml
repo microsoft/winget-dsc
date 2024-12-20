@@ -11,14 +11,12 @@ properties:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
         description: Install PowerShell 7
-        allowPrerelease: true
       settings:
         id: Microsoft.PowerShell
         source: winget
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
         description: Install Windows 11 (10.0.22621.0) SDK
-        allowPrerelease: true
       settings:
         id: Microsoft.WindowsSDK
         source: winget
@@ -26,7 +24,6 @@ properties:
       id: vsPackage
       directives:
         description: Install Visual Studio 2022 (any edition is OK)
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudio.2022.Community
         source: winget

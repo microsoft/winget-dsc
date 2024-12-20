@@ -6,7 +6,6 @@ properties:
       id: npm
       directives:
         description: Install Node version 14+
-        allowPrerelease: true
       settings:
         id: OpenJS.NodeJS
         source: winget
