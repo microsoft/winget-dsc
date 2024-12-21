@@ -1,6 +1,5 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 
-
 ##########################################################################################################
 # This configuration will install the tools necessary to get started with Node.js development on Windows #
 # Reference: https://learn.microsoft.com/windows/dev-environment/javascript/nodejs-on-windows            #
@@ -9,14 +8,12 @@
 #       prompted to either allow NVM to manage that installation or remove it.                           #
 ##########################################################################################################
 
-
 properties:
   resources:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: Git
       directives:
         description: Install Git
-        allowPrerelease: true
       settings:
         id: Git.Git
         source: winget
@@ -24,7 +21,6 @@ properties:
       id: VSCode
       directives:
         description: Install Visual Studio Code
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudioCode
         source: winget
@@ -32,7 +28,6 @@ properties:
       id: NVM
       directives:
         description: Install NVM for Windows
-        allowPrerelease: true
       settings:
         id: CoreyButler.NVMforWindows
         source: winget
