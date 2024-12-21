@@ -25,7 +25,6 @@ properties:
       id: Python 3.12
       directives:
         description: Install Python 3.12
-        allowPrerelease: true
       settings:
         id: Python.Python.3.12
         source: winget
@@ -33,7 +32,6 @@ properties:
       id: GitHub Desktop
       directives:
         description: Install GitHub Desktop
-        allowPrerelease: true
       settings:
         id: GitHub.GitHubDesktop
         source: winget
@@ -41,7 +39,6 @@ properties:
       id: VisualStudio Code
       directives:
         description: Install Visual Studio Code
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudioCode
         source: winget

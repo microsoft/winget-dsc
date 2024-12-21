@@ -25,7 +25,6 @@ properties:
       id: GitHub Desktop
       directives:
         description: Install GitHub Desktop
-        allowPrerelease: true
       settings:
         id: GitHub.GitHubDesktop
         source: winget
@@ -33,7 +32,6 @@ properties:
       id: Visual Studio
       directives:
         description: Install Visual Studio 2022 Community
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudio.2022.Community
         source: winget
@@ -46,7 +44,7 @@ properties:
         allowPrerelease: true
       settings:
         productId: Microsoft.VisualStudio.Product.Community
-        channelId: VisualStudio.17.Release                  
+        channelId: VisualStudio.17.Release
         components:
           - Microsoft.VisualStudio.Workload.ManagedDesktop
     - resource: Microsoft.VisualStudio.DSC/VSComponents
@@ -58,7 +56,7 @@ properties:
         allowPrerelease: true
       settings:
         productId: Microsoft.VisualStudio.Product.Community
-        channelId: VisualStudio.17.Release                  
+        channelId: VisualStudio.17.Release
         components:
           - Microsoft.VisualStudio.Workload.Universal
   configurationVersion: 0.2.0
