@@ -29,7 +29,9 @@ properties:
     ########################################################################
     # Section: Configure Git Remotes
     ########################################################################
+    # Resource expects the repository already to be cloned to your local machine. If not, use the `GitDSC/GitClone` in conjunction
     - resource: GitDSC/GitRemote
+      dependsOn:
       id: add-microsoft-upstream
       directives:
         description: Add microsoft/winget-dsc as the upstream remote
@@ -37,7 +39,7 @@ properties:
       settings:
         ProjectDirectory: '${WinGetConfigRoot}\..'
         RemoteName: upstream
-        RemoteUrl: https://github.com/microsoft/winget-pkgs.git
+        RemoteUrl: https://github.com/microsoft/winget-dsc.git
     ########################################################################
     # Section: Install VS-Code
     ########################################################################
@@ -81,6 +83,18 @@ properties:
         Name: ms-vscode.powershell
         Exist: true
     ########################################################################
+    # Section: Required dependencies to run DSC resources / tests
+    ########################################################################
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: install-powershell
+      directives:
+        description: Install PowerShell
+        allowPrerelease: true
+      settings:
+        id: Microsoft.PowerShell
+        source: winget
+        Ensure: Present
+    ########################################################################
     # Section: Install PowerShell Modules
     ########################################################################
     - resource: PowerShellModule/PSModuleResource
@@ -90,6 +104,7 @@ properties:
         allowPrerelease: true
       settings:
         Module_Name: Pester
+        RequiredVersion: 5.6.1 # Pester ships in-box, that's why we need to specify the version
         Ensure: Present
     - resource: PowerShellModule/PSModuleResource
       id: install-psscriptanalyzer
@@ -98,5 +113,6 @@ properties:
         allowPrerelease: true
       settings:
         Module_Name: PSScriptAnalyzer
+        RequiredVersion: 1.23.0 # This module might still not be installed because PowerShell extension includes it
         Ensure: Present
   configurationVersion: 0.2.0
