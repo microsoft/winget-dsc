@@ -33,6 +33,12 @@
 
             # Prerelease string of this module
             Prerelease = 'alpha'
+
+            # A URL to the license for this module.
+            LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
+
+            # A URL to the main website for this project.
+            ProjectUri = 'https://github.com/microsoft/winget-dsc'
         }
     }
 }
