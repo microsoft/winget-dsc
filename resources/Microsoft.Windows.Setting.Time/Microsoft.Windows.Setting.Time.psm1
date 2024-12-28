@@ -118,12 +118,14 @@ class TimeZone {
     [DscProperty()]
     [nullable[bool]] $AdjustForDaylightSaving
 
+    [DscProperty(NotConfigurable)]
+    [bool] $SupportsDaylightSavingProperty
+
     static hidden [string] $SetTimeZoneAutomaticallyProperty = 'Start'
     static hidden [string] $SetTimeAutomaticallyProperty = 'Type'
     static hidden [string] $AdjustForDaylightSavingProperty = 'DynamicDaylightTimeDisabled'
     static hidden [string] $NtpEnabled = 'NTP'
     static hidden [string] $NtpDisabled = 'NoSync'
-    static hidden [bool] $SupportsDaylightSavingProperty = $false
 
     TimeZone() {
         $timeZone = Get-TimeZone
