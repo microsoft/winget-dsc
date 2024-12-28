@@ -6,7 +6,6 @@ properties:
       directives:
         description: Install Visual Studio 2022 Community
         module: Microsoft.WinGet.DSC
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudio.2022.Community
         source: winget
@@ -30,7 +29,6 @@ properties:
       directives:
         description: Install Microsoft GDK
         module: Microsoft.WinGet.DSC
-        allowPrerelease: true
       settings:
         id: Microsoft.Gaming.GDK
         source: winget

@@ -6,7 +6,6 @@ properties:
       id: npm
       directives:
         description: Install NodeJS version >=16.17.x and <17
-        allowPrerelease: true
       settings:
         id: OpenJS.NodeJS.LTS
         version: "16.20.0"
@@ -19,13 +18,12 @@ properties:
         description: Install Yarn
         allowPrerelease: true
       settings:
-        Name: 'yarn'
+        Name: "yarn"
         Global: true
         PackageDirectory: '${WinGetConfigRoot}\..\'
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
         description: Install Python 3.10
-        allowPrerelease: true
       settings:
         id: Python.Python.3.10
         source: winget
@@ -33,7 +31,6 @@ properties:
       id: vsPackage
       directives:
         description: Install Visual Studio 2022 (any edition is OK)
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudio.2022.BuildTools
         source: winget

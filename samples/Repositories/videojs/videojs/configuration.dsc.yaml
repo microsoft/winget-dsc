@@ -6,7 +6,6 @@ properties:
       id: npm
       directives:
         description: Install Node
-        allowPrerelease: true
       settings:
         id: OpenJS.NodeJS
         source: winget
@@ -17,6 +16,6 @@ properties:
         description: Run 'npm install'
         allowPrerelease: true
       settings:
-        Ensure: 'Present'
+        Ensure: "Present"
         PackageDirectory: '${WinGetConfigRoot}\..\'
   configurationVersion: 0.2.0

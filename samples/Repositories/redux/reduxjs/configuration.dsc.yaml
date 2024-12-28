@@ -6,7 +6,6 @@ properties:
       id: npm
       directives:
         description: Install Node >=v18.10
-        allowPrerelease: true
       settings:
         id: OpenJS.NodeJS
         source: winget
@@ -18,7 +17,7 @@ properties:
         description: Install Yarn
         allowPrerelease: true
       settings:
-        Name: 'yarn'
+        Name: "yarn"
         Global: true
         PackageDirectory: '${WinGetConfigRoot}\..\'
     - resource: YarnDsc/YarnInstall
