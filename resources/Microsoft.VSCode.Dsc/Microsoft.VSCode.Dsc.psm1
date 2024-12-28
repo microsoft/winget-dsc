@@ -49,13 +49,105 @@ function Get-VSCodeCLIPath {
     throw 'VSCode is not installed.'
 }
 
+function Get-PreReleaseFlag {
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [AllowNull()]
+        [string] $Name,
+
+        [Parameter()]
+        [AllowNull()]
+        [string] $Version,
+
+        [Parameter()]
+        [switch] $Insiders
+    )
+
+    if ($IsWindows) {
+        $packageName = [System.String]::Concat($Name, '-', $Version)
+        if ($Insiders) {
+            $extensionPath = Join-Path $env:USERPROFILE '.vscode-insiders' 'extensions' $packageName '.vsixmanifest'
+        } else {
+            $extensionPath = Join-Path $env:USERPROFILE '.vscode' 'extensions' $packageName '.vsixmanifest'
+        }
+
+        if (Test-Path $extensionPath -ErrorAction SilentlyContinue) {
+            [xml]$manifest = Get-Content $extensionPath -ErrorAction SilentlyContinue
+            # If it does not contain the property, it is not a pre-release extension
+            if ($manifest.PackageManifest.Metadata.Properties.Property.Id -contains 'Microsoft.VisualStudio.Code.PreRelease') {
+                return $true
+            } else {
+                return $false
+            }
+        }
+    }
+}
+
+function Get-VsixManifestInfo {
+    [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $Path
+    )
+
+    [System.IO.Compression.ZipFile]::OpenRead($Path) | ForEach-Object {
+        $zipArchive = $_
+
+        $zipEntry = $zipArchive.Entries | Where-Object { $_.FullName -eq 'extension.vsixmanifest' }
+
+        if ($zipEntry) {
+            $reader = [System.IO.StreamReader]::new($zipEntry.Open())
+            [xml]$fileContent = $reader.ReadToEnd()
+            $reader.Close()
+
+            $packageId = [System.String]::Concat($fileContent.PackageManifest.Metadata.Identity.Publisher, '.', $fileContent.PackageManifest.Metadata.Identity.Id)
+            return @{
+                Name       = $packageId
+                Version    = $fileContent.PackageManifest.Metadata.Identity.Version
+                PreRelease = ($fileContent.PackageManifest.Metadata.Properties.Property.Id -contains 'Microsoft.VisualStudio.Code.PreRelease')
+            }
+        } else {
+            Throw "VSIX manifest not found. Ensure the VSIX file contains a 'extension.vsixmanifest' file."
+        }
+
+        # Close the zip archive
+        $zipArchive.Dispose()
+    }
+}
+
+function Test-VsixFilePath {
+    param (
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string] $InputString
+    )
+
+    $extension = [System.IO.Path]::GetExtension($InputString)
+
+    if ($extension -eq '.vsix') {
+        if (Test-Path -Path $InputString -ErrorAction SilentlyContinue) {
+            return $true
+        } else {
+            return $false
+        }
+    } else {
+        return $false
+    }
+}
+
 function Install-VSCodeExtension {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [string]$Name,
+
         [Parameter(ValueFromPipelineByPropertyName)]
-        [string]$Version
+        [string]$Version,
+
+        [Parameter()]
+        [bool]$PreRelease
     )
 
     begin {
@@ -75,7 +167,14 @@ function Install-VSCodeExtension {
 
     process {
         $installArgument = Get-VSCodeExtensionInstallArgument @PSBoundParameters
-        Invoke-VSCode -Command "--install-extension $installArgument"
+        # Always add the --force parameter to support switching between release and prerelease version
+        $command = "--install-extension $installArgument --force"
+
+        if ($PreRelease) {
+            $command += ' --pre-release'
+        }
+
+        Invoke-VSCode -Command $command
     }
 }
 
@@ -158,6 +257,12 @@ function TryGetRegistryValue {
 .PARAMETER Exist
     Indicates whether the extension should exist. The default value is `$true`.
 
+.PARAMETER PreRelease
+    Indicates whether to install the pre-release version of the extension. The default value is `$false`.
+
+    When PreRelease is set to `$true`, the extension will be installed from the Visual Studio Code marketplace. If the extension is already installed, it will be updated to the pre-release version.
+    If there is no prerelease version available, the extension will be installed.
+
 .PARAMETER Insiders
     Indicates whether to manage the extension for the Insiders version of Visual Studio Code. The default value is `$false`.
 
@@ -196,6 +301,23 @@ function TryGetRegistryValue {
     PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
 
     This installs the latest version of the Visual Studio Code extension 'ms-python.python' for the Insiders version of Visual Studio Code
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Name = 'dbaeumer.vscode-eslint'
+        PreRelease = $true
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    This installs the latest pre-release version of the Visual Studio Code extension 'dbaeumer.vscode-eslint'
+
+.EXAMPLE
+    PS C:\> $params = @{
+        Name = 'C:\SharedExtensions\ms-python.python-2021.5.842923320.vsix'
+    }
+    PS C:\> Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+
+    This installs the Visual Studio Code extension 'ms-python.python' from the specified VSIX file path.
 #>
 [DSCResource()]
 class VSCodeExtension {
@@ -209,6 +331,9 @@ class VSCodeExtension {
     [bool] $Exist = $true
 
     [DscProperty()]
+    [bool] $PreRelease = $false
+
+    [DscProperty()]
     [bool] $Insiders = $false
 
     static [hashtable] $InstalledExtensions
@@ -219,6 +344,12 @@ class VSCodeExtension {
     VSCodeExtension([string]$Name, [string]$Version) {
         $this.Name = $Name
         $this.Version = $Version
+    }
+
+    VSCodeExtension([string]$Name, [string]$Version, [bool]$Insiders) {
+        $this.Name = $Name
+        $this.Version = $Version
+        $this.Insiders = $Insiders
     }
 
     [VSCodeExtension[]] Export([bool]$Insiders) {
@@ -234,25 +365,60 @@ class VSCodeExtension {
 
         for ($i = 0; $i -lt $extensionList.length; $i++) {
             $extensionName, $extensionVersion = $extensionList[$i] -Split '@'
-            $results[$i] = [VSCodeExtension]::new($extensionName, $extensionVersion)
+            $initialize = @{
+                Name       = $extensionName
+                Version    = $extensionVersion
+                PreRelease = (Get-PreReleaseFlag -Name $extensionName -Version $extensionVersion -Insiders:$Insiders)
+            }
+
+            if ($Insiders) {
+                $initialize.Insiders = $true
+            }
+
+            $results[$i] = [VSCodeExtension]$initialize
         }
 
         return $results
     }
 
     [VSCodeExtension] Get() {
+        if (Test-VsixFilePath -InputString $this.Name) {
+            $manifestInfo = Get-VsixManifestInfo -Path $this.Name
+            $this.Name = $manifestInfo.Name
+            $this.Version = $manifestInfo.Version
+            $this.PreRelease = $manifestInfo.PreRelease
+        }
+
         [VSCodeExtension]::GetInstalledExtensions($this.Insiders)
 
         $currentState = [VSCodeExtension]::InstalledExtensions[$this.Name]
         if ($null -ne $currentState) {
-            return [VSCodeExtension]::InstalledExtensions[$this.Name]
+            if ($null -ne $this.Version) {
+                $versionState = $currentState | Where-Object { $_.Version -eq $this.Version }
+                if ($versionState) {
+                    $finalState = [VSCodeExtension]::InstalledExtensions[$this.Name]
+                } else {
+                    $currentState.Exist = $false
+                    $finalState = $currentState
+                }
+            } else {
+                $finalState = [VSCodeExtension]::InstalledExtensions[$this.Name]
+            }
+
+            if ($currentState.PreRelease -ne $this.PreRelease) {
+                $currentState.Exist = $false
+                $finalState = $currentState
+            }
+
+            return $finalState
         }
 
         return [VSCodeExtension]@{
-            Name     = $this.Name
-            Version  = $this.Version
-            Exist    = $false
-            Insiders = $this.Insiders
+            Name       = $this.Name
+            Version    = $this.Version
+            Exist      = $false
+            PreRelease = $this.PreRelease
+            Insiders   = $this.Insiders
         }
     }
 
@@ -263,6 +429,10 @@ class VSCodeExtension {
         }
 
         if ($null -ne $this.Version -and $this.Version -ne $currentState.Version) {
+            return $false
+        }
+
+        if ($null -ne $this.PreRelease -and $this.PreRelease -ne $currentState.PreRelease) {
             return $false
         }
 
@@ -297,7 +467,7 @@ class VSCodeExtension {
             return
         }
 
-        Install-VSCodeExtension -Name $this.Name -Version $this.Version
+        Install-VSCodeExtension -Name $this.Name -Version $this.Version -PreRelease $this.PreRelease
         [VSCodeExtension]::GetInstalledExtensions($this.Insiders)
     }
 
