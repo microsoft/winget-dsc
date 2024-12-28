@@ -130,7 +130,7 @@ class TimeZone {
         $this.Id = $timeZone.Id
 
         # We set the SupportsDaylightSavingProperty to the value that is supported by the current time zone
-        [TimeZone]::SupportsDaylightSavingProperty = $timeZone.SupportsDaylightSavingTime ? $true : $false
+        [TimeZone]::SupportsDaylightSavingProperty = $timeZone.SupportsDaylightSavingTime
     }
 
     [TimeZone] Get() {
