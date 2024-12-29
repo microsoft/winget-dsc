@@ -4,7 +4,7 @@
     RootModule           = 'Microsoft.Windows.Setting.Accessibility.psm1'
     ModuleVersion        = '0.1.0'
     GUID                 = '25cce770-4f0a-4387-a26b-4be692e229f9'
-    Author               = 'Microsoft Corporation'
+    Author               = 'DscSamples'
     CompanyName          = 'Microsoft Corporation'
     Copyright            = '(c) Microsoft Corp. All rights reserved.'
     Description          = 'DSC Module for Windows Accessibility'
@@ -39,6 +39,12 @@
 
             # Prerelease string of this module
             Prerelease = 'alpha'
+
+            # A URL to the license for this module.
+            LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
+
+            # A URL to the main website for this project.
+            ProjectUri = 'https://github.com/microsoft/winget-dsc'
         }
     }
 }
