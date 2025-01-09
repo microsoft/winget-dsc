@@ -3,10 +3,11 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ColorPath = 'HKCU:\Control Panel\Colors\'
     $global:WallPaperPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Wallpapers\'
     $global:DesktopSlideShowPath = 'HKCU:\Control Panel\Personalization\Desktop Slideshow\'
+    # TODO: Check if this value is cross all others
     $global:SlideShowPowerSetting = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes\381b4222-f694-41f0-9685-ff5bb260df2e\0d7dbae2-4294-402a-ba8e-26777e8488cd\309dce9b-bef4-4119-9921-a851fb12f0f4\'
     $global:DesktopSpotlightPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\DesktopSpotlight\Settings\'
 } else {
-    $global:DesktopPath = $global:ColorPath = $global:WallPaperPath = $global:DesktopSpotlightPath = $env:TestRegistryPath
+    $global:DesktopPath = $global:ColorPath = $global:WallPaperPath = $global:DesktopSlideShowPath = $global:SlideShowPowerSetting = $global:DesktopSpotlightPath = $env:TestRegistryPath
 }
 
 #region Enums
