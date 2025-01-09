@@ -12,14 +12,8 @@
     DscResourcesToExport = @(
         'BackgroundPicture',
         'BackgroundSolidColor',
-        'BackgroundWindowsSpotlight',
-        'VisualEffect',
-        'Audio',
-        'TextCursor',
-        'StickyKeys',
-        'ToggleKeys',
-        'FilterKeys',
-        'EyeControl'
+        'BackgroundSlideshow',
+        'BackgroundWindowsSpotlight'
     )
     PrivateData          = @{
         PSData = @{
