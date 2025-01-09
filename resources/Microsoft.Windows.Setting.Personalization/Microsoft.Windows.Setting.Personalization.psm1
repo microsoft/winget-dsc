@@ -280,9 +280,30 @@ function Set-WallPaperEntryNull {
 #endregion Functions
 
 #region Classes
+<#
+.SYNOPSIS
+    The `BackgroundPicture` class contains DSC resources for configuring the desktop background picture.
+
+.PARAMETER Picture
+    The path to the image file that will be used as the desktop background picture.
+
+.PARAMETER Style
+    The style of the desktop background picture. The possible values are `Fill`, `Fit`, `Stretch`, `Tile`, `Center`, and `Span`.
+
+.PARAMETER BackgroundColor
+    The color of the desktop background. The value should be in the format `R,G,B`, where `R`, `G`, and `B` are the red, green, and blue color components, respectively.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name BackgroundPicture -Method Set -Property @{ Picture = 'C:\Pictures\Background.jpg'; Style = 'Fill'; BackgroundColor = '255,255,255' }
+
+    This example sets the desktop background picture to `C:\Pictures\Background.jpg` with the `Fill` style and white background color.
+
+.LINK
+    For more information about color codes, see https://www.color-hex.com/
+#>
 [DscResource()]
 class BackgroundPicture {
-    [DscProperty(Key)]
+    [DscProperty(Key, Mandatory)]
     [string] $Picture
 
     [DscProperty()]
@@ -351,6 +372,22 @@ class BackgroundPicture {
     #endregion BackgroundPicture helper functions
 }
 
+
+<#
+.SYNOPSIS
+    The `BackgroundSolidColor` class contains DSC resources for configuring the desktop background color.
+
+.PARAMETER BackgroundSolidColor
+    The color of the desktop background. The value should be in the format `R,G,B`, where `R`, `G`, and `B` are the red, green, and blue color components, respectively.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name BackgroundSolidColor -Method Set -Property @{ BackgroundColor = '255,255,255' }
+
+    This example sets the desktop background color to white.
+
+.LINK
+    For more information about color codes, see https://www.color-hex.com/
+#>
 [DscResource()]
 class BackgroundSolidColor {
     [DscProperty(Key, Mandatory)]
@@ -384,7 +421,30 @@ class BackgroundSolidColor {
     }
 }
 
-# TODO: Create BackgroundSlideShow class
+<#
+.SYNOPSIS
+    The `BackgroundSlideShow` class contains DSC resources for configuring the desktop background slideshow.
+
+.PARAMETER PictureAlbum
+    The path to the folder containing the images for the slideshow.
+
+.PARAMETER SlideDuration
+    The duration for each slide in milliseconds. Valid values are '60000', '600000', '1800000', '3600000', '21600000', and '86400000'.
+
+.PARAMETER Shuffle
+    Indicates whether the slideshow should shuffle the images.
+
+.PARAMETER PauseOnBattery
+    Indicates whether the slideshow should pause when the device is on battery power.
+
+.PARAMETER Style
+    The style of the desktop background picture. The possible values are `Fill`, `Fit`, `Stretch`, `Tile`, `Center`, and `Span`.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name BackgroundSlideShow -Method Set -Property @{ PictureAlbum = 'C:\Pictures\Album'; SlideDuration = '1800000'; Shuffle = $true; PauseOnBattery = $true; Style = 'Fill' }
+
+    This example sets the desktop background slideshow to use images from `C:\Pictures\Album` with a slide duration of 30 minutes, shuffling enabled, pausing on battery, and the `Fill` style.
+#>
 [DscResource()]
 class BackgroundSlideShow {
     [DscProperty(Key)]
@@ -422,6 +482,18 @@ class BackgroundSlideShow {
     }
 }
 
+<#
+.SYNOPSIS
+    The `BackgroundWindowsSpotlight` class contains DSC resources for configuring the Windows Spotlight feature.
+
+.PARAMETER EnableWindowsSpotlight
+    Indicates whether the Windows Spotlight feature should be enabled.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name BackgroundWindowsSpotlight -Method Set -Property @{ EnableWindowsSpotlight = $true }
+
+    This example enables the Windows Spotlight feature.
+#>
 [DscResource()]
 class BackgroundWindowsSpotlight {
     [DscProperty(Key)]
