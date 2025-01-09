@@ -22,6 +22,9 @@ BeforeAll {
 
     Write-Verbose -Message 'Current settings:' -Verbose
     Write-Verbose -Message ($currentSettings | ConvertTo-Json | Out-String) -Verbose
+
+    # TODO: Create picture bundle in repo to test each use case
+    $script:defaultPicturePath = Join-Path $env:windir 'Web' 'Wallpaper' 'Windows'
 }
 
 Describe 'List available DSC resources' {
@@ -35,9 +38,6 @@ Describe 'List available DSC resources' {
 
 Describe 'BackgroundPicture' {
     It 'Sets the background picture' {
-        # TODO: Generate picture bundle to test each use case
-        $defaultPicturePath = Join-Path $env:windir 'Web' 'Wallpaper' 'Windows'
-
         $picture = Get-ChildItem -Path $defaultPicturePath -Filter *.jpg | Select-Object -First 1
         Write-Verbose -Message "Using picture: $($picture.FullName)" -Verbose
 
@@ -52,9 +52,12 @@ Describe 'BackgroundPicture' {
     }
 
     It 'Sets the background color if centering the picture' {
+        $picture = Get-ChildItem -Path $defaultPicturePath -Filter *.jpg | Select-Object -First 1
+        Write-Verbose -Message "Using picture: $($picture.FullName)" -Verbose
+
         $property = @{
-            Picture         = ''
-            Fit             = 'Center'
+            Picture         = $picture.FullName
+            Style           = 'Center'
             BackgroundColor = '0,0,0'
         }
 
@@ -62,7 +65,7 @@ Describe 'BackgroundPicture' {
 
         $finalState = Invoke-DscResource -Name BackgroundPicture -ModuleName Microsoft.Windows.Setting.Personalization -Method Get -Property $property
         $finalState.BackgroundColor | Should -Be $property.BackgroundColor
-        $finalState.Fit | Should -Be $property.Fit
+        $finalState.Style | Should -Be $property.Fit
         $finalState.Picture | Should -Not -BeNullOrEmpty
     }
 }
