@@ -27,7 +27,6 @@ The `BackgroundSlideShow` class contains DSC resources for configuring the deskt
 | `PauseOnBattery` | Optional      | Boolean      | Indicates whether the slideshow should pause when the device is on battery power. | `True` or `False`                                                                    |
 | `Style`          | Optional      | String       | The style of the desktop background picture.                                      | { Fill, Fit, Stretch, Tile, Center, Span }                                           |
 
-
 ## EXAMPLES
 
 ### EXAMPLE 1 - Example setting all properties with slide duration on 1 hour

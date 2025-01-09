@@ -43,7 +43,7 @@ function Get-OperatingSystemSKU {
         (Get-CimInstance -ClassName Win32_OperatingSystem).OperatingSystemSku)
 
     begin {
-        Write-Verbose -Message "Starting $($MyInvocation.Mycommand)"
+        Write-Verbose -Message "Starting $($MyInvocation.MyCommand)"
     }
 
     process {
@@ -130,7 +130,7 @@ function Get-OperatingSystemSKU {
     }
 
     end {
-        Write-Verbose -Message "Ending $($MyInvocation.Mycommand)"
+        Write-Verbose -Message "Ending $($MyInvocation.MyCommand)"
     }
 
 }

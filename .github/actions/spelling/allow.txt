@@ -68,3 +68,10 @@ wekyb
 Hmmss
 MMdd
 MMdd
+hif
+jfif
+jpe
+jxl
+jxr
+lpv
+wdp
