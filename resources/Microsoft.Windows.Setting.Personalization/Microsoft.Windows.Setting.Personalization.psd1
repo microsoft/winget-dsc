@@ -21,6 +21,7 @@
             Tags       = @(
                 'PSDscResource_BackgroundPicture',
                 'PSDscResource_BackgroundSolidColor',
+                'PSDscResource_BackgroundSlideshow',
                 'PSDscResource_BackgroundWindowsSpotlight'
             )
 
