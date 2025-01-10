@@ -20,8 +20,3 @@ usr
 versioning
 VGpu
 ADDLOCAL
-Aic 
-Cdp 
-reparsepoint 
-Stubification
-XExe
