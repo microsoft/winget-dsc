@@ -20,3 +20,8 @@ usr
 versioning
 VGpu
 ADDLOCAL
+Datacenter
+Cim
+HPC
+Sku
+windir
