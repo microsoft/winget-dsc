@@ -10,12 +10,15 @@
     Description          = 'The DSC module for Windows Apps'
     PowerShellVersion    = '7.4'
     DscResourcesToExport = @(
+        'AdvancedAppSettings',
+        'AppExecutionAliases'
     )
     PrivateData          = @{
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags       = @(
-            
+                'PSDscResource_AdvancedAppSettings',
+                'PSDscResource_AppExecutionAliases'
             )
 
             # A URL to the license for this module.
