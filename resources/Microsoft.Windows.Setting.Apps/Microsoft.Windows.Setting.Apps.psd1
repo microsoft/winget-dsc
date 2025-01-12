@@ -11,14 +11,16 @@
     PowerShellVersion    = '7.4'
     DscResourcesToExport = @(
         'AdvancedAppSettings',
-        'AppExecutionAliases'
+        'AppExecutionAliases',
+        'OfflineMap'
     )
     PrivateData          = @{
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags       = @(
                 'PSDscResource_AdvancedAppSettings',
-                'PSDscResource_AppExecutionAliases'
+                'PSDscResource_AppExecutionAliases',
+                'PSDscResource_OfflineMap'
             )
 
             # A URL to the license for this module.
