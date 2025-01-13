@@ -9,22 +9,16 @@
     Copyright            = '(c) Microsoft Corp. All rights reserved.'
     Description          = 'The DSC module for Windows Apps'
     PowerShellVersion    = '7.4'
-    FunctionsToExport    = @(
-        'Get-OfflineMapPackage',
-        'Get-GeoLocationCoordinate'
-    )
     DscResourcesToExport = @(
         'AdvancedAppSettings',
-        'AppExecutionAliases',
-        'OfflineMap'
+        'AppExecutionAliases'
     )
     PrivateData          = @{
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags       = @(
                 'PSDscResource_AdvancedAppSettings',
-                'PSDscResource_AppExecutionAliases',
-                'PSDscResource_OfflineMap'
+                'PSDscResource_AppExecutionAliases'
             )
 
             # A URL to the license for this module.
