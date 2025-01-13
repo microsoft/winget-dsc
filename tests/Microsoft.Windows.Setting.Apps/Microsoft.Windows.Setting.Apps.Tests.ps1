@@ -20,9 +20,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
-        $expectedDSCResources = 'AdvancedAppSettings', 'AppExecutionAliases'
+        $expectedDSCResources = 'AdvancedAppSettings', 'AppExecutionAliases', 'OfflineMap'
         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Setting.Apps).Name
-        $availableDSCResources.Count | Should -Be 2
+        $availableDSCResources.Count | Should -Be 3
         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
     }
 }
@@ -40,5 +40,20 @@ Describe 'AdvancedAppSettings' {
         $finalState.AppSourcePreference | Should -Be 'StoreOnly'
         $finalState.ShareDeviceExperience | Should -Be 'Device'
         $finalState.ArchiveApp | Should -Be $false
+    }
+}
+
+Describe 'OfflineMap' {
+    Context 'Package availability' {
+        $testCases = Get-GeoLocationCoordinate -ReturnAddress
+
+        It '[<_>] Get offline map package availability' -TestCases $testCases {
+            param (
+                [string]$Address
+            )
+
+            $offlineMap = Get-OfflineMapPackage -Address $_
+            $offlineMap.Packages | Should -Not -BeNullOrEmpty
+        }
     }
 }

@@ -9,6 +9,10 @@
     Copyright            = '(c) Microsoft Corp. All rights reserved.'
     Description          = 'The DSC module for Windows Apps'
     PowerShellVersion    = '7.4'
+    FunctionsToExport    = @(
+        'Get-OfflineMapPackage',
+        'Get-GeoLocationCoordinate'
+    )
     DscResourcesToExport = @(
         'AdvancedAppSettings',
         'AppExecutionAliases',

@@ -3,7 +3,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:CdpPath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CDP\'
     $global:ArchiveAppPath = ('HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\InstallService\Stubification\{0}\' -f ([System.Security.Principal.WindowsIdentity]::GetCurrent()).User.Value)
     $global:AppPath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\'
-    
+
 } else {
     $global:ExplorerPath = $env:TestRegistryPath
 }
@@ -102,22 +102,22 @@ function Resolve-AppXExePath {
         [Alias('PSPath')]
         [string] $LiteralPath
     )
-      
+
     process {
         $fullName = Convert-Path -LiteralPath $LiteralPath
         if (-not $?) { return }
-      
+
         $hexDump = fsutil reparsepoint query $fullName 2>&1
         if ($LASTEXITCODE) { Throw $hexDump }
-      
+
         [byte[]] $bytes = -split ( -join ($hexDump -match '^[a-f0-9]+:' -replace '^[a-f0-9]+:\s+(((?:[a-f0-9]{2}) +){1,16}).+$', '$1')) -replace '^', '0x'
-        
+
         $props = [System.Text.Encoding]::Unicode.GetString($bytes) -split "`0"
 
         [PSCustomObject] @{
             AppId  = $props[2]
             Target = $props[3]
-        } 
+        }
     }
 }
 
@@ -137,16 +137,16 @@ function Set-AppExecutionAlias {
         if ($aliasPath) {
             $resolvedPath = Resolve-AppXExePath -LiteralPath $aliasPath.FullName
             $appPath = "$global:AppPath\$ExecutionAliasName"
-            
+
             if (-not (Test-Path -Path $appPath)) {
                 New-Item -Path $appPath -Force | Out-Null
             }
 
             if (-not (DoesRegistryKeyPropertyExist -Path $appPath -Name '(Default)')) {
                 New-ItemProperty -Path $appPath -Name '(Default)' -Value $resolvedPath.Target -PropertyType String | Out-Null
-            } 
+            }
             Set-ItemProperty -Path $appPath -Name '(Default)' -Value $resolvedPath.Target
-            
+
             $Parent = Split-Path -Path $resolvedPath.Target -Parent
             if (-not (DoesRegistryKeyPropertyExist -Path $appPath -Name 'Path')) {
                 New-ItemProperty -Path $appPath -Name 'Path' -Value $Parent -PropertyType String | Out-Null
@@ -166,12 +166,15 @@ function Set-AppExecutionAlias {
 
 function Get-GeoLocationCoordinate {
     [CmdletBinding()]
-    [OutputType([Windows.Devices.Geolocation.BasicGeoposition])]
     param (
-        [Parameter(Mandatory = $true)]
-        [string] $Address
+        [Parameter()]
+        [string] $Address,
+
+        # Return address keys to support testing scenarios.
+        [Parameter()]
+        [switch] $ReturnAddress
     )
-    
+
     $geoData = @{
         #region Africa
         'Algeria'                       = @{
@@ -1340,7 +1343,11 @@ function Get-GeoLocationCoordinate {
             'Longitude' = -66.5897
             'Altitude'  = 0
         }
-    
+
+    }
+
+    if ($ReturnAddress.IsPresent) {
+        return $geoData.Keys
     }
 
     if ($geoData.ContainsKey($Address)) {
@@ -1383,7 +1390,7 @@ function Get-OfflineMapPackage {
     if ($null -eq $offlineMapPackage.Packages) {
         throw 'No offline map package found with coordinates: {0}' -f ($geoCoordinate | ConvertTo-Json | Out-String)
     }
-    
+
     return $offlineMapPackage
 }
 
@@ -1432,11 +1439,11 @@ function Invoke-DownloadOfflineMapPackage {
         if ($package.Status -ne 'Downloaded') {
             $package.RequestStartDownloadAsync() | Out-Null
             $retryCount = 0
-            $maxRetries = 5
+            $maxRetries = 20
 
             do {
-                Write-Verbose -Message "Downloading offline map package: $($package.DisplayName)"
-                Start-Sleep -Seconds 60
+                Write-Verbose -Message "Downloading offline map package: $($package.DisplayName) attempt '$retryCount'"
+                Start-Sleep -Seconds 30
             }
             while ($package.Status -ne 'Downloaded' -and $retryCount -lt $maxRetries)
 
@@ -1486,7 +1493,7 @@ function Invoke-DownloadOfflineMapPackage {
 [DscResource()]
 class AdvancedAppSettings {
     # Key required. Do not set.
-    [DscProperty(Key)] 
+    [DscProperty(Key)]
     [string] $SID
 
     [DscProperty()]
@@ -1544,7 +1551,7 @@ class AdvancedAppSettings {
         } catch {
             'Anywhere'
         }
-        
+
         return [AppSourcePreference]::$preference
     }
 
@@ -1632,22 +1639,47 @@ class AppExecutionAliases {
     }
 }
 
+<#
+.SYNOPSIS
+    The `OfflineMap` DSC Resource allows you to manage offline maps on Windows.
+
+.PARAMETER OfflineMap
+    The name of the offline map. This is a key property and should be set.
+
+.PARAMETER Exist
+    Indicates whether the offline map should exist. This is an optional parameter.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Apps -Name OfflineMap -Method Set -Property @{
+        DownloadMap = 'France';
+        Exist = $true;
+    }
+
+    This example ensures that the offline map of France exists on your local machine.
+#>
 [DscResource()]
 class OfflineMap {
     [DscProperty(Key, Mandatory)]
     [string] $DownloadMap
 
     [DscProperty()]
-    [bool] $Exist
+    [bool] $Exist = $true
+
+    static [PSObject] $InstalledMap
 
     [OfflineMap] Get() {
         if ([String]::IsNullOrWhiteSpace($this.DownloadMap)) {
             throw 'A value must be provided for OfflineMap::DownloadMap'
         }
-        
+
+        $map = [OfflineMap]::GetDownloadMapStatus($this.DownloadMap)
+
         $currentState = [OfflineMap]::new()
         $currentState.DownloadMap = $this.DownloadMap
-        $currentState.Exist = [OfflineMap]::GetDownloadMapStatus($this.DownloadMap)
+        $currentState.Exist = $map.Status
+
+        # Add map object to installed map
+        [OfflineMap]::InstalledMap = $map.Package
 
         return $currentState
     }
@@ -1655,7 +1687,7 @@ class OfflineMap {
     [bool] Test() {
         $currentState = $this.Get()
 
-        if (($null -ne $this.DownloadMap) -and ($this.DownloadMap -ne $currentState.DownloadMap)) {
+        if ($this.Exist -ne $currentState.Exist) {
             return $false
         }
 
@@ -1663,15 +1695,24 @@ class OfflineMap {
     }
 
     [void] Set() {
-        # TODO: Implement
+        if (-not ($this.Test())) {
+            if ($this.Exist) {
+                Invoke-DownloadOfflineMapPackage -OfflineMapPackageResult ([OfflineMap]::InstalledMap)
+            } else {
+                # TODO: Implement removal
+            }
+        }
     }
 
     #region OfflineMap helper functions
-    static [bool] GetDownloadMapStatus([string] $DownloadMap) {
+    static [hashtable] GetDownloadMapStatus([string] $DownloadMap) {
         $packages = Get-OfflineMapPackage -Address $DownloadMap
         $status = Test-OfflineMapPackageStatus -OfflineMapPackageResult $packages -DisplayName $DownloadMap
 
-        return $status
+        return @{
+            Package = $packages
+            Status  = $status
+        }
     }
     #endregion OfflineMap helper functions
 }
