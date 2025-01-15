@@ -2,6 +2,8 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer'
     $global:CdpPath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CDP\'
     $global:ArchiveAppPath = ('HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\InstallService\Stubification\{0}\' -f ([System.Security.Principal.WindowsIdentity]::GetCurrent()).User.Value)
+    $global:AppUriHandlerPath = 'Registry::HKEY_CLASSES_ROOT\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\PackageRepository\Extensions\windows.appUriHandler\'
+    $global:AppUrlAssociationsPath = 'HKCU:\Software\Microsoft\Windows\Shell\Associations\AppUrlAssociations\'
 
 } else {
     $global:ExplorerPath = $global:CdpPath = $global:ArchiveAppPath = $env:TestRegistryPath
@@ -159,6 +161,57 @@ function Set-AppExecutionAlias {
         # Additional check to ensure that the path exists before attempting to remove it.
         if (Test-Path -Path $appPath) {
             Remove-Item -Path $appPath -Force
+        }
+    }
+}
+
+function New-RandomHash {
+    param (
+        [int]$length = 12
+    )
+
+    $bytes = New-Object byte[] $length
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+    $hash = [Convert]::ToBase64String($bytes)
+
+    return $hash.Substring(0, $length)
+}
+
+function Set-AppUrlAssociations {
+    param (
+        [Parameter(Mandatory)]
+        [string]$LinkUri,
+
+        [Parameter()]
+        [switch] $Exist
+    )
+
+    $protocolHandlerId = Get-ChildItem -Path "$global:AppUriHandlerPath\$LinkUri" | Select-Object -ExpandProperty PSChildName
+    $userChoicePath = Join-Path $global:AppUrlAssociationsPath $LinkUri $protocolHandlerId 'UserChoice'
+
+    $pathCreate = $false
+    if (-not (Test-Path $userChoicePath -ErrorAction SilentlyContinue)) {
+        New-Item -Path $userChoicePath -Force | Out-Null
+
+        # If the key was just created, set enabled
+        $pathCreate = $true
+    }
+
+    if ($Exist.IsPresent) {
+        if ($pathCreate) {
+            New-ItemProperty -Path $userChoicePath -Name 'Enabled' -Value 1 -PropertyType DWord | Out-Null
+            New-ItemProperty -Path $userChoicePath -Name 'Hash' -Value (New-RandomHash) -PropertyType String | Out-Null
+        } else {
+            Set-ItemProperty -Path $userChoicePath -Name 'Enabled' -Value 1
+            Set-ItemProperty -Path $userChoicePath -Name 'Hash' -Value (New-RandomHash)
+        }
+    } else {
+        if ($pathCreate) {
+            New-ItemProperty -Path $userChoicePath -Name 'Enabled' -Value 0 -PropertyType DWord | Out-Null
+            New-ItemProperty -Path $userChoicePath -Name 'Hash' -Value (New-RandomHash) -PropertyType String | Out-Null
+        } else {
+            Set-ItemProperty -Path $userChoicePath -Name 'Enabled' -Value 0
+            Set-ItemProperty -Path $userChoicePath -Name 'Hash' -Value (New-RandomHash)
         }
     }
 }
@@ -336,6 +389,96 @@ class AppExecutionAliases {
         if (-not ($this.Test())) {
             Set-AppExecutionAlias -ExecutionAliasName $this.ExecutionAliasName -Exist $this.Exist
         }
+    }
+}
+
+<#
+.SYNOPSIS
+    The `AppsForWebsites` DSC Resource allows you to manage application associations for websites on Windows.
+
+.PARAMETER LinkUri
+    The link URI. This is a key property.
+
+.PARAMETER Exist
+    Indicates whether the application association should be turned on or off. Default is true.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Apps -Name AppsForWebsites -Method Set -Property @{
+        LinkUri = 'acrobat.adobe.com'
+        Exist = $false
+    }
+
+    This example ensures that the application association for 'acrobat.adobe.com' is turned off.
+#>
+[DscResource()]
+class AppsForWebsites {
+    [DscProperty(Key, Mandatory)]
+    [string] $LinkUri
+
+    [DscProperty()]
+    [bool] $Exist = $true
+
+    AppsForWebsites () {
+    }
+
+    AppsForWebsites ([string] $LinkUri) {
+        $this.LinkUri = $LinkUri
+        $this.Exist = [AppsForWebsites]::TestAppUrlAssociations($LinkUri)
+    }
+
+    [AppsForWebsites] Get() {
+        if ([String]::IsNullOrWhiteSpace($this.LinkUri)) {
+            throw 'A value must be provided for AppsForWebsites::LinkUri'
+        }
+
+        if (-not ([AppsForWebsites]::TestAppUriHandler($this.LinkUri))) {
+            throw [System.Configuration.ConfigurationException]::new("The AppUriHandler for '{0}' does not exist. Please install the application installer." -f $this.LinkUri)
+        }
+
+        $currentState = [AppsForWebsites]::new($this.LinkUri)
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        if ($this.Exist -ne $currentState.Exist) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        if (-not ($this.Test())) {
+            Set-AppUrlAssociations -LinkUri $this.LinkUri -Exist:$this.Exist
+        }
+    }
+
+    #region AppsForWebsites helper functions
+    static [bool] TestAppUriHandler ([string] $LinkUri) {
+        $appUriHandler = Get-ChildItem -Path $global:AppUriHandlerPath | Where-Object { $_.PSChildName -eq $LinkUri }
+
+        return ($null -ne $appUriHandler)
+    }
+
+    static [bool] TestAppUrlAssociations ([string] $LinkUri) {
+        $association = Get-ChildItem -Path $global:AppUrlAssociationsPath | Where-Object { $_.PSChildName -eq $LinkUri }
+
+        if ($null -ne $association) {
+            $protocolHandlerId = Get-ChildItem -Path "$global:AppUriHandlerPath\$LinkUri" | Select-Object -ExpandProperty PSChildName
+
+            $userChoicePath = Join-Path $global:AppUrlAssociationsPath $LinkUri $protocolHandlerId 'UserChoice'
+
+            $enabledValue = 0
+            if (Test-Path -Path $userChoicePath -ErrorAction SilentlyContinue) {
+                $enabledValue = Get-ItemPropertyValue -Path $userChoicePath -Name 'Enabled' -ErrorAction SilentlyContinue
+            }
+
+            return ($enabledValue -eq 1)
+        }
+
+        return $true # If the key does not exist, the default value is true.
     }
 }
 #endregion Classes
