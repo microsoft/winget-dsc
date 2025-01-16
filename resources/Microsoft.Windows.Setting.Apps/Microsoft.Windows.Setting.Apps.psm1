@@ -9,19 +9,6 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerPath = $global:CdpPath = $global:ArchiveAppPath = $env:TestRegistryPath
 }
 
-#region Load required assemblies
-$library = @(Get-ChildItem -Path "$PSScriptRoot\lib\*.dll" -Recurse -ErrorAction SilentlyContinue)
-$assembly = [System.AppDomain]::CurrentDomain.GetAssemblies()
-
-foreach ($type in $library) {
-    $typeName = $type.BaseName
-    $assemblyType = $assembly | Where-Object { $_.GetName().Name -eq $typeName }
-    if ($null -eq $assemblyType) {
-        Add-Type -Path $type.FullName
-    }
-}
-#endregion Load required assemblies
-
 #region Enums
 enum AppSourcePreference {
     Anywhere
