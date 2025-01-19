@@ -31,7 +31,6 @@ properties:
     ########################################################################
     # Resource expects the repository already to be cloned to your local machine. If not, use the `GitDSC/GitClone` in conjunction
     - resource: GitDSC/GitRemote
-      dependsOn:
       id: add-microsoft-upstream
       directives:
         description: Add microsoft/winget-dsc as the upstream remote
