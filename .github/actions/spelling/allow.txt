@@ -67,4 +67,13 @@ websites
 wekyb
 Hmmss
 MMdd
+GETTOUCHPADPARAMETERS
+lpv
+PInvoke
+Ptr
+Segeo
 Segoe
+touchpad
+Usb
+vparam
+WFingertip
