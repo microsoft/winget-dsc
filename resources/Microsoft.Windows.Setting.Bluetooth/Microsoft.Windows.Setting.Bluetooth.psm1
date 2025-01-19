@@ -637,7 +637,6 @@ class PenWindowsInk {
 }
 
 <#
-
 .SYNOPSIS
     The `Mouse` class is a DSC resource that allows you to manage the mouse settings on your Windows device.
 
