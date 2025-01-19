@@ -28,7 +28,7 @@ The `VSCodeExtension` DSC Resource allows you to install, update, and remove Vis
 
 ## EXAMPLES
 
-### Example 1
+### EXAMPLE 1
 
 ```powershell
 # Install the latest version of the Visual Studio Code extension 'ms-python.python'
