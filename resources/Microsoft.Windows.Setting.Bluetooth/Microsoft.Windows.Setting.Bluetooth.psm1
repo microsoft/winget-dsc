@@ -62,6 +62,9 @@ function Import-Type {
         [string] $AssemblyName
     )
 
+    # Used for larger input functions.
+    New-Variable -Name Type -Value $null -Scope Script -Force
+
     switch ($AssemblyName) {
         'Touchpad32Functions' {
             Add-Type -TypeDefinition @'
@@ -177,12 +180,25 @@ public static extern bool SwapMouseButton(bool swap);
 '@ -Name 'NativeMethods' -Namespace 'PInvoke' -PassThru
 
         }
+        'ScrollLines' {
+            Add-Type -TypeDefinition @'
+using System; 
+using System.Runtime.InteropServices;
+  
+public class ScrollLines
+{ 
+    [DllImport("User32.dll",CharSet=CharSet.Unicode)] 
+    public static extern int SystemParametersInfo(
+        Int32 uAction,
+        Int32 uParam,
+        String lpvParam,
+        Int32 fuWinIni);
+}
+'@
+        }
     }
 
-    if ($type) {
-        # Used for smaller input functions.
-        return $type
-    }
+    return $type
 }
 
 function Get-TouchpadSettings {
@@ -245,6 +261,71 @@ function Set-PrimaryButton {
     [void]$swapButtons::SwapMouseButton($Enable.IsPresent)
 }
 
+function Set-MouseSpeed() {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [ValidateRange(1, 20)] 
+        [int] $Speed = 10
+    )
+
+    $MethodDefinition = @'
+    [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+    public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
+'@
+    Set-ItemProperty -Path $global:MousePath -Name MouseSensitivity -Value $Speed
+    $User32 = Add-Type -MemberDefinition $MethodDefinition -Name 'User32MouseSpeed' -Namespace Win32Functions -PassThru
+    $User32::SystemParametersInfo(0x0071, 0, $Speed, 0) | Out-Null
+}
+
+function Set-MouseWheelRouting() {
+    param(
+        [Parameter()]
+        [switch] $Enable
+    )
+
+    $MethodDefinition = @'
+    [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+    public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
+'@
+    $WheelRoute = $Enable.IsPresent ? 2 : 0
+    $User32 = Add-Type -MemberDefinition $MethodDefinition -Name 'User32MouseWheelRouting' -Namespace Win32Functions -PassThru
+    $User32::SystemParametersInfo(0x201D, 0, $WheelRoute, 0) | Out-Null
+    Set-ItemProperty -Path $global:DesktopPath -Name MouseWheelRouting -Value $WheelRoute
+}
+
+function Set-MouseScrollLines {
+    param (
+        [Parameter()]
+        [switch] $Enable,
+        
+        [Parameter()]
+        [int] $Lines
+    )
+
+    if (-not (Test-Assembly -AssemblyName 'ScrollLines')) {
+        Import-Type -AssemblyName 'ScrollLines'
+    }
+
+
+    if (-not ($Enable.IsPresent)) {
+        # If the -Enable switch is not present, we set the number to -1, meaning one screen at a time
+        $Lines = -1
+    }
+    
+    # Action: SPI_SETWHEELSCROLLLINES
+    $Action = 0x0069
+    $UpdateIniFile = 0x01
+    $SendChangeEvent = 0x02
+
+    $Options = $UpdateIniFile -bor $SendChangeEvent
+
+    $Res = [ScrollLines]::SystemParametersInfo($Action, $Lines, 0, $options)
+
+    if ($Res -ne 1) {
+        throw [System.Configuration.ConfigurationException]::new('Failed to set the number of lines to scroll.')
+    }
+}
+
 function Set-MouseSetting {
     [CmdletBinding()]
     param (
@@ -288,8 +369,25 @@ function Set-MouseSetting {
         }
     }
 
+    # Note: The pointer precision setting is visible from 23H2 onwards in the settings screen, else you can find it in the Control Panel -> Mouse -> Pointer Options.
     if ($null -ne $PointerPrecision) {
         Set-EnhancePointerPrecision -Enable:$PointerPrecision
+    }
+
+    # Set the cursor speed.
+    if ($CursorSpeed -ne 0) {
+        Set-MouseSpeed -Speed $CursorSpeed
+    }
+
+    # Set the number of lines to scroll.
+    if ($LinesToScroll -ne 0 -or ($null -ne $RollMouseScroll -and $RollMouseScroll -ne $true)) {
+        Write-Host "Calling Set-MouseScrollLines with RollMouseScroll: $RollMouseScroll and LinesToScroll: $LinesToScroll"
+        Set-MouseScrollLines -Enable:$RollMouseScroll -Lines $LinesToScroll
+    }
+
+    # Set the mouse wheel routing e.g. scroll inactive windows when I hover over them.
+    if ($null -ne $ScrollInactiveWindows) {
+        Set-MouseWheelRouting -Enable:$ScrollInactiveWindows
     }
 }
 #endregion Functions
@@ -540,8 +638,10 @@ class Mouse {
             return $false
         }
 
-        if ((0 -eq $currentState.CursorSpeed) -and ($currentState.CursorSpeed -ne $this.CursorSpeed)) {
-            return $false
+        if ($this.CursorSpeed -ne 0) {
+            if ($currentState.CursorSpeed -ne $this.CursorSpeed) {
+                return $false
+            }
         }
 
         if (($null -ne $this.PointerPrecision) -and ($this.PointerPrecision -ne $currentState.PointerPrecision)) {
@@ -552,7 +652,13 @@ class Mouse {
             return $false
         }
 
-        if ((0 -eq $currentState.LinesToScroll) -and ($this.LinesToScroll -ne $currentState.LinesToScroll)) {
+        if ($this.LinesToScroll -ne 0) {
+            if ($currentState.LinesToScroll -ne $this.LinesToScroll) {
+                return $false
+            }
+        }
+
+        if (($null -ne $this.ScrollInactiveWindows) -and ($this.ScrollInactiveWindows -ne $currentState.ScrollInactiveWindows)) {
             return $false
         }
 
@@ -627,10 +733,13 @@ class Mouse {
     }
 
     static [ScrollDirection] GetScrollDirectionStatus() {
-        $ScrollDirectionValue = switch ((Get-ItemPropertyValue -Path $global:MousePath -Name ([Mouse]::ScrollDirectionProperty) -ErrorAction SilentlyContinue)) {
-            0 { [ScrollDirection]::Down }
-            1 { [ScrollDirection]::Up }
-            default { [ScrollDirection]::Down }
+        $ScrollDirectionValue = try {
+            switch ((Get-ItemPropertyValue -Path $global:MousePath -Name ([Mouse]::ScrollDirectionProperty) -ErrorAction SilentlyContinue)) {
+                0 { [ScrollDirection]::Down }
+                1 { [ScrollDirection]::Up }
+            }
+        } catch {
+            [ScrollDirection]::Down
         }
 
         return $ScrollDirectionValue
