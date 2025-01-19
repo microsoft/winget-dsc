@@ -11,7 +11,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:MousePath = 'HKCU:\Control Panel\Mouse\'
     $global:DesktopPath = 'HKCU:\Control Panel\Desktop\'
 } else {
-    $global:USBShellPath = $env:TestRegistryPath
+    $global:USBShellPath = $global:USBMachinePath = $global:TabletTipPath = $global:MousePath = $global:DesktopPath = $env:TestRegistryPath
 }
 
 #region Enums
@@ -272,9 +272,11 @@ function Set-MouseSpeed() {
     [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
     public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
 '@
+    # Action: SPI_SETMOUSESPEED
+    $Action = 0x0071
     Set-ItemProperty -Path $global:MousePath -Name MouseSensitivity -Value $Speed
     $User32 = Add-Type -MemberDefinition $MethodDefinition -Name 'User32MouseSpeed' -Namespace Win32Functions -PassThru
-    $User32::SystemParametersInfo(0x0071, 0, $Speed, 0) | Out-Null
+    $User32::SystemParametersInfo($Action, 0, $Speed, 0) | Out-Null
 }
 
 function Set-MouseWheelRouting() {
@@ -287,9 +289,11 @@ function Set-MouseWheelRouting() {
     [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
     public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
 '@
+    # Action: SPI_SETMOUSEWHEELROUTING
+    $Action = 0x201D
     $WheelRoute = $Enable.IsPresent ? 2 : 0
     $User32 = Add-Type -MemberDefinition $MethodDefinition -Name 'User32MouseWheelRouting' -Namespace Win32Functions -PassThru
-    $User32::SystemParametersInfo(0x201D, 0, $WheelRoute, 0) | Out-Null
+    $User32::SystemParametersInfo($Action, 0, $WheelRoute, 0) | Out-Null
     Set-ItemProperty -Path $global:DesktopPath -Name MouseWheelRouting -Value $WheelRoute
 }
 
@@ -381,13 +385,30 @@ function Set-MouseSetting {
 
     # Set the number of lines to scroll.
     if ($LinesToScroll -ne 0 -or ($null -ne $RollMouseScroll -and $RollMouseScroll -ne $true)) {
-        Write-Host "Calling Set-MouseScrollLines with RollMouseScroll: $RollMouseScroll and LinesToScroll: $LinesToScroll"
         Set-MouseScrollLines -Enable:$RollMouseScroll -Lines $LinesToScroll
     }
 
     # Set the mouse wheel routing e.g. scroll inactive windows when I hover over them.
     if ($null -ne $ScrollInactiveWindows) {
         Set-MouseWheelRouting -Enable:$ScrollInactiveWindows
+    }
+
+    # Set scroll direction. Only available in Windows 11 23H2 onwards.
+    switch ($ScrollDirection) {
+        'Down' {
+            if (-not (DoesRegistryKeyPropertyExist -Path $global:MousePath -Name 'ReverseMouseWheelDirection')) {
+                New-ItemProperty -Path $global:MousePath -Name 'ReverseMouseWheelDirection' -Value 0 -PropertyType DWord | Out-Null
+            }
+            Set-ItemProperty -Path $global:MousePath -Name 'ReverseMouseWheelDirection' -Value 0
+        }
+        'Up' {
+            if (-not (DoesRegistryKeyPropertyExist -Path $global:MousePath -Name 'ReverseMouseWheelDirection')) {
+                New-ItemProperty -Path $global:MousePath -Name 'ReverseMouseWheelDirection' -Value 1 -PropertyType DWord | Out-Null
+            }
+            Set-ItemProperty -Path $global:MousePath -Name 'ReverseMouseWheelDirection' -Value 1
+        }
+
+        # TODO: There is no refresh win32_api, so users have to logout and login to see the changes.
     }
 }
 #endregion Functions
