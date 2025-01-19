@@ -303,6 +303,7 @@ function Set-MouseScrollLines {
         [switch] $Enable,
         
         [Parameter()]
+        [ValidateRange(1, 100)]
         [int] $Lines
     )
 
@@ -414,6 +415,27 @@ function Set-MouseSetting {
 #endregion Functions
 
 #region Classes
+<#
+.SYNOPSIS
+    The `USB` class is a DSC resource that allows you to manage the USB settings on your Windows device.
+
+.PARAMETER SID
+    The security identifier. This is a key property and should not be set manually.
+
+.PARAMETER ConnectionNotifications
+    Show a notification if there are issues connection to a USB device.
+
+.PARAMETER SlowChargingNotification
+    Will show a notification if the PC is charging slowly over USB.
+
+.PARAMETER BatterySaver
+    Stops USB devices from draining power when the screen is off.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name USB -Method Set -Property @{ ConnectionNotifications = $false }
+
+    This example sets the `ConnectionNotifications` property to `$false`.
+#>
 [DscResource()]
 class USB {
     [DscProperty(Key)]
@@ -512,6 +534,21 @@ class USB {
     #endregion USB helper functions
 }
 
+<#
+.SYNOPSIS
+    The `PenWindowsInk` class is a DSC resource that allows you to manage the Pen and Windows Ink settings on your Windows device.
+
+.PARAMETER FingerTipFont
+    The font used for the finger tip.
+
+.PARAMETER WriteFingerTip
+    Enable inking with touch.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name PenWindowsInk -Method Set -Property @{ FingerTipFont = 'SegoeUI' }
+
+    This example sets the `FingerTipFont` property to `SegoeUI`.
+#>
 [DscResource()]
 class PenWindowsInk {
     [DscProperty(Key)]
@@ -599,6 +636,50 @@ class PenWindowsInk {
     #endregion PenWindowsInk helper functions
 }
 
+<#
+
+.SYNOPSIS
+    The `Mouse` class is a DSC resource that allows you to manage the mouse settings on your Windows device.
+
+.PARAMETER SID
+    The security identifier. This is a key property and should not be set manually.
+
+.PARAMETER PrimaryButton
+    The primary button of the mouse. This can be either `Left` or `Right`.
+
+.PARAMETER CursorSpeed
+    The cursor speed of the mouse. This value should be between `1` and `20`.
+
+.PARAMETER PointerPrecision
+    The pointer precision of the mouse. 
+
+.PARAMETER RollMouseScroll
+    The roll mouse scroll of the mouse. When using in combination with `LinesToScroll`, this will enable or disable the lines to scroll at a time.
+
+.PARAMETER LinesToScroll
+    The number of lines to scroll. This value should be between `1` and `100`.
+
+.PARAMETER ScrollInactiveWindows
+    The scroll inactive windows when hovering over them.
+
+.PARAMETER ScrollDirection
+    The motion to scroll down or up.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name Mouse -Method Set -Property @{ PrimaryButton = 'Right' }
+
+    This example sets the `PrimaryButton` property to `Right`.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name Mouse -Method Set -Property @{ PointerPrecision = $true }
+
+    This example sets the `PointerPrecision` property to `$true`.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name Mouse -Method Set -Property @{ RollMouseScroll = $true; LinesToScroll = 3 }
+
+    This example sets the `RollMouseScroll` property to `$true` and the `LinesToScroll` property to `3`.
+#>
 [DscResource()]
 class Mouse {
 

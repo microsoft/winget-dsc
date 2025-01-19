@@ -27,59 +27,59 @@ Describe 'List available DSC resources' {
     }
 }
 
-# Describe 'USB' {
-#     It 'Set connection notifications on' {
-#         $desiredState = @{
-#             ConnectionNotifications = $true
-#         }
-#         Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+Describe 'USB' {
+    It 'Set connection notifications on' {
+        $desiredState = @{
+            ConnectionNotifications = $true
+        }
+        Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
 
-#         $finalState = Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
-#         $finalState.ConnectionNotifications | Should -Be $true
-#     }
+        $finalState = Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.ConnectionNotifications | Should -Be $true
+    }
 
-#     It 'Set slow charging notification off' {
-#         $desiredState = @{
-#             SlowChargingNotification = $false
-#         }
-#         Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+    It 'Set slow charging notification off' {
+        $desiredState = @{
+            SlowChargingNotification = $false
+        }
+        Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
 
-#         $finalState = Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
-#         $finalState.SlowChargingNotification | Should -Be $false
-#     }
+        $finalState = Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.SlowChargingNotification | Should -Be $false
+    }
 
-#     It 'Set battery saver on' {
-#         $desiredState = @{
-#             BatterySaver = $true
-#         }
-#         Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+    It 'Set battery saver on' {
+        $desiredState = @{
+            BatterySaver = $true
+        }
+        Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
 
-#         $finalState = Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
-#         $finalState.BatterySaver | Should -Be $true
-#     }
-# }
+        $finalState = Invoke-DscResource -Name USB -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.BatterySaver | Should -Be $true
+    }
+}
 
-# Describe 'PenWindowsInk' {
-#     It 'Set finger tip font to SegoeUI' {
-#         $desiredState = @{
-#             FingerTipFont = 'SegoeUI'
-#         }
-#         Invoke-DscResource -Name PenWindowsInk -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+Describe 'PenWindowsInk' {
+    It 'Set finger tip font to SegoeUI' {
+        $desiredState = @{
+            FingerTipFont = 'SegoeUI'
+        }
+        Invoke-DscResource -Name PenWindowsInk -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
 
-#         $finalState = Invoke-DscResource -Name PenWindowsInk -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
-#         $finalState.FingerTipFont | Should -Be 'SegoeUI'
-#     }
+        $finalState = Invoke-DscResource -Name PenWindowsInk -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.FingerTipFont | Should -Be 'SegoeUI'
+    }
 
-#     It 'Set write with your finger tip off' {
-#         $desiredState = @{
-#             WriteFingerTip = $false
-#         }
-#         Invoke-DscResource -Name PenWindowsInk -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+    It 'Set write with your finger tip off' {
+        $desiredState = @{
+            WriteFingerTip = $false
+        }
+        Invoke-DscResource -Name PenWindowsInk -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
 
-#         $finalState = Invoke-DscResource -Name PenWindowsInk -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
-#         $finalState.WriteFingerTip | Should -Be $false
-#     }
-# }
+        $finalState = Invoke-DscResource -Name PenWindowsInk -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.WriteFingerTip | Should -Be $false
+    }
+}
 
 Describe 'Mouse' {
     BeforeAll {
