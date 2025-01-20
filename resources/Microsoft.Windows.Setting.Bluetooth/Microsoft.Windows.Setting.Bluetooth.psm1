@@ -990,6 +990,27 @@ class MobileDevice {
     #endregion MobileDevice helper functions
 }
 
+<#
+.SYNOPSIS
+    The `AutoPlay` class is a DSC resource that allows you to manage the AutoPlay settings on your Windows device.
+
+.PARAMETER SID
+    The security identifier. This is a key property and should not be set manually.
+
+.PARAMETER AutoPlay
+    Enable or disable AutoPlay.
+
+.PARAMETER RemovableDriveDefault
+    The default auto play action for removable drives.
+
+.PARAMETER MemoryCardDefault
+    The default auto play action for memory cards.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name AutoPlay -Method Set -Property @{ AutoPlay = $false }
+
+    This example disables the AutoPlay feature.
+#>
 [DscResource()]
 class AutoPlay {
     [DscProperty(Key)]
