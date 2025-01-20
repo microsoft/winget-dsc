@@ -186,14 +186,14 @@ Describe 'Mouse' {
     }
 }
 
-Describe 'MobileDevices' {
+Describe 'MobileDevice' {
     It 'Set mobile devices access to this PC' {
         $desiredState = @{
             AccessMobileDevice = $true
         }
-        Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+        Invoke-DscResource -Name MobileDevice -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
 
-        $finalState = Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState = Invoke-DscResource -Name MobileDevice -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
         $finalState.AccessMobileDevice | Should -Be $true
     }
 
@@ -201,9 +201,9 @@ Describe 'MobileDevices' {
         $desiredState = @{
             PhoneLinkAccess = $true
         }
-        Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+        Invoke-DscResource -Name MobileDevice -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
 
-        $finalState = Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState = Invoke-DscResource -Name MobileDevice -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
         $finalState.PhoneLinkAccess | Should -Be $true
     }
 
@@ -211,9 +211,9 @@ Describe 'MobileDevices' {
         $desiredState = @{
             ShowMobileDeviceSuggestions = $true
         }
-        Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+        Invoke-DscResource -Name MobileDevice -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
 
-        $finalState = Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState = Invoke-DscResource -Name MobileDevice -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
         $finalState.ShowMobileDeviceSuggestions | Should -Be $true
     }
 }

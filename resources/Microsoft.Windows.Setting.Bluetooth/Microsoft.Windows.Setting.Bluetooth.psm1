@@ -851,7 +851,7 @@ class Mouse {
 
 <#
 .SYNOPSIS
-    The `MobileDevices` class is a DSC resource that allows you to manage the mobile devices settings on your Windows device.
+    The `MobileDevice` class is a DSC resource that allows you to manage the mobile devices settings on your Windows device.
 
 .PARAMETER SID
     The security identifier. This is a key property and should not be set manually.
@@ -866,12 +866,12 @@ class Mouse {
     Show mobile device suggestions.
 
 .EXAMPLE
-    PS C:\> Invoke-DscResource -Name MobileDevices -Method Set -Property @{ AccessMobileDevice = $true }
+    PS C:\> Invoke-DscResource -Name MobileDevice -Method Set -Property @{ AccessMobileDevice = $true }
 
     This example allows your mobile devices to be accessed by your PC.
 #>
 [DscResource()]
-class MobileDevices {
+class MobileDevice {
     [DscProperty(Key)]
     [string]$SID
 
@@ -888,11 +888,11 @@ class MobileDevices {
     static hidden [string] $PhoneLinkAccessProperty = 'PhoneLinkEnabled'
     static hidden [string] $ShowMobileDeviceSuggestionsProperty = 'OptedIn'
 
-    [MobileDevices] Get() {
-        $currentState = [MobileDevices]::new()
-        $currentState.AccessMobileDevice = [MobileDevices]::GetAccessMobileDeviceStatus()
-        $currentState.PhoneLinkAccess = [MobileDevices]::GetPhoneLinkAccessStatus()
-        $currentState.ShowMobileDeviceSuggestions = [MobileDevices]::GetShowMobileDeviceSuggestionsStatus()
+    [MobileDevice] Get() {
+        $currentState = [MobileDevice]::new()
+        $currentState.AccessMobileDevice = [MobileDevice]::GetAccessMobileDevicetatus()
+        $currentState.PhoneLinkAccess = [MobileDevice]::GetPhoneLinkAccessStatus()
+        $currentState.ShowMobileDeviceSuggestions = [MobileDevice]::GetShowMobileDeviceSuggestionsStatus()
 
         return $currentState
     }
@@ -918,57 +918,57 @@ class MobileDevices {
     [void] Set() {
         if (-not ($this.Test())) {
             if ($null -ne $this.AccessMobileDevice) {
-                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty))) {
-                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty) -Value ([int]$this.AccessMobileDevice) -PropertyType DWord | Out-Null
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevice]::AccessMobileDeviceProperty))) {
+                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::AccessMobileDeviceProperty) -Value ([int]$this.AccessMobileDevice) -PropertyType DWord | Out-Null
                 }
-                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty) -Value ([int]$this.AccessMobileDevice)
+                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::AccessMobileDeviceProperty) -Value ([int]$this.AccessMobileDevice)
             }
 
             if ($null -ne $this.PhoneLinkAccess) {
-                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty))) {
-                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty) -Value ([int]$this.PhoneLinkAccess) -PropertyType DWord | Out-Null
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevice]::PhoneLinkAccessProperty))) {
+                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::PhoneLinkAccessProperty) -Value ([int]$this.PhoneLinkAccess) -PropertyType DWord | Out-Null
                 }
-                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty) -Value ([int]$this.PhoneLinkAccess)
+                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::PhoneLinkAccessProperty) -Value ([int]$this.PhoneLinkAccess)
             }
 
             if ($null -ne $this.ShowMobileDeviceSuggestions) {
-                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty))) {
-                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty) -Value ([int]$this.ShowMobileDeviceSuggestions) -PropertyType DWord | Out-Null
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevice]::ShowMobileDeviceSuggestionsProperty))) {
+                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::ShowMobileDeviceSuggestionsProperty) -Value ([int]$this.ShowMobileDeviceSuggestions) -PropertyType DWord | Out-Null
                 }
-                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty) -Value ([int]$this.ShowMobileDeviceSuggestions)
+                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::ShowMobileDeviceSuggestionsProperty) -Value ([int]$this.ShowMobileDeviceSuggestions)
             }
         }
     }
 
-    #region MobileDevices helper functions
+    #region MobileDevice helper functions
     static [bool] GetAccessMobileDeviceStatus() {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty))) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevice]::AccessMobileDeviceProperty))) {
             return $false
         } else {
-            $AccessMobileDeviceStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty)).CrossDeviceEnabled
+            $AccessMobileDeviceStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::AccessMobileDeviceProperty)).CrossDeviceEnabled
             return ($AccessMobileDeviceStatus -eq 1)
         }
     }
 
     static [bool] GetPhoneLinkAccessStatus() {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty))) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevice]::PhoneLinkAccessProperty))) {
             return $false
         } else {
-            $PhoneLinkAccessStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty)).PhoneLinkEnabled
+            $PhoneLinkAccessStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::PhoneLinkAccessProperty)).PhoneLinkEnabled
             return ($PhoneLinkAccessStatus -eq 1)
         }
     }
 
     static [bool] GetShowMobileDeviceSuggestionsStatus() {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty))) {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevice]::ShowMobileDeviceSuggestionsProperty))) {
             return $false
         } else {
-            $ShowMobileDeviceSuggestionsStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty)).OptedIn
+            $ShowMobileDeviceSuggestionsStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevice]::ShowMobileDeviceSuggestionsProperty)).OptedIn
             return ($ShowMobileDeviceSuggestionsStatus -eq 1)
         }
     }
 
-    #endregion MobileDevices helper functions
+    #endregion MobileDevice helper functions
 }
 
 # TODO: Does not work (yet). Check comments in Get-TouchpadSettings function.

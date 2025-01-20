@@ -11,7 +11,7 @@
         'USB',
         'PenWindowsInk',
         'Mouse',
-        'MobileDevices'
+        'MobileDevice'
     )
     PrivateData          = @{
         PSData = @{
@@ -20,7 +20,7 @@
                 'PSDscResource_USB',
                 'PSDscResource_PenWindowsInk',
                 'PSDscResource_Mouse',
-                'PSDscResource_MobileDevices'
+                'PSDscResource_MobileDevice'
             )
 
             # Prerelease string of this module

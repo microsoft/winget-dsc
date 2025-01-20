@@ -4,18 +4,18 @@ Module Name: Microsoft.Windows.Setting.Bluetooth
 ms.date: 01/19/2025
 online version:
 schema: 2.0.0
-title: MobileDevices
+title: MobileDevice
 ---
 
-# MobileDevices
+# MobileDevice
 
 ## SYNOPSIS
 
-The `MobileDevices` class is a DSC resource that allows you to manage the mobile devices settings on your Windows device.
+The `MobileDevice` class is a DSC resource that allows you to manage the mobile devices settings on your Windows device.
 
 ## DESCRIPTION
 
-The `MobileDevices` class is a DSC resource that allows you to manage the mobile devices settings on your Windows device.
+The `MobileDevice` class is a DSC resource that allows you to manage the mobile devices settings on your Windows device.
 
 ## PARAMETERS
 
@@ -31,7 +31,7 @@ The `MobileDevices` class is a DSC resource that allows you to manage the mobile
 ### EXAMPLE 1 - Allow your PC to access your mobile device
 
 ```powershell
-Invoke-DscResource -Name MobileDevices -Method Set -Property @{ AccessMobileDevice = $true }
+Invoke-DscResource -Name MobileDevice -Method Set -Property @{ AccessMobileDevice = $true }
 
 # This example allows your mobile devices to be accessed by your PC.
 ```
