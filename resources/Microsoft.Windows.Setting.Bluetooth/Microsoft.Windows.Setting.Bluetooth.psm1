@@ -1134,6 +1134,24 @@ class AutoPlay {
     #endregion AutoPlay helper functions
 }
 
+<#
+.SYNOPSIS
+    The `PrinterAndScanner` class is a DSC resource that allows you to manage the printer and scanner settings on your Windows device.
+
+.PARAMETER SID
+    The security identifier. This is a key property and should not be set manually.
+
+.PARAMETER LetWindowsManageDefaultPrinter
+    Let Windows manage the default printer.
+
+.PARAMETER DriverDownloadOverMeteredConnection
+    Download drivers over a metered connection.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name PrinterAndScanner -Method Set -Property @{ LetWindowsManageDefaultPrinter = $false }
+
+    This example disables Windows from managing the default printer.
+#>
 [DscResource()]
 class PrinterAndScanner {
     [DscProperty(Key)]
