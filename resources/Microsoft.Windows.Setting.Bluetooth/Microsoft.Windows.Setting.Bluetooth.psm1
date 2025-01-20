@@ -12,6 +12,8 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:DesktopPath = 'HKCU:\Control Panel\Desktop\'
     $global:MobilityPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Mobility\'
     $global:AutoPlayPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\'
+    $global:DeviceSetupPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\DeviceSetup\'
+    $global:WindowsNTPath = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Windows\'
 } else {
     $global:USBShellPath = $global:USBMachinePath = $global:TabletTipPath = $global:MousePath = $global:DesktopPath = $global:MobilityPath = $global:AutoPlayPath = $env:TestRegistryPath
 }
@@ -1130,6 +1132,82 @@ class AutoPlay {
         return [MemoryCard]::$MemoryCardValue
     }
     #endregion AutoPlay helper functions
+}
+
+[DscResource()]
+class PrinterAndScanner {
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
+    [nullable[bool]] $LetWindowsManageDefaultPrinter
+
+    [DscProperty()]
+    [nullable[bool]] $DriverDownloadOverMeteredConnection
+
+    static hidden [string] $LetWindowsManageDefaultPrinterProperty = 'LegacyDefaultPrinterModer'
+    static hidden [string] $DriverDownloadOverMeteredConnectionProperty = 'CostedNetworkPolicy'
+
+    [PrinterAndScanner] Get() {
+        $currentState = [PrinterAndScanner]::new()
+        $currentState.LetWindowsManageDefaultPrinter = [PrinterAndScanner]::GetLetWindowsManageDefaultPrinterStatus()
+        $currentState.DriverDownloadOverMeteredConnection = [PrinterAndScanner]::GetDriverDownloadOverMeteredConnectionStatus()
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        if (($null -ne $this.LetWindowsManageDefaultPrinter) -and ($this.LetWindowsManageDefaultPrinter -ne $currentState.LetWindowsManageDefaultPrinter)) {
+            return $false
+        }
+
+        if (($null -ne $this.DriverDownloadOverMeteredConnection) -and ($this.DriverDownloadOverMeteredConnection -ne $currentState.DriverDownloadOverMeteredConnection)) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        if (-not ($this.Test())) {
+            if ($null -ne $this.LetWindowsManageDefaultPrinter) {
+                $letWindowsManageDefaultPrinterValue = $this.LetWindowsManageDefaultPrinter ? 0 : 1
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:PrinterPath -Name ([PrinterAndScanner]::LetWindowsManageDefaultPrinterProperty))) {
+                    New-ItemProperty -Path $global:PrinterPath -Name ([PrinterAndScanner]::LetWindowsManageDefaultPrinterProperty) -Value $letWindowsManageDefaultPrinterValue -PropertyType DWord | Out-Null
+                }
+                Set-ItemProperty -Path $global:PrinterPath -Name ([PrinterAndScanner]::LetWindowsManageDefaultPrinterProperty) -Value $letWindowsManageDefaultPrinterValue
+            }
+
+            if ($null -ne $this.DriverDownloadOverMeteredConnection) {
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:PrinterPath -Name ([PrinterAndScanner]::DriverDownloadOverMeteredConnectionProperty))) {
+                    New-ItemProperty -Path $global:PrinterPath -Name ([PrinterAndScanner]::DriverDownloadOverMeteredConnectionProperty) -Value ([int]$this.DriverDownloadOverMeteredConnection) -PropertyType DWord | Out-Null
+                }
+                Set-ItemProperty -Path $global:PrinterPath -Name ([PrinterAndScanner]::DriverDownloadOverMeteredConnectionProperty) -Value ([int]$this.DriverDownloadOverMeteredConnection)
+            }
+        }
+    }
+
+    #region PrinterAndScanner helper functions
+    static [bool] GetLetWindowsManageDefaultPrinterStatus() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PrinterPath -Name ([PrinterAndScanner]::LetWindowsManageDefaultPrinterProperty))) {
+            return $true
+        } else {
+            $LetWindowsManageDefaultPrinterStatus = (Get-ItemProperty -Path $global:PrinterPath -Name ([PrinterAndScanner]::LetWindowsManageDefaultPrinterProperty)).LegacyDefaultPrinterModer
+            return ($LetWindowsManageDefaultPrinterStatus -eq 0)
+        }
+    }
+
+    static [bool] GetDriverDownloadOverMeteredConnectionStatus() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PrinterPath -Name ([PrinterAndScanner]::DriverDownloadOverMeteredConnectionProperty))) {
+            return $false
+        } else {
+            $DriverDownloadOverMeteredConnectionStatus = (Get-ItemProperty -Path $global:PrinterPath -Name ([PrinterAndScanner]::DriverDownloadOverMeteredConnectionProperty)).CostedNetworkPolicy
+            return ($DriverDownloadOverMeteredConnectionStatus -eq 1)
+        }
+    }
+    #endregion PrinterAndScanner helper functions
 }
 
 
