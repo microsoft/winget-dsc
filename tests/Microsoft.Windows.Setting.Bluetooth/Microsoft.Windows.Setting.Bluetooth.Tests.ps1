@@ -258,3 +258,15 @@ Describe 'AutoPlay' {
         $finalState.AutoPlay | Should -Be $false
     }
 }
+
+Describe 'PrinterAndScanner' {
+    It 'Set the printer to not be managed by Windows' {
+        $desiredState = @{
+            LetWindowsManageDefaultPrinter = $false
+        }
+        Invoke-DscResource -Name PrinterAndScanner -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name PrinterAndScanner -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.LetWindowsManageDefaultPrinter | Should -Be $false
+    }
+}
