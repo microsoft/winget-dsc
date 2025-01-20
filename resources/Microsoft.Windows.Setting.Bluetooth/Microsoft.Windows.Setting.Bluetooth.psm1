@@ -11,8 +11,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:MousePath = 'HKCU:\Control Panel\Mouse\'
     $global:DesktopPath = 'HKCU:\Control Panel\Desktop\'
     $global:MobilityPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Mobility\'
+    $global:AutoPlayPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\'
 } else {
-    $global:USBShellPath = $global:USBMachinePath = $global:TabletTipPath = $global:MousePath = $global:DesktopPath = $env:TestRegistryPath
+    $global:USBShellPath = $global:USBMachinePath = $global:TabletTipPath = $global:MousePath = $global:DesktopPath = $global:MobilityPath = $global:AutoPlayPath = $env:TestRegistryPath
 }
 
 #region Enums
@@ -29,6 +30,24 @@ enum PrimaryButton {
 enum ScrollDirection {
     Down
     Up
+}
+
+enum RemovableDrive {
+    KeepCurrentValue
+    MSStorageSense
+    MSTakeNoAction
+    MSOpenFolder
+    MSPromptEachTime
+}
+
+enum MemoryCard {
+    KeepCurrentValue
+    MSPlayMediaOnArrival
+    MSTakeNoAction
+    MSOpenFolder
+    MSPromptEachTime
+    OneDriveAutoPlay
+    ImportPhotosAndVideos
 }
 #endregion Enums
 
@@ -970,6 +989,128 @@ class MobileDevice {
 
     #endregion MobileDevice helper functions
 }
+
+[DscResource()]
+class AutoPlay {
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
+    [nullable[bool]] $AutoPlay
+
+    [DscProperty()]
+    [RemovableDrive] $RemovableDriveDefault = [RemovableDrive]::KeepCurrentValue
+
+    [DscProperty()]
+    [MemoryCard] $MemoryCardDefault = [MemoryCard]::KeepCurrentValue
+
+    static hidden [string] $AutoPlayProperty = 'DisableAutoplay'
+
+    [AutoPlay] Get() {
+        $currentState = [AutoPlay]::new()
+        $currentState.AutoPlay = [AutoPlay]::GetAutoPlayStatus()
+        $currentState.RemovableDriveDefault = [AutoPlay]::GetRemovableDriveDefault()
+        $currentState.MemoryCardDefault = [AutoPlay]::GetMemoryCardDefault()
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        if (($null -ne $this.AutoPlay) -and ($this.AutoPlay -ne $currentState.AutoPlay)) {
+            return $false
+        }
+
+        if ($this.RemovableDriveDefault -ne [RemovableDrive]::KeepCurrentValue -and $this.RemovableDriveDefault -ne $currentState.RemovableDriveDefault) {
+            return $false
+        }
+
+        if ($this.MemoryCardDefault -ne [MemoryCard]::KeepCurrentValue -and $this.MemoryCardDefault -ne $currentState.MemoryCardDefault) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        if (-not ($this.Test())) {
+            if ($null -ne $this.AutoPlay) {
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:AutoPlayPath -Name 'NoDriveTypeAutoRun')) {
+                    New-ItemProperty -Path $global:AutoPlayPath -Name 'NoDriveTypeAutoRun' -Value ([int]$this.AutoPlay) -PropertyType DWord | Out-Null
+                }
+                Set-ItemProperty -Path $global:AutoPlayPath -Name 'NoDriveTypeAutoRun' -Value ([int]$this.AutoPlay)
+            }
+
+            if ($this.RemovableDriveDefault -ne [RemovableDrive]::KeepCurrentValue) {
+                $regPath = "$global:AutoPlayPath\UserChosenExecuteHandlers\StorageOnArrival"
+                if (-not (Test-Path $regPath -ErrorAction SilentlyContinue)) {
+                    New-Item -Path $regPath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $regPath -Name '(Default)' -Value $this.RemovableDriveDefault
+            }
+
+            if ($this.MemoryCardDefault -ne [MemoryCard]::KeepCurrentValue) {
+                $regPath = "$global:AutoPlayPath\UserChosenExecuteHandlers\CameraAlternate\ShowPicturesOnArrival"
+                if (-not (Test-Path $regPath -ErrorAction SilentlyContinue)) {
+                    New-Item -Path $regPath -Force | Out-Null
+                }
+
+                $regValue = $this.MemoryCardDefault
+
+                if ($this.MemoryCardDefault -eq 'ImportPhotosAndVideos') {
+                    # For information about this value, see: https://learn.microsoft.com/en-us/windows/apps/develop/settings/settings-common#supported-data-values-for-showpicturesonarrival
+                    $regValue = 'dsd9eksajf9re3669zh5z2jykhws2jy42gypaqjh1qe66nyek1hg!desktopappxcontent!showshowpicturesonarrival'
+                }
+                Set-ItemProperty -Path $regPath -Name '(Default)' -Value $regValue
+            }
+        }
+    }
+
+    #region AutoPlay helper functions
+    static [bool] GetAutoPlayStatus() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:AutoPlayPath -Name ([AutoPlay]::AutoPlayProperty))) {
+            return $true
+        } else {
+            $AutoPlayStatus = (Get-ItemProperty -Path $global:AutoPlayPath -Name ([AutoPlay]::AutoPlayProperty)).DisableAutoplay
+            return ($AutoPlayStatus -eq 0)
+        }
+    }
+
+    static [RemovableDrive] GetRemovableDriveDefault() {
+        $regPath = "$global:AutoPlayPath\UserChosenExecuteHandlers\StorageOnArrival"
+        if (-not (Test-Path $regPath -ErrorAction SilentlyContinue)) {
+            return [RemovableDrive]::KeepCurrentValue
+        }
+
+        $RemovableDriveValue = (Get-ItemPropertyValue -Path $regPath -Name '(Default)' -ErrorAction SilentlyContinue)
+        if ($null -eq $RemovableDriveValue) {
+            return [RemovableDrive]::KeepCurrentValue
+        }
+
+        return [RemovableDrive]::$RemovableDriveValue
+    }
+
+    static [MemoryCard] GetMemoryCardDefault() {
+        $regPath = "$global:AutoPlayPath\UserChosenExecuteHandlers\CameraAlternate\ShowPicturesOnArrival"
+        if (-not (Test-Path $regPath -ErrorAction SilentlyContinue)) {
+            return [MemoryCard]::KeepCurrentValue
+        }
+
+        $MemoryCardValue = (Get-ItemPropertyValue -Path $regPath -Name '(Default)' -ErrorAction SilentlyContinue)
+        if ($null -eq $MemoryCardValue) {
+            return [MemoryCard]::KeepCurrentValue
+        }
+
+        if ([System.Enum]::GetNames([MemoryCard]) -notcontains $MemoryCardValue) {
+            $MemoryCardValue = 'ImportPhotosAndVideos'
+        }
+
+        return [MemoryCard]::$MemoryCardValue
+    }
+    #endregion AutoPlay helper functions
+}
+
 
 # TODO: Does not work (yet). Check comments in Get-TouchpadSettings function.
 # [DscResource()]

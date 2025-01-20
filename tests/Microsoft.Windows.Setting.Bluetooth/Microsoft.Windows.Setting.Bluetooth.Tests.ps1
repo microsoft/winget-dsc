@@ -217,3 +217,44 @@ Describe 'MobileDevice' {
         $finalState.ShowMobileDeviceSuggestions | Should -Be $true
     }
 }
+
+Describe 'AutoPlay' {
+    It 'Keeps current value.' {
+        $initialState = Invoke-DscResource -Name AutoPlay -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+
+        $parameters = @{ RemovableDriveDefault = 'KeepCurrentValue'; MemoryCardDefault = 'KeepCurrentValue' }
+
+        $testResult = Invoke-DscResource -Name AutoPlay -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Test -Property $parameters
+        $testResult.InDesiredState | Should -Be $true
+
+        # Invoking set should not change these values.
+        Invoke-DscResource -Name AutoPlay -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $parameters
+        $finalState = Invoke-DscResource -Name AutoPlay -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.RemovableDriveDefault | Should -Be $initialState.RemovableDriveDefault
+        $finalState.MemoryCardDefault | Should -Be $initialState.MemoryCardDefault
+    }
+
+    It 'Sets desired value for removable drive and memory card' {
+        $desiredState = @{
+            RemovableDriveDefault = 'MSTakeNoAction'
+            MemoryCardDefault     = 'MSTakeNoAction'
+        }
+
+        Invoke-DscResource -Name AutoPlay -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name AutoPlay -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.RemovableDriveDefault | Should -Be 'MSTakeNoAction'
+        $finalState.MemoryCardDefault | Should -Be 'MSTakeNoAction'
+    }
+
+    It 'Turns off auto play' {
+        $desiredState = @{
+            AutoPlay = $false
+        }
+
+        Invoke-DscResource -Name AutoPlay -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name AutoPlay -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.AutoPlay | Should -Be $false
+    }
+}
