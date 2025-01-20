@@ -10,7 +10,8 @@
     DscResourcesToExport = @(
         'USB',
         'PenWindowsInk',
-        'Mouse'
+        'Mouse',
+        'MobileDevices'
     )
     PrivateData          = @{
         PSData = @{
@@ -18,7 +19,8 @@
             Tags       = @(
                 'PSDscResource_USB',
                 'PSDscResource_PenWindowsInk',
-                'PSDscResource_Mouse'
+                'PSDscResource_Mouse',
+                'PSDscResource_MobileDevices'
             )
 
             # Prerelease string of this module

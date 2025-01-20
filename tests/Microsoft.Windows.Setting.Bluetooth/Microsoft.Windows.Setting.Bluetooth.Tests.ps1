@@ -83,7 +83,7 @@ Describe 'PenWindowsInk' {
 
 Describe 'Mouse' {
     BeforeAll {
-        $class = [Mouse]::new() 
+        $class = [Mouse]::new()
 
         $script:currentState = $class.Get()
         Write-Verbose -Message ('Current mouse settings') -Verbose
@@ -106,7 +106,7 @@ Describe 'Mouse' {
         { Invoke-DscResource -Name Mouse -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState } | Should -Throw
     }
 
-    It 'Should set primary button to right' {
+    It 'Set primary button to right' {
         $desiredState = @{
             PrimaryButton = 'Right'
         }
@@ -116,7 +116,7 @@ Describe 'Mouse' {
         $finalState.PrimaryButton | Should -Be 'Right'
     }
 
-    It 'Should set the pointer precision off' {
+    It 'Set the pointer precision off' {
         $desiredState = @{
             PointerPrecision = $false
         }
@@ -126,7 +126,7 @@ Describe 'Mouse' {
         $finalState.PointerPrecision | Should -Be $false
     }
 
-    It 'Should set the mouse scroll to single screen at time' {
+    It 'Set the mouse scroll to single screen at time' {
         $desiredState = @{
             RollMouseScroll = $false
         }
@@ -137,9 +137,9 @@ Describe 'Mouse' {
         $finalState.LinesToScroll | Should -Be -1
     }
 
-    It 'Should set the mouse scroll length even lines to scroll are set to 5' {
+    It 'Set the mouse scroll length even lines to scroll are set to 5' {
         $desiredState = @{
-            RollMouseScroll = $false 
+            RollMouseScroll = $false
             LinesToScroll   = 5
         }
         Invoke-DscResource -Name Mouse -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
@@ -148,7 +148,7 @@ Describe 'Mouse' {
         $finalState.LinesToScroll | Should -Be -1
     }
 
-    It 'Should set the mouse scroll length to 5' {
+    It 'Set the mouse scroll length to 5' {
         $desiredState = @{
             RollMouseScroll = $true
             LinesToScroll   = 5
@@ -159,7 +159,7 @@ Describe 'Mouse' {
         $finalState.LinesToScroll | Should -Be 5
     }
 
-    It 'Should set the scroll inactive window' {
+    It 'Set the scroll inactive window' {
         $desiredState = @{
             ScrollInactiveWindows = $true
         }
@@ -169,7 +169,7 @@ Describe 'Mouse' {
         $finalState.ScrollInactiveWindows | Should -Be $true
     }
 
-    It 'Should set the scroll direction to up' {
+    It 'Set the scroll direction to up' {
         $desiredState = @{
             ScrollDirection = 'Up'
         }
@@ -183,5 +183,37 @@ Describe 'Mouse' {
         Write-Verbose -Message ('Restoring mouse settings to original state with') -Verbose
         Write-Verbose -Message ($script:currentState | ConvertTo-Json | Out-String) -Verbose
         $currentState.Set()
+    }
+}
+
+Describe 'MobileDevices' {
+    It 'Set mobile devices access to this PC' {
+        $desiredState = @{
+            AccessMobileDevice = $true
+        }
+        Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.AccessMobileDevice | Should -Be $true
+    }
+
+    It 'Set Phone Link on' {
+        $desiredState = @{
+            PhoneLinkAccess = $true
+        }
+        Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.PhoneLinkAccess | Should -Be $true
+    }
+
+    It 'Set the suggestion for mobile device to Windows' {
+        $desiredState = @{
+            ShowMobileDeviceSuggestions = $true
+        }
+        Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name MobileDevices -ModuleName Microsoft.Windows.Setting.Bluetooth -Method Get -Property @{}
+        $finalState.ShowMobileDeviceSuggestions | Should -Be $true
     }
 }

@@ -10,6 +10,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:TabletTipPath = 'HKCU:\Software\Microsoft\TabletTip\EmbeddedInkControl\'
     $global:MousePath = 'HKCU:\Control Panel\Mouse\'
     $global:DesktopPath = 'HKCU:\Control Panel\Desktop\'
+    $global:MobilityPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Mobility\'
 } else {
     $global:USBShellPath = $global:USBMachinePath = $global:TabletTipPath = $global:MousePath = $global:DesktopPath = $env:TestRegistryPath
 }
@@ -182,12 +183,12 @@ public static extern bool SwapMouseButton(bool swap);
         }
         'ScrollLines' {
             Add-Type -TypeDefinition @'
-using System; 
+using System;
 using System.Runtime.InteropServices;
-  
+
 public class ScrollLines
-{ 
-    [DllImport("User32.dll",CharSet=CharSet.Unicode)] 
+{
+    [DllImport("User32.dll",CharSet=CharSet.Unicode)]
     public static extern int SystemParametersInfo(
         Int32 uAction,
         Int32 uParam,
@@ -264,7 +265,7 @@ function Set-PrimaryButton {
 function Set-MouseSpeed() {
     param(
         [Parameter(ValueFromPipeline = $true)]
-        [ValidateRange(1, 20)] 
+        [ValidateRange(1, 20)]
         [int] $Speed = 10
     )
 
@@ -301,7 +302,7 @@ function Set-MouseScrollLines {
     param (
         [Parameter()]
         [switch] $Enable,
-        
+
         [Parameter()]
         [ValidateRange(1, 100)]
         [int] $Lines
@@ -316,7 +317,7 @@ function Set-MouseScrollLines {
         # If the -Enable switch is not present, we set the number to -1, meaning one screen at a time
         $Lines = -1
     }
-    
+
     # Action: SPI_SETWHEELSCROLLLINES
     $Action = 0x0069
     $UpdateIniFile = 0x01
@@ -650,7 +651,7 @@ class PenWindowsInk {
     The cursor speed of the mouse. This value should be between `1` and `20`.
 
 .PARAMETER PointerPrecision
-    The pointer precision of the mouse. 
+    The pointer precision of the mouse.
 
 .PARAMETER RollMouseScroll
     The roll mouse scroll of the mouse. When using in combination with `LinesToScroll`, this will enable or disable the lines to scroll at a time.
@@ -846,6 +847,128 @@ class Mouse {
         return $ScrollDirectionValue
     }
     #endregion Mouse helper functions
+}
+
+<#
+.SYNOPSIS
+    The `MobileDevices` class is a DSC resource that allows you to manage the mobile devices settings on your Windows device.
+
+.PARAMETER SID
+    The security identifier. This is a key property and should not be set manually.
+
+.PARAMETER AccessMobileDevice
+    Allow this PC to access the mobile device.
+
+.PARAMETER PhoneLinkAccess
+    Allow access to Phone Link. For more information: https://support.microsoft.com/en-us/phone-link
+
+.PARAMETER ShowMobileDeviceSuggestions
+    Show mobile device suggestions.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -Name MobileDevices -Method Set -Property @{ AccessMobileDevice = $true }
+
+    This example allows your mobile devices to be accessed by your PC.
+#>
+[DscResource()]
+class MobileDevices {
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
+    [nullable[bool]] $AccessMobileDevice
+
+    [DscProperty()]
+    [nullable[bool]] $PhoneLinkAccess
+
+    [DscProperty()]
+    [nullable[bool]] $ShowMobileDeviceSuggestions
+
+    static hidden [string] $AccessMobileDeviceProperty = 'CrossDeviceEnabled'
+    static hidden [string] $PhoneLinkAccessProperty = 'PhoneLinkEnabled'
+    static hidden [string] $ShowMobileDeviceSuggestionsProperty = 'OptedIn'
+
+    [MobileDevices] Get() {
+        $currentState = [MobileDevices]::new()
+        $currentState.AccessMobileDevice = [MobileDevices]::GetAccessMobileDeviceStatus()
+        $currentState.PhoneLinkAccess = [MobileDevices]::GetPhoneLinkAccessStatus()
+        $currentState.ShowMobileDeviceSuggestions = [MobileDevices]::GetShowMobileDeviceSuggestionsStatus()
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        if (($null -ne $this.AccessMobileDevice) -and ($this.AccessMobileDevice -ne $currentState.AccessMobileDevice)) {
+            return $false
+        }
+
+        if (($null -ne $this.PhoneLinkAccess) -and ($this.PhoneLinkAccess -ne $currentState.PhoneLinkAccess)) {
+            return $false
+        }
+
+        if (($null -ne $this.ShowMobileDeviceSuggestions) -and ($this.ShowMobileDeviceSuggestions -ne $currentState.ShowMobileDeviceSuggestions)) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        if (-not ($this.Test())) {
+            if ($null -ne $this.AccessMobileDevice) {
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty))) {
+                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty) -Value ([int]$this.AccessMobileDevice) -PropertyType DWord | Out-Null
+                }
+                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty) -Value ([int]$this.AccessMobileDevice)
+            }
+
+            if ($null -ne $this.PhoneLinkAccess) {
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty))) {
+                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty) -Value ([int]$this.PhoneLinkAccess) -PropertyType DWord | Out-Null
+                }
+                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty) -Value ([int]$this.PhoneLinkAccess)
+            }
+
+            if ($null -ne $this.ShowMobileDeviceSuggestions) {
+                if (-not (DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty))) {
+                    New-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty) -Value ([int]$this.ShowMobileDeviceSuggestions) -PropertyType DWord | Out-Null
+                }
+                Set-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty) -Value ([int]$this.ShowMobileDeviceSuggestions)
+            }
+        }
+    }
+
+    #region MobileDevices helper functions
+    static [bool] GetAccessMobileDeviceStatus() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty))) {
+            return $false
+        } else {
+            $AccessMobileDeviceStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::AccessMobileDeviceProperty)).CrossDeviceEnabled
+            return ($AccessMobileDeviceStatus -eq 1)
+        }
+    }
+
+    static [bool] GetPhoneLinkAccessStatus() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty))) {
+            return $false
+        } else {
+            $PhoneLinkAccessStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::PhoneLinkAccessProperty)).PhoneLinkEnabled
+            return ($PhoneLinkAccessStatus -eq 1)
+        }
+    }
+
+    static [bool] GetShowMobileDeviceSuggestionsStatus() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty))) {
+            return $false
+        } else {
+            $ShowMobileDeviceSuggestionsStatus = (Get-ItemProperty -Path $global:MobilityPath -Name ([MobileDevices]::ShowMobileDeviceSuggestionsProperty)).OptedIn
+            return ($ShowMobileDeviceSuggestionsStatus -eq 1)
+        }
+    }
+
+    #endregion MobileDevices helper functions
 }
 
 # TODO: Does not work (yet). Check comments in Get-TouchpadSettings function.
