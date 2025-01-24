@@ -157,7 +157,7 @@ class Language {
     Indicates whether the display language should be set. Defaults to $true.
 
 .EXAMPLE
-    PS C:\> Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Language -Name DisplayLanguage -Method Set -Property @{ LocaleName = 'en-US' }
+    PS C:\> Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Language -Name DisplayLanguage -Method Set -Property @{ Name = 'en-US' }
 
     This example sets the display language to English (United States) on the user.
 #>
