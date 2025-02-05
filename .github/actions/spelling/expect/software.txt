@@ -6,3 +6,4 @@ NUnit
 reportgenerator
 markdownlint
 msiexec
+fsutil
