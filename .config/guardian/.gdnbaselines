@@ -1,0 +1,31 @@
+{
+  "properties": {
+    "helpUri": "https://eng.ms/docs/microsoft-security/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/microsoft-guardian/general/baselines"
+  },
+  "version": "1.0.0",
+  "baselines": {
+    "default": {
+      "name": "default",
+      "createdDate": "2025-02-03 22:46:30Z",
+      "lastUpdatedDate": "2025-02-03 22:46:30Z"
+    }
+  },
+  "results": {
+    "5c10c5226f0de7e11f19cc19ec4b11969405edc7784e8d6ec0ef1f2e73426234": {
+      "signature": "5c10c5226f0de7e11f19cc19ec4b11969405edc7784e8d6ec0ef1f2e73426234",
+      "alternativeSignatures": [
+        "8c918d10f386db44cc1aa34d66d70445f64e07d7ec945383026d9b8a529ed9dd"
+      ],
+      "target": "resources/Microsoft.Windows.Developer/Microsoft.Windows.Developer.psm1",
+      "line": 521,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "psscriptanalyzer",
+      "ruleId": "PSDSCStandardDSCFunctionsInResource",
+      "createdDate": "2025-02-03 22:46:30Z",
+      "expirationDate": "2025-07-23 23:11:27Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2025-02-03 23:11:27Z"
+    }
+  }
+}
