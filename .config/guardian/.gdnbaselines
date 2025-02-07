@@ -23,9 +23,9 @@
       ],
       "tool": "psscriptanalyzer",
       "ruleId": "PSDSCStandardDSCFunctionsInResource",
-      "createdDate": "2025-02-03 22:46:30Z",
-      "expirationDate": "2025-07-23 23:11:27Z",
-      "justification": "This error is baselined with an expiration date of 180 days from 2025-02-03 23:11:27Z"
+      "createdDate": "2025-02-07 22:51:04Z",
+      "expirationDate": "2025-07-27 22:56:06Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2025-02-07 22:56:06Z"
     }
   }
 }
