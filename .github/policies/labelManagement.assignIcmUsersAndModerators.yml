@@ -22,7 +22,7 @@ configuration:
                   label: Author-Not-Authorized
         then:
           - assignTo:
-              user: ryfu-msft
+              user: denelon
         #   - assignIcmUsers:
         #       teamId: 85579
         #       primary: True
