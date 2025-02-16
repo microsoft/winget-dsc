@@ -24,11 +24,13 @@ function Get-RegistryStatus
         $registryValue = if ($Name.Count -gt 1)
         {
             $Name | ForEach-Object {
+                Write-Verbose -Message ($script:localizedData.GetRegistryStatus_SearchMessage -f $_, $Path)
                 Get-ItemPropertyValue -Path $Path -Name $_ -ErrorAction Stop
             }
         }
         else
         {
+            Write-Verbose -Message ($script:localizedData.GetRegistryStatus_SearchMessage -f $Name, $Path)
             Get-ItemPropertyValue -Path $Path -Name $Name -ErrorAction Stop
         }
     }
@@ -38,7 +40,7 @@ function Get-RegistryStatus
         Write-Verbose -Message $_.Exception.Message -Verbose
     }
 
-    $Key = if ($registryValue -or $registryValue -eq 0)
+    [System.String]$Key = if ($registryValue -or $registryValue -eq 0)
     {
         if ($registryValue.Count -gt 1)
         {
@@ -47,23 +49,31 @@ function Get-RegistryStatus
             $groupCount = $registryValue | Group-Object
             if ($groupCount.Name.Count -ne 1)
             {
-                $errorMessage = $script:localizedData.RegistryManualManipulation_ErrorMessage -f $Path
+                $errorMessage = $script:localizedData.GetRegistryStatusRegistryManualManipulation_ErrorMessage -f $Path
                 New-InvalidDataException `
                     -ErrorId 'RegistryManualManipulationError' `
                     -Message $errorMessage
             }
 
-            # Return the first value as the registry value is the same
+            # Return the first value as the registry value "should" be the same
             $registryValue = $registryValue[0]
         }
 
+        # Remove the default 
+        if ($Status.ContainsKey('Default'))
+        {
+            $Status.Remove('Default')
+        }
+
+        # Search the possible two values
         $Status.GetEnumerator() | Where-Object { $_.Value -eq $registryValue } | Select-Object -ExpandProperty Key
     }
     else
     {
-        Write-Verbose -Message ($script:localizedData.GetRegistryKeyData_DefaultMessage -f $Status.Default, $Path)
+        Write-Verbose -Message ($script:localizedData.GetRegistryStatus_DefaultMessage -f $Status.Default, $Path)
         $Status.Default
     }
 
+    Write-Verbose -Message ($script:localizedData.GetRegistryStatus_FoundMessage -f $Key, $Path)
     return $Key
 }

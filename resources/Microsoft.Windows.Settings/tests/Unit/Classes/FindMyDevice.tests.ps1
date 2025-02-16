@@ -98,7 +98,7 @@ Describe 'FindMyDevice\Get()' -Tag 'Get' {
                         Add-Member -Force -MemberType 'ScriptMethod' -Name 'GetCurrentState' -Value {
                             return @{
                                 IsSingleInstance = 'Yes'
-                                FindMyDevice     = [System.Boolean] $true
+                                FindMyDevice     = [SettingStatus]::Enabled
                             }
                         } -PassThru |
                             Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
@@ -114,7 +114,7 @@ Describe 'FindMyDevice\Get()' -Tag 'Get' {
                     $currentState = $script:mockInstance.Get()
 
                     $currentState.IsSingleInstance | Should -Be 'Yes'
-                    $currentState.FindMyDevice | Should -Be $true
+                    $currentState.FindMyDevice | Should -Be 'Enabled'
 
                     $currentState.Reasons | Should -BeNullOrEmpty
                 }
@@ -130,7 +130,6 @@ Describe 'Microsoft.Windows.Settings\Set()' -Tag 'Set' {
 
             $script:mockInstance = [FindMyDevice] @{
                 IsSingleInstance = 'Yes'
-                FindMyDevice     = $null # The default desired state
             } |
                 # Mock method Modify which is called by the case method Set().
                 Add-Member -Force -MemberType 'ScriptMethod' -Name 'Modify' -Value {
@@ -185,8 +184,8 @@ Describe 'Microsoft.Windows.Settings\Set()' -Tag 'Set' {
                         return @(
                             @{
                                 Property      = 'FindMyDevice'
-                                ExpectedValue = $false
-                                ActualValue   = $true
+                                ExpectedValue = 'Disabled'
+                                ActualValue   = 'Enabled'
                             }
                         )
                     } -PassThru |
@@ -272,7 +271,7 @@ Describe 'Microsoft.Windows.Settings\GetCurrentState()' -Tag 'HiddenMember' {
                 Set-StrictMode -Version 1.0
 
                 $script:mockInstance = [FindMyDevice] @{
-                    FindMyDevice = $false
+                    FindMyDevice = 'Disabled'
                 }
             }
         }
@@ -288,13 +287,13 @@ Describe 'Microsoft.Windows.Settings\GetCurrentState()' -Tag 'HiddenMember' {
             )
 
             $currentState.IsSingleInstance | Should -BeNullOrEmpty
-            $currentState.FindMyDevice | Should -Be $false
+            $currentState.FindMyDevice | Should -Be 'Disabled'
         }
     }
 }
 
 
-Describe 'FindMyDevice\SetFindMyDevice()' -Tag 'HiddenMember' {
+Describe 'FindMyDevice\Set()' -Tag 'HiddenMember' {
     BeforeAll {
         Mock -CommandName Set-RegistryStatus
         Mock -CommandName Set-ItemProperty -MockWith { return $true }
@@ -306,10 +305,8 @@ Describe 'FindMyDevice\SetFindMyDevice()' -Tag 'HiddenMember' {
                 Set-StrictMode -Version 1.0
 
                 $script:mockInstance = [FindMyDevice]@{
-                    FindMyDevice = $false
+                    FindMyDevice = 'Enabled'
                 }
-
-
             }
         }
 
@@ -317,7 +314,7 @@ Describe 'FindMyDevice\SetFindMyDevice()' -Tag 'HiddenMember' {
             InModuleScope -ScriptBlock {
                 Set-StrictMode -Version 1.0
 
-                $script:mockInstance.SetFindMyDevice()
+                $script:mockInstance.Set()
             }
 
             Should -Invoke -CommandName Set-RegistryStatus -Exactly -Times 1 -Scope It

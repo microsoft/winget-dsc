@@ -63,7 +63,7 @@ class SettingsBase : ResourceBase
 
             # Remove the PropertyName key from the key data
             $key.Remove('PropertyName')
-
+            
             # Get the status of the property
             $settingState = Get-RegistryStatus @key
 
@@ -98,8 +98,8 @@ class SettingsBase : ResourceBase
 
             # Build the parameters for Set-RegistryStatus
             $params = @{
-                Name = $entry.Name
-                Path = $entry.Path
+                Name  = $entry.Name
+                Path  = $entry.Path
                 Value = $entry.Status[$propertyValue]
             }
 

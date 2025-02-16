@@ -42,5 +42,58 @@ AfterAll {
 }
 
 Describe 'Get-RegistryKeyData' -Tag 'Private' {
-    # TODO: Add tests
+    Context 'Get entry from key data' {
+        BeforeAll {
+            Mock -CommandName Import-PowerShellDataFile -MockWith {
+                return @{
+                    General = @{
+                        PropertyName = 'General'
+                        Name         = 'Key'
+                        Path         = 'HKCU:\1\2\3'
+                        Status       = @{
+                            Enabled  = 1
+                            Disabled = 0
+                            Default  = 0
+                        }
+                    }
+                }
+            }
+        }
+
+        It 'Should return a result set' {
+            InModuleScope -ScriptBlock {
+                $result = Get-RegistryKeyData -Key General
+                $result | Should -BeOfType 'System.Collections.Hashtable'
+            }
+
+            Should -Invoke -CommandName Import-PowerShellDataFile -Exactly -Times 1
+        }
+    }
+
+    Context 'Get only path and name' {
+        BeforeAll {
+            Mock -CommandName Import-PowerShellDataFile -MockWith {
+                return @{
+                    General = @{
+                        PropertyName = 'General'
+                        Name         = 'Key'
+                        Path         = 'HKCU:\1\2\3'
+                        Status       = @{
+                            Enabled  = 1
+                            Disabled = 0
+                            Default  = 0
+                        }
+                    }
+                }
+            }
+        }
+
+        It 'Should return key path and name' {
+            InModuleScope -ScriptBlock {
+                $result = Get-RegistryKeyData -Key General -OnlyKeyPath
+                $result.Path | Should -Not -BeNullOrEmpty
+                $result.Name | Should -Not -BeNullOrEmpty
+            }
+        }
+    }
 }

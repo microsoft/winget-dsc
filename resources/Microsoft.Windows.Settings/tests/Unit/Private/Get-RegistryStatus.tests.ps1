@@ -86,7 +86,7 @@ Describe 'Get-RegistryStatus' -Tag 'Private' {
 
         It 'Should return empty result' {
             InModuleScope -ScriptBlock {
-                $result = Get-RegistryStatus -Path 'HKLM:\1\2\3' -Name 'Empty' -Status @{}
+                $result = Get-RegistryStatus -Path 'HKCU:\1\2\3' -Name 'Empty' -Status @{}
                 $result | Should -BeNullOrEmpty
             }
 

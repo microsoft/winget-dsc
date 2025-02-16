@@ -8,9 +8,11 @@
 ConvertFrom-StringData @'
 
     ## Get-RegistryStatus
-    RegistryManualManipulation_ErrorMessage = "The registry path '{0}' is not in the expected state. Entries have been manually modified. Cannot determine the current state."
-    GetRegistryKeyData_DefaultMessage = "Returning default value '{0}' for '{1}'."
+    GetRegistryStatusRegistryManualManipulation_ErrorMessage = "The registry path '{0}' is not in the expected state. Entries have been manually modified. Cannot determine the current state."
+    GetRegistryStatus_SearchMessage = "Searching '{0}' key in '{1}'."
+    GetRegistryStatus_FoundMessage = "Found '{0}' key in '{1}'."
+    GetRegistryStatus_DefaultMessage = "Returning default value '{0}' for '{1}'."
 
     ## Get-RegistryKeyData
-    GetRegistryKeyData_SearchMessage = Searching '{0}' key in '{1}' (0001).
+    GetRegistryKeyData_SearchMessage = Searching '{0}' key in '{1}'.
 '@
