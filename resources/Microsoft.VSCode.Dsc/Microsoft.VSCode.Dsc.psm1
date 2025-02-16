@@ -5,44 +5,102 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 #region Functions
+function TryGetRegistryValue {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Key,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Property
+    )
+
+    if (Test-Path -Path $Key) {
+        try {
+            return (Get-ItemProperty -Path $Key | Select-Object -ExpandProperty $Property)
+        } catch {
+            Write-Verbose "Property `"$($Property)`" could not be found."
+        }
+    } else {
+        Write-Verbose 'Registry key does not exist.'
+    }
+}
+
+function Get-VSCodeRegistryKey {
+    [CmdletBinding()]
+    param (
+        [string] $Architecture
+    )
+
+    switch ($architecture) {
+        'X64' { return @('{771FD6B0-FA20-440A-A002-3B3BAC16DC50}_is1', '{EA457B21-F73E-494C-ACAB-524FDE069978}_is1') }
+        'X86' { return @('{D628A17A-9713-46BF-8D57-E671B46A741E}_is1', '{F8A2A208-72B3-4D61-95FC-8A65D340689B}_is1') }
+        'Arm64' { return @('{D9E514E7-1A56-452D-9337-2990C0DC4310}_is1', '{A5270FC5-65AD-483E-AC30-2C276B63D0AC}_is1') }
+        Default { Throw 'Could not determine architecture.' }
+    }
+}
+
+function Get-VSCodeInsidersRegistryKey {
+    param (
+        [string] $Architecture
+    )
+
+    switch ($Architecture) {
+        'X64' { return @('{217B4C08-948D-4276-BFBB-BEE930AE5A2C}_is1', '{1287CAD5-7C8D-410D-88B9-0D1EE4A83FF2}_is1') }
+        'X86' { return @('{C26E74D1-022E-4238-8B9D-1E7564A36CC9}_is1', '{26F4A15E-E392-4887-8C09-7BC55712FD5B}_is1') }
+        'Arm64' { return @('{69BD8F7B-65EB-4C6F-A14E-44CFA83712C0}_is1', '{0AEDB616-9614-463B-97D7-119DD86CCA64}_is1') }
+        Default { Throw 'Could not determine architecture.' }
+    }
+}
+
+function Get-OSArchitectureRegistryKey {
+    [CmdletBinding()]
+    param (
+        [ValidateSet('X64', 'X86', 'Arm64')]
+        [string] $Architecture,
+        [switch] $Insiders
+    )
+
+    $registryKey = if ($Insiders.IsPresent) { 
+        Get-VSCodeInsidersRegistryKey -Architecture $architecture 
+    } else { 
+        Get-VSCodeRegistryKey -Architecture $architecture 
+    }
+
+    return $registryKey
+}
+
 function Get-VSCodeCLIPath {
     param (
         [switch]$Insiders
     )
 
-    # Product Codes for VSCode and VSCode Insider:
-    $vsCodeUserProductCode = '{771FD6B0-FA20-440A-A002-3B3BAC16DC50}_is1'
-    $vsCodeMachineProductCode = '{EA457B21-F73E-494C-ACAB-524FDE069978}_is1'
+    $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    # Get the available keys
+    $registryKeys = Get-OSArchitectureRegistryKey -Insiders:$Insiders.IsPresent -Architecture $architecture
+    $registryHive = @('HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall', 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall', 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall')
 
-    $vsCodeInsidersUserProductCode = '{217B4C08-948D-4276-BFBB-BEE930AE5A2C}_is1'
-    $vsCodeInsidersMachineProductCode = '{1287CAD5-7C8D-410D-88B9-0D1EE4A83FF2}_is1'
-
-    # Note: WOW6432 registry not checked as no uninstall entry was found.
-    $userUninstallRegistry = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
-    $machineUninstallRegistry = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
-    $installLocationProperty = 'InstallLocation'
-
-    if ($Insiders) {
-        $cmdPath = 'bin\code-insiders.cmd'
-        $insidersUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\$($vsCodeInsidersUserProductCode)" -Property $installLocationProperty
-        if ($insidersUserInstallLocation) {
-            return $insidersUserInstallLocation + $cmdPath
+    if ($IsLinux) {
+        $command = 'code'
+        if ($Insiders.IsPresent) {
+            $command = 'code-insiders'
         }
-
-        $insidersMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\$($vsCodeInsidersMachineProductCode)" -Property $installLocationProperty
-        if ($insidersMachineInstallLocation) {
-            return $insidersMachineInstallLocation + $cmdPath
+        # Using Get-Command to find the path of the command instead of PATH environment variable because both can be installed
+        $commandPath = Get-Command -Name $command -ErrorAction SilentlyContinue 
+        if ($commandPath) {
+            return $commandPath.Source
         }
-    } else {
-        $cmdPath = 'bin\code.cmd'
-        $codeUserInstallLocation = TryGetRegistryValue -Key "$($userUninstallRegistry)\$($vsCodeUserProductCode)" -Property $installLocationProperty
-        if ($codeUserInstallLocation) {
-            return $codeUserInstallLocation + $cmdPath
-        }
+    }
 
-        $codeMachineInstallLocation = TryGetRegistryValue -Key "$($machineUninstallRegistry)\$($vsCodeMachineProductCode)" -Property $installLocationProperty
-        if ($codeMachineInstallLocation) {
-            return $codeMachineInstallLocation + $cmdPath
+    if ($IsWindows) {
+        foreach ($hive in $registryHive) {
+            foreach ($key in $registryKeys) {
+                Write-Verbose -Message ("Searching path '{0}' with key '{1}'" -f $hive, $key)
+                $installLocation = TryGetRegistryValue -Key "$hive\$key" -Property 'InstallLocation'
+                if ($installLocation) {
+                    $cmdPath = $Insiders ? 'bin\code-insiders.cmd' : 'bin\code.cmd'
+                    return Join-Path $installLocation $cmdPath
+                }
+            }
         }
     }
 
