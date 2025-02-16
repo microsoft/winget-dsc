@@ -104,10 +104,10 @@
             Tags       = @('PSDscResource_GitClone', 'PSDscResource_GitRemote', 'PSDscResource_GitConfigUserName', 'PSDscResource_GitConfigUserEmail', 'PSDscResource_GitConfigFile')
 
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseURI= 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.
-            # ProjectUri = ''
+            ProjectUri = 'https://github.com/microsoft/winget-dsc/'
 
             # A URL to an icon representing this module.
             # IconUri = ''

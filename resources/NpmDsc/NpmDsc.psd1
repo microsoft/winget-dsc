@@ -101,10 +101,10 @@
             Tags       = @('PSDscResource_DSC_NpmPackage', 'PSDscResource_DSC_NpmInstall')
 
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseURI= 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.
-            # ProjectUri = ''
+            ProjectUri = 'https://github.com/microsoft/winget-dsc/'
 
             # A URL to an icon representing this module.
             # IconUri = ''

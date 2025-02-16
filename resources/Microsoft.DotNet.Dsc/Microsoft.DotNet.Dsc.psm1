@@ -5,6 +5,9 @@ $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 Set-StrictMode -Version Latest
 
+# Set environment variable always to true to skip first run experience
+$env:DOTNET_NOLOGO = $true
+
 #region Functions
 function Get-DotNetPath {
     if ($IsWindows) {

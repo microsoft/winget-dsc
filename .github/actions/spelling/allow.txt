@@ -86,3 +86,6 @@ splatting
 updatebuildnumber
 vso
 winrm
+MMdd
+NOLOGO
+
