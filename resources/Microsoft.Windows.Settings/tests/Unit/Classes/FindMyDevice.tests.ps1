@@ -46,7 +46,7 @@ AfterAll {
     Get-Module -Name $script:dscModuleName -All | Remove-Module -Force
 }
 
-Describe 'Microsoft.Windows.Settings' {
+Describe 'FindMyDevice' {
     Context 'When class is instantiated' {
         It 'Should not throw an exception' {
             InModuleScope -ScriptBlock {
@@ -123,7 +123,7 @@ Describe 'FindMyDevice\Get()' -Tag 'Get' {
     }
 }
 
-Describe 'Microsoft.Windows.Settings\Set()' -Tag 'Set' {
+Describe 'FindMyDevice\Set()' -Tag 'Set' {
     BeforeAll {
         InModuleScope -Scriptblock {
             Set-StrictMode -Version 1.0
@@ -264,7 +264,7 @@ Describe 'FindMyDevice\Test()' -Tag 'Test' {
     }
 }
 
-Describe 'Microsoft.Windows.Settings\GetCurrentState()' -Tag 'HiddenMember' {
+Describe 'FindMyDevice\GetCurrentState()' -Tag 'HiddenMember' {
     Context 'When object is missing in the current state' {
         BeforeAll {
             InModuleScope -Scriptblock {

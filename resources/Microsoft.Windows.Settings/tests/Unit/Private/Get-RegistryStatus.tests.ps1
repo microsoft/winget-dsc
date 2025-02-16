@@ -67,13 +67,46 @@ Describe 'Get-RegistryStatus' -Tag 'Private' {
             )
         }
 
-        It 'Should return the registry value ''<ExpectedKey>'' on ''<Path>''' -ForEach $testCases {
+        It 'Should return the registry value ''<Name>'' on ''<Path>''' -ForEach $testCases {
             InModuleScope -Parameters $_ -ScriptBlock {
                 $result = Get-RegistryStatus -Path $Path -Name $Name -Status $Status
                 $result | Should -Be $ExpectedKey
             }
 
             Should -Invoke -CommandName Get-ItemPropertyValue -Exactly -Times 1
+        }
+    }
+
+    Context 'When multiple registry keys are entered' {
+        BeforeAll {
+            Mock -CommandName Get-ItemPropertyValue -MockWith {
+                return 1
+            }
+        }
+
+        BeforeDiscovery {
+            $testCases = @(
+                @{
+                    Path          = 'HKLM:\SOFTWARE\Microsoft\MdmCommon\SettingValues'
+                    Name          = @('LocationSyncEnabled', 'LocationSyncDisabled')
+                    Status        = @{
+                        'Enabled'  = '1'
+                        'Disabled' = '0'
+                        'Default'  = 'Unknown'
+                    }
+                    ExpectedValue = '1'
+                    ExpectedKey   = 'Enabled'
+                }
+            )
+        }
+
+        It 'Should return the registry value ''<Name>'' on ''<Path>''' -ForEach $testCases {
+            InModuleScope -Parameters $_ -ScriptBlock {
+                $result = Get-RegistryStatus -Path $Path -Name $Name -Status $Status
+                $result | Should -Be $ExpectedKey
+            }
+
+            Should -Invoke -CommandName Get-ItemPropertyValue -Exactly -Times 2
         }
     }
 
