@@ -1,9 +1,14 @@
+<#
+    .SYNOPSIS
+        The data for the registry keys to be set by the relevant DSC resource
+
+        This file should only contain data for the registry keys to be set by the DSC resource
+#>
 @{
     "FindMyDevice" = @{
-        PropertyName = 'FindMyDevice'
-        Name         = 'LocationSyncEnabled'
-        Path         = 'HKLM:\SOFTWARE\Microsoft\MdmCommon\SettingValues\'
-        Status       = @{
+        Name   = 'LocationSyncEnabled'
+        Path   = 'HKLM:\SOFTWARE\Microsoft\MdmCommon\SettingValues\'
+        Status = @{
             Enabled  = 1
             Disabled = 0
             Default  = 0
