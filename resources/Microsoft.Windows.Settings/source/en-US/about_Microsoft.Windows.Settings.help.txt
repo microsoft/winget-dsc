@@ -14,7 +14,7 @@ NOTE:
     Thank you to all those who contributed to this module, by writing code, sharing opinions, and provided feedback.
 
 TROUBLESHOOTING NOTE:
-    Look out on the Github repository for issues and new releases.
+    Look out on the repository for issues and new releases.
 
 SEE ALSO
     - {{ Please add Project URI such as github }}}
