@@ -5,7 +5,7 @@ This folder contains a WinGet Configuration File (_configuration.winget_) that w
 When run, the `configuration.winget` file will install the following list of applications:
 
 - Microsoft Visual Studio Community 2022
-  - Required Visual Studio Workloads (NodeJS, Universal)
+    - Required Visual Studio Workloads (NodeJS, Universal)
 - GitHub Desktop
 
 The `configuration.winget` file will also enable [Developer Mode](https://learn.microsoft.com/windows/apps/get-started/developer-mode-features-and-debugging) on your device.
