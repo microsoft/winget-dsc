@@ -24,10 +24,10 @@
     Author               = 'DscSamples'
 
     # Company or vendor of this module
-    # CompanyName = ''
+    CompanyName          = 'Microsoft Corporation'
 
     # Copyright statement for this module
-    # Copyright = ''
+    Copyright            = '(c) Microsoft Corporation. All rights reserved.'
 
     # Description of the functionality provided by this module
     Description          = 'DSC Resource for Npm'
@@ -101,7 +101,7 @@
             Tags       = @('PSDscResource_DSC_NpmPackage', 'PSDscResource_DSC_NpmInstall')
 
             # A URL to the license for this module.
-            LicenseURI= 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
+            LicenseURI = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.
             ProjectUri = 'https://github.com/microsoft/winget-dsc/'
