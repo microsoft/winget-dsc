@@ -1,12 +1,17 @@
+ADDLOCAL
+agentless
 AKV
 Amd
 Authenticode
 automerge
+azurecr
 currentstate
 esrp
 gtm
+ltsc
 msft
 NPH
+onebranch
 Peet
 rfc
 screenshots
@@ -19,4 +24,4 @@ ssh
 usr
 versioning
 VGpu
-ADDLOCAL
+vse
