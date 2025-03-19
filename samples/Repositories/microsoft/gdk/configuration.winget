@@ -5,6 +5,7 @@ properties:
       id: vsPackage
       directives:
         description: Install Visual Studio 2022 Community
+        securityContext: elevated
         module: Microsoft.WinGet.DSC
       settings:
         id: Microsoft.VisualStudio.2022.Community
@@ -17,6 +18,7 @@ properties:
         description: Install required VS workloads
         module: Microsoft.VisualStudio.DSC
         allowPrerelease: true
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Community
         channelId: VisualStudio.17.Release
@@ -29,6 +31,7 @@ properties:
       directives:
         description: Install Microsoft GDK
         module: Microsoft.WinGet.DSC
+        securityContext: elevated
       settings:
         id: Microsoft.Gaming.GDK
         source: winget

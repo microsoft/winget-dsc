@@ -6,6 +6,7 @@ properties:
       id: vsPackage
       directives:
         description: Install Visual Studio 2022 Community
+        securityContext: elevated
       settings:
         id: Microsoft.VisualStudio.2022.Community
         source: winget
@@ -15,6 +16,7 @@ properties:
       directives:
         description: Install required VS workloads
         allowPrerelease: true
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Community
         channelId: VisualStudio.17.Release
