@@ -1,6 +1,6 @@
 # Understanding WinGet Configuration Files
 
-This folder contains a WinGet Configuration File (_configuration.winget_) that will work with the Windows Package Manager command line interface (`winget configure --file [path: configuration.winget]`) or can be run using Microsoft Dev Home Device Configuration.
+This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) (_configuration.winget_) that will work with the WinGet command line interface (`winget configure --file [path: configuration.winget]`) or can be run directly by double-clicking on the file.
 
 When run, the `configuration.winget` file will install the following list of applications:
 
@@ -12,19 +12,14 @@ The `configuration.winget` file will also enable [Developer Mode](https://learn.
 
 ## How to use the WinGet Configuration File
 
-### Windows Package Manager
+### 1. File Explorer
 
-1. Download the `configuration.winget` file to your computer.
-1. Open your Windows Start Menu, search and launch "_Windows Terminal_".
-1. Type the following: `CD [C:\Users\User\Download]`
-1. Type the following: `winget configure --file .\configuration.winget`
+1. Download the `sandbox.winget` file to your computer.
+2. Double-click the `sandbox.winget` file.
 
-### Dev Home
+### 2. Windows Package Manager
 
-1. Download the `configuration.winget` file to your computer.
-1. Open your Windows Start Menu, search and launch "_Dev Home_".
-1. Select the _Machine Configuration_ button on the left side navigation.
-1. Select the _Configuration file_ button
-1. Locate and open the WinGet Configuration file downloaded in "step 1".
-1. Select the "I agree and want to continue" checkbox.
-1. Select the "Set up as admin" button.
+1. Download the `sandbox.winget` file to your computer.
+2. Open your Windows Start Menu, search and launch "_Windows Terminal_".
+3. Type the following: `CD <C:\Users\User\Download>`
+4. Type the following: `winget configure --file .\sandbox.winget`

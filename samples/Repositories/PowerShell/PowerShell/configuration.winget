@@ -5,13 +5,14 @@ properties:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
         description: Install Visual Studio 2022 Community
+        securityContext: elevated
       settings:
         id: Microsoft.VisualStudio.2022.Community
         source: winget
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
         description: Install .NET SDK 8.0-preview
-        allowPrerelease: true
+        securityContext: elevated
       settings:
         id: Microsoft.DotNet.SDK.Preview
         source: winget

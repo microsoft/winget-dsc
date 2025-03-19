@@ -73,7 +73,7 @@ configuration:
               - filesMatchPattern:
                   pattern: ^\.?[\\\/]?.github[\\\/].*
               - filesMatchPattern:
-                  pattern: ^\.?[\\\/]?.configurations[\\\/].*
+                  pattern: ^\.?[\\\/]?.config[\\\/].*
               - filesMatchPattern:
                   pattern: ^\.?[\\\/]?.vscode[\\\/].*
               - filesMatchPattern:
