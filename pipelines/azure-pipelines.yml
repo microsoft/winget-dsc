@@ -1,5 +1,5 @@
 # winget-dsc pipeline to publish artifacts
-name: '$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(Date:yyyyMMdd)-$(Rev:r)'
+name: "$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(Date:yyyyMMdd)-$(Rev:r)"
 
 # Commit triggers
 trigger:
@@ -41,43 +41,47 @@ extends:
       - stage: WinGet_DSC_Artifacts_Publish
         jobs:
           - job: Publish_WinGet_DSC_Resources
-            displayName: 'Publish WinGet DSC Resources'
+            displayName: "Publish WinGet DSC Resources"
             templateContext:
               outputs:
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.Windows.Developer'
+                  displayName: "Publish Pipeline Microsoft.Windows.Developer"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Developer\
                   artifactName: Microsoft.Windows.Developer
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.Windows.Setting.Accessibility'
+                  displayName: "Publish Pipeline Microsoft.Windows.Setting.Accessibility"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Setting.Accessibility\
                   artifactName: Microsoft.Windows.Setting.Accessibility
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline PythonPip3Dsc'
+                  displayName: "Publish Pipeline PythonPip3Dsc"
                   targetPath: $(Build.SourcesDirectory)\resources\PythonPip3Dsc\
                   artifactName: PythonPip3Dsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline YarnDsc'
+                  displayName: "Publish Pipeline YarnDsc"
                   targetPath: $(Build.SourcesDirectory)\resources\YarnDsc\
                   artifactName: YarnDsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline NpmDsc'
+                  displayName: "Publish Pipeline NpmDsc"
                   targetPath: $(Build.SourcesDirectory)\resources\NpmDsc\
                   artifactName: NpmDsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.WindowsSandbox.DSC'
+                  displayName: "Publish Pipeline Microsoft.Windows.Setting.Language"
+                  targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Setting.Language\
+                  artifactName: Microsoft.Windows.Setting.Language
+                - output: pipelineArtifact
+                  displayName: "Publish Pipeline Microsoft.WindowsSandbox.DSC"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.WindowsSandbox.DSC\
                   artifactName: Microsoft.WindowsSandbox.DSC
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline GitDsc'
+                  displayName: "Publish Pipeline GitDsc"
                   targetPath: $(Build.SourcesDirectory)\resources\GitDsc\
                   artifactName: GitDsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.VSCode.Dsc'
+                  displayName: "Publish Pipeline Microsoft.VSCode.Dsc"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.VSCode.Dsc\
                   artifactName: Microsoft.VSCode.Dsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.DotNet.Dsc'
+                  displayName: "Publish Pipeline Microsoft.DotNet.Dsc"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.DotNet.Dsc\
                   artifactName: Microsoft.DotNet.Dsc
 
@@ -87,10 +91,10 @@ extends:
                 fetchTags: false
 
               - task: PowerShell@2
-                displayName: 'Run Pester tests for DSC modules'
+                displayName: "Run Pester tests for DSC modules"
                 inputs:
                   pwsh: true
-                  targetType: 'inline'
+                  targetType: "inline"
                   script: |
                     $env:PSModulePath += ";$(Build.SourcesDirectory)\resources"
                     Invoke-Pester -CI
@@ -99,6 +103,6 @@ extends:
 
               - task: PublishTestResults@2
                 inputs:
-                  testResultsFormat: 'NUnit'
-                  testResultsFiles: '**/Test*.xml'
+                  testResultsFormat: "NUnit"
+                  testResultsFiles: "**/Test*.xml"
                   failTaskOnFailedTests: true
