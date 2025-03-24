@@ -67,6 +67,25 @@ websites
 wekyb
 Hmmss
 MMdd
+azdoserver
+Codecov
+eature
+HQRM
+hqrmtest
+modulefast
+MOF
+nupkg
+powershellgallery
+quickconfig
+QWord
+registrering
+schange
+setvariable
+sourcing
+splatting
+updatebuildnumber
+vso
+winrm
 MMdd
 NOLOGO
 
