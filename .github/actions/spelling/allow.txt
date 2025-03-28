@@ -69,4 +69,5 @@ Hmmss
 MMdd
 MMdd
 NOLOGO
-
+msstore
+PNRBTZXMB
