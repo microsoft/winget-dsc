@@ -43,6 +43,6 @@ properties:
     #   directives:
     #     description: Install Git
     #   settings:
-    #     id: git.Git
+    #     id: Git.Git
     #     source: winget
   configurationVersion: 0.2.0
