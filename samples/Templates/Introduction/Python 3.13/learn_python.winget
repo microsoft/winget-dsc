@@ -37,6 +37,5 @@ properties:
       settings:
         name: ms-python.python
         exist: true
-    #     id: Git.Git
     #     source: winget
   configurationVersion: 0.2.0
