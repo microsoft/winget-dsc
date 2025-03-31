@@ -40,7 +40,6 @@ ELSPROBLEMS
 requ
 whatif
 pscustomobject
-VGpu
 wildcards
 worktree
 aspnetcore
@@ -69,4 +68,3 @@ Hmmss
 MMdd
 MMdd
 NOLOGO
-
