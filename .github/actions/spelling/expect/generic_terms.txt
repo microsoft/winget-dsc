@@ -5,7 +5,6 @@ automerge
 currentstate
 esrp
 gtm
-msft
 NPH
 Peet
 rfc
