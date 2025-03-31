@@ -37,7 +37,6 @@ properties:
       settings:
         name: ms-python.python
         exist: true
-    # - resource: Microsoft.WinGet.DSC/WinGetPackage
     #   id: Git
     #   directives:
     #     description: Install Git
