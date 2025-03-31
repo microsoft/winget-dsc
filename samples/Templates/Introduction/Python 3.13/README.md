@@ -22,7 +22,7 @@ If anything is already installed, it will skip that item.
 1. Download the `learn_python.winget` file to your computer.
 2. Open your Windows Start Menu, search and launch "_Windows Terminal_".
 3. Navigate to the path with the WinGet Configuration File: `CD <C:\Users\<Username>\Download>`
-4. Type the following: `winget configure --file .\learn_python.winget`
+4. Run: `winget configure --file learn_python.winget`
 
 ## Issues with Configuration file
 
