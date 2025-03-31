@@ -7,7 +7,6 @@ When run, the `learn_python.winget` file will install the following list of appl
 - Python 3.13
 - Visual Studio Code
 - Visual Studio Code extension for Python
-- Git (optional)
 
 If anything is already installed, it will skip that item. 
 
