@@ -37,7 +37,6 @@ properties:
       settings:
         name: ms-python.python
         exist: true
-    #   directives:
     #     description: Install Git
     #   settings:
     #     id: Git.Git
