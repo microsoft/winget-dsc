@@ -37,7 +37,6 @@ properties:
       settings:
         name: ms-python.python
         exist: true
-    #     description: Install Git
     #   settings:
     #     id: Git.Git
     #     source: winget
