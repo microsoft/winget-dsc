@@ -176,9 +176,9 @@ Describe 'EnableLongPathSupport' {
       $desiredLongPathsBehavior = [Ensure]::Present
       $desiredState = @{ Ensure = $desiredLongPathsBehavior }
 
-      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Ensure | Should -Be $desiredLongPathsBehavior
    }
 
@@ -186,9 +186,9 @@ Describe 'EnableLongPathSupport' {
       $desiredLongPathsBehavior = [Ensure]::Absent
       $desiredState = @{ Ensure = $desiredLongPathsBehavior }
 
-      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Ensure | Should -Be $desiredLongPathsBehavior
    }
 }
