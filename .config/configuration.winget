@@ -9,7 +9,7 @@ properties:
       id: install-git
       directives:
         description: Install Git # Although the user probably already has git installed, it's possible that they don't
-        allowPrerelease: true
+        securityContext: elevated
       settings:
         id: Git.Git
         source: winget
@@ -20,7 +20,6 @@ properties:
       id: install-github-cli
       directives:
         description: Install GitHub CLI
-        allowPrerelease: true
         securityContext: elevated
       settings:
         id: GitHub.cli
@@ -46,7 +45,6 @@ properties:
       id: install-vs-code
       directives:
         description: Install Microsoft Visual Studio Code
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudioCode
         source: winget
@@ -88,7 +86,7 @@ properties:
       id: install-powershell
       directives:
         description: Install PowerShell
-        allowPrerelease: true
+        securityContext: elevated
       settings:
         id: Microsoft.PowerShell
         source: winget

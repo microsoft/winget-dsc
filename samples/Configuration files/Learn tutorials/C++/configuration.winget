@@ -1,16 +1,16 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 
 ##########################################################################################################
-# This configuration will install the tools necessary to get started with NodeJS development on Windows  #
-# Reference: https://learn.microsoft.com/windows/dev-environment/javascript/nodejs-on-windows            #
+# This configuration will install the tools necessary to get started with C++ development on Windows     #
+# Reference: https://learn.microsoft.com/cpp/build/vscpp-step-0-installation?view=msvc-170               #
 #                                                                                                        #
 # This will:                                                                                             #
 #     * Enable Developer Mode                                                                            #
 #     * Install GitHub Desktop                                                                           #
-#     * Install NVM                                                                                      #
+#     * Install Windows SDK 10.2.22621                                                                   #
 #     * Install Visual Studio Community 2022                                                             #
-#     * Install NodeJS Workload to Visual Studio Community 2022                                          #
-#     * Install Universal Workload to Visual Studio Community 2022                                       #
+#     * Install the Universal workload to Visual Studio Community 2022                                   #
+#     * Instal the NativeDesktop workload to Visual Studio Community 2022                                #
 #                                                                                                        #
 ##########################################################################################################
 
@@ -21,6 +21,7 @@ properties:
       directives:
         description: Enable Developer Mode
         allowPrerelease: true
+        securityContext: elevated
       settings:
         Ensure: Present
     - resource: Microsoft.WinGet.DSC/WinGetPackage
@@ -31,41 +32,48 @@ properties:
         id: GitHub.GitHubDesktop
         source: winget
     - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: NVM
-      directives:
-        description: Install NVM for Windows
-      settings:
-        id: CoreyButler.NVMforWindows
-        source: winget
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: Visual Studio
+      id: VisualStudio
       directives:
         description: Install Visual Studio 2022 Community
+        securityContext: elevated
       settings:
         id: Microsoft.VisualStudio.2022.Community
         source: winget
     - resource: Microsoft.VisualStudio.DSC/VSComponents
-      id: Workloads NodeJS
+      id: Workloads NativeDesktop
       dependsOn:
-        - Visual Studio
+        - VisualStudio
       directives:
-        description: Install required VS Workloads (NodeJS)
+        description: Install required VS Workloads (NativeDesktop)
         allowPrerelease: true
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Community
         channelId: VisualStudio.17.Release
         components:
-          - Microsoft.Microsoft.VisualStudio.Workload.Node
+          - Microsoft.VisualStudio.Workload.NativeDesktop
     - resource: Microsoft.VisualStudio.DSC/VSComponents
       id: Workloads Universal
       dependsOn:
-        - Visual Studio
+        - VisualStudio
+        - Workloads NativeDesktop
       directives:
         description: Install required VS Workloads (Universal)
         allowPrerelease: true
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Community
         channelId: VisualStudio.17.Release
         components:
           - Microsoft.VisualStudio.Workload.Universal
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: Windows SDK
+      DependsOn:
+        - VisualStudio
+      directives:
+        description: Install Windows SDK
+        securityContext: elevated
+      settings:
+        id: Microsoft.WindowsSDK.10.0.22621
+        source: winget
   configurationVersion: 0.2.0

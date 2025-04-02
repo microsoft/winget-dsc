@@ -6,7 +6,7 @@ properties:
       id: npm
       directives:
         description: Install Node.js
-        allowPrerelease: true
+        securityContext: elevated
       settings:
         id: OpenJS.NodeJS
         source: winget

@@ -6,7 +6,7 @@ The [Microsoft.WindowsSandbox.DSC](https://www.powershellgallery.com/packages/Mi
 
 Prior to running this configuration, users should be on either Windows PRO or Windows enterprise. The "Windows Sandbox" optional feature also needs to be enabled.
 
-The "full.sandbox.winget" configuration is not fully capable of verifying the Windows SKU or enabling Windows optional features via the WinGet CLI (and subsequently Dev Home). The Windows optional features can be enabled in a configuration when run via the Microsoft.WinGet.Configuration.
+The "full.sandbox.winget" configuration is not fully capable of verifying the Windows SKU or enabling Windows optional features via the WinGet CLI. The Windows optional features can be enabled in a configuration when run via the Microsoft.WinGet.Configuration.
 
 The "full.sandbox.winget" configuration can be run via the Microsoft.WinGet.Configuration module.
 
@@ -26,19 +26,14 @@ get-WinGetConfiguration -File full.sandbox.winget | Invoke-WinGetConfiguration
 
 The following two options are available for running a WinGet Configuration file on your device.
 
-### 1. Windows Package Manager
+### 1. File Explorer
 
 1. Download the `sandbox.winget` file to your computer.
-1. Open your Windows Start Menu, search and launch "_Windows Terminal_".
-1. Type the following: `CD <C:\Users\User\Download>`
-1. Type the following: `winget configure --file .\sandbox.winget`
+2. Double-click the `sandbox.winget` file.
 
-### 2. Dev Home
+### 2. Windows Package Manager
 
 1. Download the `sandbox.winget` file to your computer.
-1. Open your Windows Start Menu, search and launch "_Dev Home_".
-1. Select the _Machine Configuration_ button on the left side navigation.
-1. Select the _Configuration file_ button
-1. Locate and open the WinGet Configuration file downloaded in "step 1".
-1. Select the "I agree and want to continue" checkbox.
-1. Select the "Set up as admin" button.
+2. Open your Windows Start Menu, search and launch "_Windows Terminal_".
+3. Type the following: `CD <C:\Users\User\Download>`
+4. Type the following: `winget configure --file .\sandbox.winget`

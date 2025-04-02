@@ -19,6 +19,7 @@ properties:
       directives:
         description: Enable Developer Mode
         allowPrerelease: true
+        securityContext: elevated
       settings:
         Ensure: Present
     - resource: Microsoft.WinGet.DSC/WinGetPackage
@@ -32,6 +33,7 @@ properties:
       id: Visual Studio
       directives:
         description: Install Visual Studio 2022 Community
+        securityContext: elevated
       settings:
         id: Microsoft.VisualStudio.2022.Community
         source: winget
@@ -42,6 +44,7 @@ properties:
       directives:
         description: Install required VS Workloads (ManagedDesktop)
         allowPrerelease: true
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Community
         channelId: VisualStudio.17.Release
@@ -54,6 +57,7 @@ properties:
       directives:
         description: Install required VS Workloads (Universal)
         allowPrerelease: true
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Community
         channelId: VisualStudio.17.Release

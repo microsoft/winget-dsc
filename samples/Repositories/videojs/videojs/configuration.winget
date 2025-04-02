@@ -6,6 +6,7 @@ properties:
       id: npm
       directives:
         description: Install Node
+        securityContext: elevated
       settings:
         id: OpenJS.NodeJS
         source: winget

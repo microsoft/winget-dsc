@@ -6,12 +6,14 @@ properties:
       id: vsPackage
       directives:
         description: Install Visual Studio 2019 (any edition is OK)
+        securityContext: elevated
       settings:
         id: Microsoft.VisualStudio.2019.Professional
         source: winget
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
         description: Install .NET SDK 3.1
+        securityContext: elevated
       settings:
         id: Microsoft.DotNet.SDK.3_1
         source: winget
@@ -21,6 +23,7 @@ properties:
       directives:
         description: Install required VS workloads
         allowPrerelease: true
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Professional
         channelId: VisualStudio.16.Release

@@ -29,6 +29,7 @@ properties:
       id: NVM
       directives:
         description: Install NVM for Windows
+        securityContext: elevated
       settings:
         id: CoreyButler.NVMforWindows
         source: winget
