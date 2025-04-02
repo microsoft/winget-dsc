@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 using module Microsoft.Windows.Developer
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 <#
@@ -17,14 +17,14 @@ BeforeAll {
    # Create test registry path.
    New-Item -Path TestRegistry:\ -Name TestKey
    # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
-   $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace("HKEY_CURRENT_USER", "HKCU:")
+   $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace('HKEY_CURRENT_USER', 'HKCU:')
 }
 
 Describe 'List available DSC resources' {
    It 'Shows DSC Resources' {
-      $expectedDSCResources = "DeveloperMode", "OsVersion", "ShowSecondsInClock", "EnableDarkMode", "Taskbar", "UserAccessControl", "WindowsExplorer", "EnableRemoteDesktop"
+      $expectedDSCResources = 'DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl', 'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport'
       $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
-      $availableDSCResources.length | Should -Be 8
+      $availableDSCResources.length | Should -Be 9
       $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
    }
 }
@@ -34,10 +34,10 @@ Describe 'Taskbar' {
       $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
       $parameters = @{
-         Alignment      = 'KeepCurrentValue';
-         HideLabelsMode = 'KeepCurrentValue';
-         SearchboxMode  = 'KeepCurrentValue';
-         TaskViewButton = 'KeepCurrentValue';
+         Alignment      = 'KeepCurrentValue'
+         HideLabelsMode = 'KeepCurrentValue'
+         SearchboxMode  = 'KeepCurrentValue'
+         TaskViewButton = 'KeepCurrentValue'
          WidgetsButton  = 'KeepCurrentValue'
       }
 
@@ -61,10 +61,10 @@ Describe 'Taskbar' {
       $desiredTaskViewButton = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
       $desiredWidgetsButton = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
 
-      $desiredState = @{ Alignment = $desiredAlignment;
-         HideLabelsMode            = $desiredHideLabelsMode;
-         SearchboxMode             = $desiredSearchboxMode;
-         TaskViewButton            = $desiredTaskViewButton;
+      $desiredState = @{ Alignment = $desiredAlignment
+         HideLabelsMode            = $desiredHideLabelsMode
+         SearchboxMode             = $desiredSearchboxMode
+         TaskViewButton            = $desiredTaskViewButton
          WidgetsButton             = $desiredWidgetsButton
       }
 
@@ -84,8 +84,8 @@ Describe 'WindowsExplorer' {
       $initialState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
       $parameters = @{
-         FileExtensions = 'KeepCurrentValue';
-         HiddenFiles    = 'KeepCurrentValue';
+         FileExtensions = 'KeepCurrentValue'
+         HiddenFiles    = 'KeepCurrentValue'
          ItemCheckBoxes = 'KeepCurrentValue'
       }
 
@@ -107,8 +107,8 @@ Describe 'WindowsExplorer' {
       $desiredItemCheckBoxes = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
 
       $desiredState = @{
-         FileExtensions = $desiredFileExtensions;
-         HiddenFiles    = $desiredHiddenFiles;
+         FileExtensions = $desiredFileExtensions
+         HiddenFiles    = $desiredHiddenFiles
          ItemCheckBoxes = $desiredItemCheckBoxes
       }
 
@@ -171,6 +171,28 @@ Describe 'EnableRemoteDesktop' {
    }
 }
 
+Describe 'EnableLongPathSupport' {
+   It 'Sets Enabled' {
+      $desiredLongPathsBehavior = [Ensure]::Present
+      $desiredState = @{ Ensure = $desiredLongPathsBehavior }
+
+      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.Ensure | Should -Be $desiredLongPathsBehavior
+   }
+
+   It 'Sets Disabled' {
+      $desiredLongPathsBehavior = [Ensure]::Absent
+      $desiredState = @{ Ensure = $desiredLongPathsBehavior }
+
+      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.Ensure | Should -Be $desiredLongPathsBehavior
+   }
+}
+
 AfterAll {
-   $env:TestRegistryPath = ""
+   $env:TestRegistryPath = ''
 }

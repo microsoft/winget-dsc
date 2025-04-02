@@ -135,6 +135,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:SearchRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\'
     $global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\'
     $global:RemoteDesktopRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
+    $global:LongPathsRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem\'
 } else {
     $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $env:TestRegistryPath
 }
@@ -554,6 +555,47 @@ class EnableRemoteDesktop {
         # Since the key is a 'deny' type key, 0 == enabled == Present // 1 == disabled == Absent
         $value = ($this.Ensure -eq [Ensure]::Present) ? 0 : 1
         Set-ItemProperty -Path $global:RemoteDesktopRegistryPath -Name $this.RemoteDesktopKey -Value $value
+    }
+}
+
+[DSCResource()]
+class EnableLongPathSupport {
+    # Key required. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $LongPathsKey = 'LongPathsEnabled'
+
+    [EnableLongPathSupport] Get() {
+        $exists = DoesRegistryKeyPropertyExist -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey
+
+        # If the registry key does not exist, we assume long path support is not enabled.
+        if (-not($exists)) {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey
+
+        # 1 == enabled == Present // 0 == disabled == Absent
+        return @{
+            Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
+        }
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set() {
+        # 1 == enabled == Present // 0 == disabled == Absent
+        $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
+        Set-ItemProperty -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey -Value $value
     }
 }
 #endregion DSCResources
