@@ -137,7 +137,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:RemoteDesktopRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
     $global:LongPathsRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $global:LongPathsRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
