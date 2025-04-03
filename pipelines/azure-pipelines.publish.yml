@@ -133,7 +133,7 @@ extends:
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: current
-              artifactName: ${{ parameters.moduleName }}
+              artifactName: drop_Prepare_Prepare_Sign
               targetPath: $(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}
               itemPattern: |
                 *.psm1
