@@ -379,6 +379,7 @@ class Audio {
     # Key required. Do not set.
     [DscProperty(Key)] [string] $SID
     [DscProperty()] [bool] $EnableMonoAudio = $false
+    [DscProperty()] [bool] $RestartService = $false
 
     static hidden [string] $EnableMonoAudioProperty = 'AccessibilityMonoMixState'
 
@@ -387,7 +388,7 @@ class Audio {
             return $false
         } else {
             $AudioMonoSetting = (Get-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty)).AccessibilityMonoMixState
-            return ($AudioMonoSetting -eq 0)
+            return ($AudioMonoSetting -eq 1)
         }
     }
 
@@ -413,9 +414,13 @@ class Audio {
                 New-Item -Path $global:AudioRegistryPath -Force | Out-Null
             }
 
-            $monoAudioValue = if ($this.EnableMonoAudio) { 0 } else { 1 }
+            $monoAudioValue = $this.EnableMonoAudio ? 1 : 0
 
             Set-ItemProperty -Path $global:AudioRegistryPath -Name ([Audio]::EnableMonoAudioProperty) -Value $monoAudioValue
+
+            if ($this.RestartService) {
+                Restart-Service -Name 'Audiosrv' -Force -ErrorAction SilentlyContinue
+            }
         }
     }
 }
