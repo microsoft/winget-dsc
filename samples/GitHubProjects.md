@@ -9,5 +9,6 @@ The projects are listed in alphabetical order by their GitHub repository identif
 - [LibreOffice/core](https://github.com/LibreOffice/core/blob/master/.config/configuration.winget)
 - [microsoft/PowerToys](https://github.com/microsoft/PowerToys/blob/main/.config/configuration.winget)
 - [microsoft/terminal](https://github.com/microsoft/terminal/blob/main/.config/configuration.winget)
+- [microsoft/vscode](https://github.com/microsoft/vscode/blob/main/.config/configuration.winget)
 - [microsoft/winget-cli](https://github.com/microsoft/winget-cli/blob/master/.config/configuration.winget)
 - [microsoft/winget-create](https://github.com/microsoft/winget-create/blob/main/.config/configuration.winget)
