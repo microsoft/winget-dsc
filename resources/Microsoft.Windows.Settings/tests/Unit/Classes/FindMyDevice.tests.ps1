@@ -284,11 +284,11 @@ Describe 'FindMyDevice\GetCurrentState()' -Tag 'HiddenMember' {
 
             $currentState = $script:mockInstance.GetCurrentState(
                 @{
-                    IsSingleInstance = 'Yes'
+                    SID = 'Yes'
                 }
             )
 
-            $currentState.IsSingleInstance | Should -BeNullOrEmpty
+            $currentState.SID | Should -BeNullOrEmpty
             $currentState.FindMyDevice | Should -Be 'Disabled'
         }
     }

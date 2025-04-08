@@ -20,7 +20,7 @@ class FindMyDevice : SettingsBase
     [DscProperty(Key)]
     [ValidateSet('Yes')]
     [System.String]
-    $IsSingleInstance = 'Yes'
+    $SID = 'Yes'
 
     [DscProperty()]
     [SettingStatus] $FindMyDevice
@@ -33,7 +33,8 @@ class FindMyDevice : SettingsBase
     {
         # These properties will not be enforced.
         $this.ExcludeDscProperties = @(
-            'IsSingleInstance'
+            'SID'
+            'IsSIngleInstance'
         )
 
         # Opt in to the optional enums feature

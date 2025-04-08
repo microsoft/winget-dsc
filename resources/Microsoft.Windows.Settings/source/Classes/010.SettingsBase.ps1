@@ -23,7 +23,7 @@ class SettingsBase : ResourceBase
     {
         # These properties will not be enforced.
         $this.ExcludeDscProperties = @(
-            'IsSingleInstance'
+            'IsSingleInstance', 'SID'
         )
 
         $this.ClassName = $this.GetType().Name
@@ -41,7 +41,7 @@ class SettingsBase : ResourceBase
         # Use the Get-DscProperty cmdlet to get the properties to search instead of properties from GetCurrentState
         $propsToSearch = Get-DscProperty -InputObject $this `
             -Attribute Optional `
-            -ExcludeName 'IsSingleInstance'
+            -ExcludeName @('SID', 'IsSingleInstance')
 
         # Initialize the state
         $state = @{}

@@ -36,7 +36,7 @@ class General : SettingsBase
     [DscProperty(Key)]
     [ValidateSet('Yes')]
     [System.String]
-    $IsSingleInstance = 'Yes'
+    $SID = 'Yes'
 
     [DscProperty()]
     [SettingStatus] $EnablePersonalizedAds
@@ -61,7 +61,8 @@ class General : SettingsBase
     {
         # These properties will not be enforced.
         $this.ExcludeDscProperties = @(
-            'IsSingleInstance'
+            'IsSingleInstance',
+            'SID'
         )
 
         # Opt in to the optional enums feature

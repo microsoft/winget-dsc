@@ -1,9 +1,9 @@
-﻿<#
-    .SYNOPSIS
-        Unit test for FindMyDevice DSC class resource.
-#>
+﻿#Requires -RunAsAdministrator
 
-param ()
+<#
+    .SYNOPSIS
+        Integration test for FindMyDevice DSC class resource.
+#>
 
 BeforeDiscovery {
     try
@@ -29,19 +29,56 @@ BeforeDiscovery {
 
 BeforeAll {
     $script:dscModuleName = 'Microsoft.Windows.Settings'
+    $script:dscResourceName = 'FindMyDevice'
 
-    Import-Module -Name $script:dscModuleName
+    Import-Module -Name $script:dscModuleName -Force
 
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = $script:dscModuleName
-    $PSDefaultParameterValues['Mock:ModuleName'] = $script:dscModuleName
-    $PSDefaultParameterValues['Should:ModuleName'] = $script:dscModuleName
+    $script:instance = & (Import-Module $script:dscModuleName -PassThru) ([scriptblock]::Create("'$script:dscResourceName' -as 'type'"))
+
+    $PSDefaultParameterValues['Invoke-DscResource:ModuleName'] = $script:dscModuleName
+    $PSDefaultParameterValues['Invoke-DscResource:Name'] = $script:instance.Name 
+
 }
 
 AfterAll {
-    $PSDefaultParameterValues.Remove('InModuleScope:ModuleName')
-    $PSDefaultParameterValues.Remove('Mock:ModuleName')
-    $PSDefaultParameterValues.Remove('Should:ModuleName')
+    $PSDefaultParameterValues.Remove('Invoke-DscResource:ModuleName')
+    $PSDefaultParameterValues.Remove('Invoke-DscResource:Name')
+}
 
-    # Unload the module being tested so that it doesn't impact any other tests.
-    Get-Module -Name $script:dscModuleName -All | Remove-Module -Force
+Describe "$($script:dscModuleName)_Integration" {
+    Context "List available DSC resources" {
+        It 'Shows DSC resources' {
+            $expectedDscResources = @(
+                'FindMyDevice'
+            )
+
+            $availableDscResources = (Get-DscResource -Module $script:dscModuleName -Name $expectedDscResources).Name
+            $availableDscResources.count | Should -Be 1
+            $availableDscResources | Where-Object { $expectedDscResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
+        }
+    }
+}
+
+Describe "$($script:dscResourceName)\IntegrationTest" {
+    BeforeAll {
+        $class = $script:instance::new() 
+
+        $script:currentState = $class.Get()
+    }
+
+    Context "$($script:dscResourceName)\Set" {
+        It 'Sets DSC resource' {
+            $desiredState = @{ FindMyDevice = 'Enabled' }
+
+            Invoke-DscResource -Method Set -Property $desiredState
+
+            $finalState = Invoke-DscResource -Method Get -Property $desiredState
+            $finalState.FindMyDevice | Should -Be $desiredState.FindMyDevice
+        }
+    }
+
+    AfterAll {
+        Write-Verbose -Message "Restoring the original state of the $($script:dscResourceName) setting."
+        $script:currentState.Set()
+    }
 }
