@@ -31,7 +31,7 @@ function Get-RegistryKeyData
     )
 
     $registryDataPath = Join-Path -Path $PSScriptRoot -ChildPath 'DSCResources\RegistryKeyData.psd1'
-    Write-Verbose -Message ($script:localizedData.FindMyDeviceRegistryKey -f $Key, $registryDataPath)
+    Write-Verbose -Message ($script:localizedData.GetRegistryKeyData_SearchMessage -f $Key, $registryDataPath)
     $import = Import-PowerShellDataFile -Path $registryDataPath
 
     $entry = $import.$Key

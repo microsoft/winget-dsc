@@ -6,8 +6,10 @@
     .DESCRIPTION
         This resource is used to enable or disable the General settings under Privacy & security on a Windows device.
 
-    .PARAMETER IsSingleInstance
-        Specifies the resource is a single instance, the value must be 'Yes'.
+    .PARAMETER SID
+        The SID of the setting. This is a unique identifier for the setting. The value should be 'IsSingleInstance'.
+
+        NOTE: This property is not configurable and is used internally by the DSC resource. Using the 'IsSingleInstance' value from the base does not work as the class feature is already defined.
 
     .PARAMETER FindMyDevice
         Specifies whether the Find My Device setting should be enabled or disabled.

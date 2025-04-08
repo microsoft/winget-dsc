@@ -52,8 +52,7 @@ function Get-RegistryStatus
     }
     catch
     {
-        # TODO: Localize the verbose message, not error
-        Write-Verbose -Message $_.Exception.Message -Verbose
+        Write-Verbose -Message ($script:localizedData.GetRegistryStatus_DefaultMessage -f $Status.Default, $Name)
     }
 
     if (-not ([string]::IsNullOrEmpty($registryValue)))
