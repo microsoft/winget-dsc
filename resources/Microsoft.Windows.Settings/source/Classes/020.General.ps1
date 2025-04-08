@@ -36,9 +36,9 @@
 class General : SettingsBase
 {
     [DscProperty(Key)]
-    [ValidateSet('Yes')]
+    [ValidateSet('IsSingleInstance')]
     [System.String]
-    $SID = 'Yes'
+    $SID = 'IsSingleInstance'
 
     [DscProperty()]
     [SettingStatus] $EnablePersonalizedAds

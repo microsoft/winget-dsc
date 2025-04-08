@@ -1,6 +1,4 @@
-﻿#Requires -RunAsAdministrator
-
-<#
+﻿<#
     .SYNOPSIS
         Integration test for FindMyDevice DSC class resource.
 #>
@@ -29,7 +27,7 @@ BeforeDiscovery {
 
 BeforeAll {
     $script:dscModuleName = 'Microsoft.Windows.Settings'
-    $script:dscResourceName = 'FindMyDevice'
+    $script:dscResourceName = 'General'
 
     Import-Module -Name $script:dscModuleName -Force
 
@@ -48,10 +46,10 @@ AfterAll {
     $script:currentState.Set()
 }
 
-Describe "FindMyDevice\Generic" {
+Describe "General\Generic" {
     Context "List available DSC resources" {
         It 'Shows DSC resources' {
-            $expectedDscResources = @('FindMyDevice')
+            $expectedDscResources = @('General')
 
             $availableDscResources = (Get-DscResource -Module $script:dscModuleName -Name $expectedDscResources).Name
             $availableDscResources.count | Should -Be 1
@@ -60,15 +58,22 @@ Describe "FindMyDevice\Generic" {
     }
 }
 
-Describe "FindMyDevice\Integration" {
-    Context "FindMyDevice\Set" {
-        It 'Sets DSC resource' {
-            $desiredState = @{ FindMyDevice = 'Enabled' }
+Describe "Generic\Integration" {
+    Context "Generic\Set" {
+        It 'Sets <property> to <value>' -TestCases @(
+            @{ Property = 'EnablePersonalizedAds'; Value = 'Disabled' },
+            @{ Property = 'EnableLocalContentByLanguageList'; Value = 'Enabled' },
+            @{ Property = 'EnableAppLaunchTracking'; Value = 'Enabled' },
+            @{ Property = 'ShowContentSuggestion'; Value = 'Enabled' },
+            @{ Property = 'EnableAccountNotifications'; Value = 'Disabled' }
+        ) {
+            param ($Property, $Value)
+            $desiredState = @{ $Property = $Value }
 
             Invoke-DscResource -Method Set -Property $desiredState
 
             $finalState = Invoke-DscResource -Method Get -Property $desiredState
-            $finalState.FindMyDevice | Should -Be 'Enabled'
+            $finalState.$Property | Should -Be $Value
         }
     }
 }

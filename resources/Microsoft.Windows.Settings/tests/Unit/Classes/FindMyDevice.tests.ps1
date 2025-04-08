@@ -77,14 +77,13 @@ Describe 'FindMyDevice' {
 }
 
 Describe 'FindMyDevice\Get()' -Tag 'Get' {
-    Context 'When the system is in the desired state' {
         Context 'When getting the status of find my device' {
             BeforeAll {
                 InModuleScope -Scriptblock {
                     Set-StrictMode -Version 1.0
 
                     $script:mockInstance = [FindMyDevice]@{
-                        IsSingleInstance = 'Yes'
+                        SID = 'IsSingleInstance'
                     }
 
                     <#
@@ -97,8 +96,8 @@ Describe 'FindMyDevice\Get()' -Tag 'Get' {
                     $script:mockInstance |
                         Add-Member -Force -MemberType 'ScriptMethod' -Name 'GetCurrentState' -Value {
                             return @{
-                                IsSingleInstance = 'Yes'
-                                FindMyDevice     = [SettingStatus]::Enabled
+                                SID          = 'IsSingleInstance'
+                                FindMyDevice = [SettingStatus]::Enabled
                             }
                         } -PassThru |
                             Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
@@ -113,14 +112,13 @@ Describe 'FindMyDevice\Get()' -Tag 'Get' {
 
                     $currentState = $script:mockInstance.Get()
 
-                    $currentState.IsSingleInstance | Should -Be 'Yes'
+                    $currentState.SID | Should -Be 'IsSingleInstance'
                     $currentState.FindMyDevice | Should -Be 'Enabled'
 
                     $currentState.Reasons | Should -BeNullOrEmpty
                 }
             }
         }
-    }
 }
 
 Describe 'FindMyDevice\Set()' -Tag 'Set' {

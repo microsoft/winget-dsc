@@ -75,3 +75,249 @@ Describe 'General' {
         }
     }
 }
+
+Describe 'General\Get()' -Tag 'Get' {
+    Context 'When getting the status of general settings' {
+        BeforeAll {
+            InModuleScope -Scriptblock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance = [General]@{
+                    SID = 'IsSingleInstance'
+                }
+
+                <#
+                        This mocks the method GetCurrentState().
+
+                        Method Get() will call the base method Get() which will
+                        call back to the derived class method GetCurrentState()
+                        to get the result to return from the derived method Get().
+                    #>
+                $script:mockInstance |
+                    Add-Member -Force -MemberType 'ScriptMethod' -Name 'GetCurrentState' -Value {
+                        return @{
+                            SID                   = 'IsSingleInstance'
+                            EnablePersonalizedAds = [SettingStatus]::Enabled
+                        }
+                    } -PassThru |
+                        Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
+                            return
+                        }
+            }
+        }
+
+        It 'Should return the correct values' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $currentState = $script:mockInstance.Get()
+
+                $currentState.SID | Should -Be 'IsSingleInstance'
+                $currentState.EnablePersonalizedAds | Should -Be 'Enabled'
+
+                $currentState.Reasons | Should -BeNullOrEmpty
+            }
+        }
+    }
+}
+
+Describe 'General\Set()' -Tag 'Set' {
+    BeforeAll {
+        InModuleScope -Scriptblock {
+            Set-StrictMode -Version 1.0
+
+            $script:mockInstance = [General]@{
+                IsSingleInstance = 'Yes'
+            } |
+                # Mock method Modify which is called by the case method Set().
+                Add-Member -Force -MemberType 'ScriptMethod' -Name 'Modify' -Value {
+                    $script:methodModifyCallCount += 1
+                } -PassThru
+        }
+    }
+
+    BeforeEach {
+        InModuleScope -ScriptBlock {
+            Set-StrictMode -Version 1.0
+
+            $script:methodModifyCallCount = 0
+        }
+    }
+
+    Context 'When the system is in the desired state' {
+        BeforeAll {
+            InModuleScope -Scriptblock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance |
+                    # Mock method Compare() which is called by the base method Set()
+                    Add-Member -Force -MemberType 'ScriptMethod' -Name 'Compare' -Value {
+                        return $null
+                    } -PassThru |
+                        Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
+                            return
+                        }
+            }
+        }
+
+        It 'Should not call method Modify()' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance.Set()
+
+                $script:methodModifyCallCount | Should -Be 0
+            }
+        }
+    }
+
+    Context 'When the system is not in the desired state' {
+        BeforeAll {
+            InModuleScope -Scriptblock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance |
+                    # Mock method Compare() which is called by the base method Set()
+                    Add-Member -Force -MemberType 'ScriptMethod' -Name 'Compare' -Value {
+                        return @(
+                            @{
+                                Property      = 'EnablePersonalizedAds'
+                                ExpectedValue = 'Disabled'
+                                ActualValue   = 'Enabled'
+                            }
+                        )
+                    } -PassThru |
+                        Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
+                            return
+                        }
+            }
+        }
+
+        It 'Should call method Modify()' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance.Set()
+
+                $script:methodModifyCallCount | Should -Be 1
+            }
+        }
+    }
+}
+
+Describe 'General\Test()' -Tag 'Test' {
+    Context 'When the system is in the desired state' {
+        BeforeAll {
+            InModuleScope -Scriptblock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance |
+                    # Mock method Compare() which is called by the base method Test()
+                    Add-Member -Force -MemberType 'ScriptMethod' -Name 'Compare' -Value {
+                        return $null
+                    } -PassThru |
+                        Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
+                            return
+                        }
+            }
+        }
+
+        It 'Should return $true' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance.Test() | Should -BeTrue
+            }
+        }
+    }
+
+    Context 'When the system is not in the desired state' {
+        BeforeAll {
+            InModuleScope -Scriptblock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance |
+                    # Mock method Compare() which is called by the base method Test()
+                    Add-Member -Force -MemberType 'ScriptMethod' -Name 'Compare' -Value {
+                        return @(
+                            @{
+                                Property      = 'EnablePersonalizedAds'
+                                ExpectedValue = $false
+                                ActualValue   = $true
+                            })
+                    } -PassThru |
+                        Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
+                            return
+                        }
+            }
+        }
+
+        It 'Should return $false' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance.Test() | Should -BeFalse
+            }
+        }
+    }
+}
+
+Describe 'General\GetCurrentState()' -Tag 'HiddenMember' {
+    Context 'When object is missing in the current state' {
+        BeforeAll {
+            InModuleScope -Scriptblock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance = [General] @{
+                    EnablePersonalizedAds = 'Enabled'
+                }
+            }
+        }
+
+    }
+
+    It 'Should return the correct values' {
+        InModuleScope -ScriptBlock {
+            Set-StrictMode -Version 1.0
+
+            $currentState = $script:mockInstance.GetCurrentState(
+                @{
+                    SID = 'Yes'
+                }
+            )
+
+            $currentState.SID | Should -BeNullOrEmpty
+            $currentState.EnablePersonalizedAds | Should -Be 'Enabled'
+        }
+    }
+}
+
+
+Describe 'General\Set()' -Tag 'HiddenMember' {
+    BeforeAll {
+        Mock -CommandName Set-RegistryStatus
+        Mock -CommandName New-ItemProperty -MockWith { return $true }
+    }
+
+    Context 'When setting the registry key for "Find My Device"' {
+        BeforeAll {
+            InModuleScope -Scriptblock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance = [General]@{
+                    EnablePersonalizedAds = 'Disabled'
+                }
+            }
+        }
+
+        It 'Should call the correct mock' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $script:mockInstance.Set()
+            }
+
+            Should -Invoke -CommandName Set-RegistryStatus -Exactly -Times 1 -Scope It
+        }
+    }
+}
