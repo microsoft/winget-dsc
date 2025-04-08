@@ -83,4 +83,9 @@ vso
 winrm
 MMdd
 NOLOGO
-
+whatif
+wildcards
+Windo
+winget
+workflows
+worktree
