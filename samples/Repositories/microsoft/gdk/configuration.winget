@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: vsPackage
+      directives:
+        description: Install Visual Studio 2022 Community
+        securityContext: elevated
+        module: Microsoft.WinGet.DSC
+      settings:
+        id: Microsoft.VisualStudio.2022.Community
+        source: winget
+    - resource: Microsoft.VisualStudio.DSC/VSComponents
+      id: vsConfig
+      dependsOn:
+        - vsPackage
+      directives:
+        description: Install required VS workloads
+        module: Microsoft.VisualStudio.DSC
+        allowPrerelease: true
+        securityContext: elevated
+      settings:
+        productId: Microsoft.VisualStudio.Product.Community
+        channelId: VisualStudio.17.Release
+        includeRecommended: true
+        Components:
+          - Microsoft.VisualStudio.Workload.NativeGame
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      dependsOn:
+        - vsConfig
+      directives:
+        description: Install Microsoft GDK
+        module: Microsoft.WinGet.DSC
+        securityContext: elevated
+      settings:
+        id: Microsoft.Gaming.GDK
+        source: winget
+  configurationVersion: 0.2.0

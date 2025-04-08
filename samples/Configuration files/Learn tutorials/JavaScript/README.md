@@ -1,0 +1,25 @@
+# Understanding WinGet Configuration Files
+
+This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) (_configuration.winget_) that will work with the WinGet command line interface (`winget configure --file [path: configuration.winget]`) or can be run directly by double-clicking on the file.
+
+When run, the `configuration.winget` file will install the following list of applications:
+
+- Microsoft Visual Studio Community 2022
+    - Required Visual Studio Workloads (NodeJS, Universal)
+- GitHub Desktop
+
+The `configuration.winget` file will also enable [Developer Mode](https://learn.microsoft.com/windows/apps/get-started/developer-mode-features-and-debugging) on your device.
+
+## How to use the WinGet Configuration File
+
+### 1. File Explorer
+
+1. Download the `sandbox.winget` file to your computer.
+2. Double-click the `sandbox.winget` file.
+
+### 2. Windows Package Manager
+
+1. Download the `sandbox.winget` file to your computer.
+2. Open your Windows Start Menu, search and launch "_Windows Terminal_".
+3. Type the following: `CD <C:\Users\User\Download>`
+4. Type the following: `winget configure --file .\sandbox.winget`

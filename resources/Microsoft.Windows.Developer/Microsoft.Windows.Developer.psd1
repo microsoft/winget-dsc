@@ -15,7 +15,8 @@
         'Taskbar',
         'WindowsExplorer',
         'UserAccessControl',
-        'EnableRemoteDesktop'
+        'EnableRemoteDesktop',
+        'EnableLongPathSupport'
     )
     PrivateData          = @{
         PSData = @{
@@ -28,13 +29,14 @@
                 'PSDscResource_Taskbar',
                 'PSDscResource_WindowsExplorer',
                 'PSDscResource_UserAccessControl',
-                'PSDscResource_EnableRemoteDesktop'
+                'PSDscResource_EnableRemoteDesktop',
+                'PSDscResource_EnableLongPathSupport'
             )
 
             # Prerelease string of this module
             Prerelease = 'alpha'
 
-             # A URL to the license for this module.
+            # A URL to the license for this module.
             LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.
