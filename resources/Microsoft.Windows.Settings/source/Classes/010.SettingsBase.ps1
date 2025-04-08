@@ -59,6 +59,7 @@ class SettingsBase : ResourceBase
             $property = $_
 
             # Get the key data for the property
+            $key = $keyData | Where-Object -Property $PropertyName -EQ $property
             $key = $keyData | Where-Object { $_.PropertyName -eq $property }
 
             # Remove the PropertyName key from the key data

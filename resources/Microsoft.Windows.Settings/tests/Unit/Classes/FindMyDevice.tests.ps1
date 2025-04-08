@@ -283,7 +283,9 @@ Describe 'FindMyDevice\GetCurrentState()' -Tag 'HiddenMember' {
             Set-StrictMode -Version 1.0
 
             $currentState = $script:mockInstance.GetCurrentState(
-                @{}
+                @{
+                    IsSingleInstance = 'Yes'
+                }
             )
 
             $currentState.IsSingleInstance | Should -BeNullOrEmpty

@@ -59,7 +59,7 @@ Describe 'Get-RegistryStatus' -Tag 'Private' {
                     Status        = @{
                         'Enabled'  = '1'
                         'Disabled' = '0'
-                        'Default'  = 'Unknown'
+                        'Default'  = '0'
                     }
                     ExpectedValue = '1'
                     ExpectedKey   = 'Enabled'
@@ -92,7 +92,7 @@ Describe 'Get-RegistryStatus' -Tag 'Private' {
                     Status        = @{
                         'Enabled'  = '1'
                         'Disabled' = '0'
-                        'Default'  = 'Unknown'
+                        'Default'  = '0'
                     }
                     ExpectedValue = '1'
                     ExpectedKey   = 'Enabled'

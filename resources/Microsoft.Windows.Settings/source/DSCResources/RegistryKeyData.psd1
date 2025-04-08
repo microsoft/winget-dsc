@@ -6,9 +6,10 @@
 #>
 @{
     "FindMyDevice" = @{
-        Name   = 'LocationSyncEnabled'
-        Path   = 'HKLM:\SOFTWARE\Microsoft\MdmCommon\SettingValues\'
-        Status = @{
+        PropertyName = 'FindMyDevice'
+        Name         = 'LocationSyncEnabled'
+        Path         = 'HKLM:\SOFTWARE\Microsoft\MdmCommon\SettingValues\'
+        Status       = @{
             Enabled  = 1
             Disabled = 0
             Default  = 0

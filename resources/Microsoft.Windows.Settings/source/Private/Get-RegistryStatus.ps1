@@ -75,11 +75,28 @@ function Get-RegistryStatus
             $registryValue = $registryValue[0]
         }
 
-        $Status.GetEnumerator() | Where-Object { $_.Value -eq $registryValue } | Select-Object -ExpandProperty Key
+        # Check if the registry value is in the hashtable and return the corresponding key
+        $KeyCounter = $Status.GetEnumerator() | Where-Object { $_.Value -eq $registryValue } | Select-Object -ExpandProperty Key
+
+        if ($KeyCounter.Count -gt 1)
+        {
+            $KeyCounter | Where-Object { $_ -ne 'Default' }
+        }
+        else 
+        {
+            $KeyCounter
+        }
     }
     else
     {
-        $Status.Default
+        # Grab the default value
+        $DefaultValue = $Status.Default
+
+        # Remove the status block
+        $Status.Remove('Default')
+
+        # Search the hashtable for the default value and return disable or enable
+        $Key = $Status.GetEnumerator() | Where-Object -Property Value -EQ $registryValue | Select-Object -ExpandProperty Key
     }
 
     return $Key
