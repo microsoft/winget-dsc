@@ -26,5 +26,6 @@
     'DscResource.AnalyzerRules' = 'latest'
     xDscResourceDesigner        = 'latest'
     'DscResource.DocGenerator'  = 'latest'
+    PSDesiredStateConfiguration = 'latest'
 }
 

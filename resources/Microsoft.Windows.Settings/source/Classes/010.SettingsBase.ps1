@@ -1,18 +1,13 @@
 <#
     .SYNOPSIS
-        The `FindMyDevice` DSC resource is used to manage the Find My Device setting.
+        The `SettingsBase` class is the base class for all settings resources.
 
     .DESCRIPTION
-        This resource is used to enable or disable the Find My Device setting on a Windows device.
+        This class is the base class for all settings resources. It provides the basic functionality
+        for getting, setting, and testing the properties of the settings resources.
 
     .PARAMETER IsSingleInstance
         Specifies the resource is a single instance, the value must be 'Yes'.
-
-    .PARAMETER FindMyDevice
-        Specifies whether the Find My Device setting should be enabled or disabled.
-
-    .PARAMETER Reasons
-        Returns the reason a property is not in the desired state.
 #>
 [DscResource()]
 class SettingsBase : ResourceBase
@@ -59,9 +54,8 @@ class SettingsBase : ResourceBase
             $property = $_
 
             # Get the key data for the property
-            $key = $keyData | Where-Object -Property $PropertyName -EQ $property
-            $key = $keyData | Where-Object { $_.PropertyName -eq $property }
-
+            $key = $keyData | Where-Object -Property PropertyName -EQ $property
+            
             # Remove the PropertyName key from the key data
             $key.Remove('PropertyName')
             

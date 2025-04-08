@@ -53,11 +53,11 @@ Describe 'Set-RegistryStatus' -Tag 'Private' {
         BeforeDiscovery {
             $testCases = @(
                 @{
-                    Path        = 'HKLM:\SOFTWARE\Microsoft\MdmCommon\SettingValues'
-                    Name        = 'LocationSyncEnabled'
-                    Value       = '1'
+                    Path        = 'HKCU:\Environment'
+                    Name        = 'Path'
+                    Value       = 'C:\Windows\System32'
                     ExpectedKey = @{
-                        'LocationSyncEnabled' = '1'
+                        'Path' = '1'
                     }
                 }
             )
@@ -66,7 +66,7 @@ Describe 'Set-RegistryStatus' -Tag 'Private' {
         It 'Should set the registry key' -ForEach $testCases {
             InModuleScope -Parameters $_ -ScriptBlock {
                 $result = Set-RegistryStatus -Path $Path -Name $Name -Value $Value
-                $result | Should -Be $ExpectedKey.LocationSyncEnabled
+                $result | Should -Be $ExpectedKey.Path
             }
 
             Should -Invoke -CommandName Set-ItemProperty -Exactly -Times 1
@@ -76,7 +76,7 @@ Describe 'Set-RegistryStatus' -Tag 'Private' {
     Context 'Set registry key when it does not exist' {
         BeforeAll {
             Mock -CommandName New-Item
-            Mock -CommandName Set-ItemProperty -MockWith {
+            Mock -CommandName New-ItemProperty -MockWith {
                 return 0
             }
         }
@@ -99,7 +99,7 @@ Describe 'Set-RegistryStatus' -Tag 'Private' {
             }
 
             Should -Invoke -CommandName New-Item -Exactly -Times 1
-            # Should -Invoke -CommandName Set-ItemProperty -Exactly -Times 1
+            Should -Invoke -CommandName New-ItemProperty -Exactly -Times 1
         }
     }
 }

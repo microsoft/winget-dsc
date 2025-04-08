@@ -15,7 +15,7 @@
         PS C:\> Get-RegistryStatus -Path 'HKLM:\1\2\3' -Name 'Setting1'
 
     .EXAMPLE
-        PS C:\> Get-RegistryStatus -Path 'HKLM:\1\2\3' -Name 'Setting1', 'Setting2' -Status @{ 'Enabled' = 1; 'Disabled' = 0 }
+        PS C:\> Get-RegistryStatus -Path 'HKLM:\1\2\3' -Name 'Setting1', 'Setting2' -Status @{ 'Enabled' = 1; 'Disabled' = 0; 'Default' = 0 }
 #>
 function Get-RegistryStatus
 {
@@ -37,17 +37,17 @@ function Get-RegistryStatus
         $Status
     )
 
+    # Grab the default value from the one matching in the status hashtable e.g. @{ 'Enabled' = 1; 'Disabled' = 0; 'Default' = 0 } <-- 'Disabled' will be returned
+    $key = $status.GetEnumerator() | Where-Object { $_.Value -eq $Status.Default -and $_.Key -ne 'Default' } | Select-Object -ExpandProperty Key
+
+    # For class we create variable
+    New-Variable -Name 'registryValue' -Value $null -Scope Local -Force
+
     try
     {
-        $registryValue = if ($Name.Count -gt 1)
+        $registryValue = foreach ($NameItem in $Name)
         {
-            $Name | ForEach-Object {
-                Get-ItemPropertyValue -Path $Path -Name $_ -ErrorAction Stop
-            }
-        }
-        else
-        {
-            Get-ItemPropertyValue -Path $Path -Name $Name -ErrorAction Stop
+            Get-ItemPropertyValue -Path $Path -Name $NameItem -ErrorAction Stop
         }
     }
     catch
@@ -56,8 +56,14 @@ function Get-RegistryStatus
         Write-Verbose -Message $_.Exception.Message -Verbose
     }
 
-    $Key = if ($registryValue -or $registryValue -eq 0)
+    if (-not ([string]::IsNullOrEmpty($registryValue)))
     {
+        if ($Status.ContainsKey('Default'))
+        {
+            # Remove the default value from the hashtable as it is returned by default if nothing is found
+            $Status.Remove('Default')
+        }
+
         if ($registryValue.Count -gt 1)
         {
             # Using Group-Object to count the number of unique values
@@ -71,32 +77,11 @@ function Get-RegistryStatus
                     -Message $errorMessage
             }
 
-            # Return the first value as the registry value is the same
+            # Return the first value as the registry value should be the same
             $registryValue = $registryValue[0]
         }
 
-        # Check if the registry value is in the hashtable and return the corresponding key
-        $KeyCounter = $Status.GetEnumerator() | Where-Object { $_.Value -eq $registryValue } | Select-Object -ExpandProperty Key
-
-        if ($KeyCounter.Count -gt 1)
-        {
-            $KeyCounter | Where-Object { $_ -ne 'Default' }
-        }
-        else 
-        {
-            $KeyCounter
-        }
-    }
-    else
-    {
-        # Grab the default value
-        $DefaultValue = $Status.Default
-
-        # Remove the status block
-        $Status.Remove('Default')
-
-        # Search the hashtable for the default value and return disable or enable
-        $Key = $Status.GetEnumerator() | Where-Object -Property Value -EQ $registryValue | Select-Object -ExpandProperty Key
+        $key = $Status.GetEnumerator() | Where-Object -Property Value -EQ $registryValue | Select-Object -ExpandProperty Key
     }
 
     return $Key

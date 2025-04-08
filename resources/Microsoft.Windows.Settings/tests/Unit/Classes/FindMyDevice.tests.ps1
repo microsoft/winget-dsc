@@ -298,7 +298,7 @@ Describe 'FindMyDevice\GetCurrentState()' -Tag 'HiddenMember' {
 Describe 'FindMyDevice\Set()' -Tag 'HiddenMember' {
     BeforeAll {
         Mock -CommandName Set-RegistryStatus
-        Mock -CommandName Set-ItemProperty -MockWith { return $true }
+        Mock -CommandName New-ItemProperty -MockWith { return $true }
     }
 
     Context 'When setting the registry key for "Find My Device"' {
