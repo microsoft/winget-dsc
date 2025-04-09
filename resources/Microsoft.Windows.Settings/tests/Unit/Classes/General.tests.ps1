@@ -83,7 +83,7 @@ Describe 'General\Get()' -Tag 'Get' {
                 Set-StrictMode -Version 1.0
 
                 $script:mockInstance = [General]@{
-                    SID = 'IsSingleInstance'
+                    IsSingleInstance = 'Yes'
                 }
 
                 <#
@@ -96,8 +96,8 @@ Describe 'General\Get()' -Tag 'Get' {
                 $script:mockInstance |
                     Add-Member -Force -MemberType 'ScriptMethod' -Name 'GetCurrentState' -Value {
                         return @{
-                            SID                   = 'IsSingleInstance'
-                            EnablePersonalizedAds = [SettingStatus]::Enabled
+                            IsSingleInstance      = 'Yes'
+                            EnablePersonalizedAds = [SettingStatus]::Disabled
                         }
                     } -PassThru |
                         Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
@@ -112,8 +112,8 @@ Describe 'General\Get()' -Tag 'Get' {
 
                 $currentState = $script:mockInstance.Get()
 
-                $currentState.SID | Should -Be 'IsSingleInstance'
-                $currentState.EnablePersonalizedAds | Should -Be 'Enabled'
+                $currentState.IsSingleInstance | Should -Be 'Yes'
+                $currentState.EnablePersonalizedAds | Should -Be 'Disabled'
 
                 $currentState.Reasons | Should -BeNullOrEmpty
             }
@@ -269,7 +269,7 @@ Describe 'General\GetCurrentState()' -Tag 'HiddenMember' {
                 Set-StrictMode -Version 1.0
 
                 $script:mockInstance = [General] @{
-                    EnablePersonalizedAds = 'Enabled'
+                    EnablePersonalizedAds = 'Disabled'
                 }
             }
         }
@@ -282,12 +282,12 @@ Describe 'General\GetCurrentState()' -Tag 'HiddenMember' {
 
             $currentState = $script:mockInstance.GetCurrentState(
                 @{
-                    SID = 'Yes'
+                    IsSingleInstance = 'Yes'
                 }
             )
 
-            $currentState.SID | Should -BeNullOrEmpty
-            $currentState.EnablePersonalizedAds | Should -Be 'Enabled'
+            $currentState.IsSingleInstance | Should -BeNullOrEmpty
+            $currentState.EnablePersonalizedAds | Should -Be 'Disabled'
         }
     }
 }
@@ -299,13 +299,13 @@ Describe 'General\Set()' -Tag 'HiddenMember' {
         Mock -CommandName New-ItemProperty -MockWith { return $true }
     }
 
-    Context 'When setting the registry key for "Find My Device"' {
+    Context 'When setting the registry key for "EnablePersonalizedAds"' {
         BeforeAll {
             InModuleScope -Scriptblock {
                 Set-StrictMode -Version 1.0
 
                 $script:mockInstance = [General]@{
-                    EnablePersonalizedAds = 'Disabled'
+                    EnablePersonalizedAds = 'Enabled'
                 }
             }
         }

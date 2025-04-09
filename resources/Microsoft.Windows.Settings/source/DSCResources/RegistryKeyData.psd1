@@ -23,7 +23,7 @@
             Status       = @{
                 Enabled  = 1
                 Disabled = 0
-                Default  = 'Disabled'
+                Default  = 0
             }
         },
         @{
@@ -33,7 +33,7 @@
             Status       = @{
                 Enabled  = 0
                 Disabled = 1
-                Default  = 'Enabled'
+                Default  = 0
             }
         },
         @{
@@ -43,7 +43,7 @@
             Status       = @{
                 Enabled  = 1
                 Disabled = 0
-                Default  = 'Enabled'
+                Default  = 1
             }
         }
         @{
@@ -53,7 +53,7 @@
             Status       = @{
                 Enabled  = 1
                 Disabled = 0
-                Default  = 'Enabled'
+                Default  = 1
             }
         }
         @{
@@ -63,7 +63,7 @@
             Status       = @{
                 Enabled  = 1
                 Disabled = 0
-                Default  = 'Enabled'
+                Default  = 1
             }
         }
     )

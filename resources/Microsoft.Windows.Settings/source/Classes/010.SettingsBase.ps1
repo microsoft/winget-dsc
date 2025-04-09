@@ -9,10 +9,8 @@
     .PARAMETER IsSingleInstance
         Specifies the resource is a single instance, the value must be 'Yes'.
 #>
-[DscResource()]
 class SettingsBase : ResourceBase
 {
-    [DscProperty(Key)]
     [ValidateSet('Yes')]
     [System.String]
     $IsSingleInstance = 'Yes'
@@ -23,7 +21,7 @@ class SettingsBase : ResourceBase
     {
         # These properties will not be enforced.
         $this.ExcludeDscProperties = @(
-            'IsSingleInstance', 'SID'
+            'IsSingleInstance'
         )
 
         $this.ClassName = $this.GetType().Name

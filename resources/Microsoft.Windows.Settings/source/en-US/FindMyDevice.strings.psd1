@@ -11,5 +11,4 @@ ConvertFrom-StringData @'
     # None
 
     ## Strings directly used by the derived class FindMyDevice.
-    FindMyDeviceRegistryKey = Searching '{0}' key in '{1}' (0001).
 '@

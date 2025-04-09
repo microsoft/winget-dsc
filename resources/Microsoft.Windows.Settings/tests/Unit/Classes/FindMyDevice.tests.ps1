@@ -77,48 +77,48 @@ Describe 'FindMyDevice' {
 }
 
 Describe 'FindMyDevice\Get()' -Tag 'Get' {
-        Context 'When getting the status of find my device' {
-            BeforeAll {
-                InModuleScope -Scriptblock {
-                    Set-StrictMode -Version 1.0
+    Context 'When getting the status of find my device' {
+        BeforeAll {
+            InModuleScope -Scriptblock {
+                Set-StrictMode -Version 1.0
 
-                    $script:mockInstance = [FindMyDevice]@{
-                        SID = 'IsSingleInstance'
-                    }
+                $script:mockInstance = [FindMyDevice]@{
+                    IsSingleInstance = 'Yes'
+                }
 
-                    <#
+                <#
                         This mocks the method GetCurrentState().
 
                         Method Get() will call the base method Get() which will
                         call back to the derived class method GetCurrentState()
                         to get the result to return from the derived method Get().
                     #>
-                    $script:mockInstance |
-                        Add-Member -Force -MemberType 'ScriptMethod' -Name 'GetCurrentState' -Value {
-                            return @{
-                                SID          = 'IsSingleInstance'
-                                FindMyDevice = [SettingStatus]::Enabled
-                            }
-                        } -PassThru |
-                            Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
-                                return
-                            }
-                }
-            }
-
-            It 'Should return the correct values' {
-                InModuleScope -ScriptBlock {
-                    Set-StrictMode -Version 1.0
-
-                    $currentState = $script:mockInstance.Get()
-
-                    $currentState.SID | Should -Be 'IsSingleInstance'
-                    $currentState.FindMyDevice | Should -Be 'Enabled'
-
-                    $currentState.Reasons | Should -BeNullOrEmpty
-                }
+                $script:mockInstance |
+                    Add-Member -Force -MemberType 'ScriptMethod' -Name 'GetCurrentState' -Value {
+                        return @{
+                            IsSingleInstance = 'Yes'
+                            FindMyDevice     = [SettingStatus]::Enabled
+                        }
+                    } -PassThru |
+                        Add-Member -Force -MemberType 'ScriptMethod' -Name 'AssertProperties' -Value {
+                            return
+                        }
             }
         }
+
+        It 'Should return the correct values' {
+            InModuleScope -ScriptBlock {
+                Set-StrictMode -Version 1.0
+
+                $currentState = $script:mockInstance.Get()
+
+                $currentState.IsSingleInstance | Should -Be 'Yes'
+                $currentState.FindMyDevice | Should -Be 'Enabled'
+
+                $currentState.Reasons | Should -BeNullOrEmpty
+            }
+        }
+    }
 }
 
 Describe 'FindMyDevice\Set()' -Tag 'Set' {
@@ -282,11 +282,11 @@ Describe 'FindMyDevice\GetCurrentState()' -Tag 'HiddenMember' {
 
             $currentState = $script:mockInstance.GetCurrentState(
                 @{
-                    SID = 'Yes'
+                    IsSingleInstance = 'Yes'
                 }
             )
 
-            $currentState.SID | Should -BeNullOrEmpty
+            $currentState.IsSingleInstance | Should -BeNullOrEmpty
             $currentState.FindMyDevice | Should -Be 'Disabled'
         }
     }
