@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+# reference: https://learn.microsoft.com/windows/apps/get-started/start-here?tabs=vs-2022-17-10
+
+##########################################################################################################
+# This configuration will install the tools necessary to start developing windows apps                   #
+#                                                                                                        #
+# This will:                                                                                             #
+#     * Enable Developer Mode                                                                            #
+#     * Install Visual Studio                                                                            #
+#     * Install required workloads and components                                                        #
+#                                                                                                        #
+##########################################################################################################
+
+properties:
+  assertions:
+    - resource: Microsoft.Windows.Developer/OsVersion
+      directives:
+        description: Verify min OS version requirement
+        allowPrerelease: true
+      settings:
+        MinVersion: '10.0.17763'
+  resources:
+    - resource: Microsoft.Windows.Developer/DeveloperMode
+      directives:
+        description: Enable Developer Mode
+        allowPrerelease: true
+      settings:
+        Ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: vsPackage
+      directives:
+        description: Install Visual Studio 2022 Community
+      settings:
+        id: Microsoft.VisualStudio.2022.Community
+        source: winget
+    - resource: Microsoft.VisualStudio.DSC/VSComponents
+      dependsOn:
+        - vsPackage
+      directives:
+        description: Install required VS workloads for C# development using the Windows App SDK
+      settings:
+        productId: Microsoft.VisualStudio.Product.Community
+        channelId: VisualStudio.17.Release
+        Components: Microsoft.VisualStudio.Workload.Universal
+        includeRecommended: true
+  configurationVersion: 0.2.0
