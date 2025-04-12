@@ -48,52 +48,6 @@ enum AdminConsentPromptBehavior {
 
 #region DSCResources
 [DSCResource()]
-class DeveloperMode {
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
-
-    [DscProperty()]
-    [Ensure] $Ensure = [Ensure]::Present
-
-    [DscProperty(NotConfigurable)]
-    [bool] $IsEnabled
-
-    [DeveloperMode] Get() {
-        $this.IsEnabled = IsDeveloperModeEnabled
-
-        return @{
-            Ensure    = $this.Ensure
-            IsEnabled = $this.IsEnabled
-        }
-    }
-
-    [bool] Test() {
-        $currentState = $this.Get()
-        if ($currentState.Ensure -eq [Ensure]::Present) {
-            return $currentState.IsEnabled
-        } else {
-            return $currentState.IsEnabled -eq $false
-        }
-    }
-
-    [void] Set() {
-        if (!$this.Test()) {
-            $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-            $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
-
-            if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
-                throw 'Toggling Developer Mode requires this resource to be run as an Administrator.'
-            }
-
-            $shouldEnable = $this.Ensure -eq [Ensure]::Present
-            SetDeveloperMode -Enable $shouldEnable
-        }
-    }
-
-}
-
-[DSCResource()]
 class OsVersion {
     # Key required. Do not set.
     [DscProperty(Key)]
@@ -136,8 +90,50 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\'
     $global:RemoteDesktopRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
     $global:LongPathsRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem\'
+    $global:AppModelUnlockRegistryKeyPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $global:LongPathsRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $global:LongPathsRegistryPath = $global:AppModelUnlockRegistryKeyPath = $env:TestRegistryPath
+}
+
+[DSCResource()]
+class DeveloperMode {
+    # Key required. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
+
+    [DeveloperMode] Get() {
+        $exists = DoesRegistryKeyPropertyExist -Path $global:AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
+
+        # If the registry key does not exist, we assume developer mode is not enabled.
+        if (-not($exists)) {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
+
+        # 1 == enabled == Present // 0 == disabled == Absent
+        return @{
+            Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
+        }
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set() {
+        # 1 == enabled == Present // 0 == disabled == Absent
+        $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
+        Set-ItemProperty -Path $global:AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName -Value $value
+    }
 }
 
 [DSCResource()]
@@ -601,33 +597,6 @@ class EnableLongPathSupport {
 #endregion DSCResources
 
 #region Functions
-$AppModelUnlockRegistryKeyPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
-$DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
-
-function IsDeveloperModeEnabled {
-    try {
-        $property = Get-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName
-        return $property.AllowDevelopmentWithoutDevLicense -eq 1
-    } catch {
-        # This will throw an exception if the registry path or property does not exist.
-        return $false
-    }
-}
-
-function SetDeveloperMode {
-    param (
-        [Parameter(Mandatory)]
-        [bool]$Enable
-    )
-
-    if (-not (Test-Path -Path $AppModelUnlockRegistryKeyPath)) {
-        New-Item -Path $AppModelUnlockRegistryKeyPath -Force | Out-Null
-    }
-
-    $developerModeValue = [int]$Enable
-    New-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName -Value $developerModeValue -PropertyType DWORD -Force | Out-Null
-}
-
 function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]

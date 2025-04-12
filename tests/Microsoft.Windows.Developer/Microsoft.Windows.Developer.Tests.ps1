@@ -29,6 +29,28 @@ Describe 'List available DSC resources' {
    }
 }
 
+Describe 'DeveloperMode' {
+   It 'Sets Enabled' {
+      $desiredDeveloperModeBehavior = [Ensure]::Present
+      $desiredState = @{ Ensure = $desiredDeveloperModeBehavior }
+
+      Invoke-DscResource -Name DeveloperMode -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+      $finalState = Invoke-DscResource -Name DeveloperMode -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.Ensure | Should -Be $desiredDeveloperModeBehavior
+   }
+
+   It 'Sets Disabled' {
+      $desiredDeveloperModeBehavior = [Ensure]::Absent
+      $desiredState = @{ Ensure = $desiredDeveloperModeBehavior }
+
+      Invoke-DscResource -Name DeveloperMode -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+      $finalState = Invoke-DscResource -Name DeveloperMode -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState.Ensure | Should -Be $desiredDeveloperModeBehavior
+   }
+}
+
 Describe 'Taskbar' {
    It 'Keeps current value.' {
       $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
