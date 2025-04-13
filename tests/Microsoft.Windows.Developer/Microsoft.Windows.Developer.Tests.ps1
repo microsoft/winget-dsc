@@ -61,6 +61,7 @@ InModuleScope Microsoft.Windows.Developer {
             $getResourceResult = $script:devModePresentCommonResource.Get()
             $expectedValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 'Present' : 'Absent'
             $getResourceResult.Ensure | Should -Be $expectedValue
+            $getResourceResult.IsEnabled | Should -Be ($RegistryValueState -eq [RegistryValueState]::SetTrue)
 
             if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
                Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly

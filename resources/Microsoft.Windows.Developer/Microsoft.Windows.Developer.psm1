@@ -56,6 +56,9 @@ class DeveloperMode {
     [DscProperty()]
     [Ensure] $Ensure = [Ensure]::Present
 
+    [DscProperty(NotConfigurable)]
+    [bool] $IsEnabled
+
     hidden [string] $AppModelUnlockRegistryKeyPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
     hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
 
@@ -64,16 +67,20 @@ class DeveloperMode {
 
         # If the registry key does not exist, we assume developer mode is not enabled.
         if (-not($exists)) {
+            $this.IsEnabled = $false
             return @{
-                Ensure = [Ensure]::Absent
+                Ensure    = [Ensure]::Absent
+                IsEnabled = $this.IsEnabled
             }
         }
 
         $registryValue = Get-ItemPropertyValue -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
 
         # 1 == enabled == Present // 0 == disabled == Absent
+        $this.IsEnabled = $registryValue
         return @{
-            Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
+            Ensure    = $this.IsEnabled ? [Ensure]::Present : [Ensure]::Absent
+            IsEnabled = $this.IsEnabled
         }
     }
 
