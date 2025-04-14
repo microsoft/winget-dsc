@@ -63,21 +63,20 @@ class DeveloperMode {
     hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
 
     [DeveloperMode] Get() {
-        $exists = DoesRegistryKeyPropertyExist -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
+        function IsDeveloperModeEnabled {
 
-        # If the registry key does not exist, we assume developer mode is not enabled.
-        if (-not($exists)) {
-            $this.IsEnabled = $false
-            return @{
-                Ensure    = [Ensure]::Absent
-                IsEnabled = $this.IsEnabled
+            $regExists = DoesRegistryKeyPropertyExist -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
+
+            # If the registry key does not exist, we assume developer mode is not enabled.
+            if (-not($regExists)) {
+                return $false
             }
+
+            return Get-ItemPropertyValue -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
         }
 
-        $registryValue = Get-ItemPropertyValue -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
-
         # 1 == enabled == Present // 0 == disabled == Absent
-        $this.IsEnabled = $registryValue
+        $this.IsEnabled = IsDeveloperModeEnabled
         return @{
             Ensure    = $this.IsEnabled ? [Ensure]::Present : [Ensure]::Absent
             IsEnabled = $this.IsEnabled
@@ -626,5 +625,4 @@ function DoesRegistryKeyPropertyExist {
     $itemProperty = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
     return $null -ne $itemProperty
 }
-
 #endregion Functions
