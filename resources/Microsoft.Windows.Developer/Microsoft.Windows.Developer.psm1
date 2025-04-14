@@ -64,7 +64,6 @@ class DeveloperMode {
 
     [DeveloperMode] Get() {
         function IsDeveloperModeEnabled {
-
             $regExists = DoesRegistryKeyPropertyExist -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
 
             # If the registry key does not exist, we assume developer mode is not enabled.
