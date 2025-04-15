@@ -23,6 +23,7 @@ properties:
     - resource: Microsoft.Windows.Developer/DeveloperMode
       directives:
         description: Enable Developer Mode
+        securityContext: elevated
         allowPrerelease: true
       settings:
         Ensure: Present
