@@ -40,6 +40,7 @@ properties:
         - vsPackage
       directives:
         description: Install required VS workloads for C# development using the Windows App SDK
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Community
         channelId: VisualStudio.17.Release
