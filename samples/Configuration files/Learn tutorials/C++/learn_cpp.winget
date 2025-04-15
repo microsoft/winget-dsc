@@ -6,7 +6,7 @@
 #                                                                                                        #
 # This will:                                                                                             #
 #     * Install Visual Studio Community 2022                                                             #
-#     * Instal the NativeDesktop workload to Visual Studio Community 2022                                #
+#     * Install the NativeDesktop workload to Visual Studio Community 2022                                #
 #                                                                                                        #
 ##########################################################################################################
 
