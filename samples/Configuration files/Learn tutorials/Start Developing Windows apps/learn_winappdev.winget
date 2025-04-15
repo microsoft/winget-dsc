@@ -2,7 +2,9 @@
 # reference: https://learn.microsoft.com/windows/apps/get-started/start-here?tabs=vs-2022-17-10
 
 ##########################################################################################################
-# This configuration will install the tools necessary to start developing windows apps                   #
+# This configuration will install the tools necessary to start developing windows apps.                  #
+# This configuration requires administrative privileges to enable Developer Mode and install             #
+# Visual Studio and workloads.                                                                           #
 #                                                                                                        #
 # This will:                                                                                             #
 #     * Enable Developer Mode                                                                            #
