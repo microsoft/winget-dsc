@@ -13,15 +13,4 @@ The DSC resource module `Microsoft.Windows.Settings` provides a set of Desired S
 
 To use these resources, import the module and invoke the desired DSC resource with the appropriate parameters.
 
-```powershell
-Import-Module -Name Microsoft.Windows.Settings
-
-Invoke-DscResource -ModuleName Microsoft.Windows.Settings -Name AdvancedAppSettings -Method Set -Property @{
-    SID = 'S-1-5-21-1234567890-123456789-1234567890-1001';
-    AppSourcePreference = 'PreferStore';
-    ShareDeviceExperience = 'Everyone';
-    ArchiveApp = $true;
-}
-```
-
 For more detailed examples and parameter descriptions, refer to the individual resource documentation.
