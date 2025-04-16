@@ -31,6 +31,9 @@ resources:
 extends:
   template: v2/OneBranch.Official.CrossPlat.yml@templates
   parameters:
+    globalSdl:
+      tsa:
+        enabled: true
     platform:
       name: 'onebranch'
     release:
