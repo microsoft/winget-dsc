@@ -33,7 +33,7 @@ extends:
   parameters:
     globalSdl:
       tsa:
-        enabled: true
+        enabled: false
     platform:
       name: 'onebranch'
     release:
