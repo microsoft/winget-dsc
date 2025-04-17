@@ -8,9 +8,6 @@
 
     .PARAMETER IsSingleInstance
         Specifies the resource is a single instance, the value must be 'Yes'
-        
-    .PARAMETER FindMyDevice
-        Specifies whether the Find My Device setting should be enabled or disabled.
 
     .PARAMETER EnablePersonalizedAds
         Specifies whether personalized ads should be enabled or disabled.
