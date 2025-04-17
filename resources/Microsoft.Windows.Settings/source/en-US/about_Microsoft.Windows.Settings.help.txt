@@ -1,0 +1,24 @@
+TOPIC
+    about_Microsoft.Windows.Settings
+
+SHORT DESCRIPTION
+    The DSC module for Windows Settings
+
+LONG DESCRIPTION
+    The DSC module for Windows Settings
+
+EXAMPLES
+    PS C:\> Get-DscResource -Module Microsoft.Windows.Settings
+
+NOTE:
+    Thank you to all those who contributed to this module, by writing code, sharing opinions, and provided feedback.
+
+TROUBLESHOOTING NOTE:
+    Look out on the repository for issues and new releases.
+
+SEE ALSO
+    - https://github.com/microsoft/winget-dsc/
+
+KEYWORDS
+    DSC, Windows, Settings, Class-based
+
