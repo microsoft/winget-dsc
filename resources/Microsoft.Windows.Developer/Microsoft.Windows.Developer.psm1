@@ -614,9 +614,6 @@ class WindowsCapability {
         # If Name is not set in windowsCapability then the specified capability was not found
         if ([System.String]::IsNullOrEmpty($windowsCapability.Name)) {
             throw  (New-Object -TypeName System.ArgumentException -ArgumentList "$this.Name")
-            New-ArgumentException `
-                -Message ("Specified Windows Capability '{0}' not found." -f $this.Name) `
-                -ArgumentName 'Name'
         } else {
             $currentState.Name = $windowsCapability.Name
 
