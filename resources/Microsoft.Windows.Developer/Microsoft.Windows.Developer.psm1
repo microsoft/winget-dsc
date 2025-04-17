@@ -598,6 +598,54 @@ class EnableLongPathSupport {
         Set-ItemProperty -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey -Value $value
     }
 }
+
+[DSCResource()]
+class WindowsCapability {
+    [DscProperty(Key, Mandatory)]
+    [string] $Name
+
+    [DscProperty()]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [WindowsCapability] Get() {
+        $currentState = [WindowsCapability]::new()
+        $windowsCapability = Get-WindowsCapability -Online -Name $this.Name
+
+        # If Name is not set in windowsCapability then the specified capability was not found
+        if ([System.String]::IsNullOrEmpty($windowsCapability.Name)) {
+            throw  (New-Object -TypeName System.ArgumentException -ArgumentList "$this.Name")
+            New-ArgumentException `
+                -Message ("Specified Windows Capability '{0}' not found." -f $this.Name) `
+                -ArgumentName 'Name'
+        } else {
+            $currentState.Name = $windowsCapability.Name
+
+            if ($windowsCapability.State -eq 'Installed') {
+                $currentState.Ensure = [Ensure]::Present
+            } else {
+                $currentState.Ensure = [Ensure]::Absent
+            }
+        }
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set() {
+        # Only make changes if changes are needed
+        if (-not $this.Test()) {
+            if ($this.Ensure -eq [Ensure]::Present) {
+                Add-WindowsCapability -Online -Name $this.Name
+            } else {
+                Remove-WindowsCapability -Online -Name $this.Name
+            }
+        }
+    }
+}
 #endregion DSCResources
 
 #region Functions
