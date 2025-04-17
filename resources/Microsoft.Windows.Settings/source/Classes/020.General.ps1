@@ -26,6 +26,11 @@
 
     .PARAMETER Reasons
         Returns the reason a property is not in the desired state.
+
+    .EXAMPLE
+        Invoke-DscResource -Name General -ModuleName Microsoft.Windows.Settings -Method Set -Property @{ EnablePersonalizedAds = $true }
+
+        # This example demonstrates how to use the General DSC resource to enable personalized ads.
 #>
 [DSCResource()]
 class General : SettingsBase

@@ -23,22 +23,22 @@ VersionedOutputDirectory: true
 ####################################################
 
 NestedModule:
-    DscResource.Common:
-      CopyOnly: true
-      Path: ./output/RequiredModules/DscResource.Common
-      AddToManifest: false
-      Exclude: PSGetModuleInfo.xml
-    DscResource.Base:
-      CopyOnly: true
-      Path: ./output/RequiredModules/DscResource.Base
-      AddToManifest: false
-      Exclude: PSGetModuleInfo.xml
+  DscResource.Common:
+    CopyOnly: true
+    Path: ./output/RequiredModules/DscResource.Common
+    AddToManifest: false
+    Exclude: PSGetModuleInfo.xml
+  DscResource.Base:
+    CopyOnly: true
+    Path: ./output/RequiredModules/DscResource.Base
+    AddToManifest: false
+    Exclude: PSGetModuleInfo.xml
 
 ####################################################
 #       Sampler Pipeline Configuration             #
 ####################################################
 BuildWorkflow:
-  '.':
+  ".":
     - build
     - test
 
@@ -70,7 +70,7 @@ BuildWorkflow:
   # Use this task when you have multiple parallel tests, which produce multiple
   # code coverage files and needs to get merged into one file.
   #merge:
-    #- Merge_CodeCoverage_Files
+  #- Merge_CodeCoverage_Files
 
   publish:
     - Publish_Release_To_GitHub # Runs first, if token is expired it will fail early
@@ -103,7 +103,6 @@ Pester:
     - Modules/DscResource.Common
     - Modules/DscResource.Base
 
-
 DscTest:
   Pester:
     Configuration:
@@ -134,11 +133,11 @@ DscTest:
 # module in the file RequiredModules.psd1.
 ModuleBuildTasks:
   Sampler:
-    - '*.build.Sampler.ib.tasks'
+    - "*.build.Sampler.ib.tasks"
   Sampler.GitHubTasks:
-    - '*.ib.tasks'
+    - "*.ib.tasks"
   DscResource.DocGenerator:
-    - 'Task.*'
+    - "Task.*"
 
 # Invoke-Build Header to be used to 'decorate' the terminal output of the tasks.
 TaskHeader: |
@@ -154,7 +153,7 @@ TaskHeader: |
 
 GitHubConfig:
   GitHubFilesToAdd:
-    - 'CHANGELOG.md'
+    - "CHANGELOG.md"
   GitHubConfigUserName: dscbot
   GitHubConfigUserEmail: dsccommunity@outlook.com
   UpdateChangelogOnPrerelease: false
@@ -168,7 +167,7 @@ DscResource.DocGenerator:
       - '\`(.+?)\`' # Match inline code-block
       - '\\(\\)' # Match escaped backslash
       - '\[[^\[]+\]\((.+?)\)' # Match markdown URL
-      - '_(.+?)_' # Match Italic (underscore)
+      - "_(.+?)_" # Match Italic (underscore)
       - '\*\*(.+?)\*\*' # Match bold
       - '\*(.+?)\*' # Match Italic (asterisk)
 
@@ -176,9 +175,9 @@ DscResource.DocGenerator:
 #           Setting Sampler PSModulePath           #
 ####################################################
 #SetPSModulePath:
-  #Sub expressions in the PSModulePath are supported but not part of the template as it does not work with Plaster
-  #PSModulePath: C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules;c:\Users\Install\.vscode\extensions\ms-vscode.powershell-2022.5.1\modules;
-  #RemovePersonal: false
-  #RemoveProgramFiles: false
-  #RemoveWindows: false
-  #SetSystemDefault: false
+#Sub expressions in the PSModulePath are supported but not part of the template as it does not work with Plaster
+#PSModulePath: C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules;c:\Users\Install\.vscode\extensions\ms-vscode.powershell-2022.5.1\modules;
+#RemovePersonal: false
+#RemoveProgramFiles: false
+#RemoveWindows: false
+#SetSystemDefault: false
