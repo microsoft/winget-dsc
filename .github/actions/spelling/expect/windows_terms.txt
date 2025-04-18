@@ -13,3 +13,4 @@ msrc
 cursorindicator
 packagetype
 BSODs
+Audiosrv
