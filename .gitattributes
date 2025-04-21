@@ -6,3 +6,4 @@
 *.yml text=auto
 *.yaml text=auto
 .github/actions/spelling/** text eol=lf
+*.winget linguist-language=yaml
