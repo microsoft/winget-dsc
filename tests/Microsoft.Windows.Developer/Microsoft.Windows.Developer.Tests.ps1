@@ -22,16 +22,16 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
    It 'Shows DSC Resources' {
-      $expectedDSCResources = 'DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl', 'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport'
+      $expectedDSCResources = 'DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl', 'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting'
       $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
-      $availableDSCResources.length | Should -Be 9
+      $availableDSCResources.length | Should -Be $expectedDSCResources.Length
       $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
    }
 }
 
 Describe 'Taskbar' {
    It 'Keeps current value.' {
-      $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $initialState = Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
       $parameters = @{
          Alignment      = 'KeepCurrentValue'
@@ -41,12 +41,12 @@ Describe 'Taskbar' {
          WidgetsButton  = 'KeepCurrentValue'
       }
 
-      $testResult = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+      $testResult = Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
       $testResult.InDesiredState | Should -Be $true
 
       # Invoking set should not change these values.
-      Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Alignment | Should -Be $initialState.Alignment
       $finalState.HideLabelsMode | Should -Be $initialState.HideLabelsMode
       $finalState.SearchboxMode | Should -Be $initialState.SearchboxMode
@@ -68,9 +68,9 @@ Describe 'Taskbar' {
          WidgetsButton             = $desiredWidgetsButton
       }
 
-      Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Alignment | Should -Be $desiredAlignment
       $finalState.HideLabelsMode | Should -Be $desiredHideLabelsMode
       $finalState.SearchboxMode | Should -Be $desiredSearchboxMode
@@ -81,7 +81,7 @@ Describe 'Taskbar' {
 
 Describe 'WindowsExplorer' {
    It 'Keeps current value.' {
-      $initialState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $initialState = Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
       $parameters = @{
          FileExtensions = 'KeepCurrentValue'
@@ -89,12 +89,12 @@ Describe 'WindowsExplorer' {
          ItemCheckBoxes = 'KeepCurrentValue'
       }
 
-      $testResult = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+      $testResult = Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
       $testResult.InDesiredState | Should -Be $true
 
       # Invoking set should not change these values.
-      Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.FileExtensions | Should -Be $initialState.FileExtensions
       $finalState.HiddenFiles | Should -Be $initialState.HiddenFiles
       $finalState.ItemCheckBoxes | Should -Be $initialState.ItemCheckBoxes
@@ -112,9 +112,9 @@ Describe 'WindowsExplorer' {
          ItemCheckBoxes = $desiredItemCheckBoxes
       }
 
-      Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.FileExtensions | Should -Be $desiredFileExtensions
       $finalState.HiddenFiles | Should -Be $desiredHiddenFiles
       $finalState.ItemCheckBoxes | Should -Be $desiredItemCheckBoxes
@@ -123,16 +123,16 @@ Describe 'WindowsExplorer' {
 
 Describe 'UserAccessControl' {
    It 'Keeps current value.' {
-      $initialState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $initialState = Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
       $parameters = @{ AdminConsentPromptBehavior = 'KeepCurrentValue' }
 
-      $testResult = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+      $testResult = Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
       $testResult.InDesiredState | Should -Be $true
 
       # Invoking set should not change these values.
-      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+      $finalState = Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.AdminConsentPromptBehavior | Should -Be $initialState.AdminConsentPromptBehavior
    }
 
@@ -142,9 +142,9 @@ Describe 'UserAccessControl' {
 
       $desiredState = @{ AdminConsentPromptBehavior = $desiredAdminConsentPromptBehavior }
 
-      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.AdminConsentPromptBehavior | Should -Be $desiredAdminConsentPromptBehavior
    }
 }
@@ -154,9 +154,9 @@ Describe 'EnableRemoteDesktop' {
       $desiredRemoteDesktopBehavior = [Ensure]::Present
       $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
 
-      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
    }
 
@@ -164,9 +164,9 @@ Describe 'EnableRemoteDesktop' {
       $desiredRemoteDesktopBehavior = [Ensure]::Absent
       $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
 
-      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
    }
 }
@@ -176,9 +176,9 @@ Describe 'EnableLongPathSupport' {
       $desiredLongPathsBehavior = [Ensure]::Present
       $desiredState = @{ Ensure = $desiredLongPathsBehavior }
 
-      Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Ensure | Should -Be $desiredLongPathsBehavior
    }
 
@@ -186,10 +186,47 @@ Describe 'EnableLongPathSupport' {
       $desiredLongPathsBehavior = [Ensure]::Absent
       $desiredState = @{ Ensure = $desiredLongPathsBehavior }
 
-      Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+      Invoke-DscResource -name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-      $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+      $finalState = Invoke-DscResource -name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
       $finalState.Ensure | Should -Be $desiredLongPathsBehavior
+   }
+}
+
+# InModuleScope ensures that all mocks are on the Microsoft.Windows.Setting.System module.
+InModuleScope Microsoft.Windows.Developer {
+   Describe 'PowerPlanSetting' {
+
+      Context 'Get' {
+         It 'Get test' {
+            # disable group policy logic for tests
+            Mock Backup-GroupPolicyPowerPlanSetting {}
+            Mock Restore-GroupPolicyPowerPlanSetting {}
+            Mock Disable-GroupPolicyPowerPlanSetting {}
+
+            Mock Get-CimInstance {
+               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerPlan\{00000000-0000-0000-0000-000000000000}'; IsActive = $true }
+            } -ParameterFilter { $ClassName -eq 'win32_PowerPlan' }
+
+            <#
+            Mock Get-CimInstance {
+               New-MockObject -Properties @{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\AC\{{3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e}}'; SettingIndexValue = 0 }
+               New-MockObject -Properties @{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\DC\{{3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e}}'; SettingIndexValue = 0 }
+            } -ParameterFilter { ($Name -eq 'root\cimv2\power') -and ($Class -eq 'Win32_PowerSettingDataIndex') }
+             #>
+
+            $powerPlanSettingProvider = [PowerPlanSetting]@{
+               Name         = [PowerPlanSettingName]::DisplayTimeout
+               SettingValue = 0
+            }
+
+            $getResourceResult = $powerPlanSettingProvider.Get()
+            $getResourceResult.Name | Should -Be ([PowerPlanSettingName]::DisplayTimeout)
+            $getResourceResult.SettingValue | Should -Be 0
+            $getResourceResult.PluggedInValue | Should -Be 0
+            $getResourceResult.BatteryValue | Should -Be 0
+         }
+      }
    }
 }
 

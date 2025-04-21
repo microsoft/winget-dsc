@@ -46,6 +46,19 @@ enum AdminConsentPromptBehavior {
     RequireConsentForNonWindowsBinaries
 }
 
+enum PowerPlanSettingName {
+    DisplayTimeout
+    SleepTimeout
+}
+
+enum PowerSource {
+    # AC
+    PluggedIn
+    # DC
+    Battery
+    All
+}
+
 #region DSCResources
 [DSCResource()]
 class DeveloperMode {
@@ -598,6 +611,145 @@ class EnableLongPathSupport {
         Set-ItemProperty -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey -Value $value
     }
 }
+
+[DSCResource()]
+class PowerPlanSetting {
+    [DscProperty(Key, Mandatory)]
+    [PowerPlanSettingName]$Name
+
+    [DscProperty(Mandatory)]
+    [PowerSource]$PowerSource
+
+    [DscProperty(Mandatory)]
+    [int]$SettingValue
+
+    [DscProperty(NotConfigurable)]
+    [int] $PluggedInValue
+
+    [DscProperty(NotConfigurable)]
+    [int] $BatteryValue
+
+    [PowerPlanSetting] Get() {
+
+        function Get-PowerPlanSetting ([PowerPlanSettingName] $SettingName) {
+            Begin {
+                # If a power plan group policy is set, the power settings cannot be obtained, so temporarily disable it.
+                $GPReg = Backup-GroupPolicyPowerPlanSetting
+                if ($GPReg) {
+                    Disable-GroupPolicyPowerPlanSetting
+                }
+            }
+
+            Process {
+                $SettingGUID = ($SettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? $DisplayTimeoutSettingGUID : $SleepTimeoutSettingGUID
+                $PowerPlan = Get-ActivePowerPlan
+                $planID = $PowerPlan.InstanceId.Split('\')[1] -replace '[{}]'
+
+                $ReturnValue = @{
+                    PlanGuid    = $planID
+                    SettingGuid = $SettingGUID
+                    ACValue     = ''
+                    DCValue     = ''
+                }
+
+                foreach ($Power in ('AC', 'DC')) {
+                    $Key = ('{0}Value' -f $Power)
+                    $InstanceId = ('Microsoft:PowerSettingDataIndex\{{{0}}}\{1}\{{{2}}}' -f $planID, $Power, $SettingGUID)
+                    $Instance = (Get-CimInstance -Name root\cimv2\power -Class Win32_PowerSettingDataIndex | Where-Object { $_.InstanceID -eq $InstanceId })
+                    # error state
+                    if (-not $Instance) { return }
+                    $ReturnValue.$Key = [int]$Instance.SettingIndexValue
+                }
+
+                return $ReturnValue
+            }
+
+            End {
+                if ($GPReg) {
+                    # Restore the group policies
+                    Restore-GroupPolicyPowerPlanSetting -GPRegArray $GPReg
+                }
+            }
+        }
+
+        $Setting = Get-PowerPlanSetting -SettingName $this.Name
+        $this.PluggedInValue = $Setting.ACValue
+        $this.BatteryValue = $Setting.DCValue
+
+        $returnValue = @{
+            Name           = $this.Name
+            SettingValue   = $this.SettingValue
+            PluggedInValue = $Setting.ACValue
+            BatteryValue   = $Setting.DCValue
+        }
+
+        return $returnValue
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        # User can only specify a single setting value
+        $pluggedInTest = ($currentState.PluggedInValue = $this.SettingValue)
+        $batteryTest = ($currentState.BatteryValue = $this.SettingValue)
+
+        if ($this.PowerSource -eq [PowerSource]::All) {
+            return ($pluggedInTest -and $batteryTest)
+
+        } elseif ($this.PowerSource -eq [PowerSource]::PluggedIn) {
+            return $pluggedInTest
+        } else {
+            return $batteryTest
+        }
+
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set() {
+
+        function Set-PowerPlanSetting ([PowerPlanSettingName] $PowerPlanSettingName, [PowerSource]$PowerSource, [int]$Value) {
+            Begin {
+                # If a power plan group policy is set, the power settings cannot be obtained, so temporarily disable it.
+                $GPReg = Backup-GroupPolicyPowerPlanSetting
+                if ($GPReg) {
+                    Disable-GroupPolicyPowerPlanSetting
+                }
+            }
+            Process {
+                $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? $DisplayTimeoutSettingGUID : $SleepTimeoutSettingGUID
+                $PowerPlan = Get-ActivePowerPlan
+                $planID = $PowerPlan.InstanceId.Split('\')[1] -replace '[{}]'
+
+                if ($PowerSource -eq [PowerSource]::All) {
+                    [string[]]$Target = ('AC', 'DC')
+                } elseif ($PowerSource -eq [PowerSource]::PluggedIn) {
+                    [string[]]$Target = ('AC')
+                } else {
+                    [string[]]$Target = ('DC')
+                }
+
+                foreach ($Power in $Target) {
+                    $InstanceId = ('Microsoft:PowerSettingDataIndex\{{{0}}}\{1}\{{{2}}}' -f $planID, $Power, $SettingGUID)
+                    $Instance = Get-CimInstance -Name root\cimv2\power -Class Win32_PowerSettingDataIndex | Where-Object { $_.InstanceID -eq $InstanceId }
+                    # error state
+                    if (-not $Instance) { return }
+                    $Instance | ForEach-Object { $_.SettingIndexValue = $Value }
+                    Set-CimInstance -CimInstance $Instance
+                }
+            }
+            End {
+                if ($GPReg) {
+                    # Restore the group policies
+                    Restore-GroupPolicyPowerPlanSetting -GPRegArray $GPReg
+                }
+            }
+        }
+
+        if (!$this.Test()) {
+            Set-PowerPlanSetting -PowerPlanSettingName $this.Name -PowerSource $this.PowerSource -Value $this.SettingValue
+        }
+    }
+}
 #endregion DSCResources
 
 #region Functions
@@ -642,4 +794,42 @@ function DoesRegistryKeyPropertyExist {
     return $null -ne $itemProperty
 }
 
+function Get-ActivePowerPlan {
+    Get-CimInstance -Name root\cimv2\power -Class win32_PowerPlan | Where-Object { $_.IsActive }
+}
+
+$SleepTimeoutSettingGUID = '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+$DisplayTimeoutSettingGUID = '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
+
+$GroupPolicyPowerPlanRegistryKeyPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings'
+
+function Backup-GroupPolicyPowerPlanSetting {
+    if (Test-Path $GroupPolicyPowerPlanRegistryKeyPath) {
+        $Array = @()
+        Get-ChildItem $GroupPolicyPowerPlanRegistryKeyPath | ForEach-Object {
+            $Path = $_.PSPath
+            foreach ($Prop in $_.Property) {
+                $Array += @{
+                    Path  = $Path
+                    Name  = $Prop
+                    Value = Get-ItemPropertyValue -Path $Path -Name $Prop
+                }
+            }
+        }
+        $Array
+    }
+}
+
+function Restore-GroupPolicyPowerPlanSetting([HashTable[]]$GPRegArray) {
+    foreach ($Item in $GPRegArray) {
+        if (-not (Test-Path $Item.Path)) {
+            New-Item -Path $Item.Path -ItemType Directory -Force | Out-Null
+        }
+        New-ItemProperty @Item -Force | Out-Null
+    }
+}
+
+function Disable-GroupPolicyPowerPlanSetting {
+    Remove-Item $GroupPolicyPowerPlanRegistryKeyPath -Recurse -Force | Out-Null
+}
 #endregion Functions
