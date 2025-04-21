@@ -690,19 +690,16 @@ class PowerPlanSetting {
         $currentState = $this.Get()
 
         # User can only specify a single setting value
-        $pluggedInTest = ($currentState.PluggedInValue = $this.SettingValue)
-        $batteryTest = ($currentState.BatteryValue = $this.SettingValue)
+        $pluggedInTest = ($currentState.PluggedInValue -eq $this.SettingValue)
+        $batteryTest = ($currentState.BatteryValue -eq $this.SettingValue)
 
         if ($this.PowerSource -eq [PowerSource]::All) {
             return ($pluggedInTest -and $batteryTest)
-
         } elseif ($this.PowerSource -eq [PowerSource]::PluggedIn) {
             return $pluggedInTest
         } else {
             return $batteryTest
         }
-
-        return $currentState.Ensure -eq $this.Ensure
     }
 
     [void] Set() {
