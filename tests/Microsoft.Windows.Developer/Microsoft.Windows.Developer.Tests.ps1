@@ -10,7 +10,7 @@ Set-StrictMode -Version Latest
    Pester tests related to the Microsoft.WinGet.Developer PowerShell module.
 #>
 
-# InModuleScope ensures that all mocks are on the Microsoft.Windows.Setting.System module.
+# InModuleScope ensures that all mocks are on the Microsoft.Windows.Developer module.
 InModuleScope Microsoft.Windows.Developer {
    BeforeAll {
       Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
@@ -49,145 +49,103 @@ InModuleScope Microsoft.Windows.Developer {
          $script:devModeAbsentCommonResource = [DeveloperMode]@{
             Ensure = [Ensure]::Absent
          }
+      }
 
-         function DeveloperModeGetTests([RegistryValueState]$RegistryValueState) {
-            if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
-               Mock DoesRegistryKeyPropertyExist { return $false }
-            } else {
-               Mock DoesRegistryKeyPropertyExist { return $true }
-               Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
-            }
-
-            $getResourceResult = $script:devModePresentCommonResource.Get()
-            $expectedValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 'Present' : 'Absent'
-            $getResourceResult.Ensure | Should -Be $expectedValue
-            $getResourceResult.IsEnabled | Should -Be ($RegistryValueState -eq [RegistryValueState]::SetTrue)
-
-            if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
-               Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly
-            } else {
-               Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly
-               Should -Invoke Get-ItemPropertyValue -Times 1 -Exactly
-            }
+      It 'Get test for RegistryValueState:<RegistryValueState>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
          }
 
-         function DeveloperModeTestTests([RegistryValueState]$RegistryValueState, [Ensure]$EnsureState) {
-            if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
-               Mock DoesRegistryKeyPropertyExist { return $false }
-            } else {
-               Mock DoesRegistryKeyPropertyExist { return $true }
-               Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
-            }
+         $getResourceResult = $script:devModePresentCommonResource.Get()
+         $expectedValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 'Present' : 'Absent'
+         $getResourceResult.Ensure | Should -Be $expectedValue
+         $getResourceResult.IsEnabled | Should -Be ($RegistryValueState -eq [RegistryValueState]::SetTrue)
 
-            $devModeResource = ($EnsureState -eq [Ensure]::Present) ? $script:devModePresentCommonResource : $script:devModeAbsentCommonResource
-            $testResourceResult = $devModeResource.Test()
-
-            $expectedValue = ($EnsureState -eq [Ensure]::Present)
-            if ($RegistryValueState -eq [RegistryValueState]::SetTrue) {
-               $testResourceResult | Should -Be $expectedValue
-            } else {
-               $testResourceResult | Should -Be (-Not $expectedValue)
-            }
-         }
-
-         function DeveloperModeSetTests([RegistryValueState]$RegistryValueState, [Ensure]$EnsureState, [Boolean]$HasAdmin) {
-            if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
-               Mock DoesRegistryKeyPropertyExist { return $false }
-            } else {
-               Mock DoesRegistryKeyPropertyExist { return $true }
-               Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
-            }
-
-            Mock New-Object {
-               New-MockObject -Type 'System.Security.Principal.WindowsPrincipal' -Methods @{ IsInRole = { param($windowsIdentity) $HasAdmin } }
-            } -ParameterFilter { $TypeName -eq 'System.Security.Principal.WindowsPrincipal' }
-
-
-            $devModeResource = ($EnsureState -eq [Ensure]::Present) ? $script:devModePresentCommonResource : $script:devModeAbsentCommonResource
-            $setResult = { $devModeResource.Set() }
-
-            if ((($EnsureState -eq [Ensure]::Present) -and ($RegistryValueState -eq [RegistryValueState]::SetTrue)) -or
-         (($EnsureState -eq [Ensure]::Absent) -and ($RegistryValueState -ne [RegistryValueState]::SetTrue))) {
-               # No action in these scenarios
-               Should -Invoke Set-ItemProperty -Times 0 -Exactly
-            } else {
-               # Cannot take action without admin, otherwise update registry
-               if (-Not $HasAdmin) {
-                  $setResult | Should -Throw
-               } else {
-                  $setResult | Should -Not -Throw
-
-                  # If registry is set then we want to unset it
-                  $expectedWriteValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 0 : 1
-                  Should -Invoke Set-ItemProperty -Times 1 -Exactly { $Value -eq $expectedWriteValue }
-               }
-            }
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly
+         } else {
+            Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly
+            Should -Invoke Get-ItemPropertyValue -Times 1 -Exactly
          }
       }
 
-      Context 'Get' {
-         It 'Get returns present if registry value is set' {
-            DeveloperModeGetTests -RegistryValueState SetTrue
+      It 'Test test for RegistryValueState:<RegistryValueState>, EnsureState:<EnsureState>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
          }
 
-         It 'Get returns absent if registry value is set to false' {
-            DeveloperModeGetTests -RegistryValueState SetFalse
-         }
+         $devModeResource = ($EnsureState -eq [Ensure]::Present) ? $script:devModePresentCommonResource : $script:devModeAbsentCommonResource
+         $testResourceResult = $devModeResource.Test()
 
-         It 'Get returns absent if registry value does not exist' {
-            DeveloperModeGetTests -RegistryValueState NotSet
-         }
-      }
-
-      Context 'Test' {
-         It 'Test for presence returns true if registry value is set' {
-            DeveloperModeTestTests -RegistryValueState SetTrue -EnsureState Present
-         }
-
-         It 'Test for presence returns false if registry value is set to false' {
-            DeveloperModeTestTests -RegistryValueState SetFalse -EnsureState Present
-         }
-
-         It 'Test for presence returns false if registry value does not exist' {
-            DeveloperModeTestTests -RegistryValueState NotSet -EnsureState Present
-         }
-
-         It 'Test for absense returns false if registry value is set' {
-            DeveloperModeTestTests -RegistryValueState SetTrue -EnsureState Absent
-         }
-
-         It 'Test for absense returns true if registry value is set to false' {
-            DeveloperModeTestTests -RegistryValueState SetFalse -EnsureState Absent
-         }
-
-         It 'Test for absense returns true if registry value does not exist' {
-            DeveloperModeTestTests -RegistryValueState NotSet -EnsureState Absent
+         $expectedValue = ($EnsureState -eq [Ensure]::Present)
+         if ($RegistryValueState -eq [RegistryValueState]::SetTrue) {
+            $testResourceResult | Should -Be $expectedValue
+         } else {
+            $testResourceResult | Should -Be (-Not $expectedValue)
          }
       }
 
-      Context 'Set' {
-         It 'Set throws if testing for presense without admin and registry is not set' {
-            DeveloperModeSetTests -RegistryValueState NotSet -EnsureState Present -HasAdmin $false
+      It 'Set test for RegistryValueState:<RegistryValueState>, EnsureState:<EnsureState>, HasAdmin:<HasAdmin>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
          }
 
-         It 'Set throws if testing for absense without admin and registry is set' {
-            DeveloperModeSetTests -RegistryValueState SetTrue -EnsureState Absent -HasAdmin $false
-         }
+         Mock New-Object {
+            New-MockObject -Type 'System.Security.Principal.WindowsPrincipal' -Methods @{ IsInRole = { param($windowsIdentity) $HasAdmin } }
+         } -ParameterFilter { $TypeName -eq 'System.Security.Principal.WindowsPrincipal' }
 
-         It 'Set takes no action if testing for presense and registry is set' {
-            DeveloperModeSetTests -RegistryValueState SetTrue -EnsureState Present -HasAdmin $false
-         }
 
-         It 'Set takes no action if testing for absense and registry is not set' {
-            DeveloperModeSetTests -RegistryValueState NotSet -EnsureState Absent -HasAdmin $false
-         }
+         $devModeResource = ($EnsureState -eq [Ensure]::Present) ? $script:devModePresentCommonResource : $script:devModeAbsentCommonResource
+         $setResult = { $devModeResource.Set() }
 
-         It 'Set takes action if testing for presense and registry is not set' {
-            DeveloperModeSetTests -RegistryValueState NotSet -EnsureState Present -HasAdmin $true
-         }
+         if ((($EnsureState -eq [Ensure]::Present) -and ($RegistryValueState -eq [RegistryValueState]::SetTrue)) -or
+      (($EnsureState -eq [Ensure]::Absent) -and ($RegistryValueState -ne [RegistryValueState]::SetTrue))) {
+            # No action in these scenarios
+            Should -Invoke Set-ItemProperty -Times 0 -Exactly
+         } else {
+            # Cannot take action without admin, otherwise update registry
+            if (-Not $HasAdmin) {
+               $setResult | Should -Throw
+            } else {
+               $setResult | Should -Not -Throw
 
-         It 'Set takes action if testing for absense and registry is set' {
-            DeveloperModeSetTests -RegistryValueState SetTrue -EnsureState Absent -HasAdmin $true
+               # If registry is set then we want to unset it
+               $expectedWriteValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 0 : 1
+               Should -Invoke Set-ItemProperty -Times 1 -Exactly { $Value -eq $expectedWriteValue }
+            }
          }
       }
    }
