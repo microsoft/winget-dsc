@@ -703,7 +703,6 @@ class PowerPlanSetting {
     }
 
     [void] Set() {
-
         function Set-PowerPlanSetting ([PowerPlanSettingName] $PowerPlanSettingName, [PowerSource]$PowerSource, [int]$Value) {
             Begin {
                 # If a power plan group policy is set, the power settings cannot be obtained, so temporarily disable it.
