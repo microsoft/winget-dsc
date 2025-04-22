@@ -200,7 +200,7 @@ enum WindowsCapabilityState {
    Nonexistent
 }
 
-# InModuleScope ensures that all mocks are on the Microsoft.Windows.Setting.System module.
+# InModuleScope ensures that all mocks are on the Microsoft.Windows.Developer module.
 InModuleScope Microsoft.Windows.Developer {
    Describe 'WindowsCapability' {
 
@@ -219,149 +219,99 @@ InModuleScope Microsoft.Windows.Developer {
             Ensure = [Ensure]::Absent
             Name   = $script:WindowsCapabilityName
          }
+      }
 
-         function WindowsCapabilityGetTests([WindowsCapabilityState]$WindowsCapabilityState) {
-            $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
-            $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
+      It 'Get test for WindowsCapabilityState:<WindowsCapabilityState>' -ForEach @(
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed }
+      ) {
+         $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
+         $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
 
-            Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
+         Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
 
-            $getResourceBlock = { return $script:windowsCapabilityPresentCommonProvider.Get() }
-            if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
-               $getResourceBlock | Should -Throw
-            } else {
-               $getResourceResult = &$getResourceBlock
-               $expectedEnsureValue = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Present' : 'Absent'
-               $getResourceResult.Ensure | Should -Be $expectedEnsureValue
-               $getResourceResult.Name | Should -Be $script:WindowsCapabilityName
-            }
-
-            Should -Invoke Get-WindowsCapability -Times 1 -Exactly -ParameterFilter {
-               $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
-            }
+         $getResourceBlock = { return $script:windowsCapabilityPresentCommonProvider.Get() }
+         if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
+            $getResourceBlock | Should -Throw
+         } else {
+            $getResourceResult = &$getResourceBlock
+            $expectedEnsureValue = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Present' : 'Absent'
+            $getResourceResult.Ensure | Should -Be $expectedEnsureValue
+            $getResourceResult.Name | Should -Be $script:WindowsCapabilityName
          }
 
-         function WindowsCapabilityTestTests([WindowsCapabilityState]$WindowsCapabilityState, [Ensure]$EnsureState) {
-            $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
-            $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
+         Should -Invoke Get-WindowsCapability -Times 1 -Exactly -ParameterFilter {
+            $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
+         }
+      }
 
-            Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
+      It 'Test test for WindowsCapabilityState:<WindowsCapabilityState>' -ForEach @(
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Absent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Absent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Absent }
+      ) {
+         $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
+         $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
 
-            $winCapResource = ($EnsureState -eq [Ensure]::Present) ? $script:windowsCapabilityPresentCommonProvider : $script:windowsCapabilityAbsentCommonProvider
+         Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
 
-            $testResourceBlock = { return $winCapResource.Test() }
-            if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
-               $testResourceBlock | Should -Throw
+         $winCapResource = ($EnsureState -eq [Ensure]::Present) ? $script:windowsCapabilityPresentCommonProvider : $script:windowsCapabilityAbsentCommonProvider
+
+         $testResourceBlock = { return $winCapResource.Test() }
+         if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
+            $testResourceBlock | Should -Throw
+         } else {
+            $testResourceResult = &$testResourceBlock
+            $expectedValue = ($EnsureState -eq [Ensure]::Present)
+            if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) {
+               $testResourceResult | Should -Be $expectedValue
             } else {
-               $testResourceResult = &$testResourceBlock
-               $expectedValue = ($EnsureState -eq [Ensure]::Present)
-               if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) {
-                  $testResourceResult | Should -Be $expectedValue
-               } else {
-                  $testResourceResult | Should -Be (-Not $expectedValue)
-               }
+               $testResourceResult | Should -Be (-Not $expectedValue)
             }
          }
+      }
 
-         function WindowsCapabilitySetTests([WindowsCapabilityState]$WindowsCapabilityState, [Ensure]$EnsureState) {
-            $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
-            $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
+      It 'Set test for WindowsCapabilityState:<WindowsCapabilityState>' -ForEach @(
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Absent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Absent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Absent }
+      ) {
+         $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
+         $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
 
-            Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
+         Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
 
-            $winCapResource = ($EnsureState -eq [Ensure]::Present) ? $script:windowsCapabilityPresentCommonProvider : $script:windowsCapabilityAbsentCommonProvider
+         $winCapResource = ($EnsureState -eq [Ensure]::Present) ? $script:windowsCapabilityPresentCommonProvider : $script:windowsCapabilityAbsentCommonProvider
 
-            $setResourceBlock = { $winCapResource.Set() }
-            if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
-               $setResourceBlock | Should -Throw
+         $setResourceBlock = { $winCapResource.Set() }
+         if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
+            $setResourceBlock | Should -Throw
+         } else {
+            $setResourceBlock | Should -Not -Throw
+
+            if ((($EnsureState -eq [Ensure]::Present) -and ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed)) -or
+      (($EnsureState -eq [Ensure]::Absent) -and ($WindowsCapabilityState -eq [WindowsCapabilityState]::NotInstalled))) {
+               # No action in these scenarios
+               Should -Invoke Add-WindowsCapability -Times 0 -Exactly
+               Should -Invoke Remove-WindowsCapability -Times 0 -Exactly
             } else {
-               $setResourceBlock | Should -Not -Throw
-
-               if ((($EnsureState -eq [Ensure]::Present) -and ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed)) -or
-         (($EnsureState -eq [Ensure]::Absent) -and ($WindowsCapabilityState -eq [WindowsCapabilityState]::NotInstalled))) {
-                  # No action in these scenarios
-                  Should -Invoke Add-WindowsCapability -Times 0 -Exactly
-                  Should -Invoke Remove-WindowsCapability -Times 0 -Exactly
+               if ($WindowsCapabilityState -eq [WindowsCapabilityState]::NotInstalled) {
+                  Should -Invoke Add-WindowsCapability -Times 1 -Exactly -ParameterFilter {
+                     $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
+                  }
                } else {
-                  if ($WindowsCapabilityState -eq [WindowsCapabilityState]::NotInstalled) {
-                     Should -Invoke Add-WindowsCapability -Times 1 -Exactly -ParameterFilter {
-                        $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
-                     }
-                  } else {
-                     Should -Invoke Remove-WindowsCapability -Times 1 -Exactly -ParameterFilter {
-                        $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
-                     }
+                  Should -Invoke Remove-WindowsCapability -Times 1 -Exactly -ParameterFilter {
+                     $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
                   }
                }
             }
-         }
-      }
-
-      Context 'Get' {
-
-         It 'WindowsCapability throws when capability does not exist' {
-            WindowsCapabilityGetTests -WindowsCapabilityState 'Nonexistent'
-         }
-
-         It 'WindowsCapability returns absent when not present with name when capability exists' {
-            WindowsCapabilityGetTests -WindowsCapabilityState 'NotInstalled'
-         }
-
-         It 'WindowsCapability returns present when installed' {
-            WindowsCapabilityGetTests -WindowsCapabilityState 'Installed'
-         }
-      }
-
-      Context 'Test' {
-
-         It 'Test for presence should throw when capability does not exist' {
-            WindowsCapabilityTestTests -WindowsCapabilityState 'Nonexistent' -EnsureState 'Present'
-         }
-
-         It 'Test for absence should throw when capability does not exist' {
-            WindowsCapabilityTestTests -WindowsCapabilityState 'Nonexistent' -EnsureState 'Absent'
-         }
-
-         It 'Test for presence should return false when capability exists but is not installed' {
-            WindowsCapabilityTestTests -WindowsCapabilityState 'NotInstalled' -EnsureState 'Present'
-         }
-
-         It 'Test for presence should return true if capability exists and is installed' {
-            WindowsCapabilityTestTests -WindowsCapabilityState 'Installed' -EnsureState 'Present'
-         }
-
-         It 'Test for absence should return true if capability exists but is not installed' {
-            WindowsCapabilityTestTests -WindowsCapabilityState 'NotInstalled' -EnsureState 'Absent'
-         }
-
-         It 'Test for absence should return false if capability exists and is installed' {
-            WindowsCapabilityTestTests -WindowsCapabilityState 'Installed' -EnsureState 'Absent'
-         }
-      }
-
-      Context 'Set' {
-         It 'Set for presence should throw when capability does not exist' {
-            WindowsCapabilitySetTests -WindowsCapabilityState 'Nonexistent' -EnsureState 'Present'
-         }
-
-         It 'Set for absence should throw when capability does not exist' {
-            WindowsCapabilitySetTests -WindowsCapabilityState 'Nonexistent' -EnsureState 'Absent'
-         }
-
-         It 'Set takes no action if testing for presence and capability is installed' {
-            WindowsCapabilitySetTests -WindowsCapabilityState 'Installed' -EnsureState 'Present'
-         }
-
-         It 'Set takes no action if testing for absence and capability is not installed' {
-            WindowsCapabilitySetTests -WindowsCapabilityState 'NotInstalled' -EnsureState 'Absent'
-         }
-
-         It 'Set takes action if testing for presence and capability is not installed' {
-            WindowsCapabilitySetTests -WindowsCapabilityState 'NotInstalled' -EnsureState 'Present'
-         }
-
-         It 'Set takes action if testing for absence and capability is installed' {
-            WindowsCapabilitySetTests -WindowsCapabilityState 'Installed' -EnsureState 'Absent'
          }
       }
    }
