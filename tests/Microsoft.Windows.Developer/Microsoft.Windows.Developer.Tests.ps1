@@ -267,14 +267,16 @@ InModuleScope Microsoft.Windows.Developer {
          function PowerPlanSettingSetTests([PowerPlanSettingName]$PowerPlanSettingName, [PowerSource]$PowerSource, [bool]$IsInTargetState) {
             $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e' : '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
             $expectedSettingValue = Get-Random -Maximum 18000 -Minimum 1
-            $expectedGetInvocations = ($PowerSource -eq [PowerSource]::All) ? 4 : 3
-            $expectedSetInvocations = ($PowerSource -eq [PowerSource]::All) ? 2 : 1
 
 
             if ($IsInTargetState -eq $true) {
+               $expectedGetInvocations = 2
+               $expectedSetInvocations = 0
                $expectedPluggedInValue = ($PowerSource -ne [PowerSource]::Battery) ? $expectedSettingValue : 0
                $expectedBatteryValue = ($PowerSource -ne [PowerSource]::PluggedIn) ? $expectedSettingValue : 0
             } else {
+               $expectedGetInvocations = ($PowerSource -eq [PowerSource]::All) ? 4 : 3
+               $expectedSetInvocations = ($PowerSource -eq [PowerSource]::All) ? 2 : 1
                $expectedPluggedInValue = 0
                $expectedBatteryValue = 0
             }
@@ -296,8 +298,8 @@ InModuleScope Microsoft.Windows.Developer {
 
             $powerPlanSettingProvider.Set()
 
-            Should -Invoke Get-CimInstance -Times (($IsInTargetState -eq $true) ? 2 : $expectedGetInvocations) -Exactly -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
-            Should -Invoke Set-CimInstance -Times (($IsInTargetState -eq $true) ? 0 : $expectedSetInvocations) -Exactly
+            Should -Invoke Get-CimInstance -Times $expectedGetInvocations -Exactly -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
+            Should -Invoke Set-CimInstance -Times $expectedSetInvocations -Exactly
          }
       }
 
@@ -363,7 +365,7 @@ InModuleScope Microsoft.Windows.Developer {
 
       Context 'Set' {
          It 'PowerPlanSetting Set test for display timeout on battery being configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -IsInTargetState $true
+            PowerPlanSettingSetTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -IsInTargetState $True
          }
 
          It 'PowerPlanSetting Set test for display timeout on battery being not configured' {
@@ -409,6 +411,7 @@ InModuleScope Microsoft.Windows.Developer {
          It 'PowerPlanSetting Set test for sleep timeout being not configured' {
             PowerPlanSettingSetTests -PowerPlanSettingName SleepTimeout -PowerSource All -IsInTargetState $false
          }
+
       }
    }
 }
