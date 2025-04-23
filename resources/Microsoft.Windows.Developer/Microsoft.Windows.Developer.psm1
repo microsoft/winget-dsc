@@ -46,6 +46,11 @@ enum AdminConsentPromptBehavior {
     RequireConsentForNonWindowsBinaries
 }
 
+enum AdvancedNetworkSharingSettingName {
+    NetworkDiscovery
+    FileAndPrinterSharing
+}
+
 #region DSCResources
 [DSCResource()]
 class DeveloperMode {
@@ -596,6 +601,37 @@ class EnableLongPathSupport {
         # 1 == enabled == Present // 0 == disabled == Absent
         $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
         Set-ItemProperty -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey -Value $value
+    }
+}
+
+[DSCResource()]
+class AdvancedNetworkSharingSetting {
+    [DscProperty(Key, Mandatory)]
+    [AdvancedNetworkSharingSettingName]$Name
+
+    [DscProperty(Mandatory)]
+    [string[]]$Profiles
+
+    [DscProperty(NotConfigurable)]
+    [string[]]$EnabledProfiles
+
+    [AdvancedNetworkSharingSetting] Get() {
+
+        $currentState = [AdvancedNetworkSharingSetting]::new()
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        # todo
+    }
+
+    [void] Set() {
+        if (!$this.Test()) {
+            # todo
+        }
     }
 }
 #endregion DSCResources

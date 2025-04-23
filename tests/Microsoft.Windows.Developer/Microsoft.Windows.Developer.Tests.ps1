@@ -22,9 +22,9 @@ BeforeAll {
 
 Describe 'List available DSC resources' {
    It 'Shows DSC Resources' {
-      $expectedDSCResources = 'DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl', 'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport'
+      $expectedDSCResources = 'DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl', 'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'AdvancedNetworkSharingSetting'
       $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
-      $availableDSCResources.length | Should -Be 9
+      $availableDSCResources.length | Should -Be $expectedDSCResources.Count
       $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
    }
 }
