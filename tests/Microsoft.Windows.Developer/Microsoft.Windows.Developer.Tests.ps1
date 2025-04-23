@@ -193,7 +193,7 @@ Describe 'EnableLongPathSupport' {
    }
 }
 
-# InModuleScope ensures that all mocks are on the Microsoft.Windows.Setting.System module.
+# InModuleScope ensures that all mocks are on the Microsoft.Windows.Developer module.
 InModuleScope Microsoft.Windows.Developer {
    Describe 'PowerPlanSetting' {
       BeforeAll {
@@ -204,214 +204,132 @@ InModuleScope Microsoft.Windows.Developer {
 
          # Disable tests from editing actual values
          Mock Set-CimInstance {} -RemoveParameterType InputObject
-
-         function PowerPlanSettingGetTests([PowerPlanSettingName]$PowerPlanSettingName) {
-            $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e' : '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
-            $expectedPluggedInValue = Get-Random -Maximum 18000 -Minimum 0
-            $expectedBatteryValue = Get-Random -Maximum 18000 -Minimum 0
-
-            Mock Get-CimInstance {
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerPlan\{00000000-0000-0000-0000-000000000000}'; IsActive = $true }
-            } -ParameterFilter { $ClassName -eq 'win32_PowerPlan' }
-
-            Mock Get-CimInstance {
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\AC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedPluggedInValue }
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\DC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedBatteryValue }
-            } -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
-
-            $powerPlanSettingProvider = [PowerPlanSetting]@{
-               Name         = $PowerPlanSettingName
-               SettingValue = 0
-               PowerSource  = [PowerSource]::All
-            }
-
-            $getResourceResult = $powerPlanSettingProvider.Get()
-            $getResourceResult.Name | Should -Be $PowerPlanSettingName
-            $getResourceResult.SettingValue | Should -Be 0
-            $getResourceResult.PluggedInValue | Should -Be $expectedPluggedInValue
-            $getResourceResult.BatteryValue | Should -Be $expectedBatteryValue
-         }
-
-         function PowerPlanSettingTestTests([PowerPlanSettingName]$PowerPlanSettingName, [PowerSource]$PowerSource, [bool]$ExpectedValue) {
-            $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e' : '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
-            $expectedSettingValue = Get-Random -Maximum 18000 -Minimum 1
-
-            if ($ExpectedValue -eq $true) {
-               $expectedPluggedInValue = ($PowerSource -ne [PowerSource]::Battery) ? $expectedSettingValue : 0
-               $expectedBatteryValue = ($PowerSource -ne [PowerSource]::PluggedIn) ? $expectedSettingValue : 0
-            } else {
-               $expectedPluggedInValue = 0
-               $expectedBatteryValue = 0
-            }
-
-
-            Mock Get-CimInstance {
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerPlan\{00000000-0000-0000-0000-000000000000}'; IsActive = $true }
-            } -ParameterFilter { $ClassName -eq 'win32_PowerPlan' }
-
-            Mock Get-CimInstance {
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\AC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedPluggedInValue }
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\DC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedBatteryValue }
-            } -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
-
-            $powerPlanSettingProvider = [PowerPlanSetting]@{
-               Name         = $PowerPlanSettingName
-               SettingValue = $expectedSettingValue
-               PowerSource  = $PowerSource
-            }
-
-            $testResourceResult = $powerPlanSettingProvider.Test()
-            $testResourceResult | Should -Be $ExpectedValue
-         }
-
-         function PowerPlanSettingSetTests([PowerPlanSettingName]$PowerPlanSettingName, [PowerSource]$PowerSource, [bool]$IsInTargetState) {
-            $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e' : '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
-            $expectedSettingValue = Get-Random -Maximum 18000 -Minimum 1
-
-
-            if ($IsInTargetState -eq $true) {
-               $expectedGetInvocations = 2
-               $expectedSetInvocations = 0
-               $expectedPluggedInValue = ($PowerSource -ne [PowerSource]::Battery) ? $expectedSettingValue : 0
-               $expectedBatteryValue = ($PowerSource -ne [PowerSource]::PluggedIn) ? $expectedSettingValue : 0
-            } else {
-               $expectedGetInvocations = ($PowerSource -eq [PowerSource]::All) ? 4 : 3
-               $expectedSetInvocations = ($PowerSource -eq [PowerSource]::All) ? 2 : 1
-               $expectedPluggedInValue = 0
-               $expectedBatteryValue = 0
-            }
-
-            Mock Get-CimInstance {
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerPlan\{00000000-0000-0000-0000-000000000000}'; IsActive = $true }
-            } -ParameterFilter { $ClassName -eq 'win32_PowerPlan' }
-
-            Mock Get-CimInstance {
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\AC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedPluggedInValue }
-               [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\DC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedBatteryValue }
-            } -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
-
-            $powerPlanSettingProvider = [PowerPlanSetting]@{
-               Name         = $PowerPlanSettingName
-               SettingValue = $expectedSettingValue
-               PowerSource  = $PowerSource
-            }
-
-            $powerPlanSettingProvider.Set()
-
-            Should -Invoke Get-CimInstance -Times $expectedGetInvocations -Exactly -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
-            Should -Invoke Set-CimInstance -Times $expectedSetInvocations -Exactly
-         }
       }
 
-      Context 'Get' {
-         It 'Get test for display timeout' {
-            PowerPlanSettingGetTests -PowerPlanSettingName DisplayTimeout
+      It 'Get test for PowerPlanSettingName:<PowerPlanSettingName>' -ForEach @(
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout }
+      ) {
+         $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e' : '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+         $expectedPluggedInValue = Get-Random -Maximum 18000 -Minimum 0
+         $expectedBatteryValue = Get-Random -Maximum 18000 -Minimum 0
+
+         Mock Get-CimInstance {
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerPlan\{00000000-0000-0000-0000-000000000000}'; IsActive = $true }
+         } -ParameterFilter { $ClassName -eq 'win32_PowerPlan' }
+
+         Mock Get-CimInstance {
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\AC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedPluggedInValue }
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\DC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedBatteryValue }
+         } -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
+
+         $powerPlanSettingProvider = [PowerPlanSetting]@{
+            Name         = $PowerPlanSettingName
+            SettingValue = 0
+            PowerSource  = [PowerSource]::All
          }
 
-         It 'Get test for sleep timeout' {
-            PowerPlanSettingGetTests -PowerPlanSettingName SleepTimeout
-         }
+         $getResourceResult = $powerPlanSettingProvider.Get()
+         $getResourceResult.Name | Should -Be $PowerPlanSettingName
+         $getResourceResult.SettingValue | Should -Be 0
+         $getResourceResult.PluggedInValue | Should -Be $expectedPluggedInValue
+         $getResourceResult.BatteryValue | Should -Be $expectedBatteryValue
       }
 
-      Context 'Test' {
-         It 'PowerPlanSetting Test test for display timeout on battery being configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -ExpectedValue $true
+      It 'Test test for PowerPlanSettingName:<PowerPlanSettingName>, PowerSource:<PowerSource>, ExpectedValue:<ExpectedValue>' -ForEach @(
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::All; ExpectedValue = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::PluggedIn; ExpectedValue = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::Battery; ExpectedValue = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::All; ExpectedValue = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::PluggedIn; ExpectedValue = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::Battery; ExpectedValue = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::All; ExpectedValue = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::PluggedIn; ExpectedValue = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::Battery; ExpectedValue = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::All; ExpectedValue = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::PluggedIn; ExpectedValue = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::Battery; ExpectedValue = $false }
+      ) {
+         $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e' : '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+         $expectedSettingValue = Get-Random -Maximum 18000 -Minimum 1
+
+         if ($ExpectedValue -eq $true) {
+            $expectedPluggedInValue = ($PowerSource -ne [PowerSource]::Battery) ? $expectedSettingValue : 0
+            $expectedBatteryValue = ($PowerSource -ne [PowerSource]::PluggedIn) ? $expectedSettingValue : 0
+         } else {
+            $expectedPluggedInValue = 0
+            $expectedBatteryValue = 0
          }
 
-         It 'PowerPlanSetting Test test for display timeout on battery being not configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -ExpectedValue $false
+
+         Mock Get-CimInstance {
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerPlan\{00000000-0000-0000-0000-000000000000}'; IsActive = $true }
+         } -ParameterFilter { $ClassName -eq 'win32_PowerPlan' }
+
+         Mock Get-CimInstance {
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\AC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedPluggedInValue }
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\DC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedBatteryValue }
+         } -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
+
+         $powerPlanSettingProvider = [PowerPlanSetting]@{
+            Name         = $PowerPlanSettingName
+            SettingValue = $expectedSettingValue
+            PowerSource  = $PowerSource
          }
 
-         It 'PowerPlanSetting Test test for display timeout on wall power being configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -ExpectedValue $true
-         }
-
-         It 'PowerPlanSetting Test test for display timeout on wall power being not configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -ExpectedValue $false
-         }
-
-         It 'PowerPlanSetting Test test for display timeout being configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName DisplayTimeout -PowerSource All -ExpectedValue $true
-         }
-
-         It 'PowerPlanSetting Test test for display timeout being not configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName DisplayTimeout -PowerSource All -ExpectedValue $false
-         }
-
-         It 'PowerPlanSetting Test test for sleep timeout on battery being configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName SleepTimeout -PowerSource Battery -ExpectedValue $true
-         }
-
-         It 'PowerPlanSetting Test test for sleep timeout on battery being not configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName SleepTimeout -PowerSource Battery -ExpectedValue $false
-         }
-
-         It 'PowerPlanSetting Test test for sleep timeout on wall power being configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName SleepTimeout -PowerSource Battery -ExpectedValue $true
-         }
-
-         It 'PowerPlanSetting Test test for sleep timeout on wall power being not configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName SleepTimeout -PowerSource Battery -ExpectedValue $false
-         }
-
-         It 'PowerPlanSetting Test test for sleep timeout  being configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName SleepTimeout -PowerSource All -ExpectedValue $true
-         }
-
-         It 'PowerPlanSetting Test test for sleep timeout being not configured' {
-            PowerPlanSettingTestTests -PowerPlanSettingName SleepTimeout -PowerSource All -ExpectedValue $false
-         }
+         $testResourceResult = $powerPlanSettingProvider.Test()
+         $testResourceResult | Should -Be $ExpectedValue
       }
 
-      Context 'Set' {
-         It 'PowerPlanSetting Set test for display timeout on battery being configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -IsInTargetState $True
+      It 'Set test for PowerPlanSettingName:<PowerPlanSettingName>, PowerSource:<PowerSource>, IsInTargetState:<IsInTargetState>' -ForEach @(
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::All; IsInTargetState = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::PluggedIn; IsInTargetState = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::Battery; IsInTargetState = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::All; IsInTargetState = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::PluggedIn; IsInTargetState = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::Battery; IsInTargetState = $true }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::All; IsInTargetState = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::PluggedIn; IsInTargetState = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::DisplayTimeout; PowerSource = [PowerSource]::Battery; IsInTargetState = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::All; IsInTargetState = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::PluggedIn; IsInTargetState = $false }
+         @{ PowerPlanSettingName = [PowerPlanSettingName]::SleepTimeout; PowerSource = [PowerSource]::Battery; IsInTargetState = $false }
+      ) {
+         $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e' : '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+         $expectedSettingValue = Get-Random -Maximum 18000 -Minimum 1
+
+
+         if ($IsInTargetState -eq $true) {
+            $expectedGetInvocations = 2
+            $expectedSetInvocations = 0
+            $expectedPluggedInValue = ($PowerSource -ne [PowerSource]::Battery) ? $expectedSettingValue : 0
+            $expectedBatteryValue = ($PowerSource -ne [PowerSource]::PluggedIn) ? $expectedSettingValue : 0
+         } else {
+            $expectedGetInvocations = ($PowerSource -eq [PowerSource]::All) ? 4 : 3
+            $expectedSetInvocations = ($PowerSource -eq [PowerSource]::All) ? 2 : 1
+            $expectedPluggedInValue = 0
+            $expectedBatteryValue = 0
          }
 
-         It 'PowerPlanSetting Set test for display timeout on battery being not configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -IsInTargetState $false
+         Mock Get-CimInstance {
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerPlan\{00000000-0000-0000-0000-000000000000}'; IsActive = $true }
+         } -ParameterFilter { $ClassName -eq 'win32_PowerPlan' }
+
+         Mock Get-CimInstance {
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\AC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedPluggedInValue }
+            [PSCustomObject]@{ InstanceID = 'Microsoft:PowerSettingDataIndex\{{00000000-0000-0000-0000-000000000000}}\DC\{{{0}}}' -f $SettingGUID; SettingIndexValue = $expectedBatteryValue }
+         } -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
+
+         $powerPlanSettingProvider = [PowerPlanSetting]@{
+            Name         = $PowerPlanSettingName
+            SettingValue = $expectedSettingValue
+            PowerSource  = $PowerSource
          }
 
-         It 'PowerPlanSetting Set test for display timeout on wall power being configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -IsInTargetState $true
-         }
+         $powerPlanSettingProvider.Set()
 
-         It 'PowerPlanSetting Set test for display timeout on wall power being not configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName DisplayTimeout -PowerSource Battery -IsInTargetState $false
-         }
-
-         It 'PowerPlanSetting Set test for display timeout being configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName DisplayTimeout -PowerSource All -IsInTargetState $true
-         }
-
-         It 'PowerPlanSetting Set test for display timeout being not configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName DisplayTimeout -PowerSource All -IsInTargetState $false
-         }
-
-         It 'PowerPlanSetting Set test for sleep timeout on battery being configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName SleepTimeout -PowerSource Battery -IsInTargetState $true
-         }
-
-         It 'PowerPlanSetting Set test for sleep timeout on battery being not configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName SleepTimeout -PowerSource Battery -IsInTargetState $false
-         }
-
-         It 'PowerPlanSetting Set test for sleep timeout on wall power being configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName SleepTimeout -PowerSource Battery -IsInTargetState $true
-         }
-
-         It 'PowerPlanSetting Set test for sleep timeout on wall power being not configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName SleepTimeout -PowerSource Battery -IsInTargetState $false
-         }
-
-         It 'PowerPlanSetting Set test for sleep timeout  being configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName SleepTimeout -PowerSource All -IsInTargetState $true
-         }
-
-         It 'PowerPlanSetting Set test for sleep timeout being not configured' {
-            PowerPlanSettingSetTests -PowerPlanSettingName SleepTimeout -PowerSource All -IsInTargetState $false
-         }
-
+         Should -Invoke Get-CimInstance -Times $expectedGetInvocations -Exactly -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
+         Should -Invoke Set-CimInstance -Times $expectedSetInvocations -Exactly
       }
    }
 }
