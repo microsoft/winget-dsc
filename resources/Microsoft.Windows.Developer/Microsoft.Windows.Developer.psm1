@@ -676,14 +676,13 @@ class PowerPlanSetting {
         $this.PluggedInValue = $Setting.ACValue
         $this.BatteryValue = $Setting.DCValue
 
-        $returnValue = @{
-            Name           = $this.Name
-            SettingValue   = $this.SettingValue
-            PluggedInValue = $Setting.ACValue
-            BatteryValue   = $Setting.DCValue
-        }
+        $currentState = [PowerPlanSetting]::new()
+        $currentState.Name = $this.Name
+        $currentState.SettingValue = $this.SettingValue
+        $currentState.PluggedInValue = $this.PluggedInValue
+        $currentState.BatteryValue = $this.BatteryValue
 
-        return $returnValue
+        return $currentState
     }
 
     [bool] Test() {
