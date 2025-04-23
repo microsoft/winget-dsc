@@ -246,7 +246,7 @@ InModuleScope Microsoft.Windows.Developer {
          }
       }
 
-      It 'Test test for WindowsCapabilityState:<WindowsCapabilityState>' -ForEach @(
+      It 'Test test for WindowsCapabilityState:<WindowsCapabilityState>, EnsureState:<EnsureState>' -ForEach @(
          @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Present }
          @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Present }
          @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Present }
@@ -275,7 +275,7 @@ InModuleScope Microsoft.Windows.Developer {
          }
       }
 
-      It 'Set test for WindowsCapabilityState:<WindowsCapabilityState>' -ForEach @(
+      It 'Set test for WindowsCapabilityState:<WindowsCapabilityState>, EnsureState:<EnsureState>' -ForEach @(
          @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Present }
          @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Present }
          @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Present }
