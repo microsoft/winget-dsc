@@ -615,9 +615,23 @@ class AdvancedNetworkSharingSetting {
     [DscProperty(NotConfigurable)]
     [string[]]$EnabledProfiles
 
+    hidden [string] $NetworkDiscoveryGroup = 'FirewallAPI.dll,-32752'
+    hidden [string] $FileAndPrinterSharingGroup = 'FirewallAPI.dll,-28502'
+
     [AdvancedNetworkSharingSetting] Get() {
 
         $currentState = [AdvancedNetworkSharingSetting]::new()
+        $currentState.Name = $this.Name
+        $currentState.Profiles = $this.Profiles
+
+        if ($this.Name -eq [AdvancedNetworkSharingSettingName]::NetworkDiscovery) {
+            $group = $this.NetworkDiscoveryGroup
+        } else {
+            $group = $this.FileAndPrinterSharingGroup
+        }
+
+        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Where-Object { $_.Enabled -eq $true } | Select-Object -ExpandProperty Profile
+        $currentState.EnabledProfiles = $this.EnabledProfiles
 
         return $currentState
     }
@@ -625,12 +639,24 @@ class AdvancedNetworkSharingSetting {
     [bool] Test() {
         $currentState = $this.Get()
 
-        # todo
+        $difference = Compare-Object -ReferenceObject $this.Profiles -DifferenceObject $currentState.EnabledProfiles
+        return -not $difference
     }
 
     [void] Set() {
         if (!$this.Test()) {
-            # todo
+            if ($this.Name -eq [AdvancedNetworkSharingSettingName]::NetworkDiscovery) {
+                $group = $this.NetworkDiscoveryGroup
+            } else {
+                $group = $this.FileAndPrinterSharingGroup
+            }
+
+            $firewallGroups = Get-NetFirewallRule -Group $group
+            #Enable
+            $firewallGroups | Where-Object { ($_.Enabled -eq $false) -and ($this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule -Enabled $true
+
+            #Disable
+            $firewallGroups | Where-Object { ($_.Enabled -eq $true) -and (-not $this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule -Enabled $false
         }
     }
 }
