@@ -630,7 +630,7 @@ class AdvancedNetworkSharingSetting {
             $group = $this.FileAndPrinterSharingGroup
         }
 
-        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Where-Object { $_.Enabled -eq $true } | Select-Object -Unique -CaseInsensitive -Property Profile
+        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Where-Object { $_.Enabled -eq $true } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
         $currentState.EnabledProfiles = $this.EnabledProfiles
 
         return $currentState
@@ -639,7 +639,8 @@ class AdvancedNetworkSharingSetting {
     [bool] Test() {
         $currentState = $this.Get()
 
-        $difference = Compare-Object -CaseInsensitive -ReferenceObject $this.Profiles -DifferenceObject $currentState.EnabledProfiles
+        # Compare-object is case insensitive by default and does not take null arguments
+        $difference = Compare-Object -ReferenceObject @( $this.Profiles | Select-Object) -DifferenceObject @( $currentState.EnabledProfiles | Select-Object)
         return -not $difference
     }
 

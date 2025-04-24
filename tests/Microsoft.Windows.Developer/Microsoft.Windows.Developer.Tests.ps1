@@ -227,6 +227,59 @@ InModuleScope Microsoft.Windows.Developer {
          $getResourceResult.Profiles | Should -Be $advancedNetworkSharingSettingSettingProvider.Profiles
          $getResourceResult.EnabledProfiles | Should -Be $ExpectedEnabledProfiles
       }
+
+      It 'Test test for NetworkSettingName:<NetworkSettingName>, Profiles:<Profiles>, ExpectedValue:<ExpectedValue>' -ForEach @(
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            ExpectedValue           = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = @()
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            ExpectedValue           = $false
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = @()
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            ExpectedValue           = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            ExpectedValue           = $false
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            ExpectedValue           = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = @()
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            ExpectedValue           = $false
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = @()
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            ExpectedValue           = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            ExpectedValue           = $false
+         }
+      ) {
+         Mock Get-NetFirewallRule { return $CurrentNetFirewallRules }
+
+         $advancedNetworkSharingSettingSettingProvider = [AdvancedNetworkSharingSetting]@{
+            Name     = $NetworkSettingName
+            Profiles = $Profiles
+         }
+
+         $testResourceResult = $advancedNetworkSharingSettingSettingProvider.Test()
+         $testResourceResult | Should -Be $ExpectedValue
+      }
    }
 }
 
