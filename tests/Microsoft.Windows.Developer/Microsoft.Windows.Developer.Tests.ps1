@@ -193,6 +193,43 @@ Describe 'EnableLongPathSupport' {
    }
 }
 
+# InModuleScope ensures that all mocks are on the Microsoft.Windows.Developer module.
+InModuleScope Microsoft.Windows.Developer {
+   Describe 'AdvancedNetworkSharingSetting' {
+
+      It 'Get test for NetworkSettingName:<NetworkSettingName>, ExpectedEnabledProfiles:<ExpectedEnabledProfiles>' -ForEach @(
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            ExpectedEnabledProfiles = , 'Private'
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            ExpectedEnabledProfiles = @()
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            ExpectedEnabledProfiles = , 'Private'
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            ExpectedEnabledProfiles = @()
+         }
+      ) {
+         Mock Get-NetFirewallRule { return $CurrentNetFirewallRules }
+
+         $advancedNetworkSharingSettingSettingProvider = [AdvancedNetworkSharingSetting]@{
+            Name     = $NetworkSettingName
+            Profiles = , 'Private'
+         }
+
+         $getResourceResult = $advancedNetworkSharingSettingSettingProvider.Get()
+         $getResourceResult.Name | Should -Be $NetworkSettingName
+         $getResourceResult.Profiles | Should -Be $advancedNetworkSharingSettingSettingProvider.Profiles
+         $getResourceResult.EnabledProfiles | Should -Be $ExpectedEnabledProfiles
+      }
+   }
+}
+
 AfterAll {
    $env:TestRegistryPath = ''
 }

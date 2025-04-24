@@ -615,8 +615,8 @@ class AdvancedNetworkSharingSetting {
     [DscProperty(NotConfigurable)]
     [string[]]$EnabledProfiles
 
-    hidden [string] $NetworkDiscoveryGroup = 'FirewallAPI.dll,-32752'
-    hidden [string] $FileAndPrinterSharingGroup = 'FirewallAPI.dll,-28502'
+    hidden [string] $NetworkDiscoveryGroup = '@FirewallAPI.dll,-32752'
+    hidden [string] $FileAndPrinterSharingGroup = '@FirewallAPI.dll,-28502'
 
     [AdvancedNetworkSharingSetting] Get() {
 
@@ -630,7 +630,7 @@ class AdvancedNetworkSharingSetting {
             $group = $this.FileAndPrinterSharingGroup
         }
 
-        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Where-Object { $_.Enabled -eq $true } | Select-Object -ExpandProperty Profile
+        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Where-Object { $_.Enabled -eq $true } | Select-Object -Unique -CaseInsensitive -Property Profile
         $currentState.EnabledProfiles = $this.EnabledProfiles
 
         return $currentState
@@ -639,7 +639,7 @@ class AdvancedNetworkSharingSetting {
     [bool] Test() {
         $currentState = $this.Get()
 
-        $difference = Compare-Object -ReferenceObject $this.Profiles -DifferenceObject $currentState.EnabledProfiles
+        $difference = Compare-Object -CaseInsensitive -ReferenceObject $this.Profiles -DifferenceObject $currentState.EnabledProfiles
         return -not $difference
     }
 
@@ -653,10 +653,10 @@ class AdvancedNetworkSharingSetting {
 
             $firewallGroups = Get-NetFirewallRule -Group $group
             #Enable
-            $firewallGroups | Where-Object { ($_.Enabled -eq $false) -and ($this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule -Enabled $true
+            $firewallGroups | Where-Object { ($_.Enabled -eq $false) -and ($this.Profiles.Contains($_.Profile, 'InvariantCultureIgnoreCase')) } | Set-NetFirewallRule -Enabled $true
 
             #Disable
-            $firewallGroups | Where-Object { ($_.Enabled -eq $true) -and (-not $this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule -Enabled $false
+            $firewallGroups | Where-Object { ($_.Enabled -eq $true) -and (-not $this.Profiles.Contains($_.Profile, 'InvariantCultureIgnoreCase')) } | Set-NetFirewallRule -Enabled $false
         }
     }
 }
