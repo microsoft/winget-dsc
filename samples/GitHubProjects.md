@@ -5,6 +5,7 @@ The projects are listed in alphabetical order by their GitHub repository identif
 
 ## Projects
 
+- [dotnet/eShop](https://github.com/dotnet/eShop/blob/main/.config/configuration.vsCode.winget)
 - [JanDeDobbeleer/oh-my-posh](https://github.com/JanDeDobbeleer/oh-my-posh/blob/main/.config/configuration.winget)
 - [LibreOffice/core](https://github.com/LibreOffice/core/blob/master/.config/configuration.winget)
 - [microsoft/PowerToys](https://github.com/microsoft/PowerToys/blob/main/.config/configuration.winget)

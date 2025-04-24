@@ -32,6 +32,7 @@ MMdd
 msftbot
 msixbundle
 msstore
+msvc
 NOLOGO
 nonexistentpackage
 numpy
@@ -57,11 +58,13 @@ uninstalls
 upvote
 videojs
 vsconfig
+vscpp
 website
 websites
 wekyb
 whatif
 wildcards
+winappdev
 Windo
 winget
 workflows
