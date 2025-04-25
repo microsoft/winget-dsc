@@ -458,19 +458,19 @@ InModuleScope Microsoft.Windows.Developer {
 
       It 'Get test for NetworkSettingName:<NetworkSettingName>, ExpectedEnabledProfiles:<ExpectedEnabledProfiles>' -ForEach @(
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' }
             ExpectedEnabledProfiles = , 'Private'
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
             ExpectedEnabledProfiles = @()
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' }
             ExpectedEnabledProfiles = , 'Private'
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
             ExpectedEnabledProfiles = @()
          }
       ) {
@@ -490,42 +490,42 @@ InModuleScope Microsoft.Windows.Developer {
       It 'Test test for NetworkSettingName:<NetworkSettingName>, Profiles:<Profiles>, ExpectedValue:<ExpectedValue>' -ForEach @(
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = , 'Private'
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' }
             ExpectedValue           = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = @()
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' }
             ExpectedValue           = $false
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = @()
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
             ExpectedValue           = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = , 'Private'
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
             ExpectedValue           = $false
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = , 'Private'
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' }
             ExpectedValue           = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = @()
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' }
             ExpectedValue           = $false
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = @()
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
             ExpectedValue           = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = , 'Private'
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
             ExpectedValue           = $false
          }
       ) {
@@ -543,42 +543,42 @@ InModuleScope Microsoft.Windows.Developer {
       It 'Set test for NetworkSettingName:<NetworkSettingName>, Profiles:<Profiles>, IsInTargetState:<IsInTargetState>' -ForEach @(
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = , 'Private'
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' }
             IsInTargetState         = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = @()
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' }
             IsInTargetState         = $false
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = @()
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
             IsInTargetState         = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = , 'Private'
-            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
             IsInTargetState         = $false
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = , 'Private'
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' }
             IsInTargetState         = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = @()
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' }
             IsInTargetState         = $false
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = @()
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
             IsInTargetState         = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = , 'Private'
-            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
             IsInTargetState         = $false
          }
       ) {

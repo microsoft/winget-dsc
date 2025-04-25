@@ -811,10 +811,10 @@ class AdvancedNetworkSharingSetting {
 
             $firewallGroups = Get-NetFirewallRule -Group $group
             #Enable
-            $firewallGroups | Where-Object { ($_.Enabled -eq 'False') -and ($this.Profiles.Contains($_.Profile.ToString())) } | Set-NetFirewallRule -Enabled True
+            $firewallGroups | Where-Object { ($_.Enabled -eq 'False') -and ($this.Profiles -Contains $_.Profile ) } | Set-NetFirewallRule -Enabled True
 
             #Disable
-            $firewallGroups | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles.Contains($_.Profile.ToString())) } | Set-NetFirewallRule -Enabled False
+            $firewallGroups | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles -Contains $_.Profile ) } | Set-NetFirewallRule -Enabled False
         }
     }
 }
