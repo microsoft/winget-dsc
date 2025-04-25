@@ -31,6 +31,125 @@ InModuleScope Microsoft.Windows.Developer {
       }
    }
 
+   enum RegistryValueState {
+      SetTrue
+      SetFalse
+      NotSet
+   }
+
+   Describe 'DeveloperMode' {
+
+      BeforeAll {
+         Mock Set-ItemProperty { }
+
+         $script:devModePresentCommonResource = [DeveloperMode]@{
+            Ensure = [Ensure]::Present
+         }
+
+         $script:devModeAbsentCommonResource = [DeveloperMode]@{
+            Ensure = [Ensure]::Absent
+         }
+      }
+
+      It 'Get test for RegistryValueState:<RegistryValueState>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
+         }
+
+         $getResourceResult = $script:devModePresentCommonResource.Get()
+         $expectedValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 'Present' : 'Absent'
+         $getResourceResult.Ensure | Should -Be $expectedValue
+         $getResourceResult.IsEnabled | Should -Be ($RegistryValueState -eq [RegistryValueState]::SetTrue)
+
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly
+         } else {
+            Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly
+            Should -Invoke Get-ItemPropertyValue -Times 1 -Exactly
+         }
+      }
+
+      It 'Test test for RegistryValueState:<RegistryValueState>, EnsureState:<EnsureState>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
+         }
+
+         $devModeResource = ($EnsureState -eq [Ensure]::Present) ? $script:devModePresentCommonResource : $script:devModeAbsentCommonResource
+         $testResourceResult = $devModeResource.Test()
+
+         $expectedValue = ($EnsureState -eq [Ensure]::Present)
+         if ($RegistryValueState -eq [RegistryValueState]::SetTrue) {
+            $testResourceResult | Should -Be $expectedValue
+         } else {
+            $testResourceResult | Should -Be (-Not $expectedValue)
+         }
+      }
+
+      It 'Set test for RegistryValueState:<RegistryValueState>, EnsureState:<EnsureState>, HasAdmin:<HasAdmin>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
+         }
+
+         Mock New-Object {
+            New-MockObject -Type 'System.Security.Principal.WindowsPrincipal' -Methods @{ IsInRole = { param($windowsIdentity) $HasAdmin } }
+         } -ParameterFilter { $TypeName -eq 'System.Security.Principal.WindowsPrincipal' }
+
+
+         $devModeResource = ($EnsureState -eq [Ensure]::Present) ? $script:devModePresentCommonResource : $script:devModeAbsentCommonResource
+         $setResult = { $devModeResource.Set() }
+
+         if ((($EnsureState -eq [Ensure]::Present) -and ($RegistryValueState -eq [RegistryValueState]::SetTrue)) -or
+      (($EnsureState -eq [Ensure]::Absent) -and ($RegistryValueState -ne [RegistryValueState]::SetTrue))) {
+            # No action in these scenarios
+            Should -Invoke Set-ItemProperty -Times 0 -Exactly
+         } else {
+            # Cannot take action without admin, otherwise update registry
+            if (-Not $HasAdmin) {
+               $setResult | Should -Throw
+            } else {
+               $setResult | Should -Not -Throw
+
+               # If registry is set then we want to unset it
+               $expectedWriteValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 0 : 1
+               Should -Invoke Set-ItemProperty -Times 1 -Exactly { $Value -eq $expectedWriteValue }
+            }
+         }
+      }
+   }
+
    Describe 'Taskbar' {
       It 'Keeps current value.' {
          $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
