@@ -16,7 +16,8 @@
         'WindowsExplorer',
         'UserAccessControl',
         'EnableRemoteDesktop',
-        'EnableLongPathSupport'
+        'EnableLongPathSupport',
+        'PowerPlanSetting'
     )
     PrivateData          = @{
         PSData = @{
@@ -30,7 +31,8 @@
                 'PSDscResource_WindowsExplorer',
                 'PSDscResource_UserAccessControl',
                 'PSDscResource_EnableRemoteDesktop',
-                'PSDscResource_EnableLongPathSupport'
+                'PSDscResource_EnableLongPathSupport',
+                'PSDscResource_PowerPlanSetting'
             )
 
             # Prerelease string of this module
