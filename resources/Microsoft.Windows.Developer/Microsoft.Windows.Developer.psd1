@@ -19,7 +19,7 @@
         'EnableLongPathSupport',
         'PowerPlanSetting',
         'WindowsCapability',
-		'AdvancedNetworkSharingSetting'
+        'AdvancedNetworkSharingSetting'
     )
     PrivateData          = @{
         PSData = @{
@@ -36,7 +36,7 @@
                 'PSDscResource_EnableLongPathSupport',
                 'PSDscResource_PowerPlanSetting',
                 'PSDscResource_WindowsCapability',
-				'PSDscResource_AdvancedNetworkSharingSetting'
+                'PSDscResource_AdvancedNetworkSharingSetting'
             )
 
             # Prerelease string of this module
