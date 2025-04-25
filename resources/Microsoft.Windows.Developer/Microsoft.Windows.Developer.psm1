@@ -72,22 +72,32 @@ class DeveloperMode {
     [DscProperty(NotConfigurable)]
     [bool] $IsEnabled
 
-    [DeveloperMode] Get() {
-        $this.IsEnabled = IsDeveloperModeEnabled
+    hidden [string] $AppModelUnlockRegistryKeyPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
+    hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
 
+    [DeveloperMode] Get() {
+        function IsDeveloperModeEnabled {
+            $regExists = DoesRegistryKeyPropertyExist -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
+
+            # If the registry key does not exist, we assume developer mode is not enabled.
+            if (-not($regExists)) {
+                return $false
+            }
+
+            return Get-ItemPropertyValue -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
+        }
+
+        # 1 == enabled == Present // 0 == disabled == Absent
+        $this.IsEnabled = IsDeveloperModeEnabled
         return @{
-            Ensure    = $this.Ensure
+            Ensure    = $this.IsEnabled ? [Ensure]::Present : [Ensure]::Absent
             IsEnabled = $this.IsEnabled
         }
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        if ($currentState.Ensure -eq [Ensure]::Present) {
-            return $currentState.IsEnabled
-        } else {
-            return $currentState.IsEnabled -eq $false
-        }
+        return $currentState.Ensure -eq $this.Ensure
     }
 
     [void] Set() {
@@ -99,11 +109,11 @@ class DeveloperMode {
                 throw 'Toggling Developer Mode requires this resource to be run as an Administrator.'
             }
 
-            $shouldEnable = $this.Ensure -eq [Ensure]::Present
-            SetDeveloperMode -Enable $shouldEnable
+            # 1 == enabled == Present // 0 == disabled == Absent
+            $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
+            Set-ItemProperty -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName -Value $value
         }
     }
-
 }
 
 [DSCResource()]
@@ -748,33 +758,6 @@ class PowerPlanSetting {
 #endregion DSCResources
 
 #region Functions
-$AppModelUnlockRegistryKeyPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
-$DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
-
-function IsDeveloperModeEnabled {
-    try {
-        $property = Get-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName
-        return $property.AllowDevelopmentWithoutDevLicense -eq 1
-    } catch {
-        # This will throw an exception if the registry path or property does not exist.
-        return $false
-    }
-}
-
-function SetDeveloperMode {
-    param (
-        [Parameter(Mandatory)]
-        [bool]$Enable
-    )
-
-    if (-not (Test-Path -Path $AppModelUnlockRegistryKeyPath)) {
-        New-Item -Path $AppModelUnlockRegistryKeyPath -Force | Out-Null
-    }
-
-    $developerModeValue = [int]$Enable
-    New-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName -Value $developerModeValue -PropertyType DWORD -Force | Out-Null
-}
-
 function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]

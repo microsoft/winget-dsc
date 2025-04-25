@@ -10,191 +10,310 @@ Set-StrictMode -Version Latest
    Pester tests related to the Microsoft.WinGet.Developer PowerShell module.
 #>
 
-BeforeAll {
-   Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
-   Import-Module Microsoft.Windows.Developer
-
-   # Create test registry path.
-   New-Item -Path TestRegistry:\ -Name TestKey
-   # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
-   $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace('HKEY_CURRENT_USER', 'HKCU:')
-}
-
-Describe 'List available DSC resources' {
-   It 'Shows DSC Resources' {
-      $expectedDSCResources = 'DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl', 'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting'
-      $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
-      $availableDSCResources.length | Should -Be $expectedDSCResources.Length
-      $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
-   }
-}
-
-Describe 'Taskbar' {
-   It 'Keeps current value.' {
-      $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-
-      $parameters = @{
-         Alignment      = 'KeepCurrentValue'
-         HideLabelsMode = 'KeepCurrentValue'
-         SearchboxMode  = 'KeepCurrentValue'
-         TaskViewButton = 'KeepCurrentValue'
-         WidgetsButton  = 'KeepCurrentValue'
-      }
-
-      $testResult = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
-      $testResult.InDesiredState | Should -Be $true
-
-      # Invoking set should not change these values.
-      Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.Alignment | Should -Be $initialState.Alignment
-      $finalState.HideLabelsMode | Should -Be $initialState.HideLabelsMode
-      $finalState.SearchboxMode | Should -Be $initialState.SearchboxMode
-      $finalState.TaskViewButton | Should -Be $initialState.WidgetsButton
-   }
-
-   It 'Sets desired value' {
-      # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
-      $desiredAlignment = [Alignment](Get-Random -Maximum 3 -Minimum 1)
-      $desiredHideLabelsMode = [HideTaskBarLabelsBehavior](Get-Random -Maximum 4 -Minimum 1)
-      $desiredSearchboxMode = [SearchBoxMode](Get-Random -Maximum 5 -Minimum 1)
-      $desiredTaskViewButton = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
-      $desiredWidgetsButton = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
-
-      $desiredState = @{ Alignment = $desiredAlignment
-         HideLabelsMode            = $desiredHideLabelsMode
-         SearchboxMode             = $desiredSearchboxMode
-         TaskViewButton            = $desiredTaskViewButton
-         WidgetsButton             = $desiredWidgetsButton
-      }
-
-      Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-
-      $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.Alignment | Should -Be $desiredAlignment
-      $finalState.HideLabelsMode | Should -Be $desiredHideLabelsMode
-      $finalState.SearchboxMode | Should -Be $desiredSearchboxMode
-      $finalState.TaskViewButton | Should -Be $desiredTaskViewButton
-      $finalState.WidgetsButton | Should -Be $desiredWidgetsButton
-   }
-}
-
-Describe 'WindowsExplorer' {
-   It 'Keeps current value.' {
-      $initialState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-
-      $parameters = @{
-         FileExtensions = 'KeepCurrentValue'
-         HiddenFiles    = 'KeepCurrentValue'
-         ItemCheckBoxes = 'KeepCurrentValue'
-      }
-
-      $testResult = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
-      $testResult.InDesiredState | Should -Be $true
-
-      # Invoking set should not change these values.
-      Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.FileExtensions | Should -Be $initialState.FileExtensions
-      $finalState.HiddenFiles | Should -Be $initialState.HiddenFiles
-      $finalState.ItemCheckBoxes | Should -Be $initialState.ItemCheckBoxes
-   }
-
-   It 'Sets desired value' {
-      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
-      $desiredFileExtensions = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
-      $desiredHiddenFiles = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
-      $desiredItemCheckBoxes = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
-
-      $desiredState = @{
-         FileExtensions = $desiredFileExtensions
-         HiddenFiles    = $desiredHiddenFiles
-         ItemCheckBoxes = $desiredItemCheckBoxes
-      }
-
-      Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-
-      $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.FileExtensions | Should -Be $desiredFileExtensions
-      $finalState.HiddenFiles | Should -Be $desiredHiddenFiles
-      $finalState.ItemCheckBoxes | Should -Be $desiredItemCheckBoxes
-   }
-}
-
-Describe 'UserAccessControl' {
-   It 'Keeps current value.' {
-      $initialState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-
-      $parameters = @{ AdminConsentPromptBehavior = 'KeepCurrentValue' }
-
-      $testResult = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
-      $testResult.InDesiredState | Should -Be $true
-
-      # Invoking set should not change these values.
-      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-      $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.AdminConsentPromptBehavior | Should -Be $initialState.AdminConsentPromptBehavior
-   }
-
-   It 'Sets desired value.' {
-      # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
-      $desiredAdminConsentPromptBehavior = [AdminConsentPromptBehavior](Get-Random -Maximum 6 -Minimum 1)
-
-      $desiredState = @{ AdminConsentPromptBehavior = $desiredAdminConsentPromptBehavior }
-
-      Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-
-      $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.AdminConsentPromptBehavior | Should -Be $desiredAdminConsentPromptBehavior
-   }
-}
-
-Describe 'EnableRemoteDesktop' {
-   It 'Sets Enabled' {
-      $desiredRemoteDesktopBehavior = [Ensure]::Present
-      $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
-
-      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-
-      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
-   }
-
-   It 'Sets Disabled' {
-      $desiredRemoteDesktopBehavior = [Ensure]::Absent
-      $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
-
-      Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-
-      $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
-   }
-}
-
-Describe 'EnableLongPathSupport' {
-   It 'Sets Enabled' {
-      $desiredLongPathsBehavior = [Ensure]::Present
-      $desiredState = @{ Ensure = $desiredLongPathsBehavior }
-
-      Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-
-      $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.Ensure | Should -Be $desiredLongPathsBehavior
-   }
-
-   It 'Sets Disabled' {
-      $desiredLongPathsBehavior = [Ensure]::Absent
-      $desiredState = @{ Ensure = $desiredLongPathsBehavior }
-
-      Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
-
-      $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
-      $finalState.Ensure | Should -Be $desiredLongPathsBehavior
-   }
-}
-
 # InModuleScope ensures that all mocks are on the Microsoft.Windows.Developer module.
 InModuleScope Microsoft.Windows.Developer {
+   BeforeAll {
+      Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+      Import-Module Microsoft.Windows.Developer
+
+      # Create test registry path.
+      New-Item -Path TestRegistry:\ -Name TestKey
+      # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
+      $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace('HKEY_CURRENT_USER', 'HKCU:')
+   }
+
+   Describe 'List available DSC resources' {
+      It 'Shows DSC Resources' {
+         $expectedDSCResources = 'DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl', 'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting'
+         $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
+         $availableDSCResources.length | Should -Be $expectedDSCResources.Length
+         $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
+      }
+   }
+
+   enum RegistryValueState {
+      SetTrue
+      SetFalse
+      NotSet
+   }
+
+   Describe 'DeveloperMode' {
+
+      BeforeAll {
+         Mock Set-ItemProperty { }
+
+         $script:devModePresentCommonResource = [DeveloperMode]@{
+            Ensure = [Ensure]::Present
+         }
+
+         $script:devModeAbsentCommonResource = [DeveloperMode]@{
+            Ensure = [Ensure]::Absent
+         }
+      }
+
+      It 'Get test for RegistryValueState:<RegistryValueState>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
+         }
+
+         $getResourceResult = $script:devModePresentCommonResource.Get()
+         $expectedValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 'Present' : 'Absent'
+         $getResourceResult.Ensure | Should -Be $expectedValue
+         $getResourceResult.IsEnabled | Should -Be ($RegistryValueState -eq [RegistryValueState]::SetTrue)
+
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly
+         } else {
+            Should -Invoke DoesRegistryKeyPropertyExist -Times 1 -Exactly
+            Should -Invoke Get-ItemPropertyValue -Times 1 -Exactly
+         }
+      }
+
+      It 'Test test for RegistryValueState:<RegistryValueState>, EnsureState:<EnsureState>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
+         }
+
+         $devModeResource = ($EnsureState -eq [Ensure]::Present) ? $script:devModePresentCommonResource : $script:devModeAbsentCommonResource
+         $testResourceResult = $devModeResource.Test()
+
+         $expectedValue = ($EnsureState -eq [Ensure]::Present)
+         if ($RegistryValueState -eq [RegistryValueState]::SetTrue) {
+            $testResourceResult | Should -Be $expectedValue
+         } else {
+            $testResourceResult | Should -Be (-Not $expectedValue)
+         }
+      }
+
+      It 'Set test for RegistryValueState:<RegistryValueState>, EnsureState:<EnsureState>, HasAdmin:<HasAdmin>' -ForEach @(
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent; HasAdmin = $true }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Present; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetTrue; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::SetFalse; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+         @{ RegistryValueState = [RegistryValueState]::NotSet; EnsureState = [Ensure]::Absent; HasAdmin = $false }
+      ) {
+         if ($RegistryValueState -eq [RegistryValueState]::NotSet) {
+            Mock DoesRegistryKeyPropertyExist { return $false }
+         } else {
+            Mock DoesRegistryKeyPropertyExist { return $true }
+            Mock Get-ItemPropertyValue { return ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 1 : 0 }
+         }
+
+         Mock New-Object {
+            New-MockObject -Type 'System.Security.Principal.WindowsPrincipal' -Methods @{ IsInRole = { param($windowsIdentity) $HasAdmin } }
+         } -ParameterFilter { $TypeName -eq 'System.Security.Principal.WindowsPrincipal' }
+
+
+         $devModeResource = ($EnsureState -eq [Ensure]::Present) ? $script:devModePresentCommonResource : $script:devModeAbsentCommonResource
+         $setResult = { $devModeResource.Set() }
+
+         if ((($EnsureState -eq [Ensure]::Present) -and ($RegistryValueState -eq [RegistryValueState]::SetTrue)) -or
+      (($EnsureState -eq [Ensure]::Absent) -and ($RegistryValueState -ne [RegistryValueState]::SetTrue))) {
+            # No action in these scenarios
+            Should -Invoke Set-ItemProperty -Times 0 -Exactly
+         } else {
+            # Cannot take action without admin, otherwise update registry
+            if (-Not $HasAdmin) {
+               $setResult | Should -Throw
+            } else {
+               $setResult | Should -Not -Throw
+
+               # If registry is set then we want to unset it
+               $expectedWriteValue = ($RegistryValueState -eq [RegistryValueState]::SetTrue) ? 0 : 1
+               Should -Invoke Set-ItemProperty -Times 1 -Exactly { $Value -eq $expectedWriteValue }
+            }
+         }
+      }
+   }
+
+   Describe 'Taskbar' {
+      It 'Keeps current value.' {
+         $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+
+         $parameters = @{
+            Alignment      = 'KeepCurrentValue'
+            HideLabelsMode = 'KeepCurrentValue'
+            SearchboxMode  = 'KeepCurrentValue'
+            TaskViewButton = 'KeepCurrentValue'
+            WidgetsButton  = 'KeepCurrentValue'
+         }
+
+         $testResult = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+         $testResult.InDesiredState | Should -Be $true
+
+         # Invoking set should not change these values.
+         Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+         $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.Alignment | Should -Be $initialState.Alignment
+         $finalState.HideLabelsMode | Should -Be $initialState.HideLabelsMode
+         $finalState.SearchboxMode | Should -Be $initialState.SearchboxMode
+         $finalState.TaskViewButton | Should -Be $initialState.WidgetsButton
+      }
+
+      It 'Sets desired value' {
+         # Randomly generate desired state. Minimum is set to 1 to avoid KeepCurrentValue
+         $desiredAlignment = [Alignment](Get-Random -Maximum 3 -Minimum 1)
+         $desiredHideLabelsMode = [HideTaskBarLabelsBehavior](Get-Random -Maximum 4 -Minimum 1)
+         $desiredSearchboxMode = [SearchBoxMode](Get-Random -Maximum 5 -Minimum 1)
+         $desiredTaskViewButton = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
+         $desiredWidgetsButton = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
+
+         $desiredState = @{ Alignment = $desiredAlignment
+            HideLabelsMode            = $desiredHideLabelsMode
+            SearchboxMode             = $desiredSearchboxMode
+            TaskViewButton            = $desiredTaskViewButton
+            WidgetsButton             = $desiredWidgetsButton
+         }
+
+         Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+         $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.Alignment | Should -Be $desiredAlignment
+         $finalState.HideLabelsMode | Should -Be $desiredHideLabelsMode
+         $finalState.SearchboxMode | Should -Be $desiredSearchboxMode
+         $finalState.TaskViewButton | Should -Be $desiredTaskViewButton
+         $finalState.WidgetsButton | Should -Be $desiredWidgetsButton
+      }
+   }
+
+   Describe 'WindowsExplorer' {
+      It 'Keeps current value.' {
+         $initialState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+
+         $parameters = @{
+            FileExtensions = 'KeepCurrentValue'
+            HiddenFiles    = 'KeepCurrentValue'
+            ItemCheckBoxes = 'KeepCurrentValue'
+         }
+
+         $testResult = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+         $testResult.InDesiredState | Should -Be $true
+
+         # Invoking set should not change these values.
+         Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+         $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.FileExtensions | Should -Be $initialState.FileExtensions
+         $finalState.HiddenFiles | Should -Be $initialState.HiddenFiles
+         $finalState.ItemCheckBoxes | Should -Be $initialState.ItemCheckBoxes
+      }
+
+      It 'Sets desired value' {
+         # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
+         $desiredFileExtensions = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
+         $desiredHiddenFiles = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
+         $desiredItemCheckBoxes = [ShowHideFeature](Get-Random -Maximum 3 -Minimum 1)
+
+         $desiredState = @{
+            FileExtensions = $desiredFileExtensions
+            HiddenFiles    = $desiredHiddenFiles
+            ItemCheckBoxes = $desiredItemCheckBoxes
+         }
+
+         Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+         $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.FileExtensions | Should -Be $desiredFileExtensions
+         $finalState.HiddenFiles | Should -Be $desiredHiddenFiles
+         $finalState.ItemCheckBoxes | Should -Be $desiredItemCheckBoxes
+      }
+   }
+
+   Describe 'UserAccessControl' {
+      It 'Keeps current value.' {
+         $initialState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+
+         $parameters = @{ AdminConsentPromptBehavior = 'KeepCurrentValue' }
+
+         $testResult = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+         $testResult.InDesiredState | Should -Be $true
+
+         # Invoking set should not change these values.
+         Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+         $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.AdminConsentPromptBehavior | Should -Be $initialState.AdminConsentPromptBehavior
+      }
+
+      It 'Sets desired value.' {
+         # Randomly generate desired state. Minimum is set to 1 to avoid using KeepCurrentValue
+         $desiredAdminConsentPromptBehavior = [AdminConsentPromptBehavior](Get-Random -Maximum 6 -Minimum 1)
+
+         $desiredState = @{ AdminConsentPromptBehavior = $desiredAdminConsentPromptBehavior }
+
+         Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+         $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.AdminConsentPromptBehavior | Should -Be $desiredAdminConsentPromptBehavior
+      }
+   }
+
+   Describe 'EnableRemoteDesktop' {
+      It 'Sets Enabled' {
+         $desiredRemoteDesktopBehavior = [Ensure]::Present
+         $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
+
+         Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+         $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
+      }
+
+      It 'Sets Disabled' {
+         $desiredRemoteDesktopBehavior = [Ensure]::Absent
+         $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
+
+         Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+         $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
+      }
+   }
+
+   Describe 'EnableLongPathSupport' {
+      It 'Sets Enabled' {
+         $desiredLongPathsBehavior = [Ensure]::Present
+         $desiredState = @{ Ensure = $desiredLongPathsBehavior }
+
+         Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+         $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.Ensure | Should -Be $desiredLongPathsBehavior
+      }
+
+      It 'Sets Disabled' {
+         $desiredLongPathsBehavior = [Ensure]::Absent
+         $desiredState = @{ Ensure = $desiredLongPathsBehavior }
+
+         Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+
+         $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState.Ensure | Should -Be $desiredLongPathsBehavior
+      }
+   }
+
    Describe 'PowerPlanSetting' {
       BeforeAll {
          # disable group policy logic for tests
@@ -332,8 +451,8 @@ InModuleScope Microsoft.Windows.Developer {
          Should -Invoke Set-CimInstance -Times $expectedSetInvocations -Exactly
       }
    }
-}
 
-AfterAll {
-   $env:TestRegistryPath = ''
+   AfterAll {
+      $env:TestRegistryPath = ''
+   }
 }
