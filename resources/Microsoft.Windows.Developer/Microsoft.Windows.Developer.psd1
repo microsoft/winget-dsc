@@ -34,7 +34,7 @@
                 'PSDscResource_EnableRemoteDesktop',
                 'PSDscResource_EnableLongPathSupport',
                 'PSDscResource_PowerPlanSetting',
-				'PSDscResource_WindowsCapability'
+                'PSDscResource_WindowsCapability'
             )
 
             # Prerelease string of this module
