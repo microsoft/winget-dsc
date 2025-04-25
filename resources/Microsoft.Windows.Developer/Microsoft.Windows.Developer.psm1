@@ -654,10 +654,18 @@ class AdvancedNetworkSharingSetting {
 
             $firewallGroups = Get-NetFirewallRule -Group $group
             #Enable
-            $firewallGroups | Where-Object { ($_.Enabled -eq $false) -and ($this.Profiles.Contains($_.Profile, 'InvariantCultureIgnoreCase')) } | Set-NetFirewallRule -Enabled $true
+            if ($this.Profiles.Count -gt 0) {
+                $test = @{
+                    Enabled = 'True'
+                }
+                $firewallGroups | Where-Object { ($_.Enabled -eq $false) -and ($this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule @test
+            }
 
             #Disable
-            $firewallGroups | Where-Object { ($_.Enabled -eq $true) -and (-not $this.Profiles.Contains($_.Profile, 'InvariantCultureIgnoreCase')) } | Set-NetFirewallRule -Enabled $false
+            $test = @{
+                Enabled = 'False'
+            }
+            $firewallGroups | Where-Object { ($_.Enabled -eq $true) -and (-not $this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule @test
         }
     }
 }

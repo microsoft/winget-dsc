@@ -196,6 +196,9 @@ Describe 'EnableLongPathSupport' {
 # InModuleScope ensures that all mocks are on the Microsoft.Windows.Developer module.
 InModuleScope Microsoft.Windows.Developer {
    Describe 'AdvancedNetworkSharingSetting' {
+      BeforeAll {
+         Mock Set-NetFirewallRule { }
+      }
 
       It 'Get test for NetworkSettingName:<NetworkSettingName>, ExpectedEnabledProfiles:<ExpectedEnabledProfiles>' -ForEach @(
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
@@ -279,6 +282,58 @@ InModuleScope Microsoft.Windows.Developer {
 
          $testResourceResult = $advancedNetworkSharingSettingSettingProvider.Test()
          $testResourceResult | Should -Be $ExpectedValue
+      }
+
+      It 'Set test for NetworkSettingName:<NetworkSettingName>, Profiles:<Profiles>, IsInTargetState:<IsInTargetState>' -ForEach @(
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            IsInTargetState         = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = @()
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $true; Profile = 'Private' }
+            IsInTargetState         = $false
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = @()
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            IsInTargetState         = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = $false; Profile = 'Private' }
+            IsInTargetState         = $false
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            IsInTargetState         = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = @()
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $true; Profile = 'Private' }
+            IsInTargetState         = $false
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = @()
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            IsInTargetState         = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = $false; Profile = 'Private' }
+            IsInTargetState         = $false
+         }
+      ) {
+         Mock Get-NetFirewallRule { return $CurrentNetFirewallRules }
+
+         $advancedNetworkSharingSettingSettingProvider = [AdvancedNetworkSharingSetting]@{
+            Name     = $NetworkSettingName
+            Profiles = $Profiles
+         }
+
+         $advancedNetworkSharingSettingSettingProvider.Set()
       }
    }
 }
