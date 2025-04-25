@@ -17,8 +17,8 @@
         'UserAccessControl',
         'EnableRemoteDesktop',
         'EnableLongPathSupport',
-        'WindowsCapability',
-        'PowerPlanSetting'
+        'PowerPlanSetting',
+        'WindowsCapability'
     )
     PrivateData          = @{
         PSData = @{
