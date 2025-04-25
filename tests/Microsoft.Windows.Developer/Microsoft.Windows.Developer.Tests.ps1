@@ -9,7 +9,6 @@ Set-StrictMode -Version Latest
 .Synopsis
    Pester tests related to the Microsoft.WinGet.Developer PowerShell module.
 #>
-
 # InModuleScope ensures that all mocks are on the Microsoft.Windows.Developer module.
 InModuleScope Microsoft.Windows.Developer {
    BeforeAll {
@@ -23,9 +22,10 @@ InModuleScope Microsoft.Windows.Developer {
    }
    Describe 'List available DSC resources' {
       It 'Shows DSC Resources' {
-         $expectedDSCResources = 'DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl', 'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting', 'AdvancedNetworkSharingSetting'
+         $expectedDSCResources = @('DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl',
+            'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting', 'WindowsCapability', 'AdvancedNetworkSharingSetting')
          $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
-         $availableDSCResources.length | Should -Be $expectedDSCResources.Length
+         $availableDSCResources.length | Should -Be $expectedDSCResources.Count
          $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
       }
    }
@@ -448,6 +448,126 @@ InModuleScope Microsoft.Windows.Developer {
 
          Should -Invoke Get-CimInstance -Times $expectedGetInvocations -Exactly -ParameterFilter { $ClassName -eq 'Win32_PowerSettingDataIndex' }
          Should -Invoke Set-CimInstance -Times $expectedSetInvocations -Exactly
+      }
+   }
+
+
+   enum WindowsCapabilityState {
+      Installed
+      NotInstalled
+      Nonexistent
+   }
+
+   Describe 'WindowsCapability' {
+      BeforeAll {
+         Mock Add-WindowsCapability {}
+         Mock Remove-WindowsCapability {}
+
+         $script:WindowsCapabilityName = 'OpenSSH.Server~~~~0.0.1.0'
+
+         $script:windowsCapabilityPresentCommonProvider = [WindowsCapability]@{
+            Ensure = [Ensure]::Present
+            Name   = $script:WindowsCapabilityName
+         }
+
+         $script:windowsCapabilityAbsentCommonProvider = [WindowsCapability]@{
+            Ensure = [Ensure]::Absent
+            Name   = $script:WindowsCapabilityName
+         }
+      }
+
+      It 'Get test for WindowsCapabilityState:<WindowsCapabilityState>' -ForEach @(
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed }
+      ) {
+         $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
+         $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
+
+         Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
+
+         $getResourceBlock = { return $script:windowsCapabilityPresentCommonProvider.Get() }
+         if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
+            $getResourceBlock | Should -Throw
+         } else {
+            $getResourceResult = &$getResourceBlock
+            $expectedEnsureValue = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Present' : 'Absent'
+            $getResourceResult.Ensure | Should -Be $expectedEnsureValue
+            $getResourceResult.Name | Should -Be $script:WindowsCapabilityName
+         }
+
+         Should -Invoke Get-WindowsCapability -Times 1 -Exactly -ParameterFilter {
+            $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
+         }
+      }
+
+      It 'Test test for WindowsCapabilityState:<WindowsCapabilityState>, EnsureState:<EnsureState>' -ForEach @(
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Absent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Absent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Absent }
+      ) {
+         $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
+         $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
+
+         Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
+
+         $winCapResource = ($EnsureState -eq [Ensure]::Present) ? $script:windowsCapabilityPresentCommonProvider : $script:windowsCapabilityAbsentCommonProvider
+
+         $testResourceBlock = { return $winCapResource.Test() }
+         if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
+            $testResourceBlock | Should -Throw
+         } else {
+            $testResourceResult = &$testResourceBlock
+            $expectedValue = ($EnsureState -eq [Ensure]::Present)
+            if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) {
+               $testResourceResult | Should -Be $expectedValue
+            } else {
+               $testResourceResult | Should -Be (-Not $expectedValue)
+            }
+         }
+      }
+
+      It 'Set test for WindowsCapabilityState:<WindowsCapabilityState>, EnsureState:<EnsureState>' -ForEach @(
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Present }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Nonexistent; EnsureState = [Ensure]::Absent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::NotInstalled; EnsureState = [Ensure]::Absent }
+         @{ WindowsCapabilityState = [WindowsCapabilityState]::Installed; EnsureState = [Ensure]::Absent }
+      ) {
+         $capabilityState = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed) ? 'Installed' : 'NotPresent'
+         $capabilityName = ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) ? '' : $script:WindowsCapabilityName
+
+         Mock Get-WindowsCapability { return  @{  Name = $capabilityName; State = $capabilityState } }
+
+         $winCapResource = ($EnsureState -eq [Ensure]::Present) ? $script:windowsCapabilityPresentCommonProvider : $script:windowsCapabilityAbsentCommonProvider
+
+         $setResourceBlock = { $winCapResource.Set() }
+         if ($WindowsCapabilityState -eq [WindowsCapabilityState]::Nonexistent) {
+            $setResourceBlock | Should -Throw
+         } else {
+            $setResourceBlock | Should -Not -Throw
+
+            if ((($EnsureState -eq [Ensure]::Present) -and ($WindowsCapabilityState -eq [WindowsCapabilityState]::Installed)) -or
+      (($EnsureState -eq [Ensure]::Absent) -and ($WindowsCapabilityState -eq [WindowsCapabilityState]::NotInstalled))) {
+               # No action in these scenarios
+               Should -Invoke Add-WindowsCapability -Times 0 -Exactly
+               Should -Invoke Remove-WindowsCapability -Times 0 -Exactly
+            } else {
+               if ($WindowsCapabilityState -eq [WindowsCapabilityState]::NotInstalled) {
+                  Should -Invoke Add-WindowsCapability -Times 1 -Exactly -ParameterFilter {
+                     $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
+                  }
+               } else {
+                  Should -Invoke Remove-WindowsCapability -Times 1 -Exactly -ParameterFilter {
+                     $Name -eq $script:WindowsCapabilityName -and $Online -eq $true
+                  }
+               }
+            }
+         }
       }
    }
 

@@ -18,6 +18,7 @@
         'EnableRemoteDesktop',
         'EnableLongPathSupport',
         'PowerPlanSetting',
+        'WindowsCapability',
 		'AdvancedNetworkSharingSetting'
     )
     PrivateData          = @{
@@ -33,8 +34,9 @@
                 'PSDscResource_UserAccessControl',
                 'PSDscResource_EnableRemoteDesktop',
                 'PSDscResource_EnableLongPathSupport',
-				'PSDscResource_PowerPlanSetting',
-                'PSDscResource_AdvancedNetworkSharingSetting'
+                'PSDscResource_PowerPlanSetting',
+                'PSDscResource_WindowsCapability',
+				'PSDscResource_AdvancedNetworkSharingSetting'
             )
 
             # Prerelease string of this module
