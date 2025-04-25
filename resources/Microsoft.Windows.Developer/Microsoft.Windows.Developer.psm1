@@ -654,18 +654,10 @@ class AdvancedNetworkSharingSetting {
 
             $firewallGroups = Get-NetFirewallRule -Group $group
             #Enable
-            if ($this.Profiles.Count -gt 0) {
-                $test = @{
-                    Enabled = 'True'
-                }
-                $firewallGroups | Where-Object { ($_.Enabled -eq $false) -and ($this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule @test
-            }
+            $firewallGroups | Where-Object { ($_.Enabled -eq $false) -and ($this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule -Enabled True
 
             #Disable
-            $test = @{
-                Enabled = 'False'
-            }
-            $firewallGroups | Where-Object { ($_.Enabled -eq $true) -and (-not $this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule @test
+            $firewallGroups | Where-Object { ($_.Enabled -eq $true) -and (-not $this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule -Enabled False
         }
     }
 }

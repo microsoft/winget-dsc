@@ -197,7 +197,7 @@ Describe 'EnableLongPathSupport' {
 InModuleScope Microsoft.Windows.Developer {
    Describe 'AdvancedNetworkSharingSetting' {
       BeforeAll {
-         Mock Set-NetFirewallRule { }
+         Mock Set-NetFirewallRule { } -RemoveParameterType InputObject
       }
 
       It 'Get test for NetworkSettingName:<NetworkSettingName>, ExpectedEnabledProfiles:<ExpectedEnabledProfiles>' -ForEach @(
@@ -334,6 +334,12 @@ InModuleScope Microsoft.Windows.Developer {
          }
 
          $advancedNetworkSharingSettingSettingProvider.Set()
+
+         if ($IsInTargetState -eq $true) {
+            Should -Invoke Set-NetFirewallRule -Times 0 -Exactly
+         } else {
+            Should -Invoke Set-NetFirewallRule -Times 1 -Exactly -ParameterFilter { $Enabled -eq (($Profiles.Count -gt 0) ? 'True' : 'False' ) }
+         }
       }
    }
 }
