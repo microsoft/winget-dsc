@@ -609,8 +609,8 @@ class AdvancedNetworkSharingSetting {
     [DscProperty(Key, Mandatory)]
     [AdvancedNetworkSharingSettingName]$Name
 
-    [DscProperty(Mandatory)]
-    [string[]]$Profiles
+    [DscProperty()]
+    [string[]]$Profiles = @()
 
     [DscProperty(NotConfigurable)]
     [string[]]$EnabledProfiles
@@ -630,7 +630,7 @@ class AdvancedNetworkSharingSetting {
             $group = $this.FileAndPrinterSharingGroup
         }
 
-        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Where-Object { $_.Enabled -eq $true } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Where-Object { $_.Enabled -eq 'True' } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
         $currentState.EnabledProfiles = $this.EnabledProfiles
 
         return $currentState
@@ -654,10 +654,10 @@ class AdvancedNetworkSharingSetting {
 
             $firewallGroups = Get-NetFirewallRule -Group $group
             #Enable
-            $firewallGroups | Where-Object { ($_.Enabled -eq $false) -and ($this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule -Enabled True
+            $firewallGroups | Where-Object { ($_.Enabled -eq 'False') -and ($this.Profiles.Contains($_.Profile.ToString())) } | Set-NetFirewallRule -Enabled True
 
             #Disable
-            $firewallGroups | Where-Object { ($_.Enabled -eq $true) -and (-not $this.Profiles.Contains($_.Profile)) } | Set-NetFirewallRule -Enabled False
+            $firewallGroups | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles.Contains($_.Profile.ToString())) } | Set-NetFirewallRule -Enabled False
         }
     }
 }
