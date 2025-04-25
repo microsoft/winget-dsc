@@ -17,7 +17,8 @@
         'UserAccessControl',
         'EnableRemoteDesktop',
         'EnableLongPathSupport',
-        'AdvancedNetworkSharingSetting'
+        'PowerPlanSetting',
+		'AdvancedNetworkSharingSetting'
     )
     PrivateData          = @{
         PSData = @{
@@ -32,6 +33,7 @@
                 'PSDscResource_UserAccessControl',
                 'PSDscResource_EnableRemoteDesktop',
                 'PSDscResource_EnableLongPathSupport',
+				'PSDscResource_PowerPlanSetting',
                 'PSDscResource_AdvancedNetworkSharingSetting'
             )
 
