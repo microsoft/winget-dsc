@@ -598,6 +598,44 @@ class EnableLongPathSupport {
         Set-ItemProperty -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey -Value $value
     }
 }
+
+[DSCResource()]
+class NetworkCategory {
+    # Key required. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty(Mandatory)]
+    [string]$InterfaceAlias
+
+    [DscProperty(Mandatory)]
+    [string]$Category
+
+    [NetworkCategory] Get() {
+        $currentState = [NetworkCategory]::new()
+
+        $networkCategory = Get-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -ErrorAction SilentlyContinue
+        if ($null -eq $networkCategory) {
+            throw "No network profile found for interface alias '$($this.InterfaceAlias)'"
+        }
+
+        $currentState.InterfaceAlias = $this.InterfaceAlias
+        $currentState.Category = $networkCategory.NetworkCategory
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.Category -eq $this.Category
+    }
+
+    [void] Set() {
+        if (-not $this.Test()) {
+            Set-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -NetworkCategory $this.Category -ErrorAction Stop
+        }
+    }
+}
 #endregion DSCResources
 
 #region Functions
