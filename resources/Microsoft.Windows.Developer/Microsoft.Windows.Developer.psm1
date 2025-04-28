@@ -854,12 +854,16 @@ class AdvancedNetworkSharingSetting {
                 $group = $this.FileAndPrinterSharingGroup
             }
 
-            $firewallGroups = Get-NetFirewallRule -Group $group
             #Enable
-            $firewallGroups | Where-Object { ($_.Enabled -eq 'False') -and ($this.Profiles -Contains $_.Profile ) } | Set-NetFirewallRule -Enabled True
+            foreach ($profile in $this.Profiles) {
+                Set-NetFirewallRule -Group $group -Profile $profile -Enabled True
+            }
 
             #Disable
-            $firewallGroups | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles -Contains $_.Profile ) } | Set-NetFirewallRule -Enabled False
+            $profilesToDisable = Get-NetFirewallRule -Group $group | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles -Contains $_.Profile ) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+            foreach ($profile in $profilesToDisable) {
+                Set-NetFirewallRule -Group $group -Profile $profile -Enabled False
+            }
         }
     }
 }

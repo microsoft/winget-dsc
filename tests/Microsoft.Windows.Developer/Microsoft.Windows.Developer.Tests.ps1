@@ -573,7 +573,7 @@ InModuleScope Microsoft.Windows.Developer {
 
    Describe 'AdvancedNetworkSharingSetting' {
       BeforeAll {
-         Mock Set-NetFirewallRule { } -RemoveParameterType InputObject
+         Mock Set-NetFirewallRule { }
       }
 
       It 'Get test for NetworkSettingName:<NetworkSettingName>, ExpectedEnabledProfiles:<ExpectedEnabledProfiles>' -ForEach @(
