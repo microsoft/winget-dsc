@@ -24,7 +24,8 @@ InModuleScope Microsoft.Windows.Developer {
    Describe 'List available DSC resources' {
       It 'Shows DSC Resources' {
          $expectedDSCResources = @('DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl',
-            'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting', 'WindowsCapability')
+            'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting', 'WindowsCapability',
+            'NetConnectionProfile')
          $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
          $availableDSCResources.length | Should -Be $expectedDSCResources.Count
          $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
