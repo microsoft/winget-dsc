@@ -600,7 +600,7 @@ class EnableLongPathSupport {
 }
 
 [DSCResource()]
-class NetworkCategory {
+class NetConnectionProfile {
     # Key required. Do not set.
     [DscProperty(Key)]
     [string]$SID
@@ -609,30 +609,30 @@ class NetworkCategory {
     [string]$InterfaceAlias
 
     [DscProperty(Mandatory)]
-    [string]$Category
+    [string]$NetworkCategory
 
-    [NetworkCategory] Get() {
-        $currentState = [NetworkCategory]::new()
+    [NetConnectionProfile] Get() {
+        $currentState = [NetConnectionProfile]::new()
 
-        $networkCategory = Get-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -ErrorAction SilentlyContinue
-        if ($null -eq $networkCategory) {
+        $netConnectionProfile = Get-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -ErrorAction SilentlyContinue
+        if ($null -eq $netConnectionProfile) {
             throw "No network profile found for interface alias '$($this.InterfaceAlias)'"
         }
 
         $currentState.InterfaceAlias = $this.InterfaceAlias
-        $currentState.Category = $networkCategory.NetworkCategory
+        $currentState.NetworkCategory = $netConnectionProfile.NetworkCategory
 
         return $currentState
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        return $currentState.Category -eq $this.Category
+        return $currentState.NetworkCategory -eq $this.NetworkCategory
     }
 
     [void] Set() {
         if (-not $this.Test()) {
-            Set-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -NetworkCategory $this.Category -ErrorAction Stop
+            Set-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -NetworkCategory $this.NetworkCategory
         }
     }
 }
