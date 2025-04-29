@@ -577,98 +577,64 @@ InModuleScope Microsoft.Windows.Developer {
          Import-Module -Name "e:\winget-dsc\resources\Microsoft.Windows.Developer\Microsoft.Windows.Developer.psm1"
       }
 
-      Context 'Get Method' {
-         It 'Should return the current state of the network profile' {
-            $mockInterfaceAlias = 'Ethernet'
-            $mockNetworkCategory = 'Private'
-
-            Mock -CommandName Get-NetConnectionProfile -MockWith {
-               return @{ NetworkCategory = $mockNetworkCategory }
-            }
-
-            $resource = [NetConnectionProfile]::new()
-            $resource.InterfaceAlias = $mockInterfaceAlias
-
-            $result = $resource.Get()
-
-            $result.InterfaceAlias | Should -Be $mockInterfaceAlias
-            $result.NetworkCategory | Should -Be $mockNetworkCategory
+      It 'Get test for InterfaceAlias:<InterfaceAlias>, NetworkCategory:<NetworkCategory>' -ForEach @(
+         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private' }
+         @{ InterfaceAlias = 'Wi-Fi'; NetworkCategory = 'Public' }
+      ) {
+         Mock -CommandName Get-NetConnectionProfile -MockWith {
+            return @{ NetworkCategory = $NetworkCategory }
          }
+
+         $resource = [NetConnectionProfile]::new()
+         $resource.InterfaceAlias = $InterfaceAlias
+
+         $result = $resource.Get()
+
+         $result.InterfaceAlias | Should -Be $InterfaceAlias
+         $result.NetworkCategory | Should -Be $NetworkCategory
       }
 
-      Context 'Test Method' {
-         It 'Should return true if the desired state matches the current state' {
-            $mockInterfaceAlias = 'Ethernet'
-            $mockNetworkCategory = 'Private'
-
-            Mock -CommandName Get-NetConnectionProfile -MockWith {
-               return @{ NetworkCategory = $mockNetworkCategory }
-            }
-
-            $resource = [NetConnectionProfile]::new()
-            $resource.InterfaceAlias = $mockInterfaceAlias
-            $resource.NetworkCategory = $mockNetworkCategory
-
-            $result = $resource.Test()
-
-            $result | Should -Be $true
+      It 'Test test for InterfaceAlias:<InterfaceAlias>, NetworkCategory:<NetworkCategory>, ExpectedResult:<ExpectedResult>' -ForEach @(
+         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $true }
+         @{ InterfaceAlias = 'Wi-Fi'; NetworkCategory = 'Public'; ExpectedResult = $true }
+         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Public'; ExpectedResult = $false }
+         @{ InterfaceAlias = 'Wi-Fi'; NetworkCategory = 'Private'; ExpectedResult = $false }
+      ) {
+         Mock -CommandName Get-NetConnectionProfile -MockWith {
+            return @{ NetworkCategory = ($ExpectedResult ? $NetworkCategory : 'Other') }
          }
 
-         It 'Should return false if the desired state does not match the current state' {
-            $mockInterfaceAlias = 'Ethernet'
-            $mockNetworkCategory = 'Private'
+         $resource = [NetConnectionProfile]::new()
+         $resource.InterfaceAlias = $InterfaceAlias
+         $resource.NetworkCategory = $NetworkCategory
 
-            Mock -CommandName Get-NetConnectionProfile -MockWith {
-               return @{ NetworkCategory = 'Public' }
-            }
+         $result = $resource.Test()
 
-            $resource = [NetConnectionProfile]::new()
-            $resource.InterfaceAlias = $mockInterfaceAlias
-            $resource.NetworkCategory = $mockNetworkCategory
-
-            $result = $resource.Test()
-
-            $result | Should -Be $false
-         }
+         $result | Should -Be $ExpectedResult
       }
 
-      Context 'Set Method' {
-         It 'Should set the network category if the desired state does not match the current state' {
-            $mockInterfaceAlias = 'Ethernet'
-            $mockNetworkCategory = 'Private'
-
-            Mock -CommandName Get-NetConnectionProfile -MockWith {
-               return @{ NetworkCategory = 'Public' }
-            }
-
-            Mock -CommandName Set-NetConnectionProfile -MockWith {}
-
-            $resource = [NetConnectionProfile]::new()
-            $resource.InterfaceAlias = $mockInterfaceAlias
-            $resource.NetworkCategory = $mockNetworkCategory
-
-            $resource.Set()
-
-            Assert-MockCalled -CommandName Set-NetConnectionProfile -Exactly 1 -Scope It
+      It 'Set test for InterfaceAlias:<InterfaceAlias>, NetworkCategory:<NetworkCategory>, IsInTargetState:<IsInTargetState>' -ForEach @(
+         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $true }
+         @{ InterfaceAlias = 'Wi-Fi'; NetworkCategory = 'Public'; IsInTargetState = $true }
+         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Public'; IsInTargetState = $false }
+         @{ InterfaceAlias = 'Wi-Fi'; NetworkCategory = 'Private'; IsInTargetState = $false }
+      ) {
+         Mock -CommandName Get-NetConnectionProfile -MockWith {
+            return @{ NetworkCategory = ($IsInTargetState ? $NetworkCategory : 'Other') }
          }
 
-         It 'Should not set the network category if the desired state matches the current state' {
-            $mockInterfaceAlias = 'Ethernet'
-            $mockNetworkCategory = 'Private'
+         Mock -CommandName Set-NetConnectionProfile -MockWith {}
 
-            Mock -CommandName Get-NetConnectionProfile -MockWith {
-               return @{ NetworkCategory = $mockNetworkCategory }
-            }
+         $resource = [NetConnectionProfile]::new()
+         $resource.InterfaceAlias = $InterfaceAlias
+         $resource.NetworkCategory = $NetworkCategory
 
-            Mock -CommandName Set-NetConnectionProfile -MockWith {}
+         $resource.Set()
 
-            $resource = [NetConnectionProfile]::new()
-            $resource.InterfaceAlias = $mockInterfaceAlias
-            $resource.NetworkCategory = $mockNetworkCategory
-
-            $resource.Set()
-
+         if ($IsInTargetState) {
             Assert-MockCalled -CommandName Set-NetConnectionProfile -Exactly 0 -Scope It
+         } else {
+            Assert-MockCalled -CommandName Set-NetConnectionProfile -Exactly 1 -Scope It
          }
       }
    }
