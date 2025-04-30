@@ -25,7 +25,7 @@ InModuleScope Microsoft.Windows.Developer {
       It 'Shows DSC Resources' {
          $expectedDSCResources = @('DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl',
             'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting', 'WindowsCapability',
-            'NetConnectionProfile', 'NetConnectionProfileInfo')
+            'NetConnectionProfile')
          $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
          $availableDSCResources.length | Should -Be $expectedDSCResources.Count
          $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
@@ -665,42 +665,6 @@ InModuleScope Microsoft.Windows.Developer {
          } else {
             $resultBlock | Should -Throw
          }
-      }
-   }
-
-   Describe 'NetConnectionProfileInfo' {
-      It 'Get test for TargetInterfaceAlias:<TargetInterfaceAlias>' -ForEach @(
-         @{ TargetInterfaceAlias = 'Ethernet' }
-      ) {
-         Mock Get-NetConnectionProfile {
-            return @{ }
-         }
-
-         $resource = [NetConnectionProfileInfo]::new()
-         $resource.InterfaceAlias = $TargetInterfaceAlias
-
-         $result = $resource.Get()
-         $result.InterfaceAlias | Should -Be $TargetInterfaceAlias
-      }
-
-      It 'Test test for TargetInterfaceAlias:<TargetInterfaceAlias>, ProfileExists:<ProfileExists>' -ForEach @(
-         @{ TargetInterfaceAlias = 'Ethernet'; ProfileExists = $true }
-         @{ TargetInterfaceAlias = 'Ethernet'; ProfileExists = $false }
-      ) {
-         Mock -CommandName Get-NetConnectionProfile {
-            if ($ProfileExists -eq $true) {
-               return @{ }
-            } else {
-               return $null
-            }
-         }
-
-         $resource = [NetConnectionProfileInfo]::new()
-         $resource.InterfaceAlias = $TargetInterfaceAlias
-
-         $result = $resource.Test()
-         $result | Should -Be $ProfileExists
-         Should -Invoke Get-NetConnectionProfile -Times 1 -Exactly -ParameterFilter { $InterfaceAlias -eq $TargetInterfaceAlias }
       }
    }
 

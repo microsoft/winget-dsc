@@ -836,36 +836,6 @@ class NetConnectionProfile {
         }
     }
 }
-
-[DSCResource()]
-class NetConnectionProfileInfo {
-    # Key required. Do not set.
-    [DscProperty(Key)]
-    [string]$SID
-
-    [DscProperty(Mandatory)]
-    [string]$InterfaceAlias
-
-    [NetConnectionProfileInfo] Get() {
-        $currentState = [NetConnectionProfileInfo]::new()
-
-        $currentState.InterfaceAlias = $this.InterfaceAlias
-        return $currentState
-    }
-
-    [bool] Test() {
-        $netConnectionProfile = Get-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -ErrorAction SilentlyContinue
-        if ($null -eq $netConnectionProfile) {
-            return $false
-        } else {
-            return $true
-        }
-    }
-
-    [void] Set() {
-        # This resource is only for asserting that the net connection profile exists.
-    }
-}
 #endregion DSCResources
 
 #region Functions
