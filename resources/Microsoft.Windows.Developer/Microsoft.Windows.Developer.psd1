@@ -19,7 +19,8 @@
         'EnableLongPathSupport',
         'PowerPlanSetting',
         'WindowsCapability',
-        'NetConnectionProfile'
+        'NetConnectionProfile',
+        'NetConnectionProfileInfo'
     )
     PrivateData          = @{
         PSData = @{
@@ -36,7 +37,8 @@
                 'PSDscResource_EnableLongPathSupport',
                 'PSDscResource_PowerPlanSetting',
                 'PSDscResource_WindowsCapability',
-                'PSDscResource_NetConnectionProfile'
+                'PSDscResource_NetConnectionProfile',
+                'PSDscResource_NetConnectionProfileInfo'
             )
 
             # Prerelease string of this module

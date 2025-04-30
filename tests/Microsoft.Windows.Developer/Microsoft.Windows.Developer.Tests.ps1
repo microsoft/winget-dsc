@@ -25,7 +25,7 @@ InModuleScope Microsoft.Windows.Developer {
       It 'Shows DSC Resources' {
          $expectedDSCResources = @('DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl',
             'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting', 'WindowsCapability',
-            'NetConnectionProfile')
+            'NetConnectionProfile', 'NetConnectionProfileInfo')
          $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
          $availableDSCResources.length | Should -Be $expectedDSCResources.Count
          $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
@@ -572,14 +572,14 @@ InModuleScope Microsoft.Windows.Developer {
       }
    }
 
-   Describe 'NetConnectionProfile DSC Resource' {
+   Describe 'NetConnectionProfile' {
       BeforeAll {
          Mock Set-NetConnectionProfile {}
       }
 
-      It 'Get test for InterfaceAlias:<InterfaceAlias>, NetworkCategory:<NetworkCategory>' -ForEach @(
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ProfileExists = $true }
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ProfileExists = $false }
+      It 'Get test for TargetInterfaceAlias:<TargetInterfaceAlias>, NetworkCategory:<NetworkCategory>, ProfileExists:<ProfileExists>' -ForEach @(
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ProfileExists = $true }
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ProfileExists = $false }
       ) {
          #Scoping workaround for the mock to work in the test
          $netCategory = $NetworkCategory
@@ -592,24 +592,26 @@ InModuleScope Microsoft.Windows.Developer {
          }
 
          $resource = [NetConnectionProfile]::new()
-         $resource.InterfaceAlias = $InterfaceAlias
+         $resource.InterfaceAlias = $TargetInterfaceAlias
 
          $resultBlock = { $resource.Get() }
 
          if ($ProfileExists -eq $true) {
             $result = &$resultBlock
-            $result.InterfaceAlias | Should -Be $InterfaceAlias
+            $result.InterfaceAlias | Should -Be $TargetInterfaceAlias
             $result.NetworkCategory | Should -Be $NetworkCategory
          } else {
             $resultBlock | Should -Throw
          }
+
+         Should -Invoke Get-NetConnectionProfile -Times 1 -Exactly -ParameterFilter { $InterfaceAlias -eq $TargetInterfaceAlias }
       }
 
-      It 'Test test for InterfaceAlias:<InterfaceAlias>, NetworkCategory:<NetworkCategory>, ExpectedResult:<ExpectedResult>' -ForEach @(
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $true; ProfileExists = $true }
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $false; ProfileExists = $true }
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $true; ProfileExists = $false }
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $false; ProfileExists = $false }
+      It 'Test test for TargetInterfaceAlias:<TargetInterfaceAlias>, NetworkCategory:<NetworkCategory>, ExpectedResult:<ExpectedResult>, ProfileExists:<ProfileExists>' -ForEach @(
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $true; ProfileExists = $true }
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $false; ProfileExists = $true }
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $true; ProfileExists = $false }
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; ExpectedResult = $false; ProfileExists = $false }
       ) {
          #Scoping workaround for the mock to work in the test
          $netCategory = $NetworkCategory
@@ -622,7 +624,7 @@ InModuleScope Microsoft.Windows.Developer {
          }
 
          $resource = [NetConnectionProfile]::new()
-         $resource.InterfaceAlias = $InterfaceAlias
+         $resource.InterfaceAlias = $TargetInterfaceAlias
          $resource.NetworkCategory = $NetworkCategory
 
          $resultBlock = { $resource.Test() }
@@ -635,11 +637,11 @@ InModuleScope Microsoft.Windows.Developer {
          }
       }
 
-      It 'Set test for InterfaceAlias:<InterfaceAlias>, NetworkCategory:<NetworkCategory>, IsInTargetState:<IsInTargetState>' -ForEach @(
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $true; ProfileExists = $true }
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $false; ProfileExists = $true }
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $true; ProfileExists = $false }
-         @{ InterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $false; ProfileExists = $false }
+      It 'Set test for TargetInterfaceAlias:<TargetInterfaceAlias>, NetworkCategory:<NetworkCategory>, IsInTargetState:<IsInTargetState>, ProfileExists:<ProfileExists>' -ForEach @(
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $true; ProfileExists = $true }
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $false; ProfileExists = $true }
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $true; ProfileExists = $false }
+         @{ TargetInterfaceAlias = 'Ethernet'; NetworkCategory = 'Private'; IsInTargetState = $false; ProfileExists = $false }
       ) {
          #Scoping workaround for the mock to work in the test
          $netCategory = $NetworkCategory
@@ -652,7 +654,7 @@ InModuleScope Microsoft.Windows.Developer {
          }
 
          $resource = [NetConnectionProfile]::new()
-         $resource.InterfaceAlias = $InterfaceAlias
+         $resource.InterfaceAlias = $TargetInterfaceAlias
          $resource.NetworkCategory = $NetworkCategory
 
          $resultBLock = { $resource.Set() }
@@ -663,6 +665,42 @@ InModuleScope Microsoft.Windows.Developer {
          } else {
             $resultBlock | Should -Throw
          }
+      }
+   }
+
+   Describe 'NetConnectionProfileInfo' {
+      It 'Get test for TargetInterfaceAlias:<TargetInterfaceAlias>' -ForEach @(
+         @{ TargetInterfaceAlias = 'Ethernet' }
+      ) {
+         Mock Get-NetConnectionProfile {
+            return @{ }
+         }
+
+         $resource = [NetConnectionProfileInfo]::new()
+         $resource.InterfaceAlias = $TargetInterfaceAlias
+
+         $result = $resource.Get()
+         $result.InterfaceAlias | Should -Be $TargetInterfaceAlias
+      }
+
+      It 'Test test for TargetInterfaceAlias:<TargetInterfaceAlias>, ProfileExists:<ProfileExists>' -ForEach @(
+         @{ TargetInterfaceAlias = 'Ethernet'; ProfileExists = $true }
+         @{ TargetInterfaceAlias = 'Ethernet'; ProfileExists = $false }
+      ) {
+         Mock -CommandName Get-NetConnectionProfile {
+            if ($ProfileExists -eq $true) {
+               return @{ }
+            } else {
+               return $null
+            }
+         }
+
+         $resource = [NetConnectionProfileInfo]::new()
+         $resource.InterfaceAlias = $TargetInterfaceAlias
+
+         $result = $resource.Test()
+         $result | Should -Be $ProfileExists
+         Should -Invoke Get-NetConnectionProfile -Times 1 -Exactly -ParameterFilter { $InterfaceAlias -eq $TargetInterfaceAlias }
       }
    }
 
