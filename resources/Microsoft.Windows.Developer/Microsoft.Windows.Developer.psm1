@@ -838,10 +838,11 @@ class AdvancedNetworkSharingSetting {
             $disabled = ($_.Group.Enabled | Where-Object { $_ -eq 'false' } | Measure-Object).Count
             [PSCustomObject]@{
                 Profile  = $_.Name
+                Count    = $_.Count
                 Enabled  = $enabled
                 Disabled = $disabled
             }
-        } | Where-Object { ($_.Enabled -gt 0) -and ($_.Disabled -eq 0) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+        } | Where-Object { ($_.Enabled -gt 0) -and ($_.Disabled -eq 0) -and ($_.Enabled -eq $_.Count) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
 
         $currentState.EnabledProfiles = $this.EnabledProfiles
 
