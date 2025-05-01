@@ -800,6 +800,107 @@ class WindowsCapability {
         }
     }
 }
+
+[DSCResource()]
+class FirewallRule {
+    [DscProperty(Key, Mandatory)]
+    [string]$Name
+
+    [DscProperty()]
+    [string]$DisplayName
+
+    [DscProperty()]
+    [string]$Action
+
+    [DscProperty()]
+    [string]$Description
+
+    [DscProperty()]
+    [string]$Direction
+
+    [DscProperty()]
+    [bool]$Enabled
+
+    [DscProperty()]
+    [Ensure]$Ensure = [Ensure]::Present
+
+    [DscProperty()]
+    [string[]]$LocalPort
+
+    [DscProperty()]
+    [string[]]$Profiles
+
+    [DscProperty()]
+    [string]$Protocol
+
+    [FirewallRule] Get() {
+        $rule = Get-NetFirewallRule -Name $this.Name -ErrorAction SilentlyContinue
+
+        if (-not $rule) {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $properties = Get-NetFirewallRule -Name $this.Name | Get-NetFirewallPortFilter
+
+        return @{
+            Name        = $rule.Name
+            DisplayName = $rule.DisplayName
+            Action      = $rule.Action
+            Description = $rule.Description
+            Direction   = $rule.Direction
+            Enabled     = $rule.Enabled
+            Ensure      = [Ensure]::Present
+            LocalPort   = $properties.LocalPort
+            Profiles    = $rule.Profile
+            Protocol    = $properties.Protocol
+        }
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        if ($this.Ensure -eq [Ensure]::Absent) {
+            return $currentState.Ensure -eq [Ensure]::Absent
+        }
+
+        return (
+            $currentState.Name -eq $this.Name -and
+            $currentState.DisplayName -eq $this.DisplayName -and
+            $currentState.Action -eq $this.Action -and
+            $currentState.Description -eq $this.Description -and
+            $currentState.Direction -eq $this.Direction -and
+            $currentState.Enabled -eq $this.Enabled -and
+            $currentState.LocalPort -eq $this.LocalPort -and
+            $currentState.Profiles -eq $this.Profiles -and
+            $currentState.Protocol -eq $this.Protocol
+        )
+    }
+
+    [void] Set() {
+        if ($this.Ensure -eq [Ensure]::Absent) {
+            Remove-NetFirewallRule -Name $this.Name -ErrorAction SilentlyContinue
+        } else {
+            $params = @{
+                Name        = $this.Name
+                DisplayName = $this.DisplayName
+                Action      = $this.Action
+                Description = $this.Description
+                Direction   = $this.Direction
+                Enabled     = $this.Enabled
+                Profile     = $this.Profiles
+                Protocol    = $this.Protocol
+            }
+
+            if ($this.LocalPort) {
+                $params.LocalPort = $this.LocalPort
+            }
+
+            New-NetFirewallRule @params -ErrorAction SilentlyContinue
+        }
+    }
+}
 #endregion DSCResources
 
 #region Functions
