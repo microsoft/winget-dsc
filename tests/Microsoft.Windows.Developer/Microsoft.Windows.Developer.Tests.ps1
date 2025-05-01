@@ -582,12 +582,22 @@ InModuleScope Microsoft.Windows.Developer {
             ExpectedEnabledProfiles = , 'Private'
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' },
+            @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
+            ExpectedEnabledProfiles = @()
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
             ExpectedEnabledProfiles = @()
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' }
             ExpectedEnabledProfiles = , 'Private'
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' },
+            @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
+            ExpectedEnabledProfiles = @()
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
@@ -614,6 +624,12 @@ InModuleScope Microsoft.Windows.Developer {
             ExpectedValue           = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' },
+            @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
+            ExpectedValue           = $false
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = @()
             CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' }
             ExpectedValue           = $false
@@ -632,6 +648,12 @@ InModuleScope Microsoft.Windows.Developer {
             Profiles                = , 'Private'
             CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' }
             ExpectedValue           = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' },
+            @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
+            ExpectedValue           = $false
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = @()
@@ -667,6 +689,12 @@ InModuleScope Microsoft.Windows.Developer {
             IsInTargetState         = $true
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' },
+            @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'False'; Profile = 'Private' }
+            IsInTargetState         = $false
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::NetworkDiscovery
             Profiles                = @()
             CurrentNetFirewallRules = @{Name = 'Network discovery'; Group = '@FirewallAPI.dll,-32752'; Enabled = 'True'; Profile = 'Private' }
             IsInTargetState         = $false
@@ -685,6 +713,12 @@ InModuleScope Microsoft.Windows.Developer {
             Profiles                = , 'Private'
             CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' }
             IsInTargetState         = $true
+         }
+         @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
+            Profiles                = , 'Private'
+            CurrentNetFirewallRules = @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'True'; Profile = 'Private' },
+            @{Name = 'File and Printer Sharing'; Group = '@FirewallAPI.dll,-28502'; Enabled = 'False'; Profile = 'Private' }
+            IsInTargetState         = $false
          }
          @{ NetworkSettingName      = [AdvancedNetworkSharingSettingName]::FileAndPrinterSharing
             Profiles                = @()

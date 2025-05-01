@@ -817,11 +817,11 @@ class AdvancedNetworkSharingSetting {
     [DscProperty(NotConfigurable)]
     [string[]]$EnabledProfiles
 
+    # Official group names for the firewall rules
     hidden [string] $NetworkDiscoveryGroup = '@FirewallAPI.dll,-32752'
     hidden [string] $FileAndPrinterSharingGroup = '@FirewallAPI.dll,-28502'
 
     [AdvancedNetworkSharingSetting] Get() {
-
         $currentState = [AdvancedNetworkSharingSetting]::new()
         $currentState.Name = $this.Name
         $currentState.Profiles = $this.Profiles
@@ -832,7 +832,17 @@ class AdvancedNetworkSharingSetting {
             $group = $this.FileAndPrinterSharingGroup
         }
 
-        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Where-Object { $_.Enabled -eq 'True' } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+        # A firewall group is enabled if none of its sub-rules are disabled and at least one is enabled.
+        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Group-Object Profile | ForEach-Object {
+            $enabled = ($_.Group.Enabled | Where-Object { $_ -eq 'true' } | Measure-Object).Count
+            $disabled = ($_.Group.Enabled | Where-Object { $_ -eq 'false' } | Measure-Object).Count
+            [PSCustomObject]@{
+                Profile  = $_.Name
+                Enabled  = $enabled
+                Disabled = $disabled
+            }
+        } | Where-Object { ($_.Enabled -gt 0) -and ($_.Disabled -eq 0) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+
         $currentState.EnabledProfiles = $this.EnabledProfiles
 
         return $currentState
@@ -854,12 +864,12 @@ class AdvancedNetworkSharingSetting {
                 $group = $this.FileAndPrinterSharingGroup
             }
 
-            #Enable
+            #Enable, no harm in enabling profiles if they are already enabled
             foreach ($profile in $this.Profiles) {
                 Set-NetFirewallRule -Group $group -Profile $profile -Enabled True
             }
 
-            #Disable
+            #Disable needed if at least one profile is enabled
             $profilesToDisable = Get-NetFirewallRule -Group $group | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles -Contains $_.Profile ) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
             foreach ($profile in $profilesToDisable) {
                 Set-NetFirewallRule -Group $group -Profile $profile -Enabled False
