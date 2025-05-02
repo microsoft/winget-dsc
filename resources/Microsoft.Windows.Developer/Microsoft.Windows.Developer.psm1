@@ -877,19 +877,40 @@ class FirewallRule {
             return $currentState.Ensure -eq [Ensure]::Absent
         }
 
+        # Check each property only if it is specified
+        if ($this.DisplayName -and $currentState.DisplayName -ne $this.DisplayName) {
+            return $false
+        }
 
-        #TODO add null checks for all properties
-        return (
-            $currentState.Name -eq $this.Name -and
-            $currentState.DisplayName -eq $this.DisplayName -and
-            $currentState.Action -eq $this.Action -and
-            $currentState.Description -eq $this.Description -and
-            $currentState.Direction -eq $this.Direction -and
-            $currentState.Enabled -eq $this.Enabled -and
-            $currentState.LocalPort -eq $this.LocalPort -and
-            $currentState.Profiles -eq $this.Profiles -and
-            $currentState.Protocol -eq $this.Protocol
-        )
+        if ($this.Action -and $currentState.Action -ne $this.Action) {
+            return $false
+        }
+
+        if ($this.Description -and $currentState.Description -ne $this.Description) {
+            return $false
+        }
+
+        if ($this.Direction -and $currentState.Direction -ne $this.Direction) {
+            return $false
+        }
+
+        if ($this.Enabled -ne $null -and $currentState.Enabled -ne $this.Enabled) {
+            return $false
+        }
+
+        if ($this.LocalPort -and -not ($currentState.LocalPort -eq $this.LocalPort)) {
+            return $false
+        }
+
+        if ($this.Profiles -and -not ($currentState.Profiles -eq $this.Profiles)) {
+            return $false
+        }
+
+        if ($this.Protocol -and $currentState.Protocol -ne $this.Protocol) {
+            return $false
+        }
+
+        return $true
     }
 
     [void] Set() {
