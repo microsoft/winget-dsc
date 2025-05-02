@@ -571,6 +571,85 @@ InModuleScope Microsoft.Windows.Developer {
       }
    }
 
+   Describe 'FirewallRule' {
+      BeforeAll {
+         Mock Get-NetFirewallRule {
+            return @{
+               Name        = 'TestRule'
+               DisplayName = 'Test Rule'
+               Action      = 'Allow'
+               Description = 'Test Description'
+               Direction   = 'Inbound'
+               Enabled     = $true
+               Profile     = @('Domain', 'Private')
+            }
+         }
+
+         Mock Get-NetFirewallPortFilter {
+            return @{
+               LocalPort = @('80', '443')
+               Protocol  = 'TCP'
+            }
+         }
+
+         Mock Set-NetFirewallRule {}
+         Mock New-NetFirewallRule {}
+         Mock Remove-NetFirewallRule {}
+      }
+
+      It 'Get test for FirewallRule' {
+         $firewallRule = [FirewallRule]@{
+            Name = 'TestRule'
+         }
+
+         $getResult = $firewallRule.Get()
+         $getResult.Name | Should -Be 'TestRule'
+         $getResult.DisplayName | Should -Be 'Test Rule'
+         $getResult.Action | Should -Be 'Allow'
+         $getResult.Description | Should -Be 'Test Description'
+         $getResult.Direction | Should -Be 'Inbound'
+         $getResult.Enabled | Should -Be $true
+         $getResult.LocalPort | Should -Be @('80', '443')
+         $getResult.Protocol | Should -Be 'TCP'
+         $getResult.Profiles | Should -Be @('Domain', 'Private')
+      }
+
+      It 'Test test for FirewallRule with EnsureState:<EnsureState>' -ForEach @(
+         @{ EnsureState = [Ensure]::Present; ExpectedResult = $true }
+         @{ EnsureState = [Ensure]::Absent; ExpectedResult = $false }
+      ) {
+         param ($EnsureState, $ExpectedResult)
+
+         $firewallRule = [FirewallRule]@{
+            Name   = 'TestRule'
+            Ensure = $EnsureState
+         }
+
+         $testResult = $firewallRule.Test()
+         $testResult | Should -Be $ExpectedResult
+      }
+
+      It 'Set test for FirewallRule with EnsureState:<EnsureState>' -ForEach @(
+         @{ EnsureState = [Ensure]::Present }
+         @{ EnsureState = [Ensure]::Absent }
+      ) {
+         param ($EnsureState)
+
+         $firewallRule = [FirewallRule]@{
+            Name   = 'TestRule'
+            Ensure = $EnsureState
+         }
+
+         $setResult = { $firewallRule.Set() }
+
+         if ($EnsureState -eq [Ensure]::Present) {
+            Should -Invoke New-NetFirewallRule -Times 1 -Exactly
+         } else {
+            Should -Invoke Remove-NetFirewallRule -Times 1 -Exactly
+         }
+      }
+   }
+
    AfterAll {
       $env:TestRegistryPath = ''
    }
