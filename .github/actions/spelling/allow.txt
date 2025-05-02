@@ -69,6 +69,7 @@ wildcards
 winappdev
 Windo
 winget
+workaround
 workflows
 worktree
 yml
