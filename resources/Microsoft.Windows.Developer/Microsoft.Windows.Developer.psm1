@@ -59,6 +59,17 @@ enum PowerSource {
     All
 }
 
+enum Action {
+    NotConfigured
+    Allow
+    Block
+}
+
+enum Direction {
+    Inbound
+    Outbound
+}
+
 #region DSCResources
 [DSCResource()]
 class DeveloperMode {
@@ -810,13 +821,13 @@ class FirewallRule {
     [string]$DisplayName
 
     [DscProperty()]
-    [string]$Action
+    [Action]$Action
 
     [DscProperty()]
     [string]$Description
 
     [DscProperty()]
-    [string]$Direction
+    [Direction]$Direction
 
     [DscProperty()]
     [bool]$Enabled
@@ -839,6 +850,7 @@ class FirewallRule {
         if (-not $rule) {
             return @{
                 Ensure = [Ensure]::Absent
+                Name   = $this.Name
             }
         }
 
@@ -865,6 +877,8 @@ class FirewallRule {
             return $currentState.Ensure -eq [Ensure]::Absent
         }
 
+
+        #TODO add null checks for all properties
         return (
             $currentState.Name -eq $this.Name -and
             $currentState.DisplayName -eq $this.DisplayName -and
@@ -879,26 +893,34 @@ class FirewallRule {
     }
 
     [void] Set() {
-        if ($this.Ensure -eq [Ensure]::Absent) {
-            Remove-NetFirewallRule -Name $this.Name -ErrorAction SilentlyContinue
-        } else {
-            $params = @{
-                Name        = $this.Name
-                DisplayName = $this.DisplayName
-                Action      = $this.Action
-                Description = $this.Description
-                Direction   = $this.Direction
-                Enabled     = $this.Enabled
-                Profile     = $this.Profiles
-                Protocol    = $this.Protocol
-            }
+        # Only make changes if changes are needed
+        if (-not $this.Test()) {
+            if ($this.Ensure -eq [Ensure]::Absent) {
+                Remove-NetFirewallRule -Name $this.Name -ErrorAction SilentlyContinue
+            } else {
+                $firewallRule = Get-FirewallRule -Name $Name
+                $exists = ($null -ne $firewallRule)
 
-            if ($this.LocalPort) {
-                $params.LocalPort = $this.LocalPort
-            }
+                $params = @{
+                    Name        = $this.Name
+                    DisplayName = $this.DisplayName
+                    Action      = $this.Action
+                    Description = $this.Description
+                    Direction   = $this.Direction
+                    Enabled     = $this.Enabled
+                    Profile     = $this.Profiles
+                    Protocol    = $this.Protocol
+                    LocalPort   = $this.LocalPort
+                }
 
-            New-NetFirewallRule @params -ErrorAction SilentlyContinue
+                if ($exists) {
+                    Set-NetFirewallRule @params
+                } else {
+                    New-NetFirewallRule @params
+                }
+            }
         }
+
     }
 }
 #endregion DSCResources
