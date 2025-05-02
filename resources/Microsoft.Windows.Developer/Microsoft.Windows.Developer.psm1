@@ -854,8 +854,7 @@ class FirewallRule {
             }
         }
 
-        $properties = Get-NetFirewallRule -Name $this.Name
-
+        $properties = $rule | Get-NetFirewallPortFilter
         return @{
             Name        = $rule.Name
             DisplayName = $rule.DisplayName
@@ -865,7 +864,8 @@ class FirewallRule {
             Enabled     = $rule.Enabled
             Ensure      = [Ensure]::Present
             LocalPort   = $properties.LocalPort
-            Profiles    = $rule.Profile
+            # Split the profiles string into an array
+            Profiles    = $rule.Profile -split ','
             Protocol    = $properties.Protocol
         }
     }
@@ -894,7 +894,7 @@ class FirewallRule {
             return $false
         }
 
-        if ($this.Enabled -ne $null -and $currentState.Enabled -ne $this.Enabled) {
+        if ($null -ne $this.Enabled -and $currentState.Enabled -ne $this.Enabled) {
             return $false
         }
 
@@ -919,11 +919,12 @@ class FirewallRule {
             if ($this.Ensure -eq [Ensure]::Absent) {
                 Remove-NetFirewallRule -Name $this.Name -ErrorAction SilentlyContinue
             } else {
-                $firewallRule = Get-FirewallRule -Name $Name
+                $firewallRule = Get-NetFirewallRule -Name $this.Name
                 $exists = ($null -ne $firewallRule)
 
                 $params = @{
-                    Name        = $this.Name
+                    # Escape firewall rule name to ensure that wildcard update is not used
+                    Name        = ConvertTo-FirewallRuleNameEscapedString -Name $this.Name
                     DisplayName = $this.DisplayName
                     Action      = $this.Action
                     Description = $this.Description
@@ -935,6 +936,18 @@ class FirewallRule {
                 }
 
                 if ($exists) {
+
+                    <#
+                        If the DisplayName is provided then need to remove it
+                        And change it to NewDisplayName if it is different.
+                    #>
+                    if ($params.ContainsKey('DisplayName')) {
+                        $null = $params.Remove('DisplayName')
+                        if ($this.DisplayName -ne $FirewallRule.DisplayName) {
+                            $null = $params.Add('NewDisplayName', $this.DisplayName)
+                        }
+                    }
+
                     Set-NetFirewallRule @params
                 } else {
                     New-NetFirewallRule @params
@@ -998,5 +1011,18 @@ function Restore-GroupPolicyPowerPlanSetting([HashTable[]]$GPRegArray) {
 
 function Disable-GroupPolicyPowerPlanSetting {
     Remove-Item $GroupPolicyPowerPlanRegistryKeyPath -Recurse -Force | Out-Null
+}
+
+# Convert Firewall Rule name to Escape Wildcard Characters. It will append '[', ']' and '*' with a backtick.
+function ConvertTo-FirewallRuleNameEscapedString {
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        $Name
+    )
+
+    return $Name.Replace('[', '`[').Replace(']', '`]').Replace('*', '`*')
 }
 #endregion Functions
