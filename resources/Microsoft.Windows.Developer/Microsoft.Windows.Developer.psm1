@@ -854,7 +854,7 @@ class FirewallRule {
             }
         }
 
-        $properties = Get-NetFirewallRule -Name $this.Name | Get-NetFirewallPortFilter
+        $properties = Get-NetFirewallRule -Name $this.Name
 
         return @{
             Name        = $rule.Name
