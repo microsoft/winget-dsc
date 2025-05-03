@@ -1,16 +1,15 @@
-# Get started using Python on Windows for beginners
+# Start developing Windows Apps
 
 This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) (_learn_python.winget_) that will work with the WinGet command line interface (`winget configure --file [path: learn_python.winget]`) or can be run directly by double-clicking on the file.
 
-When run, the [learn_python.winget](./learn_python.winget) file will install the following list of applications:
+When run, the [learn_winappdev.winget](./learn_winappdev.winget) file will install the following list of applications:
 
-- Python 3.13
-- Visual Studio Code
-- Visual Studio Code extension for Python
+- Microsoft Visual Studio Community 2022
+- Required Visual Studio Universal workload along with the recommended components for Windows app development
 
 If anything is already installed, the configuration file will skip that item.
 
-This configuration file is based on the [Get started using Python on Windows for beginners](https://learn.microsoft.com/windows/python/beginners) tutorial.
+This configuration file is based on the [Start developing Windows apps](https://learn.microsoft.com/windows/apps/get-started/start-here) tutorial.
 
 ## Issues with Configuration file
 
