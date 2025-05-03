@@ -158,7 +158,7 @@ InModuleScope Microsoft.Windows.Developer {
 
    Describe 'Taskbar' {
       It 'Keeps current value.' {
-         $initialState = Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $initialState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
          $parameters = @{
             Alignment      = 'KeepCurrentValue'
@@ -168,12 +168,12 @@ InModuleScope Microsoft.Windows.Developer {
             WidgetsButton  = 'KeepCurrentValue'
          }
 
-         $testResult = Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+         $testResult = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
          $testResult.InDesiredState | Should -Be $true
 
          # Invoking set should not change these values.
-         Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-         $finalState = Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+         $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.Alignment | Should -Be $initialState.Alignment
          $finalState.HideLabelsMode | Should -Be $initialState.HideLabelsMode
          $finalState.SearchboxMode | Should -Be $initialState.SearchboxMode
@@ -195,9 +195,9 @@ InModuleScope Microsoft.Windows.Developer {
             WidgetsButton             = $desiredWidgetsButton
          }
 
-         Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+         Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-         $finalState = Invoke-DscResource -name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState = Invoke-DscResource -Name Taskbar -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.Alignment | Should -Be $desiredAlignment
          $finalState.HideLabelsMode | Should -Be $desiredHideLabelsMode
          $finalState.SearchboxMode | Should -Be $desiredSearchboxMode
@@ -208,7 +208,7 @@ InModuleScope Microsoft.Windows.Developer {
 
    Describe 'WindowsExplorer' {
       It 'Keeps current value.' {
-         $initialState = Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $initialState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
          $parameters = @{
             FileExtensions = 'KeepCurrentValue'
@@ -216,12 +216,12 @@ InModuleScope Microsoft.Windows.Developer {
             ItemCheckBoxes = 'KeepCurrentValue'
          }
 
-         $testResult = Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+         $testResult = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
          $testResult.InDesiredState | Should -Be $true
 
          # Invoking set should not change these values.
-         Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-         $finalState = Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+         $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.FileExtensions | Should -Be $initialState.FileExtensions
          $finalState.HiddenFiles | Should -Be $initialState.HiddenFiles
          $finalState.ItemCheckBoxes | Should -Be $initialState.ItemCheckBoxes
@@ -239,9 +239,9 @@ InModuleScope Microsoft.Windows.Developer {
             ItemCheckBoxes = $desiredItemCheckBoxes
          }
 
-         Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+         Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-         $finalState = Invoke-DscResource -name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState = Invoke-DscResource -Name WindowsExplorer -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.FileExtensions | Should -Be $desiredFileExtensions
          $finalState.HiddenFiles | Should -Be $desiredHiddenFiles
          $finalState.ItemCheckBoxes | Should -Be $desiredItemCheckBoxes
@@ -250,16 +250,16 @@ InModuleScope Microsoft.Windows.Developer {
 
    Describe 'UserAccessControl' {
       It 'Keeps current value.' {
-         $initialState = Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $initialState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
 
          $parameters = @{ AdminConsentPromptBehavior = 'KeepCurrentValue' }
 
-         $testResult = Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
+         $testResult = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Test -Property $parameters
          $testResult.InDesiredState | Should -Be $true
 
          # Invoking set should not change these values.
-         Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
-         $finalState = Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $parameters
+         $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.AdminConsentPromptBehavior | Should -Be $initialState.AdminConsentPromptBehavior
       }
 
@@ -269,9 +269,9 @@ InModuleScope Microsoft.Windows.Developer {
 
          $desiredState = @{ AdminConsentPromptBehavior = $desiredAdminConsentPromptBehavior }
 
-         Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+         Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-         $finalState = Invoke-DscResource -name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState = Invoke-DscResource -Name UserAccessControl -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.AdminConsentPromptBehavior | Should -Be $desiredAdminConsentPromptBehavior
       }
    }
@@ -281,9 +281,9 @@ InModuleScope Microsoft.Windows.Developer {
          $desiredRemoteDesktopBehavior = [Ensure]::Present
          $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
 
-         Invoke-DscResource -name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+         Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-         $finalState = Invoke-DscResource -name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
       }
 
@@ -291,9 +291,9 @@ InModuleScope Microsoft.Windows.Developer {
          $desiredRemoteDesktopBehavior = [Ensure]::Absent
          $desiredState = @{ Ensure = $desiredRemoteDesktopBehavior }
 
-         Invoke-DscResource -name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+         Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-         $finalState = Invoke-DscResource -name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState = Invoke-DscResource -Name EnableRemoteDesktop -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.Ensure | Should -Be $desiredRemoteDesktopBehavior
       }
    }
@@ -303,9 +303,9 @@ InModuleScope Microsoft.Windows.Developer {
          $desiredLongPathsBehavior = [Ensure]::Present
          $desiredState = @{ Ensure = $desiredLongPathsBehavior }
 
-         Invoke-DscResource -name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+         Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-         $finalState = Invoke-DscResource -name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.Ensure | Should -Be $desiredLongPathsBehavior
       }
 
@@ -313,9 +313,9 @@ InModuleScope Microsoft.Windows.Developer {
          $desiredLongPathsBehavior = [Ensure]::Absent
          $desiredState = @{ Ensure = $desiredLongPathsBehavior }
 
-         Invoke-DscResource -name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
+         Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Set -Property $desiredState
 
-         $finalState = Invoke-DscResource -name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
+         $finalState = Invoke-DscResource -Name EnableLongPathSupport -ModuleName Microsoft.Windows.Developer -Method Get -Property @{}
          $finalState.Ensure | Should -Be $desiredLongPathsBehavior
       }
    }
@@ -579,12 +579,12 @@ InModuleScope Microsoft.Windows.Developer {
 
    Describe 'FirewallRule' {
       BeforeAll {
-         Mock Get-NetFirewallPortFilter {
+         Mock GetNetFirewallPortFilter {
             return @{
-               LocalPort = 88, 443
+               LocalPort = 80, 443
                Protocol  = 'TCP'
             }
-         } -RemoveParameterType 'InputObject'
+         }
 
          # Disable tests from editing actual values
          Mock Set-NetFirewallRule {}
@@ -593,7 +593,6 @@ InModuleScope Microsoft.Windows.Developer {
       }
 
       It 'Get test for FirewallRule' {
-
          Mock Get-NetFirewallRule {
             return @{
                Name        = 'TestRule'
@@ -622,7 +621,7 @@ InModuleScope Microsoft.Windows.Developer {
          $getResult.Profiles | Should -Be @('Domain', 'Private')
       }
 
-      It 'Test test for FirewallRule with EnsureState:<EnsureState>' -ForEach @(
+      It 'Test test for FirewallRule with FireWallRuleState:<FireWallRuleState>, EnsureState:<EnsureState>' -ForEach @(
          @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent; EnsureState = [Ensure]::Present }
          @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent; EnsureState = [Ensure]::Absent }
          @{ FireWallRuleState = [FireWallRuleStateState]::InDesiredState; EnsureState = [Ensure]::Present }
@@ -672,13 +671,15 @@ InModuleScope Microsoft.Windows.Developer {
             Direction   = [Direction]::Inbound
             Enabled     = $true
             Profiles    = @('Domain', 'Private')
+            LocalPort   = 80, 443
+            Protocol    = 'TCP'
          }
 
          $testResult = $firewallRule.Test()
          $testResult | Should -Be $ExpectedResult
       }
 
-      It 'Set test for FirewallRule with EnsureState:<EnsureState>' -ForEach @(
+      It 'Set test for FirewallRule with FireWallRuleState:<FireWallRuleState>, EnsureState:<EnsureState>' -ForEach @(
          @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent; EnsureState = [Ensure]::Present }
          @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent; EnsureState = [Ensure]::Absent }
          @{ FireWallRuleState = [FireWallRuleStateState]::InDesiredState; EnsureState = [Ensure]::Present }
@@ -702,7 +703,7 @@ InModuleScope Microsoft.Windows.Developer {
                   Description = 'Test Description'
                   Direction   = 'Inbound'
                   Enabled     = $true
-                  Profile     = ''
+                  Profile     = 'Domain, Private'
                }
             } elseif ($FireWallRuleState -eq [FireWallRuleStateState]::NotinDesiredState) {
                return @{
@@ -728,6 +729,8 @@ InModuleScope Microsoft.Windows.Developer {
             Direction   = [Direction]::Inbound
             Enabled     = $true
             Profiles    = @('Domain', 'Private')
+            LocalPort   = 80, 443
+            Protocol    = 'TCP'
          }
 
          $firewallRule.Set()

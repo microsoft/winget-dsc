@@ -854,7 +854,7 @@ class FirewallRule {
             }
         }
 
-        $properties = $rule | Get-NetFirewallPortFilter
+        $properties = $rule | GetNetFirewallPortFilter
         return @{
             Name        = $rule.Name
             DisplayName = $rule.DisplayName
@@ -865,7 +865,7 @@ class FirewallRule {
             Ensure      = [Ensure]::Present
             LocalPort   = $properties.LocalPort
             # Split the profiles string into an array
-            Profiles    = $rule.Profile -split ','
+            Profiles    = ($rule.Profile -split ',') | ForEach-Object { $_.Trim() }
             Protocol    = $properties.Protocol
         }
     }
@@ -878,35 +878,35 @@ class FirewallRule {
         }
 
         # Check each property only if it is specified
-        if ($this.DisplayName -and $currentState.DisplayName -ne $this.DisplayName) {
+        if ($this.DisplayName -and ($currentState.DisplayName -ne $this.DisplayName)) {
             return $false
         }
 
-        if ($this.Action -and $currentState.Action -ne $this.Action) {
+        if ($this.Action -and ($currentState.Action -ne $this.Action)) {
             return $false
         }
 
-        if ($this.Description -and $currentState.Description -ne $this.Description) {
+        if ($this.Description -and ($currentState.Description -ne $this.Description)) {
             return $false
         }
 
-        if ($this.Direction -and $currentState.Direction -ne $this.Direction) {
+        if ($this.Direction -and ($currentState.Direction -ne $this.Direction)) {
             return $false
         }
 
-        if ($null -ne $this.Enabled -and $currentState.Enabled -ne $this.Enabled) {
+        if ($null -ne $this.Enabled -and ($currentState.Enabled -ne $this.Enabled)) {
             return $false
         }
 
-        if ($this.LocalPort -and -not ($currentState.LocalPort -eq $this.LocalPort)) {
+        if ($this.LocalPort -and (Compare-Object $currentState.LocalPort $this.LocalPort)) {
             return $false
         }
 
-        if ($this.Profiles -and -not ($currentState.Profiles -eq $this.Profiles)) {
+        if ($this.Profiles -and (Compare-Object $currentState.Profiles $this.Profiles)) {
             return $false
         }
 
-        if ($this.Protocol -and $currentState.Protocol -ne $this.Protocol) {
+        if ($this.Protocol -and ($currentState.Protocol -ne $this.Protocol)) {
             return $false
         }
 
@@ -926,10 +926,10 @@ class FirewallRule {
                     # Escape firewall rule name to ensure that wildcard update is not used
                     Name        = ConvertTo-FirewallRuleNameEscapedString -Name $this.Name
                     DisplayName = $this.DisplayName
-                    Action      = $this.Action
+                    Action      = $this.Action.ToString()
                     Description = $this.Description
-                    Direction   = $this.Direction
-                    Enabled     = $this.Enabled
+                    Direction   = $this.Direction.ToString()
+                    Enabled     = $this.Enabled.ToString()
                     Profile     = $this.Profiles
                     Protocol    = $this.Protocol
                     LocalPort   = $this.LocalPort
@@ -1024,5 +1024,12 @@ function ConvertTo-FirewallRuleNameEscapedString {
     )
 
     return $Name.Replace('[', '`[').Replace(']', '`]').Replace('*', '`*')
+}
+
+# Workaround mock issue for Get-NetFirewallPortFilter
+function GetNetFirewallPortFilter {
+    process {
+        return $_ | Get-NetFirewallPortFilter
+    }
 }
 #endregion Functions
