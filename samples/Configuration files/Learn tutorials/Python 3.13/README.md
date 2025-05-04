@@ -10,7 +10,7 @@ When run, the [learn_python.winget](./learn_python.winget) file will install the
 
 If anything is already installed, the configuration file will skip that item.
 
-This configuration file is based on the [Get started using Python on Windows for beginners](https://learn.microsoft.com/windows/python/beginners) tutorial.
+This configuration file is based on the [Get started using Python on Windows for beginners](https://learn.microsoft.com/windows/python/beginners) Microsoft Learn tutorial.
 
 ## Issues with Configuration file
 

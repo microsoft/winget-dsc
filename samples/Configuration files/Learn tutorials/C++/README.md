@@ -11,7 +11,7 @@ The `configuration.winget` file will also enable [Developer Mode](https://learn.
 
 If anything is already installed, the configuration file will skip that item.
 
-This configuration file is based on the [Install C and C++ support in Visual Studio](https://learn.microsoft.com/cpp/build/vscpp-step-0-installation) tutorial.
+This configuration file is based on the [Install C and C++ support in Visual Studio](https://learn.microsoft.com/cpp/build/vscpp-step-0-installation)  Microsoft Learn tutorial.
 
 ## Issues with Configuration file
 

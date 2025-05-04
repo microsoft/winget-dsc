@@ -10,7 +10,7 @@ When run, the [learn_nodejs.winget](./learn_nodejs.winget) file will install the
 
 If anything is already installed, the configuration file will skip that item.
 
-This configuration file is based on the [Install Node.js on Windows](https://learn.microsoft.com/windows/dev-environment/javascript/nodejs-on-windows) tutorial.
+This configuration file is based on the [Install Node.js on Windows](https://learn.microsoft.com/windows/dev-environment/javascript/nodejs-on-windows) Microsoft Learn tutorial.
 
 ## Issues with Configuration file
 

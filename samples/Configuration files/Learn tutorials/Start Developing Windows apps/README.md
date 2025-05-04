@@ -9,7 +9,7 @@ When run, the [learn_winappdev.winget](./learn_winappdev.winget) file will insta
 
 If anything is already installed, the configuration file will skip that item.
 
-This configuration file is based on the [Start developing Windows apps](https://learn.microsoft.com/windows/apps/get-started/start-here) tutorial.
+This configuration file is based on the [Start developing Windows apps](https://learn.microsoft.com/windows/apps/get-started/start-here) Microsoft Learn tutorial.
 
 ## Issues with Configuration file
 
