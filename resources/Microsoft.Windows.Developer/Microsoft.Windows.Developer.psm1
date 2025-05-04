@@ -832,7 +832,7 @@ class AdvancedNetworkSharingSetting {
             $group = $this.FileAndPrinterSharingGroup
         }
 
-        # A firewall group is enabled if none of its sub-rules are disabled and at least one is enabled.
+        # The group is enabled if all of its sub-rules are enabled and none are disabled.
         $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Group-Object Profile | ForEach-Object {
             $enabled = ($_.Group.Enabled | Where-Object { $_ -eq 'true' } | Measure-Object).Count
             $disabled = ($_.Group.Enabled | Where-Object { $_ -eq 'false' } | Measure-Object).Count
