@@ -19,6 +19,7 @@
         'EnableLongPathSupport',
         'PowerPlanSetting',
         'WindowsCapability',
+        'NetConnectionProfile',
         'AdvancedNetworkSharingSetting'
     )
     PrivateData          = @{
@@ -35,7 +36,8 @@
                 'PSDscResource_EnableRemoteDesktop',
                 'PSDscResource_EnableLongPathSupport',
                 'PSDscResource_PowerPlanSetting',
-                'PSDscResource_WindowsCapability',
+                'PSDscResource_WindowsCapability'
+                'PSDscResource_NetConnectionProfile',
                 'PSDscResource_AdvancedNetworkSharingSetting'
             )
 
