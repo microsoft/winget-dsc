@@ -592,16 +592,23 @@ InModuleScope Microsoft.Windows.Developer {
          Mock Remove-NetFirewallRule {}
       }
 
-      It 'Get test for FirewallRule' {
+      It 'Get test for FirewallRuleEnsureState:<FireWallRuleState>' -ForEach @(
+         @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent }
+         @{ FireWallRuleState = [FireWallRuleStateState]::InDesiredState }
+      ) {
          Mock Get-NetFirewallRule {
-            return @{
-               Name        = 'TestRule'
-               DisplayName = 'Test Rule'
-               Action      = 'Allow'
-               Description = 'Test Description'
-               Direction   = 'Inbound'
-               Enabled     = $true
-               Profile     = 'Domain, Private'
+            if ($FireWallRuleState -eq [FireWallRuleStateState]::InDesiredState) {
+               return @{
+                  Name        = 'TestRule'
+                  DisplayName = 'Test Rule'
+                  Action      = 'Allow'
+                  Description = 'Test Description'
+                  Direction   = 'Inbound'
+                  Enabled     = $true
+                  Profile     = 'Domain, Private'
+               }
+            } else {
+               return $null
             }
          }
 
@@ -610,15 +617,28 @@ InModuleScope Microsoft.Windows.Developer {
          }
 
          $getResult = $firewallRule.Get()
-         $getResult.Name | Should -Be 'TestRule'
-         $getResult.DisplayName | Should -Be 'Test Rule'
-         $getResult.Action | Should -Be 'Allow'
-         $getResult.Description | Should -Be 'Test Description'
-         $getResult.Direction | Should -Be 'Inbound'
-         $getResult.Enabled | Should -Be $true
-         $getResult.LocalPort | Should -Be @('80', '443')
-         $getResult.Protocol | Should -Be 'TCP'
-         $getResult.Profiles | Should -Be @('Domain', 'Private')
+
+         if ($FireWallRuleState -eq [FireWallRuleStateState]::InDesiredState) {
+            $getResult.Ensure | Should -Be 'Present'
+            $getResult.Name | Should -Be 'TestRule'
+            $getResult.DisplayName | Should -Be 'Test Rule'
+            $getResult.Action | Should -Be 'Allow'
+            $getResult.Description | Should -Be 'Test Description'
+            $getResult.Direction | Should -Be 'Inbound'
+            $getResult.Enabled | Should -Be $true
+            $getResult.LocalPort | Should -Be @('80', '443')
+            $getResult.Protocol | Should -Be 'TCP'
+            $getResult.Profiles | Should -Be @('Domain', 'Private')
+         } else {
+            # Action, Direction and Enabled are not nullable
+            $getResult.Ensure | Should -Be 'Absent'
+            $getResult.Name | Should -Be 'TestRule'
+            $getResult.DisplayName | Should -Be $null
+            $getResult.Description | Should -Be $null
+            $getResult.LocalPort | Should -Be $null
+            $getResult.Protocol | Should -Be $null
+            $getResult.Profiles | Should -Be $null
+         }
       }
 
       It 'Test test for FirewallRule with FireWallRuleState:<FireWallRuleState>, EnsureState:<EnsureState>' -ForEach @(

@@ -856,13 +856,13 @@ class FirewallRule {
 
         $properties = $rule | GetNetFirewallPortFilter
         return @{
+            Ensure      = [Ensure]::Present
             Name        = $rule.Name
             DisplayName = $rule.DisplayName
             Action      = $rule.Action
             Description = $rule.Description
             Direction   = $rule.Direction
             Enabled     = $rule.Enabled
-            Ensure      = [Ensure]::Present
             LocalPort   = $properties.LocalPort
             # Split the profiles string into an array
             Profiles    = ($rule.Profile -split ',') | ForEach-Object { $_.Trim() }
@@ -882,7 +882,7 @@ class FirewallRule {
             return $false
         }
 
-        if ($this.Action -and ($currentState.Action -ne $this.Action)) {
+        if ($currentState.Action -ne $this.Action) {
             return $false
         }
 
@@ -890,11 +890,11 @@ class FirewallRule {
             return $false
         }
 
-        if ($this.Direction -and ($currentState.Direction -ne $this.Direction)) {
+        if ($currentState.Direction -ne $this.Direction) {
             return $false
         }
 
-        if ($null -ne $this.Enabled -and ($currentState.Enabled -ne $this.Enabled)) {
+        if ($currentState.Enabled -ne $this.Enabled) {
             return $false
         }
 
