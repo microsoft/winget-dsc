@@ -691,7 +691,6 @@ class PowerPlanSetting {
         $currentState.SettingValue = $this.SettingValue
         $currentState.PluggedInValue = $this.PluggedInValue
         $currentState.BatteryValue = $this.BatteryValue
-
         return $currentState
     }
 
@@ -797,6 +796,43 @@ class WindowsCapability {
             } else {
                 Remove-WindowsCapability -Online -Name $this.Name
             }
+        }
+    }
+}
+
+[DSCResource()]
+class NetConnectionProfile {
+    # Key required. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty(Mandatory)]
+    [string]$InterfaceAlias
+
+    [DscProperty(Mandatory)]
+    [string]$NetworkCategory
+
+    [NetConnectionProfile] Get() {
+        $currentState = [NetConnectionProfile]::new()
+
+        $netConnectionProfile = Get-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -ErrorAction SilentlyContinue
+        if ($null -eq $netConnectionProfile) {
+            throw "No network profile found for interface alias '$($this.InterfaceAlias)'"
+        }
+
+        $currentState.InterfaceAlias = $this.InterfaceAlias
+        $currentState.NetworkCategory = $netConnectionProfile.NetworkCategory
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.NetworkCategory -eq $this.NetworkCategory
+    }
+
+    [void] Set() {
+        if (-not $this.Test()) {
+            Set-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -NetworkCategory $this.NetworkCategory
         }
     }
 }

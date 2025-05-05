@@ -1,13 +1,9 @@
-# Setting up your device for Software Development
+# Microsoft Learn Tutorials
 
-This directory contains different [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration files](https://learn.microsoft.com/windows/package-manager/configuration/) that will be used for setting up your device for a specific software development language.
-These files are designed specifically for providing an introduction to software development, creating the default *Hello World* project, without having to focus on understanding the complexities of what needs to be installed, and how should it be configured.
+These tutorials are directly related to the [Windows development paths](https://learn.microsoft.com/windows/dev-environment/#development-paths). The configurations allow you to automatically set up your device and begin developing in your preferred language quickly. Following are the tutorials that are available in this folder:
 
-## Language specific folders (Naming Standard)
-
-Each folder in this folder will be labeled with the name of the Software Development language it is associated with. If the language is inclusive of another language, it'll be separated by a decimal. If the language contains a version specific release that needs to be accounted for, then the version will be considered as the language.
-
-### Example
-
-* .\JavaScript.NodeJS
-* .\Python3.11
+- [Create a simple C# console app in Visual Studio](./C%23/README.md)
+- [Install C and C++ support in Visual Studio](./C%2B%2B/README.md)
+- [Install Node.js on Windows](./JavaScript/README.md)
+- [Get started using Python on Windows for beginners](./Python%203.13/README.md)
+- [Start developing Windows apps](./Start%20Developing%20Windows%20apps/README.md)
