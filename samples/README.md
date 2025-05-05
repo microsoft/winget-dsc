@@ -1,8 +1,12 @@
 # DSC Samples
 
+## Understanding WinGet Configuration Files
+
+WinGet configuration files are YAML based configuration files that allow you to setup your machine in a desired state. These configurations are idempotent meaning that they can be executed multiple times safely to produce the same result. The configuration will only apply a change if the current state does not match the desired state.
+
 ## Using the sample configurations
 
-Download the \*.winget files to your local system. They can be executed by double-clicking on the file from file explorer. They can also be executed by running `winget configure <path to configuration file>`.
+Download the `*.winget` files to your local system. They can be executed by double-clicking on the file from file explorer. They can also be executed by running `winget configure <path to configuration file>`.
 
 Some DSC resources may need to run with administrator privileges.
 The `securityContext: elevated` field under the `directives` section of a resource indicates this requirement.
@@ -12,24 +16,13 @@ If the configuration is leveraging the [WinGet DSC resource](https://www.powersh
 
 ### GitHub projects (Repositories)
 
-Sample configurations have been provided for various GitHub repositories. These configurations ideally should be placed in a `.config` folder in the root of the project directory. Some DSC resources may have parameters that allow you to pass in a relative file path. The reserved variable `$(WinGetConfigRoot)` can be used to specify the full path of the configuration file. An example of how to use that variable with a relative file path is shown below:
+Samples for popular repositories are included in the [Repositories](./Repositories/) directory. They are organized as `<Organization>\<Repository Name>\configuration.winget`. These samples are designed to help you quickly set up a development environment for building popular open-source projects. The configurations are tailored to the specific requirements of each project, ensuring that you have all the necessary tools and dependencies installed needed for the development process.
 
-```yaml
-- resource: Microsoft.VisualStudio.DSC/VSComponents
-  dependsOn:
-  directives:
-    description: Install required VS workloads from .vsconfig file
-    allowPrerelease: true
-    securityContext: elevated
-  settings:
-    productId: Microsoft.VisualStudio.Product.Community
-    channelId: VisualStudio.17.Release
-    vsConfigFile: '${WinGetConfigRoot}\..\.vsconfig'
-```
+Repositories that make use of a WinGet configuration file are documented in [GitHubProjects.md](./GitHubProjects.md).
 
-### Learn to Code (Templates)
+### Microsoft Learn Tutorials (Templates)
 
-Sample configurations in this directory are directly related to the [Windows development paths](https://learn.microsoft.com/windows/dev-environment/#development-paths). These configurations will allow you to automatically set up your device and begin developing in your preferred language quickly.
+Sample configurations in the [Learn Tutorials](./Configuration%20files/Learn%20tutorials/) directory are directly related to the [Windows development paths](https://learn.microsoft.com/windows/dev-environment/#development-paths). These configurations will allow you to automatically set up your device and begin developing in your preferred language quickly.
 
 ### Sample DSC Resources (DscResources)
 

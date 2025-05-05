@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
-# Reference: https://learn.microsoft.com/windows/python/beginners 
+# Reference: https://learn.microsoft.com/windows/python/beginners
 
 ##########################################################################################################
 # This configuration will install the tools necessary to get started with Python development on Windows  #
