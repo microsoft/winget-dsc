@@ -1,16 +1,15 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 
-##########################################################################################################
+##################################################################################################################################
 # This configuration will install the tools necessary to get started with building an app with Windows Copilot Runtime APIs      #
-# Reference: https://learn.microsoft.com/windows/ai/apis/get-started                #
-#                                                                                                        #
-# This will:                                                                                             #
-#     * Check the Windows OsVersion                                                                      #
-#     * Enables Dev DeveloperMode                                                                        #
-#     * Checks the NPU (not enabled yet)                                                                 #
-#     * Installs Visual Studio Community                                                                 #
-#     * Installs the Windows App SDK version                                                             #
-##########################################################################################################
+# Reference: https://learn.microsoft.com/windows/ai/apis/get-started                                                             #
+#                                                                                                                                #
+# This will:                                                                                                                     #
+#     * Check the Windows Os Version                                                                                             #
+#     * Enables Dev Developer Mode                                                                                               #
+#     * Installs Visual Studio Community                                                                                         #
+#     * Installs the Windows App SDK version                                                                                     #
+##################################################################################################################################                       
 properties:
   assertions:
     - resource: Microsoft.Windows.Developer/OsVersion
