@@ -16,7 +16,9 @@ If the configuration is leveraging the [WinGet DSC resource](https://www.powersh
 
 ### GitHub projects (Repositories)
 
-Samples for known GitHub projects are documented in [GitHubProjects.md](./GitHubProjects.md). These samples are designed to help you quickly set up a development environment for building popular open-source projects. The configurations are tailored to the specific requirements of each project, ensuring that you have all the necessary tools and dependencies installed needed for the development process.
+Samples for popular repositories are included in the [Repositories](./Repositories/) directory. They are organized as `<Organization>\<Repository Name>\configuration.winget`. These samples are designed to help you quickly set up a development environment for building popular open-source projects. The configurations are tailored to the specific requirements of each project, ensuring that you have all the necessary tools and dependencies installed needed for the development process.
+
+Repositories that make use of a WinGet configuration file are documented in [GitHubProjects.md](./GitHubProjects.md).
 
 ### Microsoft Learn Tutorials (Templates)
 
