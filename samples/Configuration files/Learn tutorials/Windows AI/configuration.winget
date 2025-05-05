@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 
 ##########################################################################################################
-# This configuration will install the tools necessary to get started with C# development on Windows      #
-# Reference: https://learn.microsoft.com/visualstudio/get-started/csharp/tutorial-console                #
+# This configuration will install the tools necessary to get started with building an app with Windows Copilot Runtime APIs      #
+# Reference: https://learn.microsoft.com/windows/ai/apis/get-started                #
 #                                                                                                        #
 # This will:                                                                                             #
 #     * Check the Windows OsVersion                                                                      #
