@@ -59,6 +59,11 @@ enum PowerSource {
     All
 }
 
+enum AdvancedNetworkSharingSettingName {
+    NetworkDiscovery
+    FileAndPrinterSharing
+}
+
 #region DSCResources
 [DSCResource()]
 class DeveloperMode {
@@ -833,6 +838,79 @@ class NetConnectionProfile {
     [void] Set() {
         if (-not $this.Test()) {
             Set-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -NetworkCategory $this.NetworkCategory
+        }
+    }
+}
+
+[DSCResource()]
+class AdvancedNetworkSharingSetting {
+    [DscProperty(Key, Mandatory)]
+    [AdvancedNetworkSharingSettingName]$Name
+
+    [DscProperty()]
+    [string[]]$Profiles = @()
+
+    [DscProperty(NotConfigurable)]
+    [string[]]$EnabledProfiles
+
+    # Official group names for the firewall rules
+    hidden [string] $NetworkDiscoveryGroup = '@FirewallAPI.dll,-32752'
+    hidden [string] $FileAndPrinterSharingGroup = '@FirewallAPI.dll,-28502'
+
+    [AdvancedNetworkSharingSetting] Get() {
+        $currentState = [AdvancedNetworkSharingSetting]::new()
+        $currentState.Name = $this.Name
+        $currentState.Profiles = $this.Profiles
+
+        if ($this.Name -eq [AdvancedNetworkSharingSettingName]::NetworkDiscovery) {
+            $group = $this.NetworkDiscoveryGroup
+        } else {
+            $group = $this.FileAndPrinterSharingGroup
+        }
+
+        # The group is enabled if all of its sub-rules are enabled and none are disabled.
+        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Group-Object Profile | ForEach-Object {
+            $enabled = ($_.Group.Enabled | Where-Object { $_ -eq 'true' } | Measure-Object).Count
+            $disabled = ($_.Group.Enabled | Where-Object { $_ -eq 'false' } | Measure-Object).Count
+            [PSCustomObject]@{
+                Profile  = $_.Name
+                Count    = $_.Count
+                Enabled  = $enabled
+                Disabled = $disabled
+            }
+        } | Where-Object { ($_.Enabled -gt 0) -and ($_.Disabled -eq 0) -and ($_.Enabled -eq $_.Count) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+
+        $currentState.EnabledProfiles = $this.EnabledProfiles
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        # Compare-object is case insensitive by default and does not take null arguments
+        $difference = Compare-Object -ReferenceObject @( $this.Profiles | Select-Object) -DifferenceObject @( $currentState.EnabledProfiles | Select-Object)
+        return -not $difference
+    }
+
+    [void] Set() {
+        if (!$this.Test()) {
+            if ($this.Name -eq [AdvancedNetworkSharingSettingName]::NetworkDiscovery) {
+                $group = $this.NetworkDiscoveryGroup
+            } else {
+                $group = $this.FileAndPrinterSharingGroup
+            }
+
+            #Enable, no harm in enabling profiles if they are already enabled
+            foreach ($profile in $this.Profiles) {
+                Set-NetFirewallRule -Group $group -Profile $profile -Enabled True
+            }
+
+            #Disable needed if at least one profile is enabled
+            $profilesToDisable = Get-NetFirewallRule -Group $group | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles -Contains $_.Profile ) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+            foreach ($profile in $profilesToDisable) {
+                Set-NetFirewallRule -Group $group -Profile $profile -Enabled False
+            }
         }
     }
 }
