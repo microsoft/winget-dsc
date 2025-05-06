@@ -696,7 +696,6 @@ class PowerPlanSetting {
         $currentState.SettingValue = $this.SettingValue
         $currentState.PluggedInValue = $this.PluggedInValue
         $currentState.BatteryValue = $this.BatteryValue
-
         return $currentState
     }
 
