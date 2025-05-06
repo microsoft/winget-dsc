@@ -19,6 +19,7 @@
         'EnableLongPathSupport',
         'PowerPlanSetting',
         'WindowsCapability',
+        'NetConnectionProfile',
         'FirewallRule'
     )
     PrivateData          = @{
@@ -36,6 +37,7 @@
                 'PSDscResource_EnableLongPathSupport',
                 'PSDscResource_PowerPlanSetting',
                 'PSDscResource_WindowsCapability',
+                'PSDscResource_NetConnectionProfile',
                 'PSDscResource_FirewallRule'
             )
 
