@@ -1,6 +1,6 @@
 # Create a simple C# console app in Visual Studio
 
-This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) (_configuration.winget_) that will work with the WinGet command line interface (`winget configure --file [path: configuration.winget]`) or can be run directly by double-clicking on the file.
+This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) ([_learn_csharp.winget_](./learn_csharp.winget)) that will work with the WinGet command line interface (`winget configure --file [path: learn_csharp.winget]`) or can be run directly by double-clicking on the file.
 
 When run, the [learn_csharp.winget](./learn_csharp.winget) file will install the following list of applications:
 
