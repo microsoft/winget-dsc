@@ -15,7 +15,7 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
 class WindowsSettings {
     # Key required. Do not set.
     [DscProperty(Key)]
-    [string]$SID
+    [string] $SID
 
     [DscProperty()]
     [string] $TaskbarAlignment
@@ -26,9 +26,7 @@ class WindowsSettings {
     [DscProperty()]
     [string] $SystemColorMode
 
-    [DscProperty()]
-    [bool] $RestartExplorer = $false
-
+    hidden [bool] $RestartExplorer = $false
     hidden [string] $TaskbarAl = 'TaskbarAl'
     hidden [string] $AppsUseLightTheme = 'AppsUseLightTheme'
     hidden [string] $SystemUsesLightTheme = 'SystemUsesLightTheme'
