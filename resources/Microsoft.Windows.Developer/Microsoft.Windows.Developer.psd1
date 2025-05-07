@@ -20,6 +20,7 @@
         'PowerPlanSetting',
         'WindowsCapability',
         'NetConnectionProfile',
+        'AdvancedNetworkSharingSetting',
         'FirewallRule'
     )
     PrivateData          = @{
@@ -38,6 +39,7 @@
                 'PSDscResource_PowerPlanSetting',
                 'PSDscResource_WindowsCapability',
                 'PSDscResource_NetConnectionProfile',
+                'PSDscResource_AdvancedNetworkSharingSetting',
                 'PSDscResource_FirewallRule'
             )
 
