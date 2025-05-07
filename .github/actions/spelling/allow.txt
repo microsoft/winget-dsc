@@ -27,7 +27,6 @@ Icm
 inaries
 JDK
 jquery
-markdownlint
 Mfor
 microsoft
 MMdd
