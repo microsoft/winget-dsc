@@ -43,7 +43,7 @@ class WindowsSettings {
         $currentState.AppColorMode = $this.GetAppColorMode()
         $currentState.SystemColorMode = $this.GetSystemColorMode()
 
-        # Set to true on Get
+        # Set to false on Get
         $currentState.RestartExplorer = $false
 
         return $currentState
@@ -104,11 +104,6 @@ class WindowsSettings {
             taskkill /F /IM explorer.exe
             Start-Process explorer.exe
         }
-    }
-
-    static [WindowsSettings[]] Export() {
-        $windowsSettings = [WindowsSettings]::new()
-        return [WindowsSettings[]]@($windowsSettings.Get()) 
     }
 
     [string] GetTaskbarAlignment() {

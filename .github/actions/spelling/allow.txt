@@ -69,4 +69,6 @@ Hmmss
 MMdd
 MMdd
 NOLOGO
-
+Ptr
+Wnd
+xffff
