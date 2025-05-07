@@ -1050,10 +1050,16 @@ InModuleScope Microsoft.Windows.Developer {
             }
          }
 
-         #TODO ensure logic works when not all parameters are set
-         Should -Invoke New-NetFirewallRule -Times $newRuleCount -Exactly
-         Should -Invoke Set-NetFirewallRule -Times $setRuleCount -Exactly
-         Should -Invoke Remove-NetFirewallRule -Times $removeRuleCount -Exactly
+         #Excluding LocalPort due to Pester limitations
+         Should -Invoke New-NetFirewallRule -Times $newRuleCount -Exactly -ParameterFilter {
+            $Name -eq 'TestRule' -and $DisplayName -eq 'Test Rule' -and $Action -eq 'Allow' -and $Description -eq 'Test Description' -and $Direction -eq 'Inbound' -and $Enabled -eq $true -and $Profile -eq 'Domain, Private' -and $Protocol -eq 'TCP'
+         }
+
+         # Note NewDisplayName instead of DisplayName
+         Should -Invoke Set-NetFirewallRule -Times $setRuleCount -Exactly -ParameterFilter {
+            $Name -eq 'TestRule' -and $NewDisplayName -eq 'Test Rule' -and $Action -eq 'Allow' -and $Description -eq 'Test Description' -and $Direction -eq 'Inbound' -and $Enabled -eq $true -and $Profile -eq 'Domain, Private' -and $Protocol -eq 'TCP'
+         }
+         Should -Invoke Remove-NetFirewallRule -Times $removeRuleCount -Exactly -ParameterFilter { $Name -eq 'TestRule' }
       }
    }
 
