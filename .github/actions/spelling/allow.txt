@@ -61,6 +61,7 @@ upvote
 videojs
 vsconfig
 vscpp
+wcr
 website
 websites
 wekyb
