@@ -707,7 +707,6 @@ class PowerPlanSetting {
         $currentState.SettingValue = $this.SettingValue
         $currentState.PluggedInValue = $this.PluggedInValue
         $currentState.BatteryValue = $this.BatteryValue
-
         return $currentState
     }
 
@@ -1051,7 +1050,6 @@ class FirewallRule {
                 }
 
                 if ($exists) {
-
                     <#
                         If the DisplayName is provided then need to remove it
                         And change it to NewDisplayName if it is different.
@@ -1069,7 +1067,6 @@ class FirewallRule {
                 }
             }
         }
-
     }
 }
 #endregion DSCResources
