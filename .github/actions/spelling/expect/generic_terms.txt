@@ -9,7 +9,7 @@ onebranch
 screenshots
 Scrollbars
 Searchbox
-sdl
+Sdl
 sortby
 ssh
 tsa
