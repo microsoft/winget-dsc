@@ -1,6 +1,6 @@
 # Start developing Windows Apps
 
-This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) (_learn_python.winget_) that will work with the WinGet command line interface (`winget configure --file [path: learn_python.winget]`) or can be run directly by double-clicking on the file.
+This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) ([_learn_winappdev.winget_](./learn_winappdev.winget)) that will work with the WinGet command line interface (`winget configure --file [path: learn_winappdev.winget]`) or can be run directly by double-clicking on the file.
 
 When run, the [learn_winappdev.winget](./learn_winappdev.winget) file will install the following list of applications:
 

@@ -9,7 +9,7 @@
 #     * Enables Dev Developer Mode                                                                                               #
 #     * Installs Visual Studio Community                                                                                         #
 #     * Installs the Windows App SDK version                                                                                     #
-##################################################################################################################################                       
+##################################################################################################################################
 properties:
   assertions:
     - resource: Microsoft.Windows.Developer/OsVersion
