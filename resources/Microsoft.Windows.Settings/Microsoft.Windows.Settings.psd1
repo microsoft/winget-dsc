@@ -8,7 +8,7 @@
     Description          = 'DSC Resource for Windows Settings'
     PowerShellVersion    = '7.2'
     DscResourcesToExport = @(
-        'WindowsSettings',
+        'WindowsSettings'
     )
     PrivateData          = @{
         PSData = @{
