@@ -7,8 +7,9 @@ Set-StrictMode -Version Latest
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
     $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
+    $global:AppModelUnlockRegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -26,10 +27,14 @@ class WindowsSettings {
     [DscProperty()]
     [string] $SystemColorMode
 
+    [DscProperty()]
+    [Nullable[bool]] $DeveloperMode
+
     hidden [bool] $RestartExplorer = $false
     hidden [string] $TaskbarAl = 'TaskbarAl'
     hidden [string] $AppsUseLightTheme = 'AppsUseLightTheme'
     hidden [string] $SystemUsesLightTheme = 'SystemUsesLightTheme'
+    hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
 
     [WindowsSettings] Get() {
         $currentState = [WindowsSettings]::new()
@@ -41,8 +46,8 @@ class WindowsSettings {
         $currentState.AppColorMode = $this.GetAppColorMode()
         $currentState.SystemColorMode = $this.GetSystemColorMode()
 
-        # Set to false on Get
-        $currentState.RestartExplorer = $false
+        # Get DeveloperMode
+        $currentState.DeveloperMode = $this.IsDeveloperModeEnabled()
 
         return $currentState
     }
@@ -61,6 +66,11 @@ class WindowsSettings {
         }
 
         if ($this.SystemColorMode -ne $null -and $currentState.SystemColorMode -ne $this.SystemColorMode) {
+            return $false
+        }
+
+        # Test DeveloperMode
+        if ($this.DeveloperMode -ne $null -and $currentState.DeveloperMode -ne $this.DeveloperMode) {
             return $false
         }
 
@@ -102,6 +112,20 @@ class WindowsSettings {
             taskkill /F /IM explorer.exe
             Start-Process explorer.exe
         }
+
+        # Set DeveloperMode
+        if ($this.DeveloperMode -ne $null) {
+            $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+            $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
+
+            if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
+                throw 'Toggling Developer Mode requires this resource to be run as an Administrator.'
+            }
+
+            # 1 == enabled // 0 == disabled
+            $value = $this.DeveloperMode ? 1 : 0
+            Set-ItemProperty -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName -Value $value
+        }
     }
 
     [string] GetTaskbarAlignment() {
@@ -137,6 +161,17 @@ class WindowsSettings {
         }
 
         return "Light"
+    }
+
+    [bool] IsDeveloperModeEnabled() {
+        $regExists = DoesRegistryKeyPropertyExist -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName
+
+        # If the registry key does not exist, we assume developer mode is not enabled.
+        if (-not($regExists)) {
+            return $false
+        }
+
+        return Get-ItemPropertyValue -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName
     }
 }
 
