@@ -65,6 +65,11 @@ wcr
 website
 websites
 wekyb
+Hmmss
+NOLOGO
+Ptr
+Wnd
+xffff
 whatif
 wildcards
 winappdev
