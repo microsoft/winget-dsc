@@ -1,41 +1,25 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+# Reference: https://learn.microsoft.com/windows/python/beginners
 
 ##########################################################################################################
 # This configuration will install the tools necessary to get started with Python development on Windows  #
-# Reference: https://learn.microsoft.com/windows/python/beginners                                        #
 #                                                                                                        #
 # This will:                                                                                             #
-#     * Enable Developer Mode                                                                            #
-#     * Install GitHub Desktop                                                                           #
 #     * Install Python                                                                                   #
 #     * Install Visual Studio Code                                                                       #
+#     * Install Visual Studio Code extension for Python                                                  #
 #                                                                                                        #
 ##########################################################################################################
 
 properties:
   resources:
-    - resource: Microsoft.Windows.Developer/DeveloperMode
-      id: Enable
-      directives:
-        description: Enable Developer Mode
-        allowPrerelease: true
-        securityContext: elevated
-      settings:
-        Ensure: Present
     - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: Python 3.12
+      id: Python 3.13
       directives:
-        description: Install Python 3.12
+        description: Install Python 3.13
       settings:
-        id: Python.Python.3.12
-        source: winget
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: GitHub Desktop
-      directives:
-        description: Install GitHub Desktop
-      settings:
-        id: GitHub.GitHubDesktop
-        source: winget
+        id: 9PNRBTZXMB4Z
+        source: msstore
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: VisualStudio Code
       directives:
@@ -43,4 +27,14 @@ properties:
       settings:
         id: Microsoft.VisualStudioCode
         source: winget
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: ms-python.python
+      dependsOn:
+        - VisualStudio Code
+      directives:
+        description: Install Python Visual Studio Code extension
+        allowPrerelease: true
+      settings:
+        name: ms-python.python
+        exist: true
   configurationVersion: 0.2.0

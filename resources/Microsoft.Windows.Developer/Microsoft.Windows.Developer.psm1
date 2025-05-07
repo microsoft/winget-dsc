@@ -46,6 +46,24 @@ enum AdminConsentPromptBehavior {
     RequireConsentForNonWindowsBinaries
 }
 
+enum PowerPlanSettingName {
+    DisplayTimeout
+    SleepTimeout
+}
+
+enum PowerSource {
+    # AC
+    PluggedIn
+    # DC
+    Battery
+    All
+}
+
+enum AdvancedNetworkSharingSettingName {
+    NetworkDiscovery
+    FileAndPrinterSharing
+}
+
 #region DSCResources
 [DSCResource()]
 class DeveloperMode {
@@ -59,22 +77,32 @@ class DeveloperMode {
     [DscProperty(NotConfigurable)]
     [bool] $IsEnabled
 
-    [DeveloperMode] Get() {
-        $this.IsEnabled = IsDeveloperModeEnabled
+    hidden [string] $AppModelUnlockRegistryKeyPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
+    hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
 
+    [DeveloperMode] Get() {
+        function IsDeveloperModeEnabled {
+            $regExists = DoesRegistryKeyPropertyExist -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
+
+            # If the registry key does not exist, we assume developer mode is not enabled.
+            if (-not($regExists)) {
+                return $false
+            }
+
+            return Get-ItemPropertyValue -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName
+        }
+
+        # 1 == enabled == Present // 0 == disabled == Absent
+        $this.IsEnabled = IsDeveloperModeEnabled
         return @{
-            Ensure    = $this.Ensure
+            Ensure    = $this.IsEnabled ? [Ensure]::Present : [Ensure]::Absent
             IsEnabled = $this.IsEnabled
         }
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        if ($currentState.Ensure -eq [Ensure]::Present) {
-            return $currentState.IsEnabled
-        } else {
-            return $currentState.IsEnabled -eq $false
-        }
+        return $currentState.Ensure -eq $this.Ensure
     }
 
     [void] Set() {
@@ -86,11 +114,11 @@ class DeveloperMode {
                 throw 'Toggling Developer Mode requires this resource to be run as an Administrator.'
             }
 
-            $shouldEnable = $this.Ensure -eq [Ensure]::Present
-            SetDeveloperMode -Enable $shouldEnable
+            # 1 == enabled == Present // 0 == disabled == Absent
+            $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
+            Set-ItemProperty -Path $this.AppModelUnlockRegistryKeyPath -Name $this.DeveloperModePropertyName -Value $value
         }
     }
-
 }
 
 [DSCResource()]
@@ -135,8 +163,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:SearchRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search\'
     $global:UACRegistryPath = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\'
     $global:RemoteDesktopRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
+    $global:LongPathsRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $global:LongPathsRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -556,36 +585,338 @@ class EnableRemoteDesktop {
         Set-ItemProperty -Path $global:RemoteDesktopRegistryPath -Name $this.RemoteDesktopKey -Value $value
     }
 }
+
+[DSCResource()]
+class EnableLongPathSupport {
+    # Key required. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty()]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    hidden [string] $LongPathsKey = 'LongPathsEnabled'
+
+    [EnableLongPathSupport] Get() {
+        $exists = DoesRegistryKeyPropertyExist -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey
+
+        # If the registry key does not exist, we assume long path support is not enabled.
+        if (-not($exists)) {
+            return @{
+                Ensure = [Ensure]::Absent
+            }
+        }
+
+        $registryValue = Get-ItemPropertyValue -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey
+
+        # 1 == enabled == Present // 0 == disabled == Absent
+        return @{
+            Ensure = $registryValue ? [Ensure]::Present : [Ensure]::Absent
+        }
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set() {
+        # 1 == enabled == Present // 0 == disabled == Absent
+        $value = ($this.Ensure -eq [Ensure]::Present) ? 1 : 0
+        Set-ItemProperty -Path $global:LongPathsRegistryPath -Name $this.LongPathsKey -Value $value
+    }
+}
+
+[DSCResource()]
+class PowerPlanSetting {
+    [DscProperty(Key, Mandatory)]
+    [PowerPlanSettingName]$Name
+
+    [DscProperty(Mandatory)]
+    [PowerSource]$PowerSource
+
+    [DscProperty(Mandatory)]
+    [int]$SettingValue
+
+    [DscProperty(NotConfigurable)]
+    [int] $PluggedInValue
+
+    [DscProperty(NotConfigurable)]
+    [int] $BatteryValue
+
+    [PowerPlanSetting] Get() {
+
+        function Get-PowerPlanSetting ([PowerPlanSettingName] $SettingName) {
+            Begin {
+                # If a power plan group policy is set, the power settings cannot be obtained, so temporarily disable it.
+                $GPReg = Backup-GroupPolicyPowerPlanSetting
+                if ($GPReg) {
+                    Disable-GroupPolicyPowerPlanSetting
+                }
+            }
+
+            Process {
+                $SettingGUID = ($SettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? $DisplayTimeoutSettingGUID : $SleepTimeoutSettingGUID
+                $PowerPlan = Get-ActivePowerPlan
+                $planID = $PowerPlan.InstanceId.Split('\')[1] -replace '[{}]'
+
+                $ReturnValue = @{
+                    PlanGuid    = $planID
+                    SettingGuid = $SettingGUID
+                    ACValue     = ''
+                    DCValue     = ''
+                }
+
+                foreach ($Power in ('AC', 'DC')) {
+                    $Key = ('{0}Value' -f $Power)
+                    $InstanceId = ('Microsoft:PowerSettingDataIndex\{{{0}}}\{1}\{{{2}}}' -f $planID, $Power, $SettingGUID)
+                    $Instance = (Get-CimInstance -Name root\cimv2\power -Class Win32_PowerSettingDataIndex | Where-Object { $_.InstanceID -eq $InstanceId })
+                    # error state
+                    if (-not $Instance) { return }
+                    $ReturnValue.$Key = [int]$Instance.SettingIndexValue
+                }
+
+                return $ReturnValue
+            }
+
+            End {
+                if ($GPReg) {
+                    # Restore the group policies
+                    Restore-GroupPolicyPowerPlanSetting -GPRegArray $GPReg
+                }
+            }
+        }
+
+        $Setting = Get-PowerPlanSetting -SettingName $this.Name
+        $this.PluggedInValue = $Setting.ACValue
+        $this.BatteryValue = $Setting.DCValue
+
+        $currentState = [PowerPlanSetting]::new()
+        $currentState.Name = $this.Name
+        $currentState.SettingValue = $this.SettingValue
+        $currentState.PluggedInValue = $this.PluggedInValue
+        $currentState.BatteryValue = $this.BatteryValue
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        # User can only specify a single setting value
+        $pluggedInTest = ($currentState.PluggedInValue -eq $this.SettingValue)
+        $batteryTest = ($currentState.BatteryValue -eq $this.SettingValue)
+
+        if ($this.PowerSource -eq [PowerSource]::All) {
+            return ($pluggedInTest -and $batteryTest)
+        } elseif ($this.PowerSource -eq [PowerSource]::PluggedIn) {
+            return $pluggedInTest
+        } else {
+            return $batteryTest
+        }
+    }
+
+    [void] Set() {
+        function Set-PowerPlanSetting ([PowerPlanSettingName] $PowerPlanSettingName, [PowerSource]$PowerSource, [int]$Value) {
+            Begin {
+                # If a power plan group policy is set, the power settings cannot be obtained, so temporarily disable it.
+                $GPReg = Backup-GroupPolicyPowerPlanSetting
+                if ($GPReg) {
+                    Disable-GroupPolicyPowerPlanSetting
+                }
+            }
+            Process {
+                $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? $DisplayTimeoutSettingGUID : $SleepTimeoutSettingGUID
+                $PowerPlan = Get-ActivePowerPlan
+                $planID = $PowerPlan.InstanceId.Split('\')[1] -replace '[{}]'
+
+                if ($PowerSource -eq [PowerSource]::All) {
+                    [string[]]$Target = ('AC', 'DC')
+                } elseif ($PowerSource -eq [PowerSource]::PluggedIn) {
+                    [string[]]$Target = ('AC')
+                } else {
+                    [string[]]$Target = ('DC')
+                }
+
+                foreach ($Power in $Target) {
+                    $InstanceId = ('Microsoft:PowerSettingDataIndex\{{{0}}}\{1}\{{{2}}}' -f $planID, $Power, $SettingGUID)
+                    $Instance = Get-CimInstance -Name root\cimv2\power -Class Win32_PowerSettingDataIndex | Where-Object { $_.InstanceID -eq $InstanceId }
+                    # error state
+                    if (-not $Instance) { return }
+                    $Instance | ForEach-Object { $_.SettingIndexValue = $Value }
+                    Set-CimInstance -CimInstance $Instance
+                }
+            }
+            End {
+                if ($GPReg) {
+                    # Restore the group policies
+                    Restore-GroupPolicyPowerPlanSetting -GPRegArray $GPReg
+                }
+            }
+        }
+
+        if (!$this.Test()) {
+            Set-PowerPlanSetting -PowerPlanSettingName $this.Name -PowerSource $this.PowerSource -Value $this.SettingValue
+        }
+    }
+}
+
+[DSCResource()]
+class WindowsCapability {
+    [DscProperty(Key, Mandatory)]
+    [string] $Name
+
+    [DscProperty()]
+    [Ensure] $Ensure = [Ensure]::Present
+
+    [WindowsCapability] Get() {
+        $currentState = [WindowsCapability]::new()
+        $windowsCapability = Get-WindowsCapability -Online -Name $this.Name
+
+        # If Name is not set in windowsCapability then the specified capability was not found
+        if ([System.String]::IsNullOrEmpty($windowsCapability.Name)) {
+            throw  (New-Object -TypeName System.ArgumentException -ArgumentList "$this.Name")
+        } else {
+            $currentState.Name = $windowsCapability.Name
+
+            if ($windowsCapability.State -eq 'Installed') {
+                $currentState.Ensure = [Ensure]::Present
+            } else {
+                $currentState.Ensure = [Ensure]::Absent
+            }
+        }
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.Ensure -eq $this.Ensure
+    }
+
+    [void] Set() {
+        # Only make changes if changes are needed
+        if (-not $this.Test()) {
+            if ($this.Ensure -eq [Ensure]::Present) {
+                Add-WindowsCapability -Online -Name $this.Name
+            } else {
+                Remove-WindowsCapability -Online -Name $this.Name
+            }
+        }
+    }
+}
+
+[DSCResource()]
+class NetConnectionProfile {
+    # Key required. Do not set.
+    [DscProperty(Key)]
+    [string]$SID
+
+    [DscProperty(Mandatory)]
+    [string]$InterfaceAlias
+
+    [DscProperty(Mandatory)]
+    [string]$NetworkCategory
+
+    [NetConnectionProfile] Get() {
+        $currentState = [NetConnectionProfile]::new()
+
+        $netConnectionProfile = Get-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -ErrorAction SilentlyContinue
+        if ($null -eq $netConnectionProfile) {
+            throw "No network profile found for interface alias '$($this.InterfaceAlias)'"
+        }
+
+        $currentState.InterfaceAlias = $this.InterfaceAlias
+        $currentState.NetworkCategory = $netConnectionProfile.NetworkCategory
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+        return $currentState.NetworkCategory -eq $this.NetworkCategory
+    }
+
+    [void] Set() {
+        if (-not $this.Test()) {
+            Set-NetConnectionProfile -InterfaceAlias $this.InterfaceAlias -NetworkCategory $this.NetworkCategory
+        }
+    }
+}
+
+[DSCResource()]
+class AdvancedNetworkSharingSetting {
+    [DscProperty(Key, Mandatory)]
+    [AdvancedNetworkSharingSettingName]$Name
+
+    [DscProperty()]
+    [string[]]$Profiles = @()
+
+    [DscProperty(NotConfigurable)]
+    [string[]]$EnabledProfiles
+
+    # Official group names for the firewall rules
+    hidden [string] $NetworkDiscoveryGroup = '@FirewallAPI.dll,-32752'
+    hidden [string] $FileAndPrinterSharingGroup = '@FirewallAPI.dll,-28502'
+
+    [AdvancedNetworkSharingSetting] Get() {
+        $currentState = [AdvancedNetworkSharingSetting]::new()
+        $currentState.Name = $this.Name
+        $currentState.Profiles = $this.Profiles
+
+        if ($this.Name -eq [AdvancedNetworkSharingSettingName]::NetworkDiscovery) {
+            $group = $this.NetworkDiscoveryGroup
+        } else {
+            $group = $this.FileAndPrinterSharingGroup
+        }
+
+        # The group is enabled if all of its sub-rules are enabled and none are disabled.
+        $this.EnabledProfiles = Get-NetFirewallRule -Group $group | Group-Object Profile | ForEach-Object {
+            $enabled = ($_.Group.Enabled | Where-Object { $_ -eq 'true' } | Measure-Object).Count
+            $disabled = ($_.Group.Enabled | Where-Object { $_ -eq 'false' } | Measure-Object).Count
+            [PSCustomObject]@{
+                Profile  = $_.Name
+                Count    = $_.Count
+                Enabled  = $enabled
+                Disabled = $disabled
+            }
+        } | Where-Object { ($_.Enabled -gt 0) -and ($_.Disabled -eq 0) -and ($_.Enabled -eq $_.Count) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+
+        $currentState.EnabledProfiles = $this.EnabledProfiles
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        # Compare-object is case insensitive by default and does not take null arguments
+        $difference = Compare-Object -ReferenceObject @( $this.Profiles | Select-Object) -DifferenceObject @( $currentState.EnabledProfiles | Select-Object)
+        return -not $difference
+    }
+
+    [void] Set() {
+        if (!$this.Test()) {
+            if ($this.Name -eq [AdvancedNetworkSharingSettingName]::NetworkDiscovery) {
+                $group = $this.NetworkDiscoveryGroup
+            } else {
+                $group = $this.FileAndPrinterSharingGroup
+            }
+
+            #Enable, no harm in enabling profiles if they are already enabled
+            foreach ($profile in $this.Profiles) {
+                Set-NetFirewallRule -Group $group -Profile $profile -Enabled True
+            }
+
+            #Disable needed if at least one profile is enabled
+            $profilesToDisable = Get-NetFirewallRule -Group $group | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles -Contains $_.Profile ) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+            foreach ($profile in $profilesToDisable) {
+                Set-NetFirewallRule -Group $group -Profile $profile -Enabled False
+            }
+        }
+    }
+}
 #endregion DSCResources
 
 #region Functions
-$AppModelUnlockRegistryKeyPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
-$DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
-
-function IsDeveloperModeEnabled {
-    try {
-        $property = Get-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName
-        return $property.AllowDevelopmentWithoutDevLicense -eq 1
-    } catch {
-        # This will throw an exception if the registry path or property does not exist.
-        return $false
-    }
-}
-
-function SetDeveloperMode {
-    param (
-        [Parameter(Mandatory)]
-        [bool]$Enable
-    )
-
-    if (-not (Test-Path -Path $AppModelUnlockRegistryKeyPath)) {
-        New-Item -Path $AppModelUnlockRegistryKeyPath -Force | Out-Null
-    }
-
-    $developerModeValue = [int]$Enable
-    New-ItemProperty -Path $AppModelUnlockRegistryKeyPath -Name $DeveloperModePropertyName -Value $developerModeValue -PropertyType DWORD -Force | Out-Null
-}
-
 function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]
@@ -600,4 +931,42 @@ function DoesRegistryKeyPropertyExist {
     return $null -ne $itemProperty
 }
 
+function Get-ActivePowerPlan {
+    Get-CimInstance -Name root\cimv2\power -Class win32_PowerPlan | Where-Object { $_.IsActive }
+}
+
+$SleepTimeoutSettingGUID = '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+$DisplayTimeoutSettingGUID = '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
+
+$GroupPolicyPowerPlanRegistryKeyPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings'
+
+function Backup-GroupPolicyPowerPlanSetting {
+    if (Test-Path $GroupPolicyPowerPlanRegistryKeyPath) {
+        $Array = @()
+        Get-ChildItem $GroupPolicyPowerPlanRegistryKeyPath | ForEach-Object {
+            $Path = $_.PSPath
+            foreach ($Prop in $_.Property) {
+                $Array += @{
+                    Path  = $Path
+                    Name  = $Prop
+                    Value = Get-ItemPropertyValue -Path $Path -Name $Prop
+                }
+            }
+        }
+        $Array
+    }
+}
+
+function Restore-GroupPolicyPowerPlanSetting([HashTable[]]$GPRegArray) {
+    foreach ($Item in $GPRegArray) {
+        if (-not (Test-Path $Item.Path)) {
+            New-Item -Path $Item.Path -ItemType Directory -Force | Out-Null
+        }
+        New-ItemProperty @Item -Force | Out-Null
+    }
+}
+
+function Disable-GroupPolicyPowerPlanSetting {
+    Remove-Item $GroupPolicyPowerPlanRegistryKeyPath -Recurse -Force | Out-Null
+}
 #endregion Functions
