@@ -2,7 +2,8 @@
 
 The [Microsoft.Windows.settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings) PowerShell module contains the Windows Settings DSC Resource.
 
-> Note: Changing some Windows Settings requires elevation.
+> [!NOTE]
+> Changing some Windows Settings requires elevation.
 
 ## How to use the WinGet Configuration File
 
