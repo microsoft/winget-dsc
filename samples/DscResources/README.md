@@ -2,7 +2,7 @@
 
 ## Sample Configurations for Specific DSC Resources
 
-The sample configurations provided in this directory showcase how to create WinGet configuration files utilizing DSC resources for more specific scenarios.
+The sample configurations provided in this directory showcase how to create WinGet configuration files utilizing PowerShell DSC v2 resources for more specific scenarios.
 
 ### [GitDsc](https://www.powershellgallery.com/packages/GitDsc/0.1.2-alpha)
 
@@ -16,4 +16,8 @@ Create a new instance of Windows Sandbox by either providing a custom .wsb file 
 
 ### [Microsoft.Windows.Developer](https://www.powershellgallery.com/packages/Microsoft.Windows.Developer/0.1.3-alpha)
 
-Modify various Windows Settings such as showing seconds in clock, hiding file extensions, or showing the task view button...
+Modify various Windows Settings such as showing seconds in clock, hiding file extensions, or showing the task view button.
+
+### [Microsoft.Windows.Settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings/0.1.0-alpha)
+
+Modify various Windows Settings such as App Color Theme, Windows Color Theme, Taskbar Alignment, and Developer Mode.
