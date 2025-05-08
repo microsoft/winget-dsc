@@ -54,51 +54,29 @@ class WindowsSettings {
 
     [bool] Test() {
         $currentState = $this.Get()
-        
-        # Test TaskbarAlignment
-        if ($this.TaskbarAlignment -ne $null -and $currentState.TaskbarAlignment -ne $this.TaskbarAlignment) {
-            return $false
-        }
-
-        # Test ColorMode
-        if ($this.AppColorMode -ne $null -and $currentState.AppColorMode -ne $this.AppColorMode) {
-            return $false
-        }
-
-        if ($this.SystemColorMode -ne $null -and $currentState.SystemColorMode -ne $this.SystemColorMode) {
-            return $false
-        }
-
-        # Test DeveloperMode
-        if ($this.DeveloperMode -ne $null -and $currentState.DeveloperMode -ne $this.DeveloperMode) {
-            return $false
-        }
-
-        return $true
+        return $this.TestTaskbarAlignment($currentState) -and $this.TestAppColorMode($currentState) -and $this.TestSystemColorMode($currentState) -and $this.TestDeveloperMode($currentState)
     }
 
     [void] Set() {
+        $currentState = $this.Get()
+
         # Set TaskbarAlignment
-        if ($this.TaskbarAlignment -ne $null) {
+        if (!$this.TestTaskbarAlignment($currentState)) {
             $desiredAlignment = $this.TaskbarAlignment -eq "Left" ? 0 : 1
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl -Value $desiredAlignment
         }
 
         # Set ColorMode
         $colorModeChanged = $false
-        if ($this.AppColorMode -eq "Dark") {
-            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme -Value 0
-            $colorModeChanged = $true
-        } elseif ($this.AppColorMode -eq "Light") {
-            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme -Value 1
+        if (!$this.TestAppColorMode($currentState)) {
+            $desiredColorMode = $this.AppColorMode -eq "Dark" ? 0 : 1
+            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme -Value $desiredColorMode
             $colorModeChanged = $true
         }
 
-        if ($this.SystemColorMode -eq "Dark") {
-            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme -Value 0
-            $colorModeChanged = $true
-        } elseif ($this.SystemColorMode -eq "Light") {
-            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme -Value 1
+        if (!$this.TestSystemColorMode($currentState)) {
+            $desiredColorMode = $this.SystemColorMode -eq "Dark" ? 0 : 1
+            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme -Value $desiredColorMode
             $colorModeChanged = $true
         }
 
@@ -114,7 +92,7 @@ class WindowsSettings {
         }
 
         # Set DeveloperMode
-        if ($this.DeveloperMode -ne $null) {
+        if (!$this.TestDeveloperMode($currentState)) {
             $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
             $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
 
@@ -172,6 +150,22 @@ class WindowsSettings {
         }
 
         return Get-ItemPropertyValue -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName
+    }
+
+    [bool] TestDeveloperMode([WindowsSettings] $currentState) {
+        return $this.DeveloperMode -eq $null -or $currentState.DeveloperMode -eq $this.DeveloperMode
+    }
+
+    [bool] TestTaskbarAlignment([WindowsSettings] $currentState) {
+        return $this.TaskbarAlignment -eq $null -or $currentState.TaskbarAlignment -eq $this.TaskbarAlignment
+    }
+
+    [bool] TestAppColorMode([WindowsSettings] $currentState) {
+        return $this.AppColorMode -eq $null -or $currentState.AppColorMode -eq $this.AppColorMode
+    }
+
+    [bool] TestSystemColorMode([WindowsSettings] $currentState) {
+        return $this.SystemColorMode -eq $null -or $currentState.SystemColorMode -eq $this.SystemColorMode
     }
 }
 
