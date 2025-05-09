@@ -20,11 +20,12 @@ InModuleScope Microsoft.Windows.Developer {
       # Set-ItemProperty requires the PSDrive to be in the format 'HKCU:'.
       $env:TestRegistryPath = ((Get-Item -Path TestRegistry:\).Name).replace('HKEY_CURRENT_USER', 'HKCU:')
    }
+
    Describe 'List available DSC resources' {
       It 'Shows DSC Resources' {
          $expectedDSCResources = @('DeveloperMode', 'OsVersion', 'ShowSecondsInClock', 'EnableDarkMode', 'Taskbar', 'UserAccessControl',
-            'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting', 'WindowsCapability', 'NetConnectionProfile',
-            'AdvancedNetworkSharingSetting')
+            'WindowsExplorer', 'EnableRemoteDesktop', 'EnableLongPathSupport', 'PowerPlanSetting', 'WindowsCapability',
+            'NetConnectionProfile', 'AdvancedNetworkSharingSetting', 'FirewallRule')
          $availableDSCResources = (Get-DscResource -Module Microsoft.Windows.Developer).Name
          $availableDSCResources.length | Should -Be $expectedDSCResources.Count
          $availableDSCResources | Where-Object { $expectedDSCResources -notcontains $_ } | Should -BeNullOrEmpty -ErrorAction Stop
@@ -35,6 +36,12 @@ InModuleScope Microsoft.Windows.Developer {
       SetTrue
       SetFalse
       NotSet
+   }
+
+   enum FireWallRuleStateState {
+      Nonexistent
+      InDesiredState
+      NotinDesiredState
    }
 
    Describe 'DeveloperMode' {
@@ -452,7 +459,6 @@ InModuleScope Microsoft.Windows.Developer {
       }
    }
 
-
    enum WindowsCapabilityState {
       Installed
       NotInstalled
@@ -847,6 +853,213 @@ InModuleScope Microsoft.Windows.Developer {
          } else {
             Should -Invoke Set-NetFirewallRule -Times 1 -Exactly -ParameterFilter { $Enabled -eq (($Profiles.Count -gt 0) ? 'True' : 'False' ) }
          }
+      }
+   }
+
+   Describe 'FirewallRule' {
+      BeforeAll {
+         Mock GetNetFirewallPortFilter {
+            return @{
+               LocalPort = 80, 443
+               Protocol  = 'TCP'
+            }
+         }
+
+         # Disable tests from editing actual values
+         Mock Set-NetFirewallRule {}
+         Mock New-NetFirewallRule {}
+         Mock Remove-NetFirewallRule {}
+      }
+
+      It 'Get test for FirewallRuleEnsureState:<FireWallRuleState>' -ForEach @(
+         @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent }
+         @{ FireWallRuleState = [FireWallRuleStateState]::InDesiredState }
+      ) {
+         Mock Get-NetFirewallRule {
+            if ($FireWallRuleState -eq [FireWallRuleStateState]::InDesiredState) {
+               return @{
+                  Name        = 'TestRule'
+                  DisplayName = 'Test Rule'
+                  Action      = 'Allow'
+                  Description = 'Test Description'
+                  Direction   = 'Inbound'
+                  Enabled     = $true
+                  Profile     = 'Domain, Private'
+               }
+            } else {
+               return $null
+            }
+         }
+
+         $firewallRule = [FirewallRule]@{
+            Name = 'TestRule'
+         }
+
+         $getResult = $firewallRule.Get()
+
+         if ($FireWallRuleState -eq [FireWallRuleStateState]::InDesiredState) {
+            $getResult.Ensure | Should -Be 'Present'
+            $getResult.Name | Should -Be 'TestRule'
+            $getResult.DisplayName | Should -Be 'Test Rule'
+            $getResult.Action | Should -Be 'Allow'
+            $getResult.Description | Should -Be 'Test Description'
+            $getResult.Direction | Should -Be 'Inbound'
+            $getResult.Enabled | Should -Be $true
+            $getResult.LocalPort | Should -Be @('80', '443')
+            $getResult.Protocol | Should -Be 'TCP'
+            $getResult.Profiles | Should -Be @('Domain', 'Private')
+         } else {
+            # Action, Direction and Enabled are not nullable
+            $getResult.Ensure | Should -Be 'Absent'
+            $getResult.Name | Should -Be 'TestRule'
+            $getResult.DisplayName | Should -Be $null
+            $getResult.Description | Should -Be $null
+            $getResult.LocalPort | Should -Be $null
+            $getResult.Protocol | Should -Be $null
+            $getResult.Profiles | Should -Be $null
+         }
+      }
+
+      It 'Test test for FirewallRule with FireWallRuleState:<FireWallRuleState>, EnsureState:<EnsureState>' -ForEach @(
+         @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent; EnsureState = [Ensure]::Present }
+         @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent; EnsureState = [Ensure]::Absent }
+         @{ FireWallRuleState = [FireWallRuleStateState]::InDesiredState; EnsureState = [Ensure]::Present }
+         @{ FireWallRuleState = [FireWallRuleStateState]::InDesiredState; EnsureState = [Ensure]::Absent }
+         @{ FireWallRuleState = [FireWallRuleStateState]::NotinDesiredState; EnsureState = [Ensure]::Present }
+         @{ FireWallRuleState = [FireWallRuleStateState]::NotinDesiredState; EnsureState = [Ensure]::Absent }
+      ) {
+         $ExpectedResult = $false
+         if (($FireWallRuleState -eq [FireWallRuleStateState]::InDesiredState) -and ($EnsureState -eq [Ensure]::Present)) {
+            $ExpectedResult = $true
+         } elseif (($FireWallRuleState -eq [FireWallRuleStateState]::Nonexistent) -and ($EnsureState -eq [Ensure]::Absent)) {
+            $ExpectedResult = $true
+         }
+
+         Mock Get-NetFirewallRule {
+            if ($FireWallRuleState -eq [FireWallRuleStateState]::InDesiredState) {
+               return @{
+                  Name        = 'TestRule'
+                  DisplayName = 'Test Rule'
+                  Action      = 'Allow'
+                  Description = 'Test Description'
+                  Direction   = 'Inbound'
+                  Enabled     = $true
+                  Profile     = 'Domain, Private'
+               }
+            } elseif ($FireWallRuleState -eq [FireWallRuleStateState]::NotinDesiredState) {
+               return @{
+                  Name        = 'TestRule'
+                  DisplayName = 'Different Test Rule'
+                  Action      = 'Block'
+                  Description = 'Different Test Description'
+                  Direction   = 'Outbound'
+                  Enabled     = $false
+                  Profile     = ''
+               }
+            } else {
+               return $null
+            }
+         }
+
+         $firewallRule = [FirewallRule]@{
+            Name        = 'TestRule'
+            Ensure      = $EnsureState
+            DisplayName = 'Test Rule'
+            Action      = [Action]::Allow
+            Description = 'Test Description'
+            Direction   = [Direction]::Inbound
+            Enabled     = $true
+            Profiles    = @('Domain', 'Private')
+            LocalPort   = 80, 443
+            Protocol    = 'TCP'
+         }
+
+         $testResult = $firewallRule.Test()
+         $testResult | Should -Be $ExpectedResult
+      }
+
+      It 'Set test for FirewallRule with FireWallRuleState:<FireWallRuleState>, EnsureState:<EnsureState>' -ForEach @(
+         @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent; EnsureState = [Ensure]::Present }
+         @{ FireWallRuleState = [FireWallRuleStateState]::Nonexistent; EnsureState = [Ensure]::Absent }
+         @{ FireWallRuleState = [FireWallRuleStateState]::InDesiredState; EnsureState = [Ensure]::Present }
+         @{ FireWallRuleState = [FireWallRuleStateState]::InDesiredState; EnsureState = [Ensure]::Absent }
+         @{ FireWallRuleState = [FireWallRuleStateState]::NotinDesiredState; EnsureState = [Ensure]::Present }
+         @{ FireWallRuleState = [FireWallRuleStateState]::NotinDesiredState; EnsureState = [Ensure]::Absent }
+      ) {
+         $isInDesiredState = $false
+         if (($FireWallRuleState -eq [FireWallRuleStateState]::InDesiredState) -and ($EnsureState -eq [Ensure]::Present)) {
+            $isInDesiredState = $true
+         } elseif (($FireWallRuleState -eq [FireWallRuleStateState]::Nonexistent) -and ($EnsureState -eq [Ensure]::Absent)) {
+            $isInDesiredState = $true
+         }
+
+         Mock Get-NetFirewallRule {
+            if ($FireWallRuleState -eq [FireWallRuleStateState]::InDesiredState) {
+               return @{
+                  Name        = 'TestRule'
+                  DisplayName = 'Test Rule'
+                  Action      = 'Allow'
+                  Description = 'Test Description'
+                  Direction   = 'Inbound'
+                  Enabled     = $true
+                  Profile     = 'Domain, Private'
+               }
+            } elseif ($FireWallRuleState -eq [FireWallRuleStateState]::NotinDesiredState) {
+               return @{
+                  Name        = 'TestRule'
+                  DisplayName = 'Different Test Rule'
+                  Action      = 'Block'
+                  Description = 'Different Test Description'
+                  Direction   = 'Outbound'
+                  Enabled     = $false
+                  Profile     = ''
+               }
+            } else {
+               return $null
+            }
+         }
+
+         $firewallRule = [FirewallRule]@{
+            Name        = 'TestRule'
+            Ensure      = $EnsureState
+            DisplayName = 'Test Rule'
+            Action      = [Action]::Allow
+            Description = 'Test Description'
+            Direction   = [Direction]::Inbound
+            Enabled     = $true
+            Profiles    = @('Domain', 'Private')
+            LocalPort   = 80, 443
+            Protocol    = 'TCP'
+         }
+
+         $firewallRule.Set()
+
+         $newRuleCount = 0
+         $setRuleCount = 0
+         $removeRuleCount = 0
+
+         if ($isInDesiredState -eq $false) {
+            if ($EnsureState -eq [Ensure]::Present) {
+               if ($FireWallRuleState -eq [FireWallRuleStateState]::Nonexistent) {
+                  $newRuleCount = 1
+               } else {
+                  $setRuleCount = 1
+               }
+            } else {
+               $removeRuleCount = 1
+            }
+         }
+
+         #Excluding LocalPort due to Pester limitations
+         Should -Invoke New-NetFirewallRule -Times $newRuleCount -Exactly -ParameterFilter {
+            $Name -eq 'TestRule' -and $DisplayName -eq 'Test Rule' -and $Action -eq 'Allow' -and $Description -eq 'Test Description' -and $Direction -eq 'Inbound' -and $Enabled -eq $true -and $Profile -eq 'Domain, Private' -and $Protocol -eq 'TCP'
+         }
+
+         # Note NewDisplayName instead of DisplayName
+         Should -Invoke Set-NetFirewallRule -Times $setRuleCount -Exactly -ParameterFilter {
+            $Name -eq 'TestRule' -and $NewDisplayName -eq 'Test Rule' -and $Action -eq 'Allow' -and $Description -eq 'Test Description' -and $Direction -eq 'Inbound' -and $Enabled -eq $true -and $Profile -eq 'Domain, Private' -and $Protocol -eq 'TCP'
+         }
+         Should -Invoke Remove-NetFirewallRule -Times $removeRuleCount -Exactly -ParameterFilter { $Name -eq 'TestRule' }
       }
    }
 
