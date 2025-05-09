@@ -14,14 +14,13 @@
 ##########################################################################################################
 properties:
   resources:
-    - resource: Microsoft.Windows.Developer/DeveloperMode
-      id: Enable
+    - resource: Microsoft.Windows.Settings/WindowsSettings
       directives:
         description: Enable Developer Mode
         allowPrerelease: true
         securityContext: elevated
       settings:
-        Ensure: Present
+        DeveloperMode: true
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: GitHub Desktop
       directives:
