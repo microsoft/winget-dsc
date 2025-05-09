@@ -108,11 +108,11 @@ class WindowsSettings {
 
     [string] GetTaskbarAlignment() {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl)) {
-            return "Middle"
+            return "Center"
         }
 
         $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl)
-        return $value -eq 0 ? "Left" : "Middle"
+        return $value -eq 0 ? "Left" : "Center"
     }
 
     [string] GetAppColorMode() {
@@ -124,7 +124,7 @@ class WindowsSettings {
         if ($appsUseLightModeValue -eq 0) {
             return "Dark"
         }
-        
+
         return "Light"
     }
 
@@ -197,7 +197,7 @@ public class NativeMethods {
         uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);
 }
 "@
-    
+
     # Constants
     $HWND_BROADCAST = [IntPtr]0xffff
     $WM_SETTINGCHANGE = 0x001A

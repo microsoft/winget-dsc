@@ -16,5 +16,5 @@ properties:
         AppColorMode: Light
         DeveloperMode: false
         SystemColorMode: Light
-        TaskbarAlignment: Middle
+        TaskbarAlignment: Center
   configurationVersion: 0.2.0
