@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration will modify various Windows Settings.                #
+# PowerShell module: Microsoft.Windows.Settings (v0.1.0-alpha)            #
+###########################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.Windows.Settings/WindowsSettings
+      directives:
+        allowPrerelease: true
+        description: Modify Windows Settings
+        securityContext: elevated
+      settings:
+        AppColorMode: Light
+        DeveloperMode: false
+        SystemColorMode: Light
+        TaskbarAlignment: Center
+  configurationVersion: 0.2.0
