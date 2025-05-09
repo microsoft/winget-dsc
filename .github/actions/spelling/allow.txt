@@ -27,7 +27,6 @@ Icm
 inaries
 JDK
 jquery
-markdownlint
 Mfor
 microsoft
 MMdd
@@ -61,9 +60,15 @@ upvote
 videojs
 vsconfig
 vscpp
+wcr
 website
 websites
 wekyb
+Hmmss
+NOLOGO
+Ptr
+Wnd
+xffff
 whatif
 wildcards
 winappdev

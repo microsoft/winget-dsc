@@ -119,7 +119,7 @@
 
             # External dependent modules of this module
             # ExternalModuleDependencies = @()
-            DscCapabilities = @('Get', 'Set', 'Test', 'Export', 'WhatIf')
+            DscCapabilities = @('get', 'set', 'test', 'export', 'whatIf')
 
         } # End of PSData hashtable
 

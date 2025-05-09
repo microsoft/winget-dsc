@@ -146,6 +146,14 @@ configuration:
                 then:
                   - addLabel:
                       label: Microsoft.Windows.Setting.Accessibility
+              # Microsoft.Windows.Settings
+              - if:
+                  - commentContains:
+                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.Windows.Settings
               # Microsoft.Windows.Setting.Language
               - if:
                   - commentContains:

@@ -7,3 +7,4 @@ These tutorials are directly related to the [Windows development paths](https://
 - [Install Node.js on Windows](./JavaScript/README.md)
 - [Get started using Python on Windows for beginners](./Python%203.13/README.md)
 - [Start developing Windows apps](./Start%20Developing%20Windows%20apps/README.md)
+- [Get started building an app with Windows Copilot Runtime APIs](./Windows%20AI/README.md)

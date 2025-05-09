@@ -1,6 +1,6 @@
 # Get started using Python on Windows for beginners
 
-This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) (_learn_python.winget_) that will work with the WinGet command line interface (`winget configure --file [path: learn_python.winget]`) or can be run directly by double-clicking on the file.
+This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) ([_learn_python.winget_](./learn_python.winget)) that will work with the WinGet command line interface (`winget configure --file [path: learn_python.winget]`) or can be run directly by double-clicking on the file.
 
 When run, the [learn_python.winget](./learn_python.winget) file will install the following list of applications:
 
