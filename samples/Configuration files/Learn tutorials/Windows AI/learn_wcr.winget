@@ -19,13 +19,13 @@ properties:
       settings:
         MinVersion: '10.0.26120.3073'
   resources:
-    - resource: Microsoft.Windows.Developer/DeveloperMode
+    - resource: Microsoft.Windows.Settings/WindowsSettings
       directives:
         description: Enable Developer Mode
         securityContext: elevated
         allowPrerelease: true
       settings:
-        Ensure: Present
+        DeveloperMode: true
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: Visual Studio
       directives:
