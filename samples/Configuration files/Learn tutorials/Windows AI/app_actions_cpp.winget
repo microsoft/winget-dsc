@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+##################################################################################################################################
+# This configuration will install the tools necessary to get started with app actions on Windows                                 #
+#                                                                                                                                #
+# This will:                                                                                                                     #
+#     * Enables Developer Mode                                                                                                   #
+#     * Installs Visual Studio Community                                                                                         #
+#     * Include Windows App development workload and C++ Workload                                                                #
+#     * Include MSIX Packaging tools                                                                                             #
+##################################################################################################################################
+properties:
+  resources:
+    - resource: Microsoft.Windows.Settings/WindowsSettings
+      directives:
+        description: Enable Developer Mode
+        securityContext: elevated
+        allowPrerelease: true
+      settings:
+        DeveloperMode: true
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: Visual Studio
+      directives:
+        description: Install Visual Studio 2022 Community
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudio.2022.Community
+        source: winget
+    - resource: Microsoft.VisualStudio.DSC/VSComponents
+      id: Workloads ManagedDesktop
+      dependsOn:
+        - Visual Studio
+      directives:
+        description: Install required VS Workloads (ManagedDesktop, Windows App SDK)
+        allowPrerelease: true
+        securityContext: elevated
+      settings:
+        productId: Microsoft.VisualStudio.Product.Community
+        channelId: VisualStudio.17.Release
+        components:
+          - Microsoft.VisualStudio.Workload.NativeDesktop
+          - Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging
+          - Microsoft.VisualStudio.Workload.Universal
+  configurationVersion: 0.2.0
