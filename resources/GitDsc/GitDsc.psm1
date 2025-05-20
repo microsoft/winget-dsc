@@ -205,7 +205,7 @@ class GitConfigUserName {
         }
 
         if ($this.Ensure -eq [Ensure]::Present) {
-            $configArgs = ConstructGitConfigUserArguments -Arguments "user.name '$($this.UserName)'" -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments "user.name `"$($this.UserName)`"" -ConfigLocation $this.ConfigLocation
         }
         else {
             $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.name' -ConfigLocation $this.ConfigLocation
