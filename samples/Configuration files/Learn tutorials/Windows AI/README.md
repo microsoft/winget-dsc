@@ -10,7 +10,7 @@ AI APIs:
 
 App Actions:
 - Microsoft Visual Studio Community 2022
-- Visual Studio Components: Universal, NativeDesktop or ManagedDesktop and MSIX.Packagingcomponent group
+- Visual Studio Components: Universal, NativeDesktop or ManagedDesktop and MSIX Packaging component group.
 
 If anything is already installed, the configuration file will skip that item.
 
