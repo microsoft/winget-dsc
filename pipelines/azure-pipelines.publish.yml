@@ -1,5 +1,5 @@
 # winget-dsc pipeline to publish module artifacts
-name: '$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(Date:yyyyMMdd)-$(Rev:r)'
+name: '$(Build.DefinitionName) - ${{ parameters.moduleName }} v${{ parameters.moduleVersion }}'
 
 trigger: none
 
