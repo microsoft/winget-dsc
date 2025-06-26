@@ -4,6 +4,12 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+enum ShowHideFeature {
+    KeepCurrentValue
+    Hide
+    Show
+}
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
     $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
@@ -30,11 +36,18 @@ class WindowsSettings {
     [DscProperty()]
     [Nullable[bool]] $DeveloperMode
 
+    [DscProperty()]
+    [System.Version] $OsVersion
+
+    [DscProperty()]
+    [bool] $HideFileExt
+
     hidden [bool] $RestartExplorer = $false
     hidden [string] $TaskbarAl = 'TaskbarAl'
     hidden [string] $AppsUseLightTheme = 'AppsUseLightTheme'
     hidden [string] $SystemUsesLightTheme = 'SystemUsesLightTheme'
     hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
+    hidden [string] $HideFileExtPropertyName = 'HideFileExt'
 
     [WindowsSettings] Get() {
         $currentState = [WindowsSettings]::new()
@@ -49,12 +62,26 @@ class WindowsSettings {
         # Get DeveloperMode
         $currentState.DeveloperMode = $this.IsDeveloperModeEnabled()
 
+        # Get OS Version
+        $currentState.OsVersion = $this.GetOsVersion()
+
+        # Get File Extensions visibility
+        $currentState.HideFileExt = $this.IsFileExtensionsHidden()
+
         return $currentState
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        return $this.TestTaskbarAlignment($currentState) -and $this.TestAppColorMode($currentState) -and $this.TestSystemColorMode($currentState) -and $this.TestDeveloperMode($currentState)
+
+        $testTaskbarAlignment = $this.TestTaskbarAlignment($currentState)
+        $testAppColorMode = $this.TestAppColorMode($currentState)
+        $testSystemColorMode = $this.TestSystemColorMode($currentState)
+        $testDeveloperMode = $this.TestDeveloperMode($currentState)
+        $testOsVersion = $this.TestOsVersion($currentState)
+        $testHideFileExt = $this.TestHideFileExt($currentState)
+
+        return $testTaskbarAlignment -and $testAppColorMode -and $testSystemColorMode -and $testDeveloperMode -and $testOsVersion -and $testHideFileExt
     }
 
     [void] Set() {
@@ -104,6 +131,13 @@ class WindowsSettings {
             $value = $this.DeveloperMode ? 1 : 0
             Set-ItemProperty -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName -Value $value
         }
+
+        # Set HideFileExt
+        if (!$this.TestHideFileExt($currentState)) {
+            $value = $this.HideFileExt ? 1 : 0
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HideFileExtPropertyName -Value $value
+            SendShellStateMessage
+        }
     }
 
     [string] GetTaskbarAlignment() {
@@ -152,6 +186,19 @@ class WindowsSettings {
         return Get-ItemPropertyValue -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName
     }
 
+    [System.Version] GetOsVersion() {
+        return (Get-ComputerInfo | Select-Object OsVersion).OsVersion
+    }
+
+    [bool] IsFileExtensionsHidden() {
+        $regExists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.HideFileExtPropertyName
+        if (-not($regExists)) {
+            return $false
+        }
+
+        return Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.HideFileExtPropertyName
+    }
+
     [bool] TestDeveloperMode([WindowsSettings] $currentState) {
         return $this.DeveloperMode -eq $null -or $currentState.DeveloperMode -eq $this.DeveloperMode
     }
@@ -166,6 +213,14 @@ class WindowsSettings {
 
     [bool] TestSystemColorMode([WindowsSettings] $currentState) {
         return $this.SystemColorMode -eq $null -or $currentState.SystemColorMode -eq $this.SystemColorMode
+    }
+
+    [bool] TestOsVersion([WindowsSettings] $currentState) {
+        return $this.OsVersion -eq $null -or $currentState.OsVersion -eq $this.OsVersion
+    }
+
+    [bool] TestHideFileExt([WindowsSettings] $currentState) {
+        return $this.HideFileExt -eq $null -or $currentState.HideFileExt -eq $this.HideFileExt
     }
 }
 
@@ -184,7 +239,18 @@ function DoesRegistryKeyPropertyExist {
 }
 
 function SendImmersiveColorSetMessage {
-    param()
+    SendMessageTimeout -Message "ImmersiveColorSet"
+}
+
+function SendShellStateMessage {
+    SendMessageTimeout -Message "ShellState"
+}
+
+function SendMessageTimeout {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Message
+    )
 
     Add-Type @"
 using System;
@@ -210,7 +276,7 @@ public class NativeMethods {
         $HWND_BROADCAST,
         $WM_SETTINGCHANGE,
         [UIntPtr]::Zero,
-        "ImmersiveColorSet",
+        $Message,
         $SMTO_ABORTIFHUNG,
         $timeout,
         [ref]$result
