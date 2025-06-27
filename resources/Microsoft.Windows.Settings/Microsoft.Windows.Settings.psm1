@@ -4,18 +4,13 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-enum ShowHideFeature {
-    KeepCurrentValue
-    Hide
-    Show
-}
-
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
     $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
     $global:AppModelUnlockRegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
+    $global:LongPathsRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:LongPathsRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -40,7 +35,13 @@ class WindowsSettings {
     [System.Version] $OsVersion
 
     [DscProperty()]
-    [bool] $HideFileExt
+    [Nullable[bool]] $HideFileExt
+
+    [DscProperty()]
+    [Nullable[bool]] $ShowHiddenFiles
+
+    [DscProperty()]
+    [Nullable[bool]] $LongPathsEnabled
 
     hidden [bool] $RestartExplorer = $false
     hidden [string] $TaskbarAl = 'TaskbarAl'
@@ -48,6 +49,8 @@ class WindowsSettings {
     hidden [string] $SystemUsesLightTheme = 'SystemUsesLightTheme'
     hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
     hidden [string] $HideFileExtPropertyName = 'HideFileExt'
+    hidden [string] $HiddenPropertyName = 'Hidden'
+    hidden [string] $LongPathsEnabledPropertyName = 'LongPathsEnabled'
 
     [WindowsSettings] Get() {
         $currentState = [WindowsSettings]::new()
@@ -68,6 +71,12 @@ class WindowsSettings {
         # Get File Extensions visibility
         $currentState.HideFileExt = $this.IsFileExtensionsHidden()
 
+        # Get Hidden Files visibility
+        $currentState.ShowHiddenFiles = $this.AreHiddenFilesShown()
+
+        # Get Long Paths Enabled
+        $currentState.LongPathsEnabled = $this.IsLongPathsEnabled()
+
         return $currentState
     }
 
@@ -80,8 +89,10 @@ class WindowsSettings {
         $testDeveloperMode = $this.TestDeveloperMode($currentState)
         $testOsVersion = $this.TestOsVersion($currentState)
         $testHideFileExt = $this.TestHideFileExt($currentState)
+        $testShowHiddenFiles = $this.TestHiddenFilesShown($currentState)
+        $testLongPathsEnabled = $this.TestLongPathsEnabled($currentState)
 
-        return $testTaskbarAlignment -and $testAppColorMode -and $testSystemColorMode -and $testDeveloperMode -and $testOsVersion -and $testHideFileExt
+        return $testTaskbarAlignment -and $testAppColorMode -and $testSystemColorMode -and $testDeveloperMode -and $testOsVersion -and $testHideFileExt -and $testShowHiddenFiles -and $testLongPathsEnabled
     }
 
     [void] Set() {
@@ -120,12 +131,7 @@ class WindowsSettings {
 
         # Set DeveloperMode
         if (!$this.TestDeveloperMode($currentState)) {
-            $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-            $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
-
-            if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
-                throw 'Toggling Developer Mode requires this resource to be run as an Administrator.'
-            }
+            AdministratorRequired -Name "DeveloperMode"
 
             # 1 == enabled // 0 == disabled
             $value = $this.DeveloperMode ? 1 : 0
@@ -137,6 +143,20 @@ class WindowsSettings {
             $value = $this.HideFileExt ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HideFileExtPropertyName -Value $value
             SendShellStateMessage
+        }
+
+        # Set ShowHiddenFiles
+        if (!$this.TestHiddenFilesShown($currentState)) {
+            $value = $this.ShowHiddenFiles ? 1 : 0
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HiddenPropertyName -Value $value
+            SendShellStateMessage
+        }
+
+        # Set LongPathsEnabled
+        if (!$this.TestLongPathsEnabled($currentState)) {
+            AdministratorRequired -Name "LongPathsEnabled"
+            $value = $this.LongPathsEnabled ? 1 : 0
+            Set-ItemProperty -Path $global:LongPathsRegistryPath -Name $this.LongPathsEnabledPropertyName -Value $value
         }
     }
 
@@ -199,6 +219,24 @@ class WindowsSettings {
         return Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.HideFileExtPropertyName
     }
 
+    [bool] AreHiddenFilesShown() {
+        $regExists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.HiddenPropertyName
+        if (-not($regExists)) {
+            return $true
+        }
+
+        return Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.HiddenPropertyName
+    }
+
+    [bool] IsLongPathsEnabled() {
+        $regExists = DoesRegistryKeyPropertyExist -Path $global:LongPathsRegistryPath -Name $this.LongPathsEnabledPropertyName
+        if (-not($regExists)) {
+            return $false
+        }
+
+        return Get-ItemPropertyValue -Path $global:LongPathsRegistryPath -Name $this.LongPathsEnabledPropertyName
+    }
+
     [bool] TestDeveloperMode([WindowsSettings] $currentState) {
         return $this.DeveloperMode -eq $null -or $currentState.DeveloperMode -eq $this.DeveloperMode
     }
@@ -221,6 +259,27 @@ class WindowsSettings {
 
     [bool] TestHideFileExt([WindowsSettings] $currentState) {
         return $this.HideFileExt -eq $null -or $currentState.HideFileExt -eq $this.HideFileExt
+    }
+
+    [bool] TestHiddenFilesShown([WindowsSettings] $currentState) {
+        return $this.ShowHiddenFiles -eq $null -or $currentState.ShowHiddenFiles -eq $this.ShowHiddenFiles
+    }
+
+    [bool] TestLongPathsEnabled([WindowsSettings] $currentState) {
+        return $this.LongPathsEnabled -eq $null -or $currentState.LongPathsEnabled -eq $this.LongPathsEnabled
+    }
+}
+
+function AdministratorRequired {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+    $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
+
+    if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw "This operation on $Name requires Administrator privileges."
     }
 }
 
