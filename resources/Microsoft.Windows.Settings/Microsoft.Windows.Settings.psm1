@@ -83,16 +83,16 @@ class WindowsSettings {
     [bool] Test() {
         $currentState = $this.Get()
 
-        $testTaskbarAlignment = $this.TestTaskbarAlignment($currentState)
-        $testAppColorMode = $this.TestAppColorMode($currentState)
-        $testSystemColorMode = $this.TestSystemColorMode($currentState)
-        $testDeveloperMode = $this.TestDeveloperMode($currentState)
-        $testOsVersion = $this.TestOsVersion($currentState)
-        $testHideFileExt = $this.TestHideFileExt($currentState)
-        $testShowHiddenFiles = $this.TestHiddenFilesShown($currentState)
-        $testLongPathsEnabled = $this.TestLongPathsEnabled($currentState)
-
-        return $testTaskbarAlignment -and $testAppColorMode -and $testSystemColorMode -and $testDeveloperMode -and $testOsVersion -and $testHideFileExt -and $testShowHiddenFiles -and $testLongPathsEnabled
+        return (
+            $this.TestTaskbarAlignment($currentState) -and
+            $this.TestAppColorMode($currentState) -and
+            $this.TestSystemColorMode($currentState) -and
+            $this.TestDeveloperMode($currentState) -and
+            $this.TestOsVersion($currentState) -and
+            $this.TestHideFileExt($currentState) -and
+            $this.TestHiddenFilesShown($currentState) -and
+            $this.TestLongPathsEnabled($currentState)
+        )
     }
 
     [void] Set() {
