@@ -35,7 +35,7 @@ class WindowsSettings {
     [System.Version] $OsVersion
 
     [DscProperty()]
-    [Nullable[bool]] $HideFileExt
+    [Nullable[bool]] $HideFileExtensions
 
     [DscProperty()]
     [Nullable[bool]] $ShowHiddenFiles
@@ -78,7 +78,7 @@ class WindowsSettings {
         $currentState.OsVersion = $this.GetOsVersion()
 
         # Get File Extensions visibility
-        $currentState.HideFileExt = $this.IsFileExtensionsHidden()
+        $currentState.HideFileExtensions = $this.IsFileExtensionsHidden()
 
         # Get Hidden Files visibility
         $currentState.ShowHiddenFiles = $this.AreHiddenFilesShown()
@@ -98,7 +98,7 @@ class WindowsSettings {
             $this.TestSystemColorMode($currentState) -and
             $this.TestDeveloperMode($currentState) -and
             $this.TestOsVersion($currentState) -and
-            $this.TestHideFileExt($currentState) -and
+            $this.TestHideFileExtensions($currentState) -and
             $this.TestHiddenFilesShown($currentState) -and
             $this.TestLongPathsEnabled($currentState)
         )
@@ -108,20 +108,26 @@ class WindowsSettings {
         $currentState = $this.Get()
 
         # Set TaskbarAlignment
-        if (!$this.TestTaskbarAlignment($currentState) -and @($this.LeftValue, $this.CenterValue) -contains $this.TaskbarAlignment) {
+        if (!$this.TestTaskbarAlignment($currentState)) {
+            ValidateInput -ParamName "TaskbarAlignment" -InputValue $this.TaskbarAlignment -ValidValues @($this.LeftValue, $this.CenterValue)
+
             $desiredAlignment = $this.TaskbarAlignment -eq $this.LeftValue ? 0 : 1
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAlignmentRegKey -Value $desiredAlignment
         }
 
         # Set ColorMode
         $colorModeChanged = $false
-        if (!$this.TestAppColorMode($currentState) -and @($this.DarkValue, $this.LightValue) -contains $this.AppColorMode) {
+        if (!$this.TestAppColorMode($currentState)) {
+            ValidateInput -ParamName "AppColorMode" -InputValue $this.AppColorMode -ValidValues @($this.DarkValue, $this.LightValue)
+
             $desiredColorMode = $this.AppColorMode -eq $this.DarkValue ? 0 : 1
             Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightThemeRegKey -Value $desiredColorMode
             $colorModeChanged = $true
         }
 
-        if (!$this.TestSystemColorMode($currentState) -and @($this.DarkValue, $this.LightValue) -contains $this.SystemColorMode) {
+        if (!$this.TestSystemColorMode($currentState)) {
+            ValidateInput -ParamName "SystemColorMode" -InputValue $this.SystemColorMode -ValidValues @($this.DarkValue, $this.LightValue)
+
             $desiredColorMode = $this.SystemColorMode -eq $this.DarkValue ? 0 : 1
             Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightThemeRegKey -Value $desiredColorMode
             $colorModeChanged = $true
@@ -146,8 +152,8 @@ class WindowsSettings {
         }
 
         # Set HideFileExt
-        if (!$this.TestHideFileExt($currentState)) {
-            $value = $this.HideFileExt ? 1 : 0
+        if (!$this.TestHideFileExtensions($currentState)) {
+            $value = $this.HideFileExtensions ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HideFileExtRegKey -Value $value
             SendShellStateMessage
         }
@@ -264,8 +270,8 @@ class WindowsSettings {
         return $this.OsVersion -eq $null -or $currentState.OsVersion -eq $this.OsVersion
     }
 
-    [bool] TestHideFileExt([WindowsSettings] $currentState) {
-        return $this.HideFileExt -eq $null -or $currentState.HideFileExt -eq $this.HideFileExt
+    [bool] TestHideFileExtensions([WindowsSettings] $currentState) {
+        return $this.HideFileExtensions -eq $null -or $currentState.HideFileExtensions -eq $this.HideFileExtensions
     }
 
     [bool] TestHiddenFilesShown([WindowsSettings] $currentState) {
@@ -287,6 +293,23 @@ function AdministratorRequired {
 
     if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
         throw "This operation on $Name requires Administrator privileges."
+    }
+}
+
+function ValidateInput {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ParamName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$InputValue,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$ValidValues
+    )
+
+    if (-not ($ValidValues -contains $InputValue)) {
+        throw "Invalid value for $ParamName. Valid values are: $($ValidValues -join ', ')."
     }
 }
 
