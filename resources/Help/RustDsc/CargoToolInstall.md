@@ -19,12 +19,13 @@ The `CargoToolInstall` DSC Resource allows you to install and uninstall Rust com
 
 ## PARAMETERS
 
-| **Parameter**      | **Attribute**   | **DataType** | **Description**                                                                                                     | **Allowed Values** |
-| ------------------ | --------------- | ------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `CrateName`        | Key             | String       | The name of the Rust crate to manage as a command-line tool.                                                        | N/A                |
-| `Version`          | Optional        | String       | The version of the Rust crate to install. If not specified, the latest version will be installed.                   | N/A                |
-| `Exist`            | Optional        | Boolean      | Indicates whether the crate should be installed. Defaults to `$true`.                                               | `$true`, `$false`  |
-| `InstalledVersion` | NotConfigurable | String       | The currently installed version of the crate. This is a read-only property that is populated during Get operations. | N/A                |
+| **Parameter**      | **Attribute**   | **DataType** | **Description**                                                                                                                | **Allowed Values** |
+| ------------------ | --------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| `CrateName`        | Key             | String       | The name of the Rust crate to manage as a command-line tool.                                                                   | N/A                |
+| `Version`          | Optional        | String       | The version of the Rust crate to install. If not specified, the latest version will be installed.                              | N/A                |
+| `Features`         | Optional        | String[]     | A list of features to enable when installing the crate. If not specified, all features will be enabled using `--all-features`. | N/A                |
+| `Exist`            | Optional        | Boolean      | Indicates whether the crate should be installed. Defaults to `$true`.                                                          | `$true`, `$false`  |
+| `InstalledVersion` | NotConfigurable | String       | The currently installed version of the crate. This is a read-only property that is populated during Get operations.            | N/A                |
 
 ## EXAMPLES
 
@@ -58,6 +59,17 @@ Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Prope
 ```
 
 ### EXAMPLE 4
+
+```powershell
+Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Property @{
+    CrateName = 'bat'
+    Features = @('minimal_application')
+}
+
+This example installs the Rust crate 'bat' globally with only the 'minimal_application' feature enabled.
+```
+
+### EXAMPLE 5
 
 ```powershell
 Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Property @{

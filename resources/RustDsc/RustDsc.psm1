@@ -24,7 +24,6 @@ function Invoke-Cargo {
 }
 
 function Get-InstalledCargoCrates {
-    # For global crates, use 'cargo install --list'
     $result = Invoke-Cargo -Command 'install --list'
     return $result
 }
@@ -35,12 +34,14 @@ function Install-CargoCrate {
         [string]$CrateName,
 
         [Parameter()]
-        [string]$Version
+        [string]$Version,
+
+        [Parameter()]
+        [string[]]$Features
     )
 
     $command = [List[string]]::new()
 
-    # Global install
     $command.Add('install')
     $command.Add($CrateName)
     
@@ -48,6 +49,17 @@ function Install-CargoCrate {
         $command.Add('--version')
         $command.Add($Version)
     }
+
+    # Handle features
+    if ($null -ne $Features -and $Features.Count -gt 0) {
+        $command.Add('--features')
+        $command.Add(($Features -join ','))
+    } else {
+        # If no specific features are provided, assume all features
+        $command.Add('--all-features')
+    }
+
+    $command.Add('--quiet')
 
     Write-Verbose -Message "Executing 'cargo $($command -join ' ')'"
 
@@ -114,7 +126,7 @@ function Test-CrateInstalled {
 #region DSCResources
 <#
 .SYNOPSIS
-    The `CargoInstall` DSC Resource allows you to manage the installation and removal of Rust crates using Cargo. This resource ensures that the specified Rust crate is in the desired state.
+    The `CargoToolInstall` DSC Resource allows you to manage the installation and removal of Rust crates using Cargo. This resource ensures that the specified Rust crate is in the desired state.
 
 .PARAMETER Exist
     Specifies whether the Rust crate should exist (be installed) or not. The default value is $true.
@@ -125,15 +137,23 @@ function Test-CrateInstalled {
 .PARAMETER Version
     The version of the Rust crate to install. If not specified, the latest version will be installed.
 
-.EXAMPLE
-    PS C:\> Invoke-DscResource -ModuleName RustDsc -Name CargoInstall -Method Set -Property @{ CrateName = 'bat' }
-
-    This example installs the Rust crate 'bat' globally.
+.PARAMETER Features
+    A list of features to enable when installing the crate. If not specified, all features will be enabled using --all-features.
 
 .EXAMPLE
-    PS C:\> Invoke-DscResource -ModuleName RustDsc -Name CargoInstall -Method Set -Property @{ CrateName = 'tokio'; Version = '1.0.0' }
+    PS C:\> Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Property @{ CrateName = 'bat' }
 
-    This example installs the Rust crate 'tokio' version 1.0.0 globally.
+    This example installs the Rust crate 'bat' globally with all features enabled.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Property @{ CrateName = 'tokio'; Version = '1.0.0' }
+
+    This example installs the Rust crate 'tokio' version 1.0.0 globally with all features enabled.
+
+.EXAMPLE
+    PS C:\> Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Property @{ CrateName = 'bat'; Features = @('minimal_application') }
+
+    This example installs the Rust crate 'bat' globally with only the 'derive' and 'json' features enabled.
 #>
 [DSCResource()]
 class CargoToolInstall {
@@ -146,6 +166,9 @@ class CargoToolInstall {
     [DscProperty()]
     [string]$Version
 
+    [DscProperty()]
+    [string[]]$Features
+
     [DscProperty(NotConfigurable)]
     [string]$InstalledVersion
 
@@ -155,6 +178,7 @@ class CargoToolInstall {
         $currentState = [CargoToolInstall]::new()
         $currentState.CrateName = $this.CrateName
         $currentState.Version = $this.Version
+        $currentState.Features = $this.Features
         $currentState.Exist = $false
 
         $crateInfo = Test-CrateInstalled -CrateName $this.CrateName -Version $this.Version
@@ -184,7 +208,7 @@ class CargoToolInstall {
         
         if ($this.Exist) {
             if (-not $inDesiredState) {
-                Install-CargoCrate -CrateName $this.CrateName -Version $this.Version
+                Install-CargoCrate -CrateName $this.CrateName -Version $this.Version -Features $this.Features
             }
         } else {
             if (-not $inDesiredState) {
@@ -207,6 +231,7 @@ class CargoToolInstall {
                 $crate = [CargoToolInstall]@{
                     CrateName        = $name
                     Version          = $ver
+                    Features         = $null  # Cannot determine features from install list
                     Exist            = $true
                     InstalledVersion = $ver
                 }
