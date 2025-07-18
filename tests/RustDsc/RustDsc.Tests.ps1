@@ -84,4 +84,18 @@ Describe 'CargoToolInstall' {
         $exportedCrates | Should -Not -BeNullOrEmpty
         $exportedCrates[0].CrateName | Should -Not -BeNullOrEmpty
     }
+
+    It 'Install tool with specific features' -Skip:(!$IsWindows) {
+        $desiredState = @{
+            CrateName = 'bat'
+            Features  = @('minimal_application')
+        }
+
+        Invoke-DscResource -Name CargoToolInstall -ModuleName RustDsc -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name CargoToolInstall -ModuleName RustDsc -Method Get -Property $desiredState
+        $finalState.CrateName | Should -Be $desiredState.CrateName
+        $finalState.Features | Should -Be $desiredState.Features
+        $finalState.Exist | Should -Be $true
+    }
 }

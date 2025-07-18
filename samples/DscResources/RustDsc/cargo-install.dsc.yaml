@@ -22,4 +22,11 @@ properties:
         description: Install exa tool globally
       settings:
         CrateName: exa
+    - resource: RustDsc/CargoToolInstall
+      directives:
+        description: Install bat with specific features
+      settings:
+        CrateName: bat
+        Features:
+          - minimal_application
   configurationVersion: 0.2.0
