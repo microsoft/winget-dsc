@@ -43,6 +43,7 @@ class GitClone {
         $currentState = [GitClone]::new()
         $currentState.HttpsUrl = $this.HttpsUrl
         $currentState.RootDirectory = $this.RootDirectory
+        $currentState.FolderName = $this.FolderName
         $currentState.Ensure = [Ensure]::Absent
         $currentState.RemoteName = ($null -eq $this.RemoteName) ? 'origin' : $this.RemoteName
 
@@ -54,7 +55,7 @@ class GitClone {
         Assert-GitUrl -HttpsUrl $this.HttpsUrl
 
         Set-Location $this.RootDirectory
-        $projectName = GetGitProjectName($this.HttpsUrl)
+        $projectName = $this.FolderName ? $this.FolderName : (GetGitProjectName($this.HttpsUrl))
         $expectedDirectory = Join-Path -Path $this.RootDirectory -ChildPath $projectName
 
         if (Test-Path $expectedDirectory) {
@@ -87,7 +88,14 @@ class GitClone {
         }
 
         Set-Location $this.RootDirectory
-        Invoke-GitClone($this.HttpsUrl)
+        
+        if ($this.FolderName) {
+            $cloneArgs = "$($this.HttpsUrl) $($this.FolderName)"
+        } else {
+            $cloneArgs = $this.HttpsUrl
+        }
+        
+        Invoke-GitClone($cloneArgs)
     }
 }
 
