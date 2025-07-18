@@ -10,7 +10,7 @@ Set-StrictMode -Version Latest
 
 BeforeAll {
     ## Test if Rust is installed
-    if (!(Get-Command 'cargo' -C -ErrorAction Ignore)) {
+    if (!(Get-Command 'cargo' -CommandType Application -ErrorAction Ignore)) {
         Write-Verbose -Verbose 'Rust not found, installing...'
         if (!$IsWindows) {
             curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -26,6 +26,7 @@ BeforeAll {
         Write-Verbose -Verbose 'Rust found, updating...'
         & $rustup update
     }
+    
     Import-Module RustDsc -Force -ErrorAction SilentlyContinue
 }
 
