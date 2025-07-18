@@ -29,4 +29,10 @@ properties:
         CrateName: bat
         Features:
           - minimal_application
+    - resource: RustDsc/CargoToolInstall
+      directives:
+        description: Force install tokio tool (overwrite if exists)
+      settings:
+        CrateName: tokio
+        Force: true
   configurationVersion: 0.2.0

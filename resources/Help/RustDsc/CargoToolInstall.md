@@ -24,6 +24,7 @@ The `CargoToolInstall` DSC Resource allows you to install and uninstall Rust com
 | `CrateName`        | Key             | String       | The name of the Rust crate to manage as a command-line tool.                                                                   | N/A                |
 | `Version`          | Optional        | String       | The version of the Rust crate to install. If not specified, the latest version will be installed.                              | N/A                |
 | `Features`         | Optional        | String[]     | A list of features to enable when installing the crate. If not specified, all features will be enabled using `--all-features`. | N/A                |
+| `Force`            | Optional        | Boolean      | Force overwriting existing crates or binaries. Defaults to `$false`.                                                           | `$true`, `$false`  |
 | `Exist`            | Optional        | Boolean      | Indicates whether the crate should be installed. Defaults to `$true`.                                                          | `$true`, `$false`  |
 | `InstalledVersion` | NotConfigurable | String       | The currently installed version of the crate. This is a read-only property that is populated during Get operations.            | N/A                |
 
@@ -66,10 +67,21 @@ Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Prope
     Features = @('minimal_application')
 }
 
-This example installs the Rust crate 'bat' globally with only the 'minimal_application' feature enabled.
+# This example installs the Rust tool 'bat' globally with only the 'minimal_application' feature enabled.
 ```
 
 ### EXAMPLE 5
+
+```powershell
+Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Property @{
+    CrateName = 'ripgrep'
+    Force = $true
+}
+
+# This example installs the Rust tool 'ripgrep' with force overwriting enabled.
+```
+
+### EXAMPLE 6
 
 ```powershell
 Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Property @{

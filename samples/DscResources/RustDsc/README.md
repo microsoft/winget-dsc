@@ -28,6 +28,7 @@ The `CargoToolInstall` resource allows you to:
 - **Global Tool Installation**: Install command-line tools system-wide using `cargo install`
 - **Version Management**: Install specific versions of tools
 - **Feature Selection**: Choose specific features to enable or use all features by default
+- **Force Installation**: Optionally force overwrite existing crates or binaries
 - **Idempotent Operations**: Automatically detects current state and only makes necessary changes
 - **Export Functionality**: Can export currently installed tools
 
@@ -43,4 +44,5 @@ The sample configuration demonstrates:
 2. Installing a specific version of the `ripgrep` tool (fast text search)
 3. Installing the `fd-find` tool (a find alternative)
 4. Installing the `exa` tool (a modern ls replacement)
-5. Installing `bat` with specific features enabled 
+5. Installing `bat` with specific features enabled
+6. Force installing `tokio` with overwrite enabled
