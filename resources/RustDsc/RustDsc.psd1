@@ -2,7 +2,7 @@
     RootModule           = 'RustDsc.psm1'
     ModuleVersion        = '0.1.0'
     GUID                 = 'ced413f1-d327-41fe-a01a-e03ed52d9bb1'
-    Author               = 'Microsoft Corporation'
+    Author               = 'DscSamples'
     CompanyName          = 'Microsoft Corporation'
     Copyright            = '(c) Microsoft Corporation. All rights reserved.'
     Description          = 'DSC Resource for Rust'
