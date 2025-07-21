@@ -16,8 +16,7 @@ The `GitClone` DSC Resource allows you to clone Git repositories to a specified 
 ## DESCRIPTION
 
 The `GitClone` DSC Resource allows you to clone Git repositories to a specified directory using the git CLI.
-The resource ensures that the specified Git repository is cloned to the desired location and can optionally specify a
-custom folder name for the cloned repository.
+The resource ensures that the specified Git repository is cloned to the desired location and can optionally specify a custom folder name for the cloned repository.
 
 ## PARAMETERS
 
