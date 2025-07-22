@@ -51,4 +51,13 @@ Describe 'GitDsc' {
         $finalState.RootDirectory | Should -Be $desiredState.RootDirectory
         $finalState.FolderName | Should -Be $desiredState.FolderName
     }
+
+    It 'Should not clone a repository if an incorrect URL is provided' {
+        $desiredState = @{
+            HttpsUrl      = 'https://invalid-url.git'
+            RootDirectory = $env:TEMP
+        }
+
+        { (Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Get -Property $desiredState -ErrorAction Stop) } | Should -Throw 
+    }
 }
