@@ -388,9 +388,10 @@ function Assert-GitUrl {
         [string]$HttpsUrl
     )
 
-    if (-not $HttpsUrl.EndsWith('.git')) {
-        throw 'HTTPS URL must end with .git extension'
+    $out = Invoke-Git -Command "ls-remote $HttpsUrl *" 2>&1
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Invalid Git URL: $HttpsUrl. Error: $out"
     }
 }
-
 #endregion Functions
