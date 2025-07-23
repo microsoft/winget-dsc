@@ -267,7 +267,7 @@ class WindowsSettings {
     }
 
     [bool] TestOsVersion([WindowsSettings] $currentState) {
-        return $this.OsVersion -eq $null -or $currentState.OsVersion -eq $this.OsVersion
+        return $null -eq $this.OsVersion -or $currentState.OsVersion -eq $this.OsVersion
     }
 
     [bool] TestHideFileExtensions([WindowsSettings] $currentState) {
