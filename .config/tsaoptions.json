@@ -1,7 +1,7 @@
 {
     "instanceUrl": "https://microsoft.visualstudio.com",
     "projectName": "OS",
-    "areaPath": "OS\\Windows Client and Services\\WinPD\\DEEP-Developer Experience, Ecosystem and Partnerships\\InstaDev",
+    "areaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\InstaDev",
     "iterationPath": "OS\\Future",
     "notificationAliases": [
         "instadev@microsoft.com"

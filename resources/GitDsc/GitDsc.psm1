@@ -35,10 +35,15 @@ class GitClone {
     [DscProperty(Mandatory)]
     [string]$RootDirectory
 
+    # The folder name where the repository will be cloned to. If not specified, it will be derived from the HTTPS URL.
+    [DscProperty()]
+    [string]$FolderName
+
     [GitClone] Get() {
         $currentState = [GitClone]::new()
         $currentState.HttpsUrl = $this.HttpsUrl
         $currentState.RootDirectory = $this.RootDirectory
+        $currentState.FolderName = $this.FolderName
         $currentState.Ensure = [Ensure]::Absent
         $currentState.RemoteName = ($null -eq $this.RemoteName) ? 'origin' : $this.RemoteName
 
@@ -46,19 +51,21 @@ class GitClone {
             return $currentState
         }
 
+        # Check if the URL is a Git repository URL
+        Assert-GitUrl -HttpsUrl $this.HttpsUrl
+
         Set-Location $this.RootDirectory
-        $projectName = GetGitProjectName($this.HttpsUrl)
+        $projectName = $this.FolderName ? $this.FolderName : (GetGitProjectName($this.HttpsUrl))
         $expectedDirectory = Join-Path -Path $this.RootDirectory -ChildPath $projectName
 
         if (Test-Path $expectedDirectory) {
             Set-Location -Path $expectedDirectory
             try {
                 $gitRemoteValue = Invoke-GitRemote("get-url $($currentState.RemoteName)")
-                if ($gitRemoteValue -like $this.HttpsUrl) {
+                if ($this.HttpsUrl.StartsWith($gitRemoteValue)) {
                     $currentState.Ensure = [Ensure]::Present
                 }
-            }
-            catch {
+            } catch {
                 # Failed to execute `git remote`. Ensure state is `absent`
             }
         }
@@ -81,7 +88,14 @@ class GitClone {
         }
 
         Set-Location $this.RootDirectory
-        Invoke-GitClone($this.HttpsUrl)
+        
+        if ($this.FolderName) {
+            $cloneArgs = "$($this.HttpsUrl) $($this.FolderName)"
+        } else {
+            $cloneArgs = $this.HttpsUrl
+        }
+        
+        Invoke-GitClone($cloneArgs)
     }
 }
 
@@ -114,8 +128,7 @@ class GitRemote {
         try {
             $gitRemoteValue = Invoke-GitRemote("get-url $($this.RemoteName)")
             $currentState.Ensure = ($gitRemoteValue -like $this.RemoteUrl) ? [Ensure]::Present : [Ensure]::Absent
-        }
-        catch {
+        } catch {
             $currentState.Ensure = [Ensure]::Absent
         }
 
@@ -133,16 +146,13 @@ class GitRemote {
         if ($this.Ensure -eq [Ensure]::Present) {
             try {
                 Invoke-GitRemote("add $($this.RemoteName) $($this.RemoteUrl)")
-            }
-            catch {
+            } catch {
                 throw 'Failed to add remote repository.'
             }
-        }
-        else {
+        } else {
             try {
                 Invoke-GitRemote("remove $($this.RemoteName)")
-            }
-            catch {
+            } catch {
                 throw 'Failed to remove remote repository.'
             }
         }
@@ -174,12 +184,10 @@ class GitConfigUserName {
             if ($this.ProjectDirectory) {
                 if (Test-Path -Path $this.ProjectDirectory) {
                     Set-Location $this.ProjectDirectory
-                }
-                else {
+                } else {
                     throw 'Project directory does not exist.'
                 }
-            }
-            else {
+            } else {
                 throw 'Project directory parameter must be specified for non-system and non-global configurations.'
             }
         }
@@ -206,8 +214,7 @@ class GitConfigUserName {
 
         if ($this.Ensure -eq [Ensure]::Present) {
             $configArgs = ConstructGitConfigUserArguments -Arguments "user.name '$($this.UserName)'" -ConfigLocation $this.ConfigLocation
-        }
-        else {
+        } else {
             $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.name' -ConfigLocation $this.ConfigLocation
         }
 
@@ -240,12 +247,10 @@ class GitConfigUserEmail {
             if ($this.ProjectDirectory) {
                 if (Test-Path -Path $this.ProjectDirectory) {
                     Set-Location $this.ProjectDirectory
-                }
-                else {
+                } else {
                     throw 'Project directory does not exist.'
                 }
-            }
-            else {
+            } else {
                 throw 'Project directory parameter must be specified for non-system and non-global configurations.'
             }
         }
@@ -272,8 +277,7 @@ class GitConfigUserEmail {
 
         if ($this.Ensure -eq [Ensure]::Present) {
             $configArgs = ConstructGitConfigUserArguments -Arguments "user.email $($this.UserEmail)" -ConfigLocation $this.ConfigLocation
-        }
-        else {
+        } else {
             $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.email' -ConfigLocation $this.ConfigLocation
         }
 
@@ -290,8 +294,7 @@ function Assert-Git {
     try {
         Invoke-Git -Command 'help'
         return
-    }
-    catch {
+    } catch {
         throw 'Git is not installed'
     }
 }
@@ -379,4 +382,16 @@ function Assert-IsAdministrator {
     }
 }
 
+function Assert-GitUrl {
+    param(
+        [Parameter(Mandatory)]
+        [string]$HttpsUrl
+    )
+
+    $out = Invoke-Git -Command "ls-remote $HttpsUrl *" 2>&1
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Invalid Git URL: $HttpsUrl. Error: $out"
+    }
+}
 #endregion Functions
