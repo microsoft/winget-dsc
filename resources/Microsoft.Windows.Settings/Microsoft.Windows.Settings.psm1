@@ -251,19 +251,19 @@ class WindowsSettings {
     }
 
     [bool] TestDeveloperMode([WindowsSettings] $currentState) {
-        return $this.DeveloperMode -eq $null -or $currentState.DeveloperMode -eq $this.DeveloperMode
+        return $null -eq $this.DeveloperMode -or $currentState.DeveloperMode -eq $this.DeveloperMode
     }
 
     [bool] TestTaskbarAlignment([WindowsSettings] $currentState) {
-        return $this.TaskbarAlignment -eq $null -or $currentState.TaskbarAlignment -eq $this.TaskbarAlignment
+        return $null -eq $this.TaskbarAlignment -or $currentState.TaskbarAlignment -eq $this.TaskbarAlignment
     }
 
     [bool] TestAppColorMode([WindowsSettings] $currentState) {
-        return $this.AppColorMode -eq $null -or $currentState.AppColorMode -eq $this.AppColorMode
+        return $null -eq $this.AppColorMode -or $currentState.AppColorMode -eq $this.AppColorMode
     }
 
     [bool] TestSystemColorMode([WindowsSettings] $currentState) {
-        return $this.SystemColorMode -eq $null -or $currentState.SystemColorMode -eq $this.SystemColorMode
+        return $null -eq $this.SystemColorMode -or $currentState.SystemColorMode -eq $this.SystemColorMode
     }
 
     [bool] TestOsVersion([WindowsSettings] $currentState) {
@@ -271,15 +271,15 @@ class WindowsSettings {
     }
 
     [bool] TestHideFileExtensions([WindowsSettings] $currentState) {
-        return $this.HideFileExtensions -eq $null -or $currentState.HideFileExtensions -eq $this.HideFileExtensions
+        return $null -eq $this.HideFileExtensions -or $currentState.HideFileExtensions -eq $this.HideFileExtensions
     }
 
     [bool] TestHiddenFilesShown([WindowsSettings] $currentState) {
-        return $this.ShowHiddenFiles -eq $null -or $currentState.ShowHiddenFiles -eq $this.ShowHiddenFiles
+        return $null -eq $this.ShowHiddenFiles -or $currentState.ShowHiddenFiles -eq $this.ShowHiddenFiles
     }
 
     [bool] TestLongPathsEnabled([WindowsSettings] $currentState) {
-        return $this.LongPathsEnabled -eq $null -or $currentState.LongPathsEnabled -eq $this.LongPathsEnabled
+        return $null -eq $this.LongPathsEnabled -or $currentState.LongPathsEnabled -eq $this.LongPathsEnabled
     }
 }
 
