@@ -78,3 +78,8 @@ workaround
 workflows
 worktree
 yml
+dbaeumer
+toolsai
+vsextensions
+vsixmanifest
+vspackage
