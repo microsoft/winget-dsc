@@ -78,3 +78,7 @@ workaround
 workflows
 worktree
 yml
+exa
+ripgrep
+rustup
+tokio

@@ -7,24 +7,28 @@ using namespace System.Collections.Generic
 function Assert-Cargo {
     # Refresh session $path value before invoking 'cargo'
     $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
-    try {
-        $null = Invoke-Cargo -Command 'help'
-    } catch {
-        throw 'Rust/Cargo is not installed'
+
+    if (-not (Get-Command 'cargo' -CommandType Application -ErrorAction Ignore)) {
+        throw 'Cargo is not installed. Please install Rust and Cargo to use this module.'
     }
 }
 
 function Invoke-Cargo {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$Command
+        [string[]]$Arguments
     )
 
-    return Invoke-Expression -Command "cargo $Command"
+    $out = & cargo @Arguments 2>&1 # Capture both stdout and stderr
+    if ($LASTEXITCODE -ne 0) {
+        throw "Cargo command failed with exit code $LASTEXITCODE`: $out"
+    }
+
+    return $out
 }
 
 function Get-InstalledCargoCrates {
-    $result = Invoke-Cargo -Command 'install --list'
+    $result = Invoke-Cargo -Arguments @('install', '--list')
     return $result
 }
 
@@ -43,35 +47,30 @@ function Install-CargoCrate {
         [bool]$Force = $false
     )
 
-    $command = [List[string]]::new()
-
-    $command.Add('install')
-    $command.Add($CrateName)
+    $arguments = @('install', $CrateName)
     
     if (-not([string]::IsNullOrEmpty($Version))) {
-        $command.Add('--version')
-        $command.Add($Version)
+        $arguments += @('--version', $Version)
     }
 
     # Handle features
     if ($null -ne $Features -and $Features.Count -gt 0) {
-        $command.Add('--features')
-        $command.Add(($Features -join ','))
+        $arguments += @('--features', ($Features -join ','))
     } else {
         # If no specific features are provided, assume all features
-        $command.Add('--all-features')
+        $arguments += '--all-features'
     }
 
     # Handle force flag
     if ($Force) {
-        $command.Add('--force')
+        $arguments += '--force'
     }
 
-    $command.Add('--quiet')
+    $arguments += '--quiet'
 
-    Write-Verbose -Message "Executing 'cargo $($command -join ' ')'"
+    Write-Verbose -Message "Executing 'cargo $($arguments -join ' ')'"
 
-    return Invoke-Cargo -Command ($command -join ' ')
+    return Invoke-Cargo -Arguments $arguments
 }
 
 function Uninstall-CargoCrate {
@@ -80,15 +79,11 @@ function Uninstall-CargoCrate {
         [string]$CrateName
     )
 
-    $command = [List[string]]::new()
+    $arguments = @('uninstall', $CrateName)
 
-    # Global uninstall
-    $command.Add('uninstall')
-    $command.Add($CrateName)
+    Write-Verbose -Message "Executing 'cargo $($arguments -join ' ')'"
 
-    Write-Verbose -Message "Executing 'cargo $($command -join ' ')'"
-
-    return Invoke-Cargo -Command ($command -join ' ')
+    return Invoke-Cargo -Arguments $arguments
 }
 
 function Test-CrateInstalled {
@@ -113,6 +108,13 @@ function Test-CrateInstalled {
                     return @{
                         Installed = $true
                         Version   = $installedVersion
+                    }
+                } else {
+                    if ($null -ne $installedVersion) {
+                        return @{
+                            Installed = $false
+                            Version   = $installedVersion
+                        }
                     }
                 }
             }

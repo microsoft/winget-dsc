@@ -10,6 +10,19 @@ Set-StrictMode -Version Latest
 
 BeforeAll {
     ## Test if Rust is installed
+    $channel = 'stable'
+    if ($null -ne (Get-Command msrustup -CommandType Application -ErrorAction Ignore)) {
+        $rustup = 'msrustup'
+        $channel = 'ms-stable'
+        if ($architecture -eq 'current') {
+            $env:MSRUSTUP_TOOLCHAIN = "$architecture"
+        }
+    } elseif ($null -ne (Get-Command rustup -CommandType Application -ErrorAction Ignore)) {
+        $rustup = 'rustup'
+    } else {
+        $rustup = 'echo'
+    }
+
     if (!(Get-Command 'cargo' -CommandType Application -ErrorAction Ignore)) {
         Write-Verbose -Verbose 'Rust not found, installing...'
         if (!$IsWindows) {
@@ -56,6 +69,20 @@ Describe 'CargoToolInstall' {
         $desiredState = @{
             CrateName = 'ripgrep'
             Version   = '13.0.0'
+        }
+
+        Invoke-DscResource -Name CargoToolInstall -ModuleName RustDsc -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name CargoToolInstall -ModuleName RustDsc -Method Get -Property $desiredState
+        $finalState.CrateName | Should -Be $desiredState.CrateName
+        $finalState.Version | Should -Be $desiredState.Version
+        $finalState.Exist | Should -Be $true
+    }
+
+    It 'Downgrades a tool by specifying an older version' -Skip:(!$IsWindows) {
+        $desiredState = @{
+            CrateName = 'bat'
+            Version   = '0.24.0'
         }
 
         Invoke-DscResource -Name CargoToolInstall -ModuleName RustDsc -Method Set -Property $desiredState
