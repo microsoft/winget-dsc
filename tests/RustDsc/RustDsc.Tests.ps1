@@ -115,7 +115,7 @@ Describe 'CargoToolInstall' {
     It 'Install tool with specific features' -Skip:(!$IsWindows) {
         $desiredState = @{
             CrateName = 'bat'
-            Features  = @('minimal_application')
+            Features  = @('minimal-application')
         }
 
         Invoke-DscResource -Name CargoToolInstall -ModuleName RustDsc -Method Set -Property $desiredState
