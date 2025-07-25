@@ -17,3 +17,5 @@ usr
 versioning
 VGpu
 vse
+azuretools
+liveserver

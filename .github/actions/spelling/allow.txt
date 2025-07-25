@@ -83,3 +83,15 @@ toolsai
 vsextensions
 vsixmanifest
 vspackage
+mhutchie
+pkief
+pylance
+ritwickdey
+zhuangtongfa
+coenraads
+eamodio
+ecmel
+esbenp
+formulahendry
+kohler
+linting
