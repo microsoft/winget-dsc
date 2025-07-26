@@ -63,6 +63,7 @@ restsource
 ritwickdey
 tastejs
 todomvc
+tokio
 toolsai
 toolset
 UAC

@@ -7,3 +7,8 @@ reportgenerator
 markdownlint
 msiexec
 winget
+msrustup
+exa
+ripgrep
+rustup
+tokio
