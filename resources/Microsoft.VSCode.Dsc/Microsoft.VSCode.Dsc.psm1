@@ -226,6 +226,7 @@ function Get-PreReleaseFlag {
         }
     }
 }
+
 function Get-VsixManifestInfo {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
