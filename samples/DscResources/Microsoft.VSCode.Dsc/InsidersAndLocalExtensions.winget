@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration demonstrates installing extensions from local VSIX   #
+# files and managing VS Code Insiders extensions.                         #
+# PowerShell module: Microsoft.VSCode.Dsc (v0.1.5-alpha)                  #
+###########################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Visual Studio Code Insiders
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudioCode.Insiders
+        source: winget
+    
+    # Install extension from local VSIX file
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install extension from local VSIX file
+        allowPrerelease: true
+      settings:
+        Name: "C:\\SharedExtensions\\custom-extension-1.0.0.vsix"
+    
+    # Install extensions specifically for VS Code Insiders
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Python extension for VS Code Insiders
+        allowPrerelease: true
+      settings:
+        Name: ms-python.python
+        Insiders: true
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install C# extension for VS Code Insiders
+        allowPrerelease: true
+      settings:
+        Name: ms-dotnettools.csharp
+        Insiders: true
+    
+    # Install pre-release extension for VS Code Insiders
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install pre-release GitLens for VS Code Insiders
+        allowPrerelease: true
+      settings:
+        Name: eamodio.gitlens
+        PreRelease: true
+        Insiders: true
+  configurationVersion: 0.2.0
