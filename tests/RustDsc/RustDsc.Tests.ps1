@@ -10,6 +10,7 @@ Set-StrictMode -Version Latest
 
 BeforeAll {
     ## Test if Rust is installed
+    $fileHash = '365D072AC4EF47F8774F4D2094108035E2291A0073702DB25FA7797A30861FC9'
     $channel = 'stable'
     if ($null -ne (Get-Command msrustup -CommandType Application -ErrorAction Ignore)) {
         $rustup = 'msrustup'
@@ -29,16 +30,18 @@ BeforeAll {
             curl https://sh.rustup.rs -sSf | sh -s -- -y
             $env:PATH += ":$env:HOME/.cargo/bin"
         } else {
-            Invoke-WebRequest 'https://static.rust-lang.org/rustup/dist/i686-pc-windows-gnu/rustup-init.exe' -OutFile 'temp:/rustup-init.exe'
+            Invoke-WebRequest 'https://static.rust-lang.org/rustup/archive/1.26.0/x86_64-pc-windows-msvc/rustup-init.exe' -OutFile 'temp:/rustup-init.exe'
+            $currentHash = (Get-FileHash 'temp:/rustup-init.exe' -Algorithm SHA256).Hash.ToUpperInvariant()
+            if ($currentHash -ne $fileHash) {
+                throw "Hash mismatch for rustup-init.exe. Expected: $fileHash, Found: $currentHash"
+            }
+
             Write-Verbose -Verbose 'Use the default settings to ensure build works'
             & 'temp:/rustup-init.exe' -y
             $env:PATH += ";$env:USERPROFILE\.cargo\bin"
             Remove-Item temp:/rustup-init.exe -ErrorAction Ignore
         }
-    } else {
-        Write-Verbose -Verbose 'Rust found, updating...'
-        & $rustup update
-    }
+    } 
     
     Import-Module RustDsc -Force -ErrorAction SilentlyContinue
 }
