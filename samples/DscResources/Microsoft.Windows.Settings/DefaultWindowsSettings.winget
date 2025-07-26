@@ -17,4 +17,7 @@ properties:
         DeveloperMode: false
         SystemColorMode: Light
         TaskbarAlignment: Center
+        HideFileExtensions: true
+        ShowHiddenFiles: false
+        LongPathsEnabled: false
   configurationVersion: 0.2.0
