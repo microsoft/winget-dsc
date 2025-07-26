@@ -24,6 +24,7 @@ The `VSCodeExtension` DSC Resource allows you to install, update, and remove Vis
 | `Name`        | Key           | String       | The name of the Visual Studio Code extension to manage.                                                                  | To find extensions in VSCode, check out: <https://code.visualstudio.com/docs/editor/extension-marketplace#_find-and-install-an-extension> |
 | `Version`     | Optional      | String       | The version of the Visual Studio Code extension to install. If not specified, the latest version will be installed.      | For example: `1.0.0`                                                                                                                      |
 | `Exist`       | Optional      | Boolean      | Indicates whether the extension should exist. The default value is `$true`.                                              | `$true`, `$false`                                                                                                                         |
+| `PreRelease`  | Optional      | Boolean      | Indicates whether to install the pre-release version of the extension. The default value is `$false`.                    | `$true`, `$false`                                                                                                                         |
 | `Insiders`    | Optional      | Boolean      | Indicates whether to manage the extension for the Insiders version of Visual Studio Code. The default value is `$false`. | `$true`, `$false`                                                                                                                         |
 
 ## EXAMPLES
@@ -67,6 +68,26 @@ Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleNa
 $params = @{
     Name = 'ms-python.python'
     Insiders = $true
+}
+Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+```
+
+### EXAMPLE 5
+
+```powershell
+$params = @{
+    Name = 'dbaeumer.vscode-eslint'
+    PreRelease = $true
+}
+Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+```
+
+### EXAMPLE 6
+
+```powershell
+# Install from local path
+$params = @{
+    Name = 'C:\SharedExtensions\ms-python.python-2021.5.842923320.vsix'
 }
 Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
 ```

@@ -11,15 +11,21 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    if ((Get-Module -Name PSDesiredStateConfiguration -ListAvailable).Version -ne '2.0.7') {
+        Write-Verbose -Message 'Installing PSDesiredStateConfiguration module.' -Verbose
+        Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck -RequiredVersion '2.0.7'
+    }
+
     Import-Module Microsoft.VSCode.Dsc
 
     # Install VSCode
-    Invoke-WebRequest https://raw.githubusercontent.com/PowerShell/vscode-powershell/main/scripts/Install-VSCode.ps1 -UseBasicParsing -OutFile Install-VSCode.ps1
-    .\Install-VSCode.ps1 -BuildEdition Stable-User -Confirm:$false
+    if ($env:TF_BUILD) {
+        Invoke-WebRequest https://raw.githubusercontent.com/PowerShell/vscode-powershell/main/scripts/Install-VSCode.ps1 -UseBasicParsing -OutFile Install-VSCode.ps1
+        .\Install-VSCode.ps1 -BuildEdition Stable-User -Confirm:$false
 
-    # Install VSCode Insiders
-    .\Install-VSCode.ps1 -BuildEdition Insider-User -Confirm:$false
+        # Install VSCode Insiders
+        .\Install-VSCode.ps1 -BuildEdition Insider-User -Confirm:$false
+    }
 }
 
 Describe 'List available DSC resources' {
@@ -60,6 +66,42 @@ Describe 'VSCodeExtension' {
         $finalState.Name | Should -Be $desiredState.Name
         $finalState.Exist | Should -BeTrue
     }
+
+    It 'Sets desired extension from path' {
+        BeforeDiscovery {
+            $script:out = Join-Path ([System.IO.Path]::GetTempPath()) 'ms-toolsai.jupyter-latest.vsix'
+            $restParams = @{
+                Uri             = 'https://marketplace.visualstudio.com/_apis/public/gallery/publishers/ms-toolsai/vsextensions/jupyter/latest/vspackage'
+                UseBasicParsing = $true
+                OutFile         = $out
+            }
+            Invoke-RestMethod @restParams
+        }
+
+        $desiredState = @{
+            Name = $out
+        }
+
+        $name = 'ms-toolsai.jupyter'
+
+        Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
+        $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $desiredState
+        $finalState.Name | Should -Be $name
+        $finalState.Exist | Should -BeTrue
+    }
+
+    It 'Sets prerelease extension' {
+        $desiredState = @{
+            Name       = 'dbaeumer.vscode-eslint'
+            PreRelease = $true
+        }
+
+        Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
+        $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $desiredState
+        $finalState.Name | Should -Be $desiredState.Name
+        $finalState.Exist | Should -BeTrue
+        $finalState.PreRelease | Should -BeTrue
+    }
 }
 
 Describe 'VSCodeExtension-Insiders' {
@@ -97,5 +139,4 @@ Describe 'VSCodeExtension-Insiders' {
 }
 
 AfterAll {
-    # Uninstall VSCode?
 }
