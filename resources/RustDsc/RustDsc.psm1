@@ -53,7 +53,7 @@ function Get-InstalledCargoCrates {
     if ($null -eq $cargoInstalledPackages -or $cargoInstalledPackages.Count -eq 0) {
         # fallback to 'cargo install --list' if .crates2.json is not available
         $result = Invoke-Cargo -Arguments @('install', '--list')
-        
+
         # go through the output of 'cargo install --list'
         $lines = $result -split "`n"
         foreach ($line in $lines) {
@@ -87,7 +87,7 @@ function Install-CargoCrate {
     )
 
     $arguments = @('install', $CrateName)
-    
+
     if (-not([string]::IsNullOrEmpty($Version))) {
         $arguments += @('--version', $Version)
     }
@@ -258,7 +258,7 @@ class CargoToolInstall {
 
     [void] Set() {
         $inDesiredState = $this.Test()
-        
+
         if ($this.Exist) {
             if (-not $inDesiredState) {
                 Install-CargoCrate -CrateName $this.CrateName -Version $this.Version -Features $this.Features -Force $this.Force
