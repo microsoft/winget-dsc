@@ -28,8 +28,47 @@ function Invoke-Cargo {
 }
 
 function Get-InstalledCargoCrates {
-    $result = Invoke-Cargo -Arguments @('install', '--list')
-    return $result
+    $cargoFile = if ($IsWindows) {
+        Join-Path $env:USERPROFILE -ChildPath '.cargo' '.crates2.json'
+    } else {
+        Join-Path -Path $HOME -ChildPath '.cargo' '.crates2.json'
+    }
+
+    $cargoInstalledPackages = [List[hashtable[]]]::new()
+    if (Test-Path -Path $cargoFile) {
+        if (Test-Json -Path $cargoFile) {
+            $installedPackages = (Get-Content -Path $cargoFile -Raw | ConvertFrom-Json).installs
+            foreach ($k in $installedPackages.psobject.properties) {
+                $split = $k.Name -split ' '
+                $package = @{
+                    Name     = $split[0]
+                    Version  = $split[1]
+                    Features = @($k.Value.features)
+                }
+                $cargoInstalledPackages.Add($package)
+            }
+        }
+    }
+
+    if ($null -eq $cargoInstalledPackages -or $cargoInstalledPackages.Count -eq 0) {
+        # fallback to 'cargo install --list' if .crates2.json is not available
+        $result = Invoke-Cargo -Arguments @('install', '--list')
+        
+        # go through the output of 'cargo install --list'
+        $lines = $result -split "`n"
+        foreach ($line in $lines) {
+            if ($line -match '^([^\s]+)\s+v(.+):') {
+                $package = @{
+                    Name     = $matches[1]
+                    Version  = $matches[2]
+                    Features = @()
+                }
+                $cargoInstalledPackages.Add($package)
+            }
+        }
+    }
+
+    return $cargoInstalledPackages
 }
 
 function Install-CargoCrate {
@@ -98,36 +137,29 @@ function Test-CrateInstalled {
     try {
         # Check global installation
         $installedCrates = Get-InstalledCargoCrates
-        
-        # Parse the output of 'cargo install --list'
-        $lines = $installedCrates -split "`n"
-        foreach ($line in $lines) {
-            if ($line -match "^$CrateName\s+v(.+):") {
-                $installedVersion = $matches[1]
-                if ([string]::IsNullOrEmpty($Version) -or $installedVersion -eq $Version) {
+
+        foreach ($crate in $installedCrates) {
+            if ($crate.Name -eq $CrateName) {
+                if ([string]::IsNullOrEmpty($Version) -or $crate.Version -eq $Version) {
                     return @{
                         Installed = $true
-                        Version   = $installedVersion
+                        Version   = $crate.Version
+                        Features  = $crate.Features
                     }
                 } else {
-                    if ($null -ne $installedVersion) {
-                        return @{
-                            Installed = $false
-                            Version   = $installedVersion
-                        }
+                    return @{
+                        Installed = $false
+                        Version   = $crate.Version
+                        Features  = $crate.Features
                     }
                 }
             }
-        }
-        
-        return @{
-            Installed = $false
-            Version   = $null
         }
     } catch {
         return @{
             Installed = $false
             Version   = $null
+            Features  = @()
         }
     }
 }
@@ -201,19 +233,18 @@ class CargoToolInstall {
         $currentState.Version = $this.Version
         $currentState.Features = $this.Features
         $currentState.Force = $this.Force
-        $currentState.Exist = $false
 
         $crateInfo = Test-CrateInstalled -CrateName $this.CrateName -Version $this.Version
-        
-        if ($crateInfo.Installed) {
-            $currentState.Exist = $true
+
+        if ($null -eq $crateInfo) {
+            $currentState.Exist = $false
+        } else {
             $currentState.InstalledVersion = $crateInfo.Version
-            
-            # Check if version matches if specified
-            if (-not([string]::IsNullOrEmpty($this.Version)) -and (-not([string]::IsNullOrEmpty($crateInfo.Version)))) {
-                if ($crateInfo.Version -ne $this.Version) {
-                    $currentState.Exist = $false
-                }
+            $currentState.Features = $crateInfo.Features
+            if (-not([string]::IsNullOrEmpty($this.Version)) -and (-not([string]::IsNullOrEmpty($crateInfo.Version)) -and ($crateInfo.Version -ne $this.Version))) {
+                $currentState.Exist = $false
+            } else {
+                $currentState.Version = $crateInfo.Version
             }
         }
 
@@ -243,24 +274,17 @@ class CargoToolInstall {
         $installedCrates = Get-InstalledCargoCrates
         $out = [List[CargoToolInstall]]::new()
 
-        # Parse the output of 'cargo install --list'
-        $lines = $installedCrates -split "`n"
-        foreach ($line in $lines) {
-            if ($line -match '^([^\s]+)\s+v(.+):') {
-                $name = $matches[1]
-                $ver = $matches[2]
-
-                $crate = [CargoToolInstall]@{
-                    CrateName        = $name
-                    Version          = $ver
-                    Features         = $null  # Cannot determine features from install list
-                    Force            = $false
-                    Exist            = $true
-                    InstalledVersion = $ver
-                }
-
-                $out.Add($crate)
+        foreach ($installedCrate in $installedCrates) {
+            $crate = [CargoToolInstall]@{
+                CrateName        = $installedCrate.Name
+                Version          = $installedCrate.Version
+                Features         = $installedCrate.Features
+                Force            = $false  # Cannot determine force from install list
+                Exist            = $true
+                InstalledVersion = $installedCrate.Version
             }
+
+            $out.Add($crate)
         }
 
         return $out
