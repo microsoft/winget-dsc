@@ -55,6 +55,7 @@ pkief
 powertoys
 prerel
 pscustomobject
+psobject
 Ptr
 pylance
 reduxjs
