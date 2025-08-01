@@ -22,11 +22,8 @@ ELSPROBLEMS
 ephemoral
 esbenp
 Fancyzones
-<<<<<<< HEAD
 formulahendry
-=======
 fynn
->>>>>>> Update allow.txt
 gdk
 github
 gitversion
