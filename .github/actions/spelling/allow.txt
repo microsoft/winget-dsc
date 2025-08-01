@@ -23,6 +23,7 @@ ephemoral
 esbenp
 Fancyzones
 formulahendry
+fynn
 gdk
 github
 gitversion
