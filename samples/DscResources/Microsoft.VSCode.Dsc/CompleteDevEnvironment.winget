@@ -1,0 +1,187 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration sets up a complete development environment with      #
+# Visual Studio Code and essential extensions for multiple languages.     #
+# PowerShell module: Microsoft.VSCode.Dsc (v0.1.5-alpha)                  #
+###########################################################################
+
+properties:
+  resources:
+    # Install Visual Studio Code
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Visual Studio Code
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+    
+    # Install Git
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Git
+        securityContext: elevated
+      settings:
+        id: Git.Git
+        source: winget
+    
+    # Install Node.js
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Node.js
+        securityContext: elevated
+      settings:
+        id: OpenJS.NodeJS
+        source: winget
+    
+    # Install Python
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Python
+        securityContext: elevated
+      settings:
+        id: Python.Python.3.12
+        source: winget
+    
+    # VS Code Extensions for General Development
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install GitLens for enhanced Git integration
+        allowPrerelease: true
+      settings:
+        Name: eamodio.gitlens
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Git Graph for visual Git history
+        allowPrerelease: true
+      settings:
+        Name: mhutchie.git-graph
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Prettier for code formatting
+        allowPrerelease: true
+      settings:
+        Name: esbenp.prettier-vscode
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Bracket Pair Colorizer
+        allowPrerelease: true
+      settings:
+        Name: coenraads.bracket-pair-colorizer
+    
+    # Python Development Extensions
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Python extension
+        allowPrerelease: true
+      settings:
+        Name: ms-python.python
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Pylance for Python IntelliSense
+        allowPrerelease: true
+      settings:
+        Name: ms-python.vscode-pylance
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Python Debugger
+        allowPrerelease: true
+      settings:
+        Name: ms-python.debugpy
+    
+    # JavaScript/TypeScript Development Extensions
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install JavaScript/TypeScript extension
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode.vscode-typescript-next
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install ESLint for JavaScript linting
+        allowPrerelease: true
+      settings:
+        Name: dbaeumer.vscode-eslint
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install npm IntelliSense
+        allowPrerelease: true
+      settings:
+        Name: christian-kohler.npm-intellisense
+    
+    # Web Development Extensions
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install HTML CSS Support
+        allowPrerelease: true
+      settings:
+        Name: ecmel.vscode-html-css
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Live Server for local development
+        allowPrerelease: true
+      settings:
+        Name: ritwickdey.liveserver
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Auto Rename Tag
+        allowPrerelease: true
+      settings:
+        Name: formulahendry.auto-rename-tag
+    
+    # .NET Development Extensions
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install C# extension
+        allowPrerelease: true
+      settings:
+        Name: ms-dotnettools.csharp
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install .NET Install Tool
+        allowPrerelease: true
+      settings:
+        Name: ms-dotnettools.vscode-dotnet-runtime
+    
+    # PowerShell Development
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install PowerShell extension
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode.powershell
+    
+    # Docker and Containerization
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Docker extension
+        allowPrerelease: true
+      settings:
+        Name: ms-azuretools.vscode-docker
+    
+    # Theme and Appearance
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Material Icon Theme
+        allowPrerelease: true
+      settings:
+        Name: pkief.material-icon-theme
+    
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install One Dark Pro theme
+        allowPrerelease: true
+      settings:
+        Name: zhuangtongfa.material-theme
+  configurationVersion: 0.2.0
