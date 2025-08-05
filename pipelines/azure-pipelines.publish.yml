@@ -137,7 +137,7 @@ extends:
             inputs:
               targetType: 'inline'
               script: |
-                Install-PackageProvider -Name NuGet -Force
+                Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -Confirm:$false
                 $moduleFolder = "$(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}"
                 Get-ChildItem -Path $moduleFolder -Recurse
                 $moduleFolderPath = (Resolve-Path $moduleFolder).Path
