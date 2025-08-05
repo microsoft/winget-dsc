@@ -210,7 +210,7 @@ class CargoToolInstall {
     [DscProperty()]
     [bool]$Exist = $true
 
-    [DscProperty(Key)]
+    [DscProperty(Key, Mandatory = $true)]
     [string]$CrateName
 
     [DscProperty()]
