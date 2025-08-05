@@ -137,10 +137,8 @@ extends:
             inputs:
               targetType: 'inline'
               script: |
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
                 $ConfirmPreference = 'None'
-                Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -Confirm:$false
-                Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+                Install-PackageProvider -Name NuGet -Force -Scope CurrentUser
                 $moduleFolder = "$(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}"
                 Get-ChildItem -Path $moduleFolder -Recurse
                 $moduleFolderPath = (Resolve-Path $moduleFolder).Path
