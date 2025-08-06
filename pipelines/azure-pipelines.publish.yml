@@ -134,7 +134,7 @@ extends:
 
           steps:
           - pwsh: |
-                Install-PSResource Microsoft.PowerShell.PSResourceGet -Force -Verbose
+                Install-PSResource Microsoft.PowerShell.PSResourceGet -Verbose
                 Import-Module Microsoft.PowerShell.PSResourceGet -Force -Verbose
 
                 # Generate missing PSResourceRepository.xml
