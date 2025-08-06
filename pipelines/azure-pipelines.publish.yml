@@ -133,7 +133,7 @@ extends:
                 *.psd1
 
           steps:
-          - powershell: |
+          - pwsh: |
                 Install-Module Microsoft.PowerShell.PSResourceGet -Force -Verbose
 
                 # Generate missing PSResourceRepository.xml
