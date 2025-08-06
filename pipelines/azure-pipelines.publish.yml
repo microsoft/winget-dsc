@@ -134,6 +134,7 @@ extends:
 
           steps:
           - pwsh: |
+                Install-PackageProvider -Name NuGet -Force -Scope CurrentUser
                 Install-Module Microsoft.PowerShell.PSResourceGet -Force -Verbose
 
                 # Generate missing PSResourceRepository.xml
