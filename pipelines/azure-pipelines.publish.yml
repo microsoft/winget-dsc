@@ -135,6 +135,11 @@ extends:
           steps:
           - powershell: |
                 Install-Module Microsoft.PowerShell.PSResourceGet -Force -Verbose
+
+                # Generate missing PSResourceRepository.xml
+                # Issue: https://github.com/PowerShell/PSResourceGet/issues/1806
+                Get-PSResourceRepository
+
                 $moduleFolder = "$(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}"
                 Get-ChildItem -Path $moduleFolder -Recurse
                 $moduleFolderPath = (Resolve-Path $moduleFolder).Path
