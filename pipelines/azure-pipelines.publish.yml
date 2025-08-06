@@ -134,8 +134,8 @@ extends:
 
           steps:
           - pwsh: |
-                Install-PackageProvider -Name NuGet -Force -Scope CurrentUser
-                Install-Module Microsoft.PowerShell.PSResourceGet -Force -Verbose
+                Install-PSResource Microsoft.PowerShell.PSResourceGet -Force -Verbose
+                Import-Module Microsoft.PowerShell.PSResourceGet -Force -Verbose
 
                 # Generate missing PSResourceRepository.xml
                 # Issue: https://github.com/PowerShell/PSResourceGet/issues/1806
