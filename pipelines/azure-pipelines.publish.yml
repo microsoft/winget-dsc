@@ -137,7 +137,6 @@ extends:
                 Set-PSResourceRepository -Name PSGallery -Trusted -Verbose
 
                 Install-PSResource Microsoft.PowerShell.PSResourceGet -Verbose -AcceptLicense
-                Import-Module Microsoft.PowerShell.PSResourceGet -Force -Verbose
 
                 # Generate missing PSResourceRepository.xml
                 # Issue: https://github.com/PowerShell/PSResourceGet/issues/1806
