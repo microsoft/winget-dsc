@@ -133,17 +133,19 @@ extends:
                 *.psd1
 
           steps:
-          - task: PowerShell@2
-            inputs:
-              targetType: 'inline'
-              script: |
-                $ConfirmPreference = 'None'
-                Install-PackageProvider -Name NuGet -Force -Scope CurrentUser
+          - pwsh: |
+                Set-PSResourceRepository -Name PSGallery -Trusted -Verbose
+
+                Install-PSResource Microsoft.PowerShell.PSResourceGet -Verbose -AcceptLicense
+
+                # Generate missing PSResourceRepository.xml
+                # Issue: https://github.com/PowerShell/PSResourceGet/issues/1806
+                Get-PSResourceRepository
+
                 $moduleFolder = "$(System.DefaultWorkingDirectory)/ModuleToPublish/${{ parameters.moduleName }}"
                 Get-ChildItem -Path $moduleFolder -Recurse
                 $moduleFolderPath = (Resolve-Path $moduleFolder).Path
-                Publish-Module -Path $moduleFolderPath -Repository PSGallery -NuGetApiKey $env:api_key -verbose
-              pwsh: false
+                Publish-PSResource -Path $moduleFolderPath -Repository PSGallery -ApiKey $env:api_key -Verbose
             displayName: Publish ${{ parameters.moduleName }}
             env:
               api_key: $(DscSamplesNugetApiKey)
