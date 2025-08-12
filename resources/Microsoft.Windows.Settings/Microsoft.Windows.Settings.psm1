@@ -8,8 +8,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
     $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
     $global:AppModelUnlockRegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock\'
+    $global:LongPathsRegistryPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:LongPathsRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -30,11 +31,35 @@ class WindowsSettings {
     [DscProperty()]
     [Nullable[bool]] $DeveloperMode
 
+    [DscProperty()]
+    [System.Version] $OsVersion
+
+    [DscProperty()]
+    [Nullable[bool]] $HideFileExtensions
+
+    [DscProperty()]
+    [Nullable[bool]] $ShowHiddenFiles
+
+    [DscProperty()]
+    [Nullable[bool]] $LongPathsEnabled
+
     hidden [bool] $RestartExplorer = $false
-    hidden [string] $TaskbarAl = 'TaskbarAl'
-    hidden [string] $AppsUseLightTheme = 'AppsUseLightTheme'
-    hidden [string] $SystemUsesLightTheme = 'SystemUsesLightTheme'
-    hidden [string] $DeveloperModePropertyName = 'AllowDevelopmentWithoutDevLicense'
+
+    # Registry keys
+    hidden [string] $TaskbarAlignmentRegKey = 'TaskbarAl'
+    hidden [string] $AppsUseLightThemeRegKey = 'AppsUseLightTheme'
+    hidden [string] $SystemUsesLightThemeRegKey = 'SystemUsesLightTheme'
+    hidden [string] $DeveloperModeRegKey = 'AllowDevelopmentWithoutDevLicense'
+    hidden [string] $HideFileExtRegKey = 'HideFileExt'
+    hidden [string] $HiddenRegKey = 'Hidden'
+    hidden [string] $LongPathsEnabledRegKey = 'LongPathsEnabled'
+
+    # Property values
+    hidden [string] $LeftValue = 'Left'
+    hidden [string] $CenterValue = 'Center'
+    hidden [string] $DarkValue = 'Dark'
+    hidden [string] $LightValue = 'Light'
+    hidden [string] $UnknownValue = 'Unknown'
 
     [WindowsSettings] Get() {
         $currentState = [WindowsSettings]::new()
@@ -49,12 +74,34 @@ class WindowsSettings {
         # Get DeveloperMode
         $currentState.DeveloperMode = $this.IsDeveloperModeEnabled()
 
+        # Get OS Version
+        $currentState.OsVersion = $this.GetOsVersion()
+
+        # Get File Extensions visibility
+        $currentState.HideFileExtensions = $this.IsFileExtensionsHidden()
+
+        # Get Hidden Files visibility
+        $currentState.ShowHiddenFiles = $this.AreHiddenFilesShown()
+
+        # Get Long Paths Enabled
+        $currentState.LongPathsEnabled = $this.IsLongPathsEnabled()
+
         return $currentState
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        return $this.TestTaskbarAlignment($currentState) -and $this.TestAppColorMode($currentState) -and $this.TestSystemColorMode($currentState) -and $this.TestDeveloperMode($currentState)
+
+        return (
+            $this.TestTaskbarAlignment($currentState) -and
+            $this.TestAppColorMode($currentState) -and
+            $this.TestSystemColorMode($currentState) -and
+            $this.TestDeveloperMode($currentState) -and
+            $this.TestOsVersion($currentState) -and
+            $this.TestHideFileExtensions($currentState) -and
+            $this.TestHiddenFilesShown($currentState) -and
+            $this.TestLongPathsEnabled($currentState)
+        )
     }
 
     [void] Set() {
@@ -62,21 +109,27 @@ class WindowsSettings {
 
         # Set TaskbarAlignment
         if (!$this.TestTaskbarAlignment($currentState)) {
-            $desiredAlignment = $this.TaskbarAlignment -eq "Left" ? 0 : 1
-            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl -Value $desiredAlignment
+            ValidateInput -ParamName "TaskbarAlignment" -InputValue $this.TaskbarAlignment -ValidValues @($this.LeftValue, $this.CenterValue)
+
+            $desiredAlignment = $this.TaskbarAlignment -eq $this.LeftValue ? 0 : 1
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.TaskbarAlignmentRegKey -Value $desiredAlignment
         }
 
         # Set ColorMode
         $colorModeChanged = $false
         if (!$this.TestAppColorMode($currentState)) {
-            $desiredColorMode = $this.AppColorMode -eq "Dark" ? 0 : 1
-            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme -Value $desiredColorMode
+            ValidateInput -ParamName "AppColorMode" -InputValue $this.AppColorMode -ValidValues @($this.DarkValue, $this.LightValue)
+
+            $desiredColorMode = $this.AppColorMode -eq $this.DarkValue ? 0 : 1
+            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightThemeRegKey -Value $desiredColorMode
             $colorModeChanged = $true
         }
 
         if (!$this.TestSystemColorMode($currentState)) {
-            $desiredColorMode = $this.SystemColorMode -eq "Dark" ? 0 : 1
-            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme -Value $desiredColorMode
+            ValidateInput -ParamName "SystemColorMode" -InputValue $this.SystemColorMode -ValidValues @($this.DarkValue, $this.LightValue)
+
+            $desiredColorMode = $this.SystemColorMode -eq $this.DarkValue ? 0 : 1
+            Set-ItemProperty -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightThemeRegKey -Value $desiredColorMode
             $colorModeChanged = $true
         }
 
@@ -93,79 +146,170 @@ class WindowsSettings {
 
         # Set DeveloperMode
         if (!$this.TestDeveloperMode($currentState)) {
-            $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-            $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
-
-            if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
-                throw 'Toggling Developer Mode requires this resource to be run as an Administrator.'
-            }
-
-            # 1 == enabled // 0 == disabled
+            AdministratorRequired -Name "DeveloperMode"
             $value = $this.DeveloperMode ? 1 : 0
-            Set-ItemProperty -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName -Value $value
+            Set-ItemProperty -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModeRegKey -Value $value
+        }
+
+        # Set HideFileExt
+        if (!$this.TestHideFileExtensions($currentState)) {
+            $value = $this.HideFileExtensions ? 1 : 0
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HideFileExtRegKey -Value $value
+            SendShellStateMessage
+        }
+
+        # Set ShowHiddenFiles
+        if (!$this.TestHiddenFilesShown($currentState)) {
+            $value = $this.ShowHiddenFiles ? 1 : 0
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.HiddenRegKey -Value $value
+            SendShellStateMessage
+        }
+
+        # Set LongPathsEnabled
+        if (!$this.TestLongPathsEnabled($currentState)) {
+            AdministratorRequired -Name "LongPathsEnabled"
+            $value = $this.LongPathsEnabled ? 1 : 0
+            Set-ItemProperty -Path $global:LongPathsRegistryPath -Name $this.LongPathsEnabledRegKey -Value $value
         }
     }
 
     [string] GetTaskbarAlignment() {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl)) {
-            return "Center"
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.TaskbarAlignmentRegKey)) {
+            return $this.CenterValue
         }
 
-        $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarAl)
-        return $value -eq 0 ? "Left" : "Center"
+        $value = [int](Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.TaskbarAlignmentRegKey)
+        return $value -eq 0 ? $this.LeftValue : $this.CenterValue
     }
 
     [string] GetAppColorMode() {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme)) {
-            return "Unknown"
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightThemeRegKey)) {
+            return $this.UnknownValue
         }
 
-        $appsUseLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightTheme
+        $appsUseLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath -Name $this.AppsUseLightThemeRegKey
         if ($appsUseLightModeValue -eq 0) {
-            return "Dark"
+            return $this.DarkValue
         }
 
-        return "Light"
+        return $this.LightValue
     }
 
     [string] GetSystemColorMode() {
-        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme)) {
-            return "Unknown"
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightThemeRegKey)) {
+            return $this.UnknownValue
         }
 
-        $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightTheme
+        $systemUsesLightModeValue = Get-ItemPropertyValue -Path $global:PersonalizeRegistryPath -Name $this.SystemUsesLightThemeRegKey
         if ($systemUsesLightModeValue -eq 0) {
-            return "Dark"
+            return $this.DarkValue
         }
 
-        return "Light"
+        return $this.LightValue
     }
 
     [bool] IsDeveloperModeEnabled() {
-        $regExists = DoesRegistryKeyPropertyExist -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName
+        $regExists = DoesRegistryKeyPropertyExist -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModeRegKey
 
         # If the registry key does not exist, we assume developer mode is not enabled.
         if (-not($regExists)) {
             return $false
         }
 
-        return Get-ItemPropertyValue -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModePropertyName
+        return Get-ItemPropertyValue -Path $global:AppModelUnlockRegistryPath -Name $this.DeveloperModeRegKey
+    }
+
+    [System.Version] GetOsVersion() {
+        return (Get-ComputerInfo | Select-Object OsVersion).OsVersion
+    }
+
+    [bool] IsFileExtensionsHidden() {
+        $regExists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.HideFileExtRegKey
+        if (-not($regExists)) {
+            return $false
+        }
+
+        return Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.HideFileExtRegKey
+    }
+
+    [bool] AreHiddenFilesShown() {
+        $regExists = DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.HiddenRegKey
+        if (-not($regExists)) {
+            return $true
+        }
+
+        return Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.HiddenRegKey
+    }
+
+    [bool] IsLongPathsEnabled() {
+        $regExists = DoesRegistryKeyPropertyExist -Path $global:LongPathsRegistryPath -Name $this.LongPathsEnabledRegKey
+        if (-not($regExists)) {
+            return $false
+        }
+
+        return Get-ItemPropertyValue -Path $global:LongPathsRegistryPath -Name $this.LongPathsEnabledRegKey
     }
 
     [bool] TestDeveloperMode([WindowsSettings] $currentState) {
-        return $this.DeveloperMode -eq $null -or $currentState.DeveloperMode -eq $this.DeveloperMode
+        return $null -eq $this.DeveloperMode -or $currentState.DeveloperMode -eq $this.DeveloperMode
     }
 
     [bool] TestTaskbarAlignment([WindowsSettings] $currentState) {
-        return $this.TaskbarAlignment -eq $null -or $currentState.TaskbarAlignment -eq $this.TaskbarAlignment
+        return $null -eq $this.TaskbarAlignment -or $currentState.TaskbarAlignment -eq $this.TaskbarAlignment
     }
 
     [bool] TestAppColorMode([WindowsSettings] $currentState) {
-        return $this.AppColorMode -eq $null -or $currentState.AppColorMode -eq $this.AppColorMode
+        return $null -eq $this.AppColorMode -or $currentState.AppColorMode -eq $this.AppColorMode
     }
 
     [bool] TestSystemColorMode([WindowsSettings] $currentState) {
-        return $this.SystemColorMode -eq $null -or $currentState.SystemColorMode -eq $this.SystemColorMode
+        return $null -eq $this.SystemColorMode -or $currentState.SystemColorMode -eq $this.SystemColorMode
+    }
+
+    [bool] TestOsVersion([WindowsSettings] $currentState) {
+        return $null -eq $this.OsVersion -or $currentState.OsVersion -eq $this.OsVersion
+    }
+
+    [bool] TestHideFileExtensions([WindowsSettings] $currentState) {
+        return $null -eq $this.HideFileExtensions -or $currentState.HideFileExtensions -eq $this.HideFileExtensions
+    }
+
+    [bool] TestHiddenFilesShown([WindowsSettings] $currentState) {
+        return $null -eq $this.ShowHiddenFiles -or $currentState.ShowHiddenFiles -eq $this.ShowHiddenFiles
+    }
+
+    [bool] TestLongPathsEnabled([WindowsSettings] $currentState) {
+        return $null -eq $this.LongPathsEnabled -or $currentState.LongPathsEnabled -eq $this.LongPathsEnabled
+    }
+}
+
+function AdministratorRequired {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+    $windowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @( $windowsIdentity )
+
+    if (-not $windowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw "This operation on $Name requires Administrator privileges."
+    }
+}
+
+function ValidateInput {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ParamName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$InputValue,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$ValidValues
+    )
+
+    if (-not ($ValidValues -contains $InputValue)) {
+        throw "Invalid value for $ParamName. Valid values are: $($ValidValues -join ', ')."
     }
 }
 
@@ -184,7 +328,18 @@ function DoesRegistryKeyPropertyExist {
 }
 
 function SendImmersiveColorSetMessage {
-    param()
+    SendMessageTimeout -Message "ImmersiveColorSet"
+}
+
+function SendShellStateMessage {
+    SendMessageTimeout -Message "ShellState"
+}
+
+function SendMessageTimeout {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Message
+    )
 
     Add-Type @"
 using System;
@@ -210,7 +365,7 @@ public class NativeMethods {
         $HWND_BROADCAST,
         $WM_SETTINGCHANGE,
         [UIntPtr]::Zero,
-        "ImmersiveColorSet",
+        $Message,
         $SMTO_ABORTIFHUNG,
         $timeout,
         [ref]$result
