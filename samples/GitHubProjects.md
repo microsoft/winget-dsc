@@ -5,7 +5,7 @@ The projects are listed in alphabetical order by their GitHub repository identif
 
 ## Projects
 
-- [dev-fynn/Winget-Repo](https://github.com/dev-fYnn/Winget-Repo/blob/master/Winget-Repo_Dev.winget)
+- [dev-fynn/Winget-Repo](https://github.com/dev-fYnn/Winget-Repo/blob/master/.config/Winget-Repo_Dev.winget)
 - [dotnet/eShop](https://github.com/dotnet/eShop/blob/main/.config/configuration.vsCode.winget)
 - [JanDeDobbeleer/oh-my-posh](https://github.com/JanDeDobbeleer/oh-my-posh/blob/main/.config/configuration.winget)
 - [LibreOffice/core](https://github.com/LibreOffice/core/blob/master/.config/configuration.winget)
