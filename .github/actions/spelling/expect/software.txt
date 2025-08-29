@@ -12,3 +12,6 @@ exa
 ripgrep
 rustup
 tokio
+lldb
+Rustlang
+vadimcn
