@@ -25,7 +25,7 @@ properties:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: Rustup
       directives:
-        description: Install Rust toolchain
+        description: Install Rustup toolchain
       settings:
         id: Rustlang.Rustup
         source: winget
