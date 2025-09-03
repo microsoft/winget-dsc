@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+##########################################################################################################
+# This configuration will install the tools necessary to get started with F# development on Windows      #
+# Reference: https://learn.microsoft.com/en-us/dotnet/fsharp/get-started/install-fsharp                  #
+#                                                                                                        #
+# This will:                                                                                             #
+#     * Install Git                                                                                      #
+#     * Install .NET 9 SDK                                                                               #
+#     * Install Visual Studio Code                                                                       #
+#     * Install Ionide-fsharp extension for Visual Studio Code                                           #
+#                                                                                                        #
+##########################################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: Git
+      directives:
+        description: Install Git
+        securityContext: elevated
+      settings:
+        id: Git.Git
+        source: winget
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: vscode
+      directives:
+        description: Install Visual Studio Code
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: dotnet-sdk-9
+      directives:
+        description: Install .NET 9 SDK
+      settings:
+        id: Microsoft.DotNet.SDK.9
+        source: winget
+        ensure: present
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: ionide.ionide-fsharp
+      directives:
+        description: Install Ionide-fsharp Visual Studio Code extension
+        allowPrerelease: true
+      dependsOn:
+        - vscode
+  configurationVersion: 0.2.0
