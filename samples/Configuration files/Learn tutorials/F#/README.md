@@ -1,11 +1,13 @@
-# Install F# with Visual Studio
+# Install F# with Visual Studio Code
 
-This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) ([_learn_fsharp.winget_](./learn_fsharp.winget)) that will work with the WinGet command line interface (`winget configure --file [path: learn_fsharp.winget]`) or can be run directly by double-clicking on the file.
+This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) ([_learn_fsharp.winget_](./learn_fsharp_vscode.winget)) that will work with the WinGet command line interface (`winget configure --file [path: learn_fsharp_vscode.winget]`) or can be run directly by double-clicking on the file.
 
-When run, the [learn_fsharp.winget](./learn_fsharp.winget) file will install the following list of applications:
+When run, the [learn_fsharp_vscode.winget](./learn_fsharp_vscode.winget) file will install the following list of applications:
 
-- Microsoft Visual Studio Community 2022
-- Required Visual Studio workloads for ASP.NET and web development, which includes F# and .NET Core support for ASP.NET Core projects.
+- Git
+- Microsoft .NET 9 SDK
+- Microsoft Visual Studio Code
+- ionide-fsharp extension for Visual Studio Code
 
 If anything is already installed, the configuration file will skip that item.
 

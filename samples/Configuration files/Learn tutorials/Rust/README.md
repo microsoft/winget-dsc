@@ -1,8 +1,8 @@
 # Get started using Rust on Windows for beginners
 
-This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) ([_learn_rust.winget_](./learn_rust.winget)) that will work with the WinGet command line interface (`winget configure --file [path: learn_rust.winget]`) or can be run directly by double-clicking on the file.
+This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) ([_learn_rust_vscode.winget_](./learn_rust_vscode.winget)) that will work with the WinGet command line interface (`winget configure --file [path: learn_rust_vscode.winget]`) or can be run directly by double-clicking on the file.
 
-When run, the [learn_rust.winget](./learn_rust.winget) file will install the following list of applications:
+When run, the [learn_rust_vscode.winget](./learn_rust_vscode.winget) file will install the following list of applications:
 
 - Visual Studio Code
 - CodeLLDB VS Code extension

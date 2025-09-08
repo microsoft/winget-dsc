@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+##########################################################################################################
+# This configuration will install the tools necessary to get started with F# development on Windows      #
+# Reference: https://learn.microsoft.com/en-us/dotnet/fsharp/get-started/install-fsharp                  #
+#                                                                                                        #
+# This will:                                                                                             #
+#     * Install Visual Studio Enterprise 2022                                                             #
+#     * Install .NET web development and ASP.NET workloads to Visual Studio Community 2022               #
+#                                                                                                        #
+##########################################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: VisualStudio
+      directives:
+        description: Install Visual Studio 2022 Enterprise
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudio.2022.Enterprise
+        source: winget
+    - resource: Microsoft.VisualStudio.DSC/VSComponents
+      dependsOn:
+        - VisualStudio
+      directives:
+        description: Install ASP.NET and web development workloads
+        securityContext: elevated
+      settings:
+        productId: Microsoft.VisualStudio.Product.Enterprise
+        channelId: VisualStudio.17.Release
+        components:
+          - Microsoft.VisualStudio.Workload.NetWeb
+          - Microsoft.VisualStudio.Component.AspNet45
+        includeRecommended: true
+  configurationVersion: 0.2.0
