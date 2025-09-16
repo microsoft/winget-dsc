@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+#################################################################################################################
+# This configuration will install the tools necessary to get started with native Android development on Windows #
+# Reference: https://learn.microsoft.com/en-us/windows/android/native-android                                   #
+#                                                                                                               #
+# This will:                                                                                                    #
+#     * Install Android Studio                                                                                  #
+#     * Install OpenJDK 17                                                                                      #
+#     * Install Windows Terminal                                                                                #
+#                                                                                                               #
+#################################################################################################################
+
+resources:
+  - resource: Microsoft.WinGet.DSC/WinGetPackage
+    directives:
+      description: Install Android Studio (includes emulator and AVD manager)
+    settings:
+      id: Google.AndroidStudio
+      source: winget
+      ensure: Present
+
+  - resource: Microsoft.WinGet.DSC/WinGetPackage
+    directives:
+      description: Install OpenJDK 17 (required for Android builds)
+    settings:
+      id: Microsoft.OpenJDK.17
+      source: winget
+      ensure: Present
+
+  - resource: Microsoft.WinGet.DSC/WinGetPackage
+    directives:
+      description: Install Windows Terminal (optional for CLI tools)
+    settings:
+      id: Microsoft.WindowsTerminal
+      source: winget
+      ensure: Present
