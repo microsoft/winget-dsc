@@ -36,8 +36,10 @@ inaries
 ionide
 JDK
 jquery
+Kitware
 kohler
 linting
+LLVM
 Mfor
 mhutchie
 microsoft
@@ -46,6 +48,7 @@ msftbot
 msixbundle
 msstore
 msvc
+NDK
 NOLOGO
 NOLOGO
 nonexistentpackage
@@ -59,6 +62,7 @@ prerel
 pscustomobject
 psobject
 Ptr
+pwa
 pylance
 reduxjs
 requ
