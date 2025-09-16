@@ -2,7 +2,7 @@
 
 ###########################################################################################################################################
 # This configuration will install the tools necessary to get started with native Android development on Windows with native C/C++ support #
-# Reference: https://learn.microsoft.com/en-us/windows/android/native-android                                                             #
+# Reference: https://learn.microsoft.com/en-us/windows/android/native-android#use-c-or-c-for-android-game-development                     #
 #                                                                                                                                         #
 # This will:                                                                                                                              #
 #     * Install Android Studio                                                                                                            #
