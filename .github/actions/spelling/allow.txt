@@ -62,6 +62,7 @@ pscustomobject
 psobject
 Ptr
 pwa
+PWAs
 pylance
 reduxjs
 requ
