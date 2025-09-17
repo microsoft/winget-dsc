@@ -10,55 +10,49 @@
 #     * Install Git                                                                                                                       #
 #     * Install CMake (required for native builds)                                                                                        #
 #     * Install LLVM/LLDB (debugger for native code)                                                                                      #
-#     * Install Android NDK (via command line tools)                                                                                      #
 #                                                                                                                                         #
 ###########################################################################################################################################
 
-resources:
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Android Studio
-    settings:
-      id: Google.AndroidStudio
-      source: winget
-      ensure: Present
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Android Studio
+      settings:
+        id: Google.AndroidStudio
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install OpenJDK 17
-    settings:
-      id: Microsoft.OpenJDK.17
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install OpenJDK 17
+      settings:
+        id: Microsoft.OpenJDK.17
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Git
-    settings:
-      id: Git.Git
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Git
+      settings:
+        id: Git.Git
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install CMake (required for native builds)
-    settings:
-      id: Kitware.CMake
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install CMake (required for native builds)
+      settings:
+        id: Kitware.CMake
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install LLVM/LLDB (debugger for native code)
-    settings:
-      id: LLVM.LLDB
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install LLVM (debugger for native code)
+      settings:
+        id: LLVM.LLVM
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Android NDK (via command line tools)
-    settings:
-      id: Google.AndroidSDK.CommandLineTools
-      source: winget
-      ensure: Present
+  configurationVersion: 0.2.0

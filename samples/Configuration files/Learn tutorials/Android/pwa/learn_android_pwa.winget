@@ -12,35 +12,37 @@
 #                                                                                                               #
 #################################################################################################################
 
-resources:
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Node.js LTS (required for Cordova, Capacitor, Ionic)
-    settings:
-      id: OpenJS.NodeJS.LTS
-      source: winget
-      ensure: Present
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Node.js LTS (required for Cordova, Capacitor, Ionic)
+      settings:
+        id: OpenJS.NodeJS.LTS
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Git
-    settings:
-      id: Git.Git
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Git
+      settings:
+        id: Git.Git
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Visual Studio Code
-    settings:
-      id: Microsoft.VisualStudioCode
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Visual Studio Code
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Windows Terminal
-    settings:
-      id: Microsoft.WindowsTerminal
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Windows Terminal
+      settings:
+        id: Microsoft.WindowsTerminal
+        source: winget
+        ensure: Present
+  configurationVersion: 0.2.0

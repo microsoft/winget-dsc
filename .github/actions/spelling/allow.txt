@@ -48,7 +48,6 @@ msftbot
 msixbundle
 msstore
 msvc
-NDK
 NOLOGO
 NOLOGO
 nonexistentpackage

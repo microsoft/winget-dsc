@@ -11,63 +11,85 @@
 #     * Install Git                                                                                             #
 #     * Install Windows Terminal                                                                                #
 #     * Install Visual Studio Code                                                                              #
-#     * Install Android SDK Command-Line Tools                                                                  #
+#     * Updates the user's PATH environment variables via PowerShell                                            #
 #                                                                                                               #
 #################################################################################################################
 
-resources:
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Android Studio
-    settings:
-      id: Google.AndroidStudio
-      source: winget
-      ensure: Present
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Android Studio
+      settings:
+        id: Google.AndroidStudio
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install OpenJDK 17
-    settings:
-      id: Microsoft.OpenJDK.17
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install OpenJDK 17
+      settings:
+        id: Microsoft.OpenJDK.17
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Node.js LTS
-    settings:
-      id: OpenJS.NodeJS.LTS
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Node.js LTS
+      settings:
+        id: OpenJS.NodeJS.LTS
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Git
-    settings:
-      id: Git.Git
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Git
+      settings:
+        id: Git.Git
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Windows Terminal
-    settings:
-      id: Microsoft.WindowsTerminal
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Windows Terminal
+      settings:
+        id: Microsoft.WindowsTerminal
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Visual Studio Code
-    settings:
-      id: Microsoft.VisualStudioCode
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Visual Studio Code
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Android SDK Command-Line Tools
-    settings:
-      id: Google.AndroidSDK.CommandLineTools
-      source: winget
-      ensure: Present
+    - resource: PSDscResources/Script
+      directives:
+        description: Set ANDROID_HOME and update PATH
+        securityContext: elevated
+      settings:
+        GetScript: |
+          return @{ Result = "CheckEnv" }
+        TestScript: |
+          $androidHomePath = "$Env:LOCALAPPDATA\Android\Sdk"
+          $platformToolsPath = "$androidHomePath\platform-tools"
+          $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+          return ($currentPath -like "*${platformToolsPath}*")
+        SetScript: |
+          $androidHomePath = "$Env:LOCALAPPDATA\Android\Sdk"
+          [Environment]::SetEnvironmentVariable("ANDROID_HOME", $androidHomePath, "User")
+          Write-Host "ANDROID_HOME set to $androidHomePath."
+
+          $platformToolsPath = "$androidHomePath\platform-tools"
+          $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+
+          if ($currentPath -notlike "*${platformToolsPath}*") {
+              $newPath = "$currentPath;$platformToolsPath"
+              [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+              Write-Host "platform-tools path added to PATH: $newPath."
+          } else {
+              Write-Host "platform-tools path already exists in PATH: $platformToolsPath."
+          }
+  configurationVersion: 0.2.0

@@ -11,27 +11,29 @@
 #                                                                                                               #
 #################################################################################################################
 
-resources:
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Android Studio
-    settings:
-      id: Google.AndroidStudio
-      source: winget
-      ensure: Present
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Android Studio
+      settings:
+        id: Google.AndroidStudio
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install OpenJDK 17
-    settings:
-      id: Microsoft.OpenJDK.17
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install OpenJDK 17
+      settings:
+        id: Microsoft.OpenJDK.17
+        source: winget
+        ensure: Present
 
-  - resource: Microsoft.WinGet.DSC/WinGetPackage
-    directives:
-      description: Install Git
-    settings:
-      id: Git.Git
-      source: winget
-      ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Git
+      settings:
+        id: Git.Git
+        source: winget
+        ensure: Present
+  configurationVersion: 0.2.0
