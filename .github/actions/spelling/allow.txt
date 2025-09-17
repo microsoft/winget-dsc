@@ -36,8 +36,10 @@ inaries
 ionide
 JDK
 jquery
+Kitware
 kohler
 linting
+LLVM
 Mfor
 mhutchie
 microsoft
@@ -59,6 +61,8 @@ prerel
 pscustomobject
 psobject
 Ptr
+pwa
+PWAs
 pylance
 reduxjs
 requ
