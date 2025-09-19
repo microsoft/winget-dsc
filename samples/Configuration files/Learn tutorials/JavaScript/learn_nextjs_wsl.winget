@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################################################
+# This configuration will install the tools necessary to get started with Next.js on Windows using WSL2   #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nextjs-on-wsl           #
+#                                                                                                         #
+# This will:                                                                                              #
+#     * Enable WSL and install the WSL optional feature                                                   #
+#     * Install a WSL2 distribution (Ubuntu) via Microsoft Store package if possible                      #
+#     * Install Windows Terminal                                                                          #
+#     * Install Node.js LTS                                                                               #
+#     * Install Git                                                                                       #
+#                                                                                                         #
+# Notes:                                                                                                  #
+# - Installing the WSL feature requires elevation and may require a restart.                              #
+# - This configuration attempts to enable the feature and install packages where possible, but manual     #
+#   steps may still be required (launching the Ubuntu distribution to complete installation).             #
+###########################################################################################################
+
+properties:
+  resources:
+    - resource: PSDesiredStateConfiguration/WindowsOptionalFeature
+      directives:
+        description: Enable Windows Subsystem for Linux (WSL)
+        securityContext: elevated
+      settings:
+        FeatureName: Microsoft-Windows-Subsystem-Linux
+        Ensure: Present
+
+    - resource: PSDesiredStateConfiguration/WindowsOptionalFeature
+      directives:
+        description: Enable Virtual Machine Platform (required for WSL2)
+        securityContext: elevated
+      settings:
+        FeatureName: VirtualMachinePlatform
+        Ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Windows Terminal
+      settings:
+        id: Microsoft.WindowsTerminal
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Node.js LTS
+      settings:
+        id: OpenJS.NodeJS.LTS
+        source: winget
+        ensure: Present
+
+    - resource: PSDscResources/Script
+      directives:
+        description: Install Ubuntu WSL distribution from the Microsoft Store (if available)
+        securityContext: elevated
+      settings:
+        GetScript: |
+          return @{ Result = 'CheckWSL' }
+        TestScript: |
+          # Check if Ubuntu is registered
+          $dists = wsl.exe -l -q 2>$null
+          return ($dists -like '*Ubuntu*')
+        SetScript: |
+          # Install Ubuntu via winget package if available (falls back to prompting the user)
+          try {
+            winget install -e --id Canonical.Ubuntu
+            Write-Host 'Attempted to install Ubuntu via winget. You may need to launch Ubuntu to finish setup.'
+          } catch {
+            Write-Host 'Automated installation of Ubuntu via winget failed or is unavailable. Please install from the Microsoft Store: https://aka.ms/wslstore'
+          }
+  configurationVersion: 0.2.0

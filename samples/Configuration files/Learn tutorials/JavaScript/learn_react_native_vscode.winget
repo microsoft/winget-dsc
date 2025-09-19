@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+#####################################################################################################################
+# This configuration will install Visual Studio Code and recommended extensions/tools for React Native for Windows  #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/react-native-for-windows          #
+#                                                                                                                   #
+# This will:                                                                                                        #
+#     * Install Visual Studio Code                                                                                  #
+#     * Install Node.js LTS                                                                                         #
+#     * Install Windows Terminal                                                                                    #
+#     * Install React Native Tools extension for VS Code (msjsdiag.vscode-react-native)                             #
+#                                                                                                                   #
+#####################################################################################################################
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: VSCode
+      directives:
+        description: Install Visual Studio Code
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: NodeJS
+      directives:
+        description: Install Node.js LTS
+      settings:
+        id: OpenJS.NodeJS.LTS
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: WindowsTerminal
+      directives:
+        description: Install Windows Terminal
+      settings:
+        id: Microsoft.WindowsTerminal
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: ReactNativeToolsExtension
+      directives:
+        description: Install React Native Tools extension for VS Code (msjsdiag.vscode-react-native)
+        allowPrerelease: true
+      settings:
+        Name: msjsdiag.vscode-react-native
+
+  configurationVersion: 0.2.0

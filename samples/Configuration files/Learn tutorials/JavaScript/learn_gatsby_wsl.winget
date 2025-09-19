@@ -1,0 +1,104 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+#####################################################################################################################
+# This configuration will install the tools necessary to get started with Gatsby on Windows using WSL2              #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/gatsby-on-wsl                     #
+#                                                                                                                   #
+# This will:                                                                                                        #
+#     * Enable WSL and Virtual Machine Platform features (required for WSL2)                                        #
+#     * Install Windows Terminal (recommended)                                                                      #
+#     * Install Node.js LTS on the Windows side                                                                     #
+#     * Attempt to install an Ubuntu WSL distribution and ensure Node.js, Yarn, and Gatsby are available inside WSL #
+#                                                                                                                   #
+# Notes:                                                                                                            #
+# - Enabling WSL features requires elevation and may require a restart.                                             #
+# - Installing and configuring the WSL distribution may require manual steps (first-run of the distro).             #
+# - This configuration attempts to install Node/Yarn inside the Ubuntu distro using NodeSource and npm.             #
+#####################################################################################################################
+
+properties:
+  resources:
+    - resource: PSDesiredStateConfiguration/WindowsOptionalFeature
+      directives:
+        description: Enable Windows Subsystem for Linux (WSL)
+        securityContext: elevated
+      settings:
+        FeatureName: Microsoft-Windows-Subsystem-Linux
+        Ensure: Present
+
+    - resource: PSDesiredStateConfiguration/WindowsOptionalFeature
+      directives:
+        description: Enable Virtual Machine Platform (required for WSL2)
+        securityContext: elevated
+      settings:
+        FeatureName: VirtualMachinePlatform
+        Ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Windows Terminal (recommended for WSL)
+      settings:
+        id: Microsoft.WindowsTerminal
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Node.js LTS on Windows (useful for Windows-side tooling)
+      settings:
+        id: OpenJS.NodeJS.LTS
+        source: winget
+        ensure: Present
+
+    - resource: PSDscResources/Script
+      directives:
+        description: Install Ubuntu WSL distribution from winget if not already installed
+        securityContext: elevated
+      settings:
+        GetScript: |
+          return @{ Result = 'CheckUbuntu' }
+        TestScript: |
+          $dists = wsl.exe -l -q 2>$null
+          return ($dists -like '*Ubuntu*')
+        SetScript: |
+          try {
+            winget install -e --id Canonical.Ubuntu
+            Write-Host 'Attempted to install Ubuntu via winget. You may need to launch Ubuntu to finish setup.'
+          } catch {
+            Write-Host 'Automated installation of Ubuntu via winget failed or is unavailable. Please install Ubuntu from the Microsoft Store: https://aka.ms/wslstore'
+          }
+
+    - resource: PSDscResources/Script
+      directives:
+        description: Ensure Node.js, Yarn, and Gatsby are installed inside the Ubuntu WSL distribution
+        securityContext: elevated
+      settings:
+        GetScript: |
+          return @{ Result = 'CheckWSLNode' }
+        TestScript: |
+          try {
+            $status = wsl.exe -d Ubuntu -- bash -lc "command -v node >/dev/null 2>&1 && command -v yarn >/dev/null 2>&1 && command -v gatsby >/dev/null 2>&1 && echo installed || echo missing" 2>$null
+            return ($status -like '*installed*')
+          } catch {
+            return $false
+          }
+        SetScript: |
+          try {
+            Write-Host 'Installing Node.js (LTS) in WSL Ubuntu via NodeSource and installing Yarn (via npm), then installing gatsby-cli globally'
+            # Install Node.js LTS using NodeSource setup script
+            wsl.exe -d Ubuntu -- bash -lc "curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs"
+
+            # Install Yarn (first attempt via npm, fallback to Yarn APT repo)
+            $installYarn = wsl.exe -d Ubuntu -- bash -lc "sudo npm install -g yarn || (curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && echo 'deb https://dl.yarnpkg.com/debian/ stable main' | sudo tee /etc/apt/sources.list.d/yarn.list && sudo apt-get update && sudo apt-get install -y yarn)"
+            Write-Host "Yarn install output: $installYarn"
+
+            # Install Gatsby CLI globally inside WSL
+            $installGatsby = wsl.exe -d Ubuntu -- bash -lc "sudo npm install -g gatsby-cli"
+            Write-Host "Gatsby CLI install output: $installGatsby"
+
+            Write-Host 'Node.js, Yarn, and Gatsby CLI installation in WSL completed. You may need to launch the Ubuntu distribution to complete user setup.'
+          } catch {
+            Write-Host "Failed to install Node/Yarn/Gatsby in WSL: $_"
+          }
+
+  configurationVersion: 0.2.0
