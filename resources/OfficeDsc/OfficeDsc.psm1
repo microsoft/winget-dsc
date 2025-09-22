@@ -6,12 +6,16 @@ Set-StrictMode -Version Latest
 
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:OfficeRegistryPath = 'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration'
+    $global:OfficeGroupPolicyPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\OfficeUpdate'
+    $global:OfficeProductReleaseIdsPath = 'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\ProductReleaseIds'
     
 } else {
-    $global:OfficeRegistryPath = $env:TestRegistryPath
+    $global:OfficeRegistryPath = $global:OfficeRegistryPath = $global:OfficeProductReleaseIdsPath = $env:TestRegistryPath
 }
 
 #region Enums
+
+# ProductId enumeration: https://learn.microsoft.com/en-us/troubleshoot/microsoft-365-apps/office-suite-issues/product-ids-supported-office-deployment-click-to-run
 enum ProductId {
     O365ProPlusEEANoTeamsRetail      # Microsoft 365 Apps for enterprise
     O365ProPlusRetail                # Office 365 Enterprise E3, E5, Microsoft 365 E3, E5, Office 365 E3, E5
@@ -33,11 +37,79 @@ enum PackageId {
     Teams
     Word
 }
+
+# Channel enumeration: https://learn.microsoft.com/en-us/microsoft-365-apps/deploy/office-deployment-tool-configuration-options#channel-attribute-part-of-add-element
+enum Channel {
+    BetaChannel 
+    CurrentPreview
+    Current
+    MonthlyEnterprise
+    SemiAnnualPreview
+    SemiAnnual
+}
 #endregion Enums
 
 #region Functions
-function Get-OfficeInstallation ($ProductId) {
+function Get-OfficeGroupPolicyChannelSetting {
+    [OutputType([Channel])]
+    [CmdletBinding()]
+    param 
+    (
+    )
+
+    # Registry key found: https://learn.microsoft.com/en-us/troubleshoot/microsoft-365-apps/installation/automatic-updates#resolution
+    $channelUri = TryGetRegistryValue -Key $global:OfficeGroupPolicyPath -Property 'updatebranch'
+    if ([string]::IsNullOrEmpty($channelUri)) {
+        Write-Verbose -Message 'Group policy is not set, using local channel setting.'
+        return Get-OfficeChannel
+    }
+
+    # Extra check if Group Policy is setting a different channel
+    switch ($channelUri) {
+        'InsiderFast' { return [Channel]::BetaChannel }
+        'FirstReleaseCurrent' { return [Channel]::CurrentPreview }
+        'Current' { return [Channel]::Current }
+        'MonthlyEnterprise' { return [Channel]::MonthlyEnterprise }
+        'FirstReleaseDeferred' { return [Channel]::SemiAnnualPreview }
+        'Deferred' { return [Channel]::SemiAnnual }
+        default { throw "Unknown channel value found in Group Policy: '$channelUri'" }
+    }
+}
+function Get-OfficeChannel {
+    [OutputType([Channel])]
+    [CmdletBinding()]
+    param 
+    (
+    )
+
+    $Uri = TryGetRegistryValue -Key $global:OfficeRegistryPath -Property 'UpdateChannel'
+
+    # Channel URIs: https://learn.microsoft.com/en-us/intune/intune-service/configuration/settings-catalog-update-office#check-the-intune-registry-keys
+    $Channel = switch ($Uri) {
+        'http://officecdn.microsoft.com/pr/5440fd1f-7ecb-4221-8110-145efaa6372f' { [Channel]::BetaChannel }
+        'http://officecdn.microsoft.com/pr/64256afe-f5d9-4f86-8936-8840a6a4f5be' { [Channel]::CurrentPreview }
+        'http://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60' { [Channel]::Current }
+        'http://officecdn.microsoft.com/pr/55336b82-a18d-4dd6-b5f6-9e5095c314a6' { [Channel]::MonthlyEnterprise }
+        'http://officecdn.microsoft.com/pr/b8f9b850-328d-4355-9145-c59439a0c4cf' { [Channel]::SemiAnnualPreview }
+        'http://officecdn.microsoft.com/pr/7ffbc6bf-bc32-4f92-8982-f9dd17fd3114' { [Channel]::SemiAnnual }
+        default { [Channel]::Current }
+    }
+
+    return $Channel
+}
+function Get-OfficeInstallation {
+    [OutputType([System.Collections.Hashtable])]
+    [CmdletBinding()]
+    param 
+    (
+        [Parameter(Mandatory = $true)]
+        [ProductId]$ProductId
+    )
+    
+    # Find the known key
     $keyPresent = TryGetRegistryValue -Key $global:OfficeRegistryPath -Property 'InstallationPath'
+
+    # Extra check if the product is installed via Click-to-Run
     $installed = $false
     if ($null -ne $keyPresent) {
         $installed = Test-Path -Path $keyPresent -ErrorAction Ignore
@@ -45,9 +117,9 @@ function Get-OfficeInstallation ($ProductId) {
 
     $searchProperty = [System.String]::Concat($ProductId, '.ExcludedApps')
 
-    Write-Verbose -Message "Searching for excluded apps with property name: '$searchProperty'"
+    # Go through the excluded apps and filter out the installed apps
+    Write-Verbose -Message "Searching for excluded apps with property name: '$searchProperty'."
     $excludedApps = TryGetRegistryValue -Key $global:OfficeRegistryPath -Property $searchProperty
-
     $appsInstalled = [PackageId]::GetNames([PackageId])
     $excludedAppsArray = @()
     if ($null -ne $excludedApps) {
@@ -59,69 +131,20 @@ function Get-OfficeInstallation ($ProductId) {
     return @{
         Installed    = $installed
         Apps         = $appsInstalled
-        ExcludedApps = ($null -ne $excludedAppsArray) ? $excludedAppsArray : @()
+        ExcludedApps = ($null -ne $excludedAppsArray) ? $excludedAppsArray : @() # Nothing was excluded
         ProductId    = $ProductId
     }
 }
 
-function Get-OfficeDeploymentToolDownloadUrl {
-    try {
-        $url = "https://www.microsoft.com/en-us/download/details.aspx?id=49117"
-        
-        Write-Verbose "Making request to: $url"
-        $response = Invoke-RestMethod -Uri $url -Method Get -ErrorAction Stop
-        
-        $pattern = '"url":"(https://download\.microsoft\.com/download/[^"]+)"'
-        
-        if ($response -match $pattern) {
-            $downloadUrl = $matches[1]
-            Write-Verbose "Found download URL: $downloadUrl"
-            return $downloadUrl
-        } else {
-            $altPattern = 'https://download\.microsoft\.com/download/[a-zA-Z0-9\-/]+\.exe'
-            
-            if ($response -match $altPattern) {
-                $downloadUrl = $matches[0]
-                Write-Verbose "Found download URL (alternative method): $downloadUrl"
-                return $downloadUrl
-            } else {
-                throw 'Could not find download URL in the page content'
-            }
-        }
-    } catch {
-        Write-Error "Failed to retrieve download URL: $($_.Exception.Message)"
-        return $null
-    }
-}
-
-function Test-OfficeInstallation {
+function Test-OfficeDeploymentToolSetup {
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ProductId]$ProductId
+        [System.String]
+        $Path
     )
-    
-    try {
-        # Check for Office Click-to-Run installation
-        $officeRegistryPath = 'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration'
-        
-        if (Test-Path $officeRegistryPath) {
-            $officeConfig = Get-ItemProperty -Path $officeRegistryPath -ErrorAction SilentlyContinue
-            
-            if ($officeConfig -and $officeConfig.ProductReleaseIds) {
-                $installedProducts = $officeConfig.ProductReleaseIds -split ','
-                return $installedProducts -contains $ProductId.ToString()
-            }
-        }
-        
-        return $false
-    } catch {
-        Write-Verbose "Error checking Office installation: $($_.Exception.Message)"
-        return $false
-    }
-}
 
-function Test-OfficeDeploymentToolSetup ($Path) {
     try {
         if (-not (Test-Path $Path -ErrorAction Ignore) -and [System.IO.Path]::GetExtension($Path) -ne '.exe') {
             return $false
@@ -145,33 +168,11 @@ function Test-OfficeDeploymentToolSetup ($Path) {
     return $true
 }
 
-function ThrowTerminating {
-    param (
-        [Parameter(Mandatory)]
-        [System.Exception]
-        $Exception,
-
-        [Parameter(Mandatory)]
-        [System.String]
-        $ErrorId,
-
-        [Parameter(Mandatory)]
-        [System.Management.Automation.ErrorCategory]
-        $Category,
-
-        [Parameter(Mandatory)]
-        [object]
-        $TargetObject
-    )
-
-    $errorRecord = New-Object System.Management.Automation.ErrorRecord `
-    ($Exception, $ErrorId, $Category, $TargetObject)
-    $PSCmdlet.ThrowTerminatingError($errorRecord)
-}
-
 function New-OfficeConfigurationXml {
+    [OutputType([System.String])]
     [CmdletBinding()]
-    param(
+    param
+    (
         [Parameter(Mandatory)]
         [System.String]
         $ProductId,
@@ -180,11 +181,33 @@ function New-OfficeConfigurationXml {
         [System.String[]]
         $ExcludeApps = @(),
 
+        [Parameter()]
+        [Channel]
+        $Channel = [Channel]::Current, # Default is current
+
+        [Parameter()]
+        [System.String[]]
+        $LanguageId = @([System.Globalization.CultureInfo]::GetCultureInfo.Name), # Default to current system culture
+
         [System.Management.Automation.SwitchParameter]
         $Remove
     )
-    $languageId = [System.Globalization.CultureInfo]::CurrentUICulture.Name
+
+    # Test if the provided path is a valid Office Deployment Tool setup.exe
+    if (-not (Test-OfficeDeploymentToolSetup -Path $Path -ErrorAction Ignore)) {
+        throw "The specified path does not exist: '$Path' or is not a valid Office Deployment Tool setup.exe."
+    }
+
+    if ($null -eq $LanguageId -and $LanguageId -eq '') {
+        # Default to current
+        $LanguageId = [System.Globalization.CultureInfo]::GetCultureInfo.Name
+        Write-Verbose -Message "Using current system culture as language ID: '$LanguageId'."
+    }
+
+    # Get the bitness
     $bitness = [Environment]::Is64BitOperatingSystem ? '64' : '32'
+
+    # Build the document
     $xml = New-Object System.Xml.XmlDocument
 
     $config = $xml.CreateElement('Configuration')
@@ -193,15 +216,18 @@ function New-OfficeConfigurationXml {
     $parentNodeName = $Remove ? 'Remove' : 'Add'
     $parentNode = $xml.CreateElement($parentNodeName)
     $parentNode.SetAttribute('OfficeClientEdition', $bitness)
+    $parentNode.SetAttribute('Channel', $Channel)
     $config.AppendChild($parentNode) | Out-Null
 
     $product = $xml.CreateElement('Product')
     $product.SetAttribute('ID', $ProductId)
     $parentNode.AppendChild($product) | Out-Null
 
-    $lang = $xml.CreateElement('Language')
-    $lang.SetAttribute('ID', $languageId)
-    $product.AppendChild($lang) | Out-Null
+    foreach ($lang in $LanguageId) {
+        $language = $xml.CreateElement('Language')
+        $language.SetAttribute('ID', $lang)
+        $product.AppendChild($language) | Out-Null
+    }
 
     foreach ($app in $ExcludeApps) {
         $exclude = $xml.CreateElement('ExcludeApp')
@@ -219,36 +245,140 @@ function New-OfficeConfigurationXml {
     $xmlWriter.Formatting = 'Indented'
     $xml.WriteTo($xmlWriter)
     $xmlWriter.Flush()
-    $stringWriter.ToString()
-    
+    $configXml = $stringWriter.ToString()
+    $xmlWriter.Close()
+
+    Write-Verbose -Message "Generated Office configuration XML:`n$configXml"
+    # write the config file to a temp location
+    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "ODT_Install_$(Get-Random).xml"
+    try {
+        Set-Content -Path $tempDir -Value $configXml -Encoding UTF8 -Force
+    } catch {
+        throw "Failed to create temporary configuration file: '$tempDir'"
+    }
+
+    Write-Verbose -Message "Temporary configuration file created at: '$tempDir'."
+    return $tempDir
 }
 
+function Test-LanguageInstalled {
+    [CmdletBinding()]
+    param 
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String[]]
+        $LanguageId
+    )
 
+    $installedLanguages = Get-CimInstance -ClassName Win32_OperatingSystem | Select-Object -ExpandProperty MUILanguages
 
-function Install-Office365 ($Path, $ProductId, $ExcludeApps) {
-    if (-not (Test-OfficeDeploymentToolSetup -Path $Path)) {
-        ThrowTerminating -Exception (New-Object System.Exception("The specified executable is not a valid Office Deployment Tool setup.exe: '$Path'")) `
-            -ErrorId 'InvalidODTSetup' -Category 'InvalidOperation' -TargetObject $Path
+    foreach ($lang in $LanguageId) {
+        if ($installedLanguages -notcontains $lang) {
+            Write-Verbose -Message "Language '$lang' is not installed."
+            return $false
+        }
     }
 
-    $configFileContent = New-OfficeConfigurationXml -ProductId $ProductId -ExcludeApps $ExcludeApps
+    return $true
+}
 
-    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "ODT_Install_$(Get-Random).xml"
+function Test-SupportedLanguageId {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$LanguageId
+    )
 
-    # write the config file to a temp location
-    try {
-        Set-Content -Path $tempDir -Value $configFileContent -Encoding UTF8 -Force
-    } catch {
-        ThrowTerminating -Exception (New-Object System.Exception("Failed to create temporary configuration file: '$tempDir'")) `
-            -ErrorId 'TempFileCreationFailed' -Category 'InvalidOperation' -TargetObject $tempDir
+    # Supported Office language IDs: https://learn.microsoft.com/en-us/microsoft-365-apps/deploy/overview-deploying-languages-microsoft-365-apps#languages-culture-codes-and-companion-proofing-languages
+    $supported = @(
+        'af-ZA', 'sq-AL', 'ar-SA', 'hy-AM', 'as-IN', 'az-Latn-AZ', 'bn-BD', 'bn-IN', 'eu-ES',
+        'bs-latn-BA', 'bg-BG', 'ca-ES', 'ca-ES-valencia', 'zh-CN', 'zh-TW', 'hr-HR', 'cs-CZ',
+        'da-DK', 'nl-NL', 'en-US', 'en-GB', 'et-EE', 'fi-FI', 'fr-FR', 'fr-CA', 'gl-ES', 'ka-GE',
+        'de-DE', 'el-GR', 'gu-IN', 'ha-Latn-NG', 'he-IL', 'hi-IN', 'hu-HU', 'is-IS', 'ig-NG',
+        'id-ID', 'ga-IE', 'xh-ZA', 'zu-ZA', 'it-IT', 'ja-JP', 'kn-IN', 'kk-KZ', 'rw-RW', 'sw-KE',
+        'kok-IN', 'ko-KR', 'ky-KG', 'lv-LV', 'lt-LT', 'lb-LU', 'mk-MK', 'ms-MY', 'ml-IN', 'mt-MT',
+        'mi-NZ', 'mr-IN', 'ne-NP', 'nb-NO', 'nn-NO', 'or-IN', 'ps-AF', 'fa-IR', 'pl-PL', 'pt-PT',
+        'pt-BR', 'pa-IN', 'ro-RO', 'rm-CH', 'ru-RU', 'gd-GB', 'sr-cyrl-RS', 'sr-latn-RS',
+        'sr-cyrl-BA', 'nso-ZA', 'tn-ZA', 'si-LK', 'sk-SK', 'sl-SI', 'es-ES', 'es-MX', 'sv-SE',
+        'ta-IN', 'tt-RU', 'te-IN', 'th-TH', 'tr-TR', 'uk-UA', 'ur-PK', 'uz-Latn-UZ', 'vi-VN',
+        'cy-GB', 'wo-SN', 'yo-NG'
+    )
+
+    return ($LanguageId | ForEach-Object { $supported -contains $_ }) -notcontains $false
+}
+
+function Install-Office {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $Path,
+
+        [Parameter(Mandatory = $true)]
+        [ProductId]
+        $ProductId,
+
+        [Parameter()]
+        [Channel]
+        $Channel = [Channel]::Current,
+
+        [Parameter()]
+        [System.String[]]
+        $LanguageId,
+
+        [Parameter()]
+        [PackageId[]]
+        $ExcludeApps = @()
+    )
+
+    # Create the configuration XML file
+    $configParams = @{
+        ProductId   = $ProductId
+        ExcludeApps = $ExcludeApps
+        Channel     = $Channel
+        LanguageId  = $LanguageId
     }
-    
-    $arguments = "/configure $tempDir"
+    $configFilePath = New-OfficeConfigurationXml @configParams
 
+    # Before installing check if languages are installed and supported
+    if (-not (Test-LanguageInstalled -LanguageId $LanguageId)) {
+        throw "One or more specified languages are not installed on the system: '$($LanguageId -join ', ')'."
+    }
+
+    if (-not (Test-SupportedLanguageId -LanguageId $LanguageId)) {
+        throw "One or more specified languages are not supported by Office: '$($LanguageId -join ', ')'."
+    }
+
+    $arguments = "/configure $configFilePath"
     Write-Verbose -Message "Starting Office installation at path '$Path' with arguments: '$arguments'"
     Start-Process -FilePath $Path -ArgumentList $arguments -Wait -NoNewWindow
 }
 
+function Uninstall-Office {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $Path,
+
+        [Parameter(Mandatory = $true)]
+        [ProductId]
+        $ProductId,
+
+        [Parameter()]
+        [PackageId[]]
+        $ExcludeApps = @()
+    )
+
+    # Create the configuration XML file for removal
+    $configFilePath = New-OfficeConfigurationXml -ProductId $ProductId -ExcludeApps $ExcludeApps -Remove
+
+    $arguments = "/configure $configFilePath"
+    Write-Verbose -Message "Starting Office uninstallation at path '$Path' with arguments: '$arguments'"
+    Start-Process -FilePath $Path -ArgumentList $arguments -Wait -NoNewWindow
+}
 
 function TryGetRegistryValue {
     param (
@@ -270,13 +400,24 @@ function TryGetRegistryValue {
     }
 }
 
-function Compare-ExcludedApps ($CurrentExcludedApps, $DesiredExcludedApps) {
+function Compare-ExcludedApps {
+    [OutputType([System.Boolean])]
+    [CmdletBinding()]
+    param 
+    (
+        [Parameter(Mandatory = $true)]
+        [string[]]$CurrentExcludedApps,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$DesiredExcludedApps
+    )
+
     $diff = Compare-Object -ReferenceObject $CurrentExcludedApps -DifferenceObject $DesiredExcludedApps -SyncWindow 0
 
     if ($diff) {
         return ($diff.Count -eq 0)
     }
-    
+
     return $true
 }
 
@@ -284,6 +425,47 @@ function Test-Administrator {
     $user = [Security.Principal.WindowsIdentity]::GetCurrent()
     (New-Object Security.Principal.WindowsPrincipal $user).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)  
 }
+
+function Get-LanguageId {
+    [OutputType([System.String[]])]
+    [CmdletBinding()]
+    param 
+    (
+        [Parameter()]
+        [System.String[]]
+        $LanguageId,
+
+        [Parameter(Mandatory = $true)]
+        [ProductId]
+        $ProductId
+    )
+    $languages = @()
+    $languagePaths = Get-ChildItem -Path $global:OfficeProductReleaseIdsPath -Recurse
+
+    $expression = { $_.Name -like "*$ProductId*" } 
+    if ([string]::IsNullOrEmpty($LanguageId) ) {
+        Write-Verbose -Message 'No LanguageId specified, returning all valid languages for the ProductId.'
+        $validLanguages = $languagePaths | Where-Object $expression
+        if ($validLanguages) {
+            foreach ($lang in $validLanguages) {
+                if (Test-SupportedLanguageId -LanguageId $lang.PSChildName) {
+                    $LanguageId += $lang.PSChildName
+                }
+            }
+        }
+    }
+
+    foreach ($lang in $LanguageId) {
+        $validLanguage = $languagePaths | Where-Object { $_.Name -like "*$ProductId*" -and $_.Name -like "*$lang*" }
+        if ($validLanguage) {
+            Write-Verbose -Message "Valid language found: '$lang' for ProductId: '$ProductId' at: '$($validLanguage)'."
+            $languages += $lang
+        }
+        
+    }
+    return $languages
+}
+
 #endregion Functions
 
 #region Classes
@@ -302,6 +484,14 @@ class Office365Installer {
     $ExcludeApps = @()
 
     [DscProperty()]
+    [Channel]
+    $Channel = [Channel]::Current
+
+    [DscProperty()]
+    [System.String[]]
+    $LanguageId
+
+    [DscProperty()]
     [System.Boolean]
     $Exist = $true
 
@@ -311,29 +501,41 @@ class Office365Installer {
 
     [Office365Installer] Get() {
         $currentState = [Office365Installer]::new()
-        
-        $officeInstalled = Get-OfficeInstallation -ProductId $this.ProductId
-        if ($currentState.Exist) {
-            if ($officeInstalled.ExcludedApps -or $this.ExcludeApps) {
-                $compareParams = @{
-                    CurrentExcludedApps = $officeInstalled.ExcludedApps
-                    DesiredExcludedApps = $this.ExcludeApps
-                }
-                $currentState.Exist = Compare-ExcludedApps @compareParams  
-            }
-        }
+        # TODO: Have to validate if it can contain multiple ProductIds
+        $currentState.ProductId = TryGetRegistryValue -Key $global:OfficeRegistryPath -Property 'ProductReleaseIds'
 
-        $currentState.ExcludeApps = $this.ExcludeApps
+        $officeInstalled = Get-OfficeInstallation -ProductId $this.ProductId
+        $currentState.ExcludeApps = $officeInstalled.ExcludedApps
+        $currentState.Exist = $officeInstalled.Installed
         $currentState.Path = $this.Path
+        $currentState.Channel = Get-OfficeGroupPolicyChannelSetting
+        $currentState.LanguageId = Get-LanguageId -LanguageId $this.LanguageId -ProductId $this.ProductId
         return $currentState
     }
 
     [bool] Test() {
         $currentState = $this.Get()
+
         if ($currentState.Exist -ne $this.Exist) {
             return $false
         }
 
+        if ($currentState.ExcludeApps -ne $this.ExcludeApps) {
+            return $false
+        }
+
+        if ($currentState.Channel -ne $this.Channel) {
+            return $false
+        }
+
+        if ($currentState.ProductId -ne $this.ProductId) {
+            return $false
+        }
+
+        if ($currentState.LanguageId -ne $this.LanguageId) {
+            return $false
+        }
+        
         return $true
     }
 
@@ -344,8 +546,7 @@ class Office365Installer {
 
         # before installing, ensure we have admin rights
         if (-not (Test-Administrator)) {
-            ThrowTerminating -Exception (New-Object System.Exception('Administrator privileges are required to run this script.')) `
-                -ErrorId 'InsufficientPrivileges' -Category 'SecurityError' -TargetObject 'Setup'
+            throw 'Administrator privileges are required to run installation of Office Click-to-Run.'
         }
 
         if ($this.Exist) {
@@ -360,7 +561,15 @@ class Office365Installer {
             return
         }
 
-        Install-Office365 -Path $this.Path -ProductId $this.ProductId -ExcludeApps $this.ExcludeApps
+        $installParams = @{
+            Path        = $this.Path
+            ProductId   = $this.ProductId
+            Channel     = $this.Channel
+            LanguageId  = $this.LanguageId
+            ExcludeApps = $this.ExcludeApps
+        }
+
+        Install-Office @installParams
     }
 
     [void] Install() {
@@ -368,7 +577,7 @@ class Office365Installer {
     }
 
     [void] Uninstall([bool] $preTest) {
-        # TODO: Implement uninstall logic
+        Uninstall-Office -Path $this.Path -ProductId $this.ProductId -ExcludeApps $this.ExcludeApps
     }
 
     [void] Uninstall() {
