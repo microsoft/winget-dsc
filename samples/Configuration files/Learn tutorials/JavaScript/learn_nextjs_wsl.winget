@@ -8,7 +8,6 @@
 #     * Enable WSL and install the WSL optional feature                                                   #
 #     * Install Windows Terminal                                                                          #
 #     * Install Node.js LTS                                                                               #
-#     * Install Git                                                                                       #
 #     * Install a WSL2 distribution (Ubuntu) via Microsoft Store package if possible                      #
 #                                                                                                         #
 # Notes:                                                                                                  #

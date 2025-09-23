@@ -76,6 +76,39 @@ properties:
             Write-Host 'Automated installation of Ubuntu via winget failed or is unavailable. Please install Ubuntu from the Microsoft Store: https://aka.ms/wslstore'
           }
 
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Visual Studio Code
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: VSCodeRemoteWSLExtension
+      directives:
+        description: Install VSCode Remote - WSL extension
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode-remote.remote-wsl
+
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: VSCodeRemoteDevPackExtension
+      directives:
+        description: Install VSCode Remote Development Extension Pack
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode-remote.vscode-remote-extensionpack
+
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: VSCodeNodeJSExtensionPack
+      directives:
+        description: Install Node.js Extension Pack for VSCode
+        allowPrerelease: true
+      settings:
+        Name: waderyan.nodejs-extension-pack
+
     - resource: PSDscResources/Script
       directives:
         description: Ensure Node.js, Yarn, and Gatsby are installed inside the Ubuntu WSL distribution

@@ -1,17 +1,21 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 
-##########################################################################################################
-# This configuration will install the tools necessary to get started with Node.js on Windows using WSL2    #
-# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl           #
-#                                                                                                        #
-# This will:                                                                                             #
-#     * Enable WSL and Virtual Machine Platform features (required for WSL2)                              #
-#     * Install Windows Terminal (recommended)                                                            #
-#     * Install Git for Windows                                                                           #
-#     * (Optional) Install Node.js LTS on Windows (for Windows-side tooling)                              #
-#     * Attempt to install Ubuntu WSL distribution                                                        #
-#     * Install Node.js and npm inside Ubuntu WSL                                                         #
-##########################################################################################################
+#####################################################################################################################
+# This configuration will install Visual Studio Code, Node.js, and recommended extensions/tools for Node.js on WSL2  #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl                      #
+#                                                                                                                    #
+# This will:                                                                                                         #
+#     * Enable Windows Subsystem for Linux (WSL) feature                                                             #
+#     * Enable Virtual Machine Platform feature (required for WSL2)                                                  #
+#     * Install Windows Terminal                                                                                     #
+#     * Install Git for Windows                                                                                      #
+#     * Install Visual Studio Code                                                                                   #
+#     * Install VSCode Remote - WSL extension                                                                        #
+#     * Install VSCode Remote Development Extension Pack                                                             #
+#     * Install Node.js Extension Pack for VSCode                                                                    #
+#     * Install Ubuntu WSL distribution                                                                              #
+#     * Install Node.js and npm inside Ubuntu WSL                                                                    #
+#####################################################################################################################
 
 properties:
   resources:
