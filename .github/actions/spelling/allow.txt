@@ -46,8 +46,10 @@ microsoft
 MMdd
 msftbot
 msixbundle
+msjsdiag
 msstore
 msvc
+mubaidr
 NOLOGO
 NOLOGO
 nonexistentpackage
@@ -87,6 +89,7 @@ vscpp
 vsextensions
 vsixmanifest
 vspackage
+vuejs
 wcr
 website
 websites
