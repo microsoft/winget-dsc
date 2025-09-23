@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+##########################################################################################################
+# This configuration installs the tooling referenced in the Microsoft Learn "Vue tools" section:         #
+# https://learn.microsoft.com/en-us/windows/dev-environment/javascript/vue-overview#vue-tools            #
+#                                                                                                        #
+# This will install:                                                                                     #
+#   * Node.js LTS (provides npm)                                                                         #
+#   * Visual Studio Code (recommended editor)                                                            #
+#   * Vue extension pack for VS Code (mubaidr.vuejs-extension-pack)                                      #
+#   * Vue CLI (installed globally via npm)                                                               #
+##########################################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: NodeJS
+      directives:
+        description: Install Node.js LTS (provides npm)
+        securityContext: elevated
+      settings:
+        id: OpenJS.NodeJS.LTS
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: VSCode
+      directives:
+        description: Install Visual Studio Code (recommended editor)
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: VueExtensionPack
+      directives:
+        description: Install the Vue extension pack for VS Code
+        allowPrerelease: true
+      settings:
+        Name: mubaidr.vuejs-extension-pack
+
+    - resource: PSDscResources/Script
+      id: VueCLI
+      dependsOn:
+        - NodeJS
+      directives:
+        description: Install Vue CLI globally via npm
+        securityContext: elevated
+      settings:
+        GetScript: |
+          return @{ Result = 'CheckVueCLI' }
+        TestScript: |
+          try {
+            $cmd = Get-Command vue -ErrorAction SilentlyContinue
+            return ($cmd -ne $null)
+          } catch {
+            return $false
+          }
+        SetScript: |
+          try {
+            Write-Host 'Installing @vue/cli globally via npm'
+            npm install -g @vue/cli
+            Write-Host 'Vue CLI installation attempted.'
+          } catch {
+            Write-Host "Failed to install Vue CLI: $_"
+          }
+
+  configurationVersion: 0.2.0
