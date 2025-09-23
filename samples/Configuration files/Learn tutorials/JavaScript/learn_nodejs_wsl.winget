@@ -1,0 +1,135 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+##########################################################################################################
+# This configuration will install the tools necessary to get started with Node.js on Windows using WSL2    #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl           #
+#                                                                                                        #
+# This will:                                                                                             #
+#     * Enable WSL and Virtual Machine Platform features (required for WSL2)                              #
+#     * Install Windows Terminal (recommended)                                                            #
+#     * Install Git for Windows                                                                           #
+#     * (Optional) Install Node.js LTS on Windows (for Windows-side tooling)                              #
+#     * Attempt to install Ubuntu WSL distribution                                                        #
+#     * Install Node.js and npm inside Ubuntu WSL                                                         #
+##########################################################################################################
+
+properties:
+  resources:
+    - resource: PSDscResources/WindowsOptionalFeature
+      directives:
+        description: Enable Windows Subsystem for Linux (WSL)
+        securityContext: elevated
+      settings:
+        FeatureName: Microsoft-Windows-Subsystem-Linux
+        Ensure: Present
+
+    - resource: PSDscResources/WindowsOptionalFeature
+      directives:
+        description: Enable Virtual Machine Platform (required for WSL2)
+        securityContext: elevated
+      settings:
+        FeatureName: VirtualMachinePlatform
+        Ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Windows Terminal
+        securityContext: elevated
+      settings:
+        id: Microsoft.WindowsTerminal
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Git for Windows
+        securityContext: elevated
+      settings:
+        id: Git.Git
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Visual Studio Code
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: VSCodeRemoteWSLExtension
+      directives:
+        description: Install VSCode Remote - WSL extension
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode-remote.remote-wsl
+
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: VSCodeRemoteDevPackExtension
+      directives:
+        description: Install VSCode Remote Development Extension Pack
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode-remote.vscode-remote-extensionpack
+
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      id: VSCodeNodeJSExtensionPack
+      directives:
+        description: Install Node.js Extension Pack for VSCode
+        allowPrerelease: true
+      settings:
+        Name: waderyan.nodejs-extension-pack
+
+    - resource: PSDscResources/Script
+      directives:
+        description: Install Ubuntu WSL distribution from winget if not already installed
+        securityContext: elevated
+      settings:
+        GetScript: |
+          return @{ Result = 'CheckUbuntu' }
+        TestScript: |
+          try {
+              $dists = wsl.exe -l -q 2>$null | ForEach-Object { $_.Trim() }
+              if ($dists -contains 'Ubuntu') {
+                return $true
+              } else {
+                return $false
+              }
+            } catch {
+              return $false
+            }
+        SetScript: |
+          try {
+            winget install -e --id Canonical.Ubuntu
+            Write-Host 'Attempted to install Ubuntu via winget. You may need to launch Ubuntu to finish setup.'
+          } catch {
+            Write-Host 'Automated installation of Ubuntu via winget failed or is unavailable. Please install Ubuntu from the Microsoft Store: https://aka.ms/wslstore'
+          }
+
+    - resource: PSDscResources/Script
+      directives:
+        description: Install Node.js and npm inside Ubuntu WSL
+        securityContext: elevated
+      settings:
+        GetScript: |
+          return @{ Result = 'CheckWSLNode' }
+        TestScript: |
+          try {
+            $status = wsl.exe -d Ubuntu -- bash -lc "command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 && echo installed || echo missing" 2>$null
+            return ($status -like '*installed*')
+          } catch {
+            return $false
+          }
+        SetScript: |
+          try {
+            Write-Host 'Installing Node.js (LTS) and npm in Ubuntu WSL'
+            # Install Node.js LTS using NodeSource setup script
+            wsl.exe -d Ubuntu -- bash -lc "curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs"
+            Write-Host 'Node.js and npm installation in WSL completed. You may need to launch Ubuntu to complete user setup.'
+          } catch {
+            Write-Host "Failed to install Node.js/npm in WSL: $_"
+          }
+
+  configurationVersion: 0.2.0
