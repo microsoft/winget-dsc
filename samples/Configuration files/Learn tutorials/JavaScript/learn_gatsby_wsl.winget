@@ -18,21 +18,21 @@
 
 properties:
   resources:
-    - resource: PSDesiredStateConfiguration/WindowsOptionalFeature
+    - resource: PSDscResources/WindowsOptionalFeature
       directives:
-        description: Enable Windows Subsystem for Linux (WSL)
+        description: Install WSL
         securityContext: elevated
       settings:
-        FeatureName: Microsoft-Windows-Subsystem-Linux
-        Ensure: Present
+        name: Microsoft-Windows-Subsystem-Linux
+        ensure: Present
 
-    - resource: PSDesiredStateConfiguration/WindowsOptionalFeature
+    - resource: PSDscResources/WindowsOptionalFeature
       directives:
         description: Enable Virtual Machine Platform (required for WSL2)
         securityContext: elevated
       settings:
-        FeatureName: VirtualMachinePlatform
-        Ensure: Present
+        name: VirtualMachinePlatform
+        ensure: Present
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       directives:
@@ -58,8 +58,16 @@ properties:
         GetScript: |
           return @{ Result = 'CheckUbuntu' }
         TestScript: |
-          $dists = wsl.exe -l -q 2>$null
-          return ($dists -like '*Ubuntu*')
+          try {
+              $dists = wsl.exe -l -q 2>$null | ForEach-Object { $_.Trim() }
+              if ($dists -contains 'Ubuntu') {
+                return $true
+              } else {
+                return $false
+              }
+            } catch {
+              return $false
+            }
         SetScript: |
           try {
             winget install -e --id Canonical.Ubuntu
