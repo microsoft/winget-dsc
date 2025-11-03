@@ -27,6 +27,17 @@ enum AdvancedNetworkSharingSettingName {
     FileAndPrinterSharing
 }
 
+enum Action {
+    NotConfigured
+    Allow
+    Block
+}
+
+enum Direction {
+    Inbound
+    Outbound
+}
+
 if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\'
     $global:PersonalizeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\'
@@ -485,6 +496,150 @@ class NetConnectionProfile {
     }
 }
 
+[DSCResource()]
+class FirewallRule {
+    [DscProperty(Key, Mandatory)]
+    [string]$Name
+
+    [DscProperty()]
+    [string]$DisplayName
+
+    [DscProperty()]
+    [Action]$Action
+
+    [DscProperty()]
+    [string]$Description
+
+    [DscProperty()]
+    [Direction]$Direction
+
+    [DscProperty()]
+    [bool]$Enabled
+
+    [DscProperty()]
+    [Ensure]$Ensure = [Ensure]::Present
+
+    [DscProperty()]
+    [string[]]$LocalPort
+
+    [DscProperty()]
+    [string[]]$Profiles
+
+    [DscProperty()]
+    [string]$Protocol
+
+    [FirewallRule] Get() {
+        $rule = Get-NetFirewallRule -Name $this.Name -ErrorAction SilentlyContinue
+
+        if (-not $rule) {
+            return @{
+                Ensure = [Ensure]::Absent
+                Name   = $this.Name
+            }
+        }
+
+        $properties = $rule | GetNetFirewallPortFilter
+        return @{
+            Ensure      = [Ensure]::Present
+            Name        = $rule.Name
+            DisplayName = $rule.DisplayName
+            Action      = $rule.Action
+            Description = $rule.Description
+            Direction   = $rule.Direction
+            Enabled     = $rule.Enabled
+            LocalPort   = $properties.LocalPort
+            # Split the profiles string into an array
+            Profiles    = ($rule.Profile -split ',') | ForEach-Object { $_.Trim() }
+            Protocol    = $properties.Protocol
+        }
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        if ($this.Ensure -eq [Ensure]::Absent) {
+            return $currentState.Ensure -eq [Ensure]::Absent
+        }
+
+        # Check each property only if it is specified
+        if ($this.DisplayName -and ($currentState.DisplayName -ne $this.DisplayName)) {
+            return $false
+        }
+
+        if ($currentState.Action -ne $this.Action) {
+            return $false
+        }
+
+        if ($this.Description -and ($currentState.Description -ne $this.Description)) {
+            return $false
+        }
+
+        if ($currentState.Direction -ne $this.Direction) {
+            return $false
+        }
+
+        if ($currentState.Enabled -ne $this.Enabled) {
+            return $false
+        }
+
+        if ($this.LocalPort -and (Compare-Object $currentState.LocalPort $this.LocalPort)) {
+            return $false
+        }
+
+        if ($this.Profiles -and (Compare-Object $currentState.Profiles $this.Profiles)) {
+            return $false
+        }
+
+        if ($this.Protocol -and ($currentState.Protocol -ne $this.Protocol)) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        # Only make changes if changes are needed
+        if (-not $this.Test()) {
+            if ($this.Ensure -eq [Ensure]::Absent) {
+                Remove-NetFirewallRule -Name $this.Name -ErrorAction SilentlyContinue
+            } else {
+                $firewallRule = Get-NetFirewallRule -Name $this.Name
+                $exists = ($null -ne $firewallRule)
+
+                $params = @{
+                    # Escape firewall rule name to ensure that wildcard update is not used
+                    Name        = ConvertTo-FirewallRuleNameEscapedString -Name $this.Name
+                    DisplayName = $this.DisplayName
+                    Action      = $this.Action.ToString()
+                    Description = $this.Description
+                    Direction   = $this.Direction.ToString()
+                    Enabled     = $this.Enabled.ToString()
+                    Profile     = $this.Profiles
+                    Protocol    = $this.Protocol
+                    LocalPort   = $this.LocalPort
+                }
+
+                if ($exists) {
+                    <#
+                        If the DisplayName is provided then need to remove it
+                        And change it to NewDisplayName if it is different.
+                    #>
+                    if ($params.ContainsKey('DisplayName')) {
+                        $null = $params.Remove('DisplayName')
+                        if ($this.DisplayName -ne $FirewallRule.DisplayName) {
+                            $null = $params.Add('NewDisplayName', $this.DisplayName)
+                        }
+                    }
+
+                    Set-NetFirewallRule @params
+                } else {
+                    New-NetFirewallRule @params
+                }
+            }
+        }
+    }
+}
+
 function DoesRegistryKeyPropertyExist {
     param (
         [Parameter(Mandatory)]
@@ -570,4 +725,24 @@ function Restore-GroupPolicyPowerPlanSetting([HashTable[]]$GPRegArray) {
 
 function Disable-GroupPolicyPowerPlanSetting {
     Remove-Item $GroupPolicyPowerPlanRegistryKeyPath -Recurse -Force | Out-Null
+}
+
+# Convert Firewall Rule name to Escape Wildcard Characters. It will append '[', ']' and '*' with a backtick.
+function ConvertTo-FirewallRuleNameEscapedString {
+    [CmdletBinding()]
+    [OutputType([System.String])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        $Name
+    )
+
+    return $Name.Replace('[', '`[').Replace(']', '`]').Replace('*', '`*')
+}
+
+# Workaround mock issue for Get-NetFirewallPortFilter
+function GetNetFirewallPortFilter {
+    process {
+        return $_ | Get-NetFirewallPortFilter
+    }
 }
