@@ -11,7 +11,8 @@
         'WindowsSettings',
         'WindowsCapability',
         'PowerPlanSetting',
-        'AdvancedNetworkSharingSetting'
+        'AdvancedNetworkSharingSetting',
+        'NetConnectionProfile'
     )
     PrivateData          = @{
         PSData = @{
@@ -20,7 +21,8 @@
                 'PSDscResource_WindowsSettings',
                 'PSDscResource_WindowsCapability',
                 'PSDscResource_PowerPlanSetting',
-                'PSDscResource_AdvancedNetworkSharingSetting'
+                'PSDscResource_AdvancedNetworkSharingSetting',
+                'PSDscResource_NetConnectionProfile'
             )
 
             # Prerelease string of this module
