@@ -10,7 +10,8 @@
     DscResourcesToExport = @(
         'WindowsSettings',
         'WindowsCapability',
-        'PowerPlanSetting'
+        'PowerPlanSetting',
+        'AdvancedNetworkSharingSetting'
     )
     PrivateData          = @{
         PSData = @{
@@ -18,7 +19,8 @@
             Tags       = @(
                 'PSDscResource_WindowsSettings',
                 'PSDscResource_WindowsCapability',
-                'PSDscResource_PowerPlanSetting'
+                'PSDscResource_PowerPlanSetting',
+                'PSDscResource_AdvancedNetworkSharingSetting'
             )
 
             # Prerelease string of this module
