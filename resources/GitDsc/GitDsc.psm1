@@ -99,7 +99,7 @@ class GitClone {
         }
 
         if ($this.ExtraArgs) {
-            $cloneArgs = "$(this.ExtraArgs) $cloneArgs"
+            $cloneArgs = "$($this.ExtraArgs) $cloneArgs"
         }
         
         Invoke-GitClone($cloneArgs)
