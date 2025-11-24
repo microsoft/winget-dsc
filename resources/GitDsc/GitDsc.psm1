@@ -39,6 +39,9 @@ class GitClone {
     [DscProperty()]
     [string]$FolderName
 
+    [DscProperty()]
+    [string]$ExtraArgs
+
     [GitClone] Get() {
         $currentState = [GitClone]::new()
         $currentState.HttpsUrl = $this.HttpsUrl
@@ -93,6 +96,10 @@ class GitClone {
             $cloneArgs = "$($this.HttpsUrl) $($this.FolderName)"
         } else {
             $cloneArgs = $this.HttpsUrl
+        }
+
+        if ($this.ExtraArgs) {
+            $cloneArgs = "$($this.ExtraArgs) $cloneArgs"
         }
         
         Invoke-GitClone($cloneArgs)

@@ -52,6 +52,21 @@ Describe 'GitDsc' {
         $finalState.FolderName | Should -Be $desiredState.FolderName
     }
 
+    It 'Clones a repository without checkout and file contents' {
+        $desiredState = @{
+            HttpsUrl      = 'https://github.com/microsoft/winget-dsc.git'
+            RootDirectory = $env:TEMP
+            ExtraArgs     = '--filter=blob:none --no-checkout'
+        }
+
+        Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Set -Property $desiredState
+
+        $finalState = Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Get -Property $desiredState
+        $finalState.HttpsUrl | Should -Be $desiredState.HttpsUrl
+        $finalState.Ensure | Should -Be 'Present'
+        $finalState.RootDirectory | Should -Be $desiredState.RootDirectory
+    }
+
     It 'Should not clone a repository if an incorrect URL is provided' {
         $desiredState = @{
             HttpsUrl      = 'https://invalid-url.git'
