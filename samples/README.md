@@ -28,6 +28,10 @@ Sample configurations in the [Learn Tutorials](./Configuration%20files/Learn%20t
 
 Examples for a few specific DSC Resources are under the [DscResources](./DscResources/) directory.
 
+### Virtual Machines
+
+The VirtualMachines folder contains a script that will create two Virtual Machines. A Dev Tools Image VM, and a MSIX Packaging Toolkit VM. For more information see the [Virtual Machines README.md](./virtualmachines/readme.md)
+
 ### Create your own
 
 Writing YAML is a pain. To help you get started creating your own, there is a [sample tool](https://github.com/microsoft/winget-create/blob/main/Tools/WingetCreateMakeDSC.ps1) for authoring in the winget-create repo. It currently only supports adding apps, but give it a try and contribute to make it better!
