@@ -8,13 +8,23 @@
     Description          = 'DSC Resource for Windows Settings'
     PowerShellVersion    = '7.2'
     DscResourcesToExport = @(
-        'WindowsSettings'
+        'WindowsSettings',
+        'WindowsCapability',
+        'PowerPlanSetting',
+        'AdvancedNetworkSharingSetting',
+        'NetConnectionProfile',
+        'FirewallRule'
     )
     PrivateData          = @{
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags       = @(
-                'PSDscResource_WindowsSettings'
+                'PSDscResource_WindowsSettings',
+                'PSDscResource_WindowsCapability',
+                'PSDscResource_PowerPlanSetting',
+                'PSDscResource_AdvancedNetworkSharingSetting',
+                'PSDscResource_NetConnectionProfile',
+                'PSDscResource_FirewallRule'
             )
 
             # Prerelease string of this module
