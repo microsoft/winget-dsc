@@ -136,6 +136,7 @@ utf
 vhd
 vhdx
 videojs
+virtualmachines
 vmconnect
 vmms
 vms
