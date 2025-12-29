@@ -2689,9 +2689,11 @@ Write-Host "`n📝 Step 5: Creating post-installation script..." -ForegroundColo
 # Auto-detect WinGet config
 if (-not $WinGetConfigPath) {
     $possiblePaths = @(
-        "C:\Users\kevinla\source\repos\KevinLaProjects\DSC\devimage\WindowsDeveloperMachine.winget",
-        "$env:USERPROFILE\source\repos\KevinLaProjects\DSC\devimage\WindowsDeveloperMachine.winget"
+        "$PSScriptRoot\configuration.dsc.yaml",
+        "$PSScriptRoot\config.dsc.yaml",
+        "$env:USERPROFILE\source\repos\DSC\devimage\WindowsDeveloperMachine.winget"
     )
+
     
     foreach ($path in $possiblePaths) {
         if (Test-Path $path) {
@@ -2783,3 +2785,4 @@ Write-Host "$('='*70)" -ForegroundColor Cyan
 Write-Host ""
 
 #endregion Main Script
+
