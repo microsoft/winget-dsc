@@ -35,3 +35,4 @@ The VirtualMachines folder contains a script that will create two Virtual Machin
 ### Create your own
 
 Writing YAML is a pain. To help you get started creating your own, there is a [sample tool](https://github.com/microsoft/winget-create/blob/main/Tools/WingetCreateMakeDSC.ps1) for authoring in the winget-create repo. It currently only supports adding apps, but give it a try and contribute to make it better!
+
