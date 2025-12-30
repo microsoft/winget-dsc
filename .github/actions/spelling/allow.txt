@@ -146,6 +146,7 @@ vscpp
 vsextensions
 vsixmanifest
 vspackage
+VSupport
 vuejs
 wcm
 wcr
