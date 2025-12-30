@@ -196,7 +196,7 @@ function Test-HyperVSupport {
     $unsupportedEditions = @('Home', 'Home Single Language', 'Home Country Specific', 'Home Basic', 'Home Premium')
     
     foreach ($unsupported in $unsupportedEditions) {
-        if ($edition -match $unsupported) {
+        if ($edition -like "*$unsupported*") {
             return $false
         }
     }
