@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-#Requires -Version 7.0
-
 <# 
 .SYNOPSIS
   Complete Windows 11 VM automation using bootable VHD approach.
@@ -189,24 +187,97 @@ function Ensure-PowerShell7 {
     }
 }
 
+function Test-HyperVSupport {
+    # Check if Windows edition supports Hyper-V
+    $os = Get-CimInstance -ClassName Win32_OperatingSystem
+    $edition = $os.Caption
+    
+    # Windows Home editions don't support Hyper-V
+    $unsupportedEditions = @('Home', 'Home Single Language', 'Home Country Specific', 'Home Basic', 'Home Premium')
+    
+    foreach ($unsupported in $unsupportedEditions) {
+        if ($edition -match $unsupported) {
+            return $false
+        }
+    }
+    
+    return $true
+}
+
 function Enable-HyperV {
+    # First check if the Windows edition supports Hyper-V
+    if (-not (Test-HyperVSupport)) {
+        $os = Get-CimInstance -ClassName Win32_OperatingSystem
+        Write-Host "" -ForegroundColor Red
+        Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Red
+        Write-Host "  ❌ HYPER-V NOT SUPPORTED" -ForegroundColor Red
+        Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Your Windows edition does not support Hyper-V:" -ForegroundColor Yellow
+        Write-Host "  Current Edition: $($os.Caption)" -ForegroundColor White
+        Write-Host ""
+        Write-Host "Hyper-V is only available on:" -ForegroundColor Cyan
+        Write-Host "  • Windows 10/11 Pro" -ForegroundColor White
+        Write-Host "  • Windows 10/11 Enterprise" -ForegroundColor White
+        Write-Host "  • Windows 10/11 Education" -ForegroundColor White
+        Write-Host "  • Windows Server editions" -ForegroundColor White
+        Write-Host ""
+        Write-Host "Alternative solutions:" -ForegroundColor Cyan
+        Write-Host "  1. Upgrade to Windows Pro (`$199)" -ForegroundColor White
+        Write-Host "     https://www.microsoft.com/en-us/d/windows-11-pro/dg7gmgf0krt0" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "  2. Use VirtualBox (free alternative)" -ForegroundColor White
+        Write-Host "     https://www.virtualbox.org/" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "  3. Use VMware Workstation Player (free for personal use)" -ForegroundColor White
+        Write-Host "     https://www.vmware.com/products/workstation-player.html" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Red
+        Write-Host ""
+        throw "Hyper-V is not supported on this Windows edition."
+    }
+    
     $hyperv = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -ErrorAction SilentlyContinue
+    
+    if ($null -eq $hyperv) {
+        Write-Host "" -ForegroundColor Red
+        Write-Host "⚠️  Unable to detect Hyper-V feature." -ForegroundColor Yellow
+        Write-Host "   This may indicate:" -ForegroundColor Yellow
+        Write-Host "   • Hyper-V is not available on your Windows edition" -ForegroundColor Yellow
+        Write-Host "   • Virtualization is disabled in BIOS/UEFI" -ForegroundColor Yellow
+        Write-Host "   • Your system doesn't meet hardware requirements" -ForegroundColor Yellow
+        Write-Host ""
+        throw "Cannot proceed without Hyper-V support."
+    }
     
     if ($hyperv.State -ne 'Enabled') {
         Write-Host "⚠️  Hyper-V is not enabled." -ForegroundColor Yellow
         Write-Host "   Enabling Hyper-V..." -ForegroundColor Cyan
         
-        Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -NoRestart
-        
-        Write-Host "✓ Hyper-V enabled. A system restart is required." -ForegroundColor Green
-        Write-Host "`nRestart now? (Y/N): " -NoNewline -ForegroundColor White
-        $restart = Read-Host
-        
-        if ($restart -eq 'Y' -or $restart -eq 'y') {
-            Restart-Computer -Force
-        } else {
-            Write-Host "⚠️  Please restart your computer and run this script again." -ForegroundColor Yellow
-            exit
+        try {
+            Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -NoRestart -ErrorAction Stop
+            
+            Write-Host "✓ Hyper-V enabled. A system restart is required." -ForegroundColor Green
+            Write-Host "`nRestart now? (Y/N): " -NoNewline -ForegroundColor White
+            $restart = Read-Host
+            
+            if ($restart -eq 'Y' -or $restart -eq 'y') {
+                Restart-Computer -Force
+            } else {
+                Write-Host "⚠️  Please restart your computer and run this script again." -ForegroundColor Yellow
+                exit
+            }
+        }
+        catch {
+            Write-Host "" -ForegroundColor Red
+            Write-Host "❌ Failed to enable Hyper-V: $_" -ForegroundColor Red
+            Write-Host "" -ForegroundColor Yellow
+            Write-Host "Possible reasons:" -ForegroundColor Yellow
+            Write-Host "  • Virtualization is disabled in BIOS/UEFI" -ForegroundColor Yellow
+            Write-Host "  • Conflicting virtualization software (VirtualBox, VMware)" -ForegroundColor Yellow
+            Write-Host "  • Hardware doesn't support virtualization (Intel VT-x/AMD-V)" -ForegroundColor Yellow
+            Write-Host ""
+            throw
         }
     }
 }
