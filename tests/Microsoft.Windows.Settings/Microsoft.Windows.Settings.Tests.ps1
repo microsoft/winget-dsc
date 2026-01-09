@@ -36,6 +36,8 @@ BeforeAll {
     $script:originalSettings.ShowAccentColorOnTitleBarsAndWindowBorders = $currentState.ShowAccentColorOnTitleBarsAndWindowBorders
     $script:originalSettings.AutoColorization = $currentState.AutoColorization
     $script:originalSettings.StartFolders = $currentState.StartFolders
+    $script:originalSettings.NotifyOnUsbErrors = $currentState.NotifyOnUsbErrors
+    $script:originalSettings.NotifyOnWeakCharger = $currentState.NotifyOnWeakCharger
     
     Write-Host 'Original Settings captured:'
     Write-Host "  TaskbarAlignment: $($script:originalSettings.TaskbarAlignment)"
@@ -49,6 +51,8 @@ BeforeAll {
     Write-Host "  ShowAccentColorOnTitleBarsAndWindowBorders: $($script:originalSettings.ShowAccentColorOnTitleBarsAndWindowBorders)"
     Write-Host "  AutoColorization: $($script:originalSettings.AutoColorization)"
     Write-Host "  StartFolders: $($script:originalSettings.StartFolders -join ', ')"
+    Write-Host "  NotifyOnUsbErrors: $($script:originalSettings.NotifyOnUsbErrors)"
+    Write-Host "  NotifyOnWeakCharger: $($script:originalSettings.NotifyOnWeakCharger)"
 }
 
 AfterAll {
@@ -87,6 +91,12 @@ AfterAll {
     }
     if ($null -ne $script:originalSettings.StartFolders -and $script:originalSettings.StartFolders.Count -gt 0) {
         $restoreSettings.StartFolders = $script:originalSettings.StartFolders
+    }
+    if ($null -ne $script:originalSettings.NotifyOnUsbErrors) {
+        $restoreSettings.NotifyOnUsbErrors = $script:originalSettings.NotifyOnUsbErrors
+    }
+    if ($null -ne $script:originalSettings.NotifyOnWeakCharger) {
+        $restoreSettings.NotifyOnWeakCharger = $script:originalSettings.NotifyOnWeakCharger
     }
     
     # Restore admin-level settings only if running as admin
@@ -800,5 +810,84 @@ Describe 'WindowsSettings - Start Folders' {
         $settings.StartFolders = $currentState.StartFolders
         
         $settings.Test() | Should -Be $true
+    }
+}
+Describe 'WindowsSettings - USB' {
+    It 'Gets current NotifyOnUsbErrors' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.NotifyOnUsbErrors | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Gets current NotifyOnWeakCharger' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.NotifyOnWeakCharger | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets NotifyOnUsbErrors to true' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value to ensure change
+        $settings.NotifyOnUsbErrors = -not $currentState.NotifyOnUsbErrors
+        
+        $settings.Test() | Should -Be $false
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.NotifyOnUsbErrors | Should -Be $settings.NotifyOnUsbErrors
+    }
+    
+    It 'Sets NotifyOnWeakCharger to true' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value to ensure change
+        $settings.NotifyOnWeakCharger = -not $currentState.NotifyOnWeakCharger
+        
+        $settings.Test() | Should -Be $false
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.NotifyOnWeakCharger | Should -Be $settings.NotifyOnWeakCharger
+    }
+    
+    It 'Tests NotifyOnUsbErrors when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.NotifyOnUsbErrors = $currentState.NotifyOnUsbErrors
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests NotifyOnWeakCharger when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.NotifyOnWeakCharger = $currentState.NotifyOnWeakCharger
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests USB settings when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite values
+        $settings.NotifyOnUsbErrors = -not $currentState.NotifyOnUsbErrors
+        $settings.NotifyOnWeakCharger = -not $currentState.NotifyOnWeakCharger
+        
+        $settings.Test() | Should -Be $false
     }
 }

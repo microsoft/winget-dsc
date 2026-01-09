@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+# This configuration file enables USB notifications in Windows Settings.
+# It configures two settings:
+# 1. NotifyOnUsbErrors: Controls whether to show notifications when USB errors occur
+# 2. NotifyOnWeakCharger: Controls whether to show notifications when using a weak USB charger
+#
+# Registry path: HKCU:\Software\Microsoft\Shell\USB\
+
+properties:
+  resources:
+    - resource: Microsoft.Windows.Developer/OsVersion
+      id: osVersion
+      directives:
+        description: Verify OS version
+        allowPrerelease: true
+    - resource: Microsoft.Windows.Settings/WindowsSettings
+      dependsOn:
+        - osVersion
+      directives:
+        description: Configure USB notification settings
+      settings:
+        NotifyOnUsbErrors: true
+        NotifyOnWeakCharger: true
+  configurationVersion: 0.2.0

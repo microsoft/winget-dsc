@@ -16,6 +16,7 @@ The following two options are available for running a WinGet Configuration file 
    - `DefaultWindowsSettings.winget` - Sets default Windows settings
    - `DateTimeSettings.winget` - Configures timezone and automatic timezone update settings
    - `PersonalizationSettings.winget` - Configures personalization colors and Start menu folders
+   - `USBSettings.winget` - Configures USB notification settings
 2. Double-click the downloaded `.winget` file.
 
 ### 2. Windows Package Manager
@@ -48,3 +49,7 @@ Configures Windows personalization settings including transparency effects, acce
 
 > [!NOTE]
 > Valid Start folder names are: Documents, Downloads, Music, Pictures, Videos, Network, UserProfile, Explorer, Settings.
+
+### USBSettings.winget
+
+Configures USB notification settings including notifications for USB errors and weak charger warnings.

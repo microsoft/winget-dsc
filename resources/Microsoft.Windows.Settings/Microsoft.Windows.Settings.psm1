@@ -13,8 +13,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:DesktopRegistryPath = 'HKCU:\Control Panel\Desktop\'
     $global:DWMRegistryPath = 'HKCU:\Software\Microsoft\Windows\DWM\'
     $global:StartRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Start\'
+    $global:USBRegistryPath = 'HKCU:\Software\Microsoft\Shell\USB\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -58,6 +59,12 @@ class WindowsSettings {
     [DscProperty()]
     [string[]] $StartFolders
 
+    [Nullable[bool]]
+    $NotifyOnUsbErrors
+
+    [Nullable[bool]]
+    $NotifyOnWeakCharger
+
     hidden [bool] $RestartExplorer = $false
     hidden [string] $TaskbarAl = 'TaskbarAl'
     hidden [string] $AppsUseLightTheme = 'AppsUseLightTheme'
@@ -70,6 +77,8 @@ class WindowsSettings {
     hidden [string] $ColorPrevalenceDWMPropertyName = 'ColorPrevalence'
     hidden [string] $AutoColorizationPropertyName = 'AutoColorization'
     hidden [string] $VisiblePlacesPropertyName = 'VisiblePlaces'
+    hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
+    hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
     
     # Start folder GUIDs
     hidden [hashtable] $StartFolderGuids = @{
@@ -110,12 +119,16 @@ class WindowsSettings {
         # Get Start Folders
         $currentState.StartFolders = $this.GetStartFolders()
 
+        # Get USB settings
+        $currentState.NotifyOnUsbErrors = $this.GetNotifyOnUsbErrors()
+        $currentState.NotifyOnWeakCharger = $this.GetNotifyOnWeakCharger()
+
         return $currentState
     }
 
     [bool] Test() {
         $currentState = $this.Get()
-        return $this.TestTaskbarAlignment($currentState) -and $this.TestAppColorMode($currentState) -and $this.TestSystemColorMode($currentState) -and $this.TestDeveloperMode($currentState) -and $this.TestSetTimeZoneAutomatically($currentState) -and $this.TestTimeZone($currentState) -and $this.TestEnableTransparency($currentState) -and $this.TestShowAccentColorOnStartAndTaskbar($currentState) -and $this.TestShowAccentColorOnTitleBarsAndWindowBorders($currentState) -and $this.TestAutoColorization($currentState) -and $this.TestStartFolders($currentState)
+        return $this.TestTaskbarAlignment($currentState) -and $this.TestAppColorMode($currentState) -and $this.TestSystemColorMode($currentState) -and $this.TestDeveloperMode($currentState) -and $this.TestSetTimeZoneAutomatically($currentState) -and $this.TestTimeZone($currentState) -and $this.TestEnableTransparency($currentState) -and $this.TestShowAccentColorOnStartAndTaskbar($currentState) -and $this.TestShowAccentColorOnTitleBarsAndWindowBorders($currentState) -and $this.TestAutoColorization($currentState) -and $this.TestStartFolders($currentState) -and $this.TestNotifyOnUsbErrors($currentState) -and $this.TestNotifyOnWeakCharger($currentState)
     }
 
     [void] Set() {
@@ -221,6 +234,17 @@ class WindowsSettings {
         # Set Start Folders
         if (!$this.TestStartFolders($currentState)) {
             $this.SetStartFolders()
+        }
+
+        # Set USB settings
+        if (!$this.TestNotifyOnUsbErrors($currentState)) {
+            $value = $this.NotifyOnUsbErrors ? 1 : 0
+            Set-ItemProperty -Path $global:USBRegistryPath -Name $this.NotifyOnUsbErrorsPropertyName -Value $value -Type DWord
+        }
+
+        if (!$this.TestNotifyOnWeakCharger($currentState)) {
+            $value = $this.NotifyOnWeakCharger ? 1 : 0
+            Set-ItemProperty -Path $global:USBRegistryPath -Name $this.NotifyOnWeakChargerPropertyName -Value $value -Type DWord
         }
     }
 
@@ -453,6 +477,36 @@ class WindowsSettings {
         }
 
         return $true
+    }
+
+    [bool] TestNotifyOnUsbErrors([WindowsSettings] $currentState) {
+        if ($null -eq $this.NotifyOnUsbErrors) {
+            return $true
+        }
+        return $currentState.NotifyOnUsbErrors -eq $this.NotifyOnUsbErrors
+    }
+
+    [Nullable[bool]] GetNotifyOnUsbErrors() {
+        if (DoesRegistryKeyPropertyExist -Path $global:USBRegistryPath -Name $this.NotifyOnUsbErrorsPropertyName) {
+            $value = Get-ItemPropertyValue -Path $global:USBRegistryPath -Name $this.NotifyOnUsbErrorsPropertyName
+            return $value -eq 1
+        }
+        return $null
+    }
+
+    [bool] TestNotifyOnWeakCharger([WindowsSettings] $currentState) {
+        if ($null -eq $this.NotifyOnWeakCharger) {
+            return $true
+        }
+        return $currentState.NotifyOnWeakCharger -eq $this.NotifyOnWeakCharger
+    }
+
+    [Nullable[bool]] GetNotifyOnWeakCharger() {
+        if (DoesRegistryKeyPropertyExist -Path $global:USBRegistryPath -Name $this.NotifyOnWeakChargerPropertyName) {
+            $value = Get-ItemPropertyValue -Path $global:USBRegistryPath -Name $this.NotifyOnWeakChargerPropertyName
+            return $value -eq 1
+        }
+        return $null
     }
 }
 
