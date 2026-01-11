@@ -59,9 +59,11 @@ class WindowsSettings {
     [DscProperty()]
     [string[]] $StartFolders
 
+    [DscProperty()]
     [Nullable[bool]]
     $NotifyOnUsbErrors
 
+    [DscProperty()]
     [Nullable[bool]]
     $NotifyOnWeakCharger
 
