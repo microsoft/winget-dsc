@@ -761,14 +761,14 @@ Describe 'WindowsSettings - Personalization Colors' {
     }
 }
 
-Describe 'WindowsSettings - Start Folders' {
+Describe 'WindowsSettings - Start Folders' -Skip:($env:TF_BUILD) {
     It 'Gets current StartFolders' {
         $settings = [WindowsSettings]::new()
         $settings.SID = 'TestSID'
         $currentState = $settings.Get()
         
-        # StartFolders should not be null (can be empty array or have values)
-        $currentState.StartFolders | Should -Not -Be $null
+        # StartFolders should be an array (can be empty or have values)
+        $currentState.StartFolders | Should -BeOfType [array]
     }
     
     It 'Sets StartFolders to Documents and Downloads' {

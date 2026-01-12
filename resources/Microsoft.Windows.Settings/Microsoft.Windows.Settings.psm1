@@ -240,11 +240,19 @@ class WindowsSettings {
 
         # Set USB settings
         if (!$this.TestNotifyOnUsbErrors($currentState)) {
+            # Ensure registry path exists
+            if (-not (Test-Path $global:USBRegistryPath)) {
+                New-Item -Path $global:USBRegistryPath -Force | Out-Null
+            }
             $value = $this.NotifyOnUsbErrors ? 1 : 0
             Set-ItemProperty -Path $global:USBRegistryPath -Name $this.NotifyOnUsbErrorsPropertyName -Value $value -Type DWord
         }
 
         if (!$this.TestNotifyOnWeakCharger($currentState)) {
+            # Ensure registry path exists
+            if (-not (Test-Path $global:USBRegistryPath)) {
+                New-Item -Path $global:USBRegistryPath -Force | Out-Null
+            }
             $value = $this.NotifyOnWeakCharger ? 1 : 0
             Set-ItemProperty -Path $global:USBRegistryPath -Name $this.NotifyOnWeakChargerPropertyName -Value $value -Type DWord
         }
