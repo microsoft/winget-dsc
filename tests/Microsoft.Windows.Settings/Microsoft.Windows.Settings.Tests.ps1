@@ -761,7 +761,7 @@ Describe 'WindowsSettings - Personalization Colors' {
     }
 }
 
-Describe 'WindowsSettings - Start Folders' -Skip:($env:TF_BUILD) {
+Describe 'WindowsSettings - Start Folders' {
     It 'Gets current StartFolders' {
         $settings = [WindowsSettings]::new()
         $settings.SID = 'TestSID'
