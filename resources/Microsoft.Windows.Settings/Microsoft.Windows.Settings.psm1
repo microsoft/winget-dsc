@@ -398,12 +398,12 @@ class WindowsSettings {
     # Start Folders Helper Methods
     [string[]] GetStartFolders() {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:StartRegistryPath -Name $this.VisiblePlacesPropertyName)) {
-            return @()
+            return , @()  # Comma forces array type
         }
 
         try {
             $binaryData = Get-ItemPropertyValue -Path $global:StartRegistryPath -Name $this.VisiblePlacesPropertyName
-            $folders = @()
+            $folders = [System.Collections.ArrayList]@()
             
             # Parse binary data to extract GUIDs
             $guidPattern = '([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})'
@@ -414,15 +414,15 @@ class WindowsSettings {
                 # Find folder name from GUID
                 foreach ($folderName in $this.StartFolderGuids.Keys) {
                     if ($this.StartFolderGuids[$folderName] -eq $guid) {
-                        $folders += $folderName
+                        [void]$folders.Add($folderName)
                         break
                     }
                 }
             }
             
-            return $folders
+            return , [string[]]$folders.ToArray()  # Comma forces array type
         } catch {
-            return @()
+            return , @()  # Comma forces array type
         }
     }
 
