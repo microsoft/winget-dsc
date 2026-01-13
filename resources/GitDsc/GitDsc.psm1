@@ -16,9 +16,6 @@ enum ConfigLocation {
     local
 }
 
-# Assert once that Git is already installed on the system.
-Assert-Git
-
 #region DSCResources
 [DSCResource()]
 class GitClone {
@@ -43,6 +40,8 @@ class GitClone {
     [string]$ExtraArgs
 
     [GitClone] Get() {
+        Assert-Git
+
         $currentState = [GitClone]::new()
         $currentState.HttpsUrl = $this.HttpsUrl
         $currentState.RootDirectory = $this.RootDirectory

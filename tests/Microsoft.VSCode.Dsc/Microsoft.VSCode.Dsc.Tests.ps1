@@ -69,17 +69,17 @@ Describe 'VSCodeExtension' {
 
     It 'Sets desired extension from path' {
         BeforeDiscovery {
-            $script:out = Join-Path ([System.IO.Path]::GetTempPath()) 'ms-toolsai.jupyter-latest.vsix'
+            $script:outFile = Join-Path ([System.IO.Path]::GetTempPath()) 'ms-toolsai.jupyter-latest.vsix'
             $restParams = @{
                 Uri             = 'https://marketplace.visualstudio.com/_apis/public/gallery/publishers/ms-toolsai/vsextensions/jupyter/latest/vspackage'
                 UseBasicParsing = $true
-                OutFile         = $out
+                OutFile         = $script:outFile
             }
             Invoke-RestMethod @restParams
         }
 
         $desiredState = @{
-            Name = $out
+            Name = $outFile
         }
 
         $name = 'ms-toolsai.jupyter'
@@ -87,7 +87,7 @@ Describe 'VSCodeExtension' {
         Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Set -Property $desiredState
         $finalState = Invoke-DscResource -Name VSCodeExtension -ModuleName Microsoft.VSCode.Dsc -Method Get -Property $desiredState
         $finalState.Name | Should -Be $name
-        $finalState.Exist | Should -BeTrue
+        $finalState.Version | Should -Not -BeNullOrEmpty
     }
 
     It 'Sets prerelease extension' {

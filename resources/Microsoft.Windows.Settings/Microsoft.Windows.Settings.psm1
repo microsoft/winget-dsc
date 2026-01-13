@@ -398,7 +398,7 @@ class WindowsSettings {
     # Start Folders Helper Methods
     [string[]] GetStartFolders() {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:StartRegistryPath -Name $this.VisiblePlacesPropertyName)) {
-            return , @()  # Comma forces array type
+            return [string[]]@()
         }
 
         try {
@@ -420,9 +420,9 @@ class WindowsSettings {
                 }
             }
             
-            return , [string[]]$folders.ToArray()  # Comma forces array type
+            return [string[]]$folders.ToArray()
         } catch {
-            return , @()  # Comma forces array type
+            return [string[]]@()
         }
     }
 
@@ -469,8 +469,9 @@ class WindowsSettings {
             return $true
         }
 
-        $current = $currentState.StartFolders
-        $desired = $this.StartFolders
+        # Ensure we're working with arrays (PowerShell can unwrap single-item arrays to scalars)
+        $current = [array]$currentState.StartFolders
+        $desired = [array]$this.StartFolders
 
         if ($current.Count -ne $desired.Count) {
             return $false
