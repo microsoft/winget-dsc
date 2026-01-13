@@ -106,3 +106,6 @@ worktree
 xffff
 yml
 zhuangtongfa
+DWM
+tzautoupdate
+Usb

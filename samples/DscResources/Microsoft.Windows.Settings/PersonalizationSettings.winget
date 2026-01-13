@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration will modify Personalization Settings.                #
+# PowerShell module: Microsoft.Windows.Settings (v0.1.0-alpha)            #
+###########################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.Windows.Settings/WindowsSettings
+      directives:
+        allowPrerelease: true
+        description: Configure Personalization Settings
+        securityContext: current
+      settings:
+        # Color Settings
+        EnableTransparency: true
+        ShowAccentColorOnStartAndTaskbar: true
+        ShowAccentColorOnTitleBarsAndWindowBorders: true
+        AutoColorization: true
+        
+        # Start Menu Folders
+        # Valid folder names: Documents, Downloads, Music, Pictures, Videos, Network, UserProfile, Explorer, Settings
+        StartFolders:
+          - Documents
+          - Downloads
+          - Settings
+          - Explorer
+  configurationVersion: 0.2.0

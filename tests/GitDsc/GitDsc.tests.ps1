@@ -9,7 +9,12 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    Import-Module GitDsc -Force -ErrorAction SilentlyContinue
+    if ((Get-Module -Name PSDesiredStateConfiguration -ListAvailable).Version -ne '2.0.7') {
+        Write-Verbose -Message 'Installing PSDesiredStateConfiguration module.' -Verbose
+        Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck -RequiredVersion '2.0.7'
+    }
+
+    Import-Module GitDsc
 }
 
 Describe 'List available DSC resources' {
