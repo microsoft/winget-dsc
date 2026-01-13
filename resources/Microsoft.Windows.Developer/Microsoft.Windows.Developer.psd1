@@ -2,7 +2,7 @@
     RootModule           = 'Microsoft.Windows.Developer.psm1'
     ModuleVersion        = '0.1.0'
     GUID                 = '95b88c6a-1ebe-4c8d-aae5-c57368fa2b90'
-    Author               = 'Microsoft Corporation'
+    Author               = 'DscSamples'
     CompanyName          = 'Microsoft Corporation'
     Copyright            = '(c) Microsoft Corporation. All rights reserved.'
     Description          = 'DSC Resource for Windows'

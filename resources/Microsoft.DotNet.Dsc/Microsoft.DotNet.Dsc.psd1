@@ -2,7 +2,7 @@
     RootModule           = 'Microsoft.DotNet.Dsc.psm1'
     ModuleVersion        = '0.1.0'
     GUID                 = '2e883e78-1d91-4d08-9fc1-2a968e31009d'
-    Author               = 'Microsoft Corporation'
+    Author               = 'DscSamples'
     CompanyName          = 'Microsoft Corporation'
     Copyright            = '(c) Microsoft Corporation. All rights reserved.'
     Description          = 'DSC Resource for .NET SDK tool installer'
