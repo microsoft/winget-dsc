@@ -15,8 +15,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:StartRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Start\'
     $global:USBRegistryPath = 'HKCU:\Software\Microsoft\Shell\USB\'
     $global:TaskbarBadgesRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarBadges\'
+    $global:TaskbarGlomLevelRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarGlomLevel\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $global:TaskbarGlomLevelRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -75,6 +76,10 @@ class WindowsSettings {
     [DscProperty()]
     [Nullable[bool]] $DesktopTaskbarBadges
 
+    # Taskbar - Grouping Mode (not making enum to allow if user does not want to set)
+    [DscProperty()]
+    [string] $TaskbarGroupingMode
+
     [DscProperty()]
     [Nullable[bool]]
     $NotifyOnUsbErrors
@@ -99,6 +104,7 @@ class WindowsSettings {
     hidden [string] $StartTrackDocsPropertyName = 'Start_TrackDocs'
     hidden [string] $TaskbarBadgingPropertyName = 'SystemSettings_Taskbar_Badging'
     hidden [string] $DesktopTaskbarBadgingPropertyName = 'SystemSettings_DesktopTaskbar_Badging'
+    hidden [string] $TaskbarGroupingModePropertyName = 'SystemSettings_DesktopTaskbar_GroupingMode'
     hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
     hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
     
@@ -148,6 +154,7 @@ class WindowsSettings {
         # Get Taskbar settings
         $currentState.TaskbarBadges = $this.GetTaskbarBadges()
         $currentState.DesktopTaskbarBadges = $this.GetDesktopTaskbarBadges()
+        $currentState.TaskbarGroupingMode = $this.GetTaskbarGroupingMode()
 
         # Get USB settings
         $currentState.NotifyOnUsbErrors = $this.GetNotifyOnUsbErrors()
@@ -173,6 +180,7 @@ class WindowsSettings {
         $this.TestShowRecommendedList($currentState) -and
         $this.TestTaskbarBadges($currentState) -and
         $this.TestDesktopTaskbarBadges($currentState) -and
+        $this.TestTaskbarGroupingMode($currentState) -and
         $this.TestNotifyOnUsbErrors($currentState) -and
         $this.TestNotifyOnWeakCharger($currentState)
     }
@@ -313,6 +321,20 @@ class WindowsSettings {
             }
             $value = $this.DesktopTaskbarBadges ? '1' : '0'
             Set-ItemProperty -Path $global:TaskbarBadgesRegistryPath -Name $this.DesktopTaskbarBadgingPropertyName -Value $value -Type String
+        }
+
+        # Set TaskbarGroupingMode
+        if (!$this.TestTaskbarGroupingMode($currentState)) {
+            if (-not (Test-Path $global:TaskbarGlomLevelRegistryPath)) {
+                New-Item -Path $global:TaskbarGlomLevelRegistryPath -Force | Out-Null
+            }
+            $value = switch ($this.TaskbarGroupingMode) {
+                'Always' { '0' }
+                'WhenFull' { '1' }
+                'Never' { '2' }
+                default { throw "Invalid TaskbarGroupingMode: $($this.TaskbarGroupingMode). Valid values are: Always, WhenFull, Never" }
+            }
+            Set-ItemProperty -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName -Value $value -Type String
         }
 
         # Set USB settings
@@ -627,6 +649,26 @@ class WindowsSettings {
             return $true
         }
         return $currentState.DesktopTaskbarBadges -eq $this.DesktopTaskbarBadges
+    }
+
+    [string] GetTaskbarGroupingMode() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName
+        return switch ($value) {
+            '0' { 'Always' }
+            '1' { 'WhenFull' }
+            '2' { 'Never' }
+            default { $null }
+        }
+    }
+
+    [bool] TestTaskbarGroupingMode([WindowsSettings] $currentState) {
+        if ([string]::IsNullOrEmpty($this.TaskbarGroupingMode)) {
+            return $true
+        }
+        return $currentState.TaskbarGroupingMode -eq $this.TaskbarGroupingMode
     }
 
     [bool] TestNotifyOnUsbErrors([WindowsSettings] $currentState) {

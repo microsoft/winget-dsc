@@ -40,6 +40,7 @@ BeforeAll {
     $script:originalSettings.ShowRecommendedList = $currentState.ShowRecommendedList
     $script:originalSettings.TaskbarBadges = $currentState.TaskbarBadges
     $script:originalSettings.DesktopTaskbarBadges = $currentState.DesktopTaskbarBadges
+    $script:originalSettings.TaskbarGroupingMode = $currentState.TaskbarGroupingMode
     $script:originalSettings.NotifyOnUsbErrors = $currentState.NotifyOnUsbErrors
     $script:originalSettings.NotifyOnWeakCharger = $currentState.NotifyOnWeakCharger
     
@@ -59,6 +60,7 @@ BeforeAll {
     Write-Host "  ShowRecommendedList: $($script:originalSettings.ShowRecommendedList)"
     Write-Host "  TaskbarBadges: $($script:originalSettings.TaskbarBadges)"
     Write-Host "  DesktopTaskbarBadges: $($script:originalSettings.DesktopTaskbarBadges)"
+    Write-Host "  TaskbarGroupingMode: $($script:originalSettings.TaskbarGroupingMode)"
     Write-Host "  NotifyOnUsbErrors: $($script:originalSettings.NotifyOnUsbErrors)"
     Write-Host "  NotifyOnWeakCharger: $($script:originalSettings.NotifyOnWeakCharger)"
 }
@@ -111,6 +113,9 @@ AfterAll {
     }
     if ($null -ne $script:originalSettings.DesktopTaskbarBadges) {
         $restoreSettings.DesktopTaskbarBadges = $script:originalSettings.DesktopTaskbarBadges
+    }
+    if (-not [string]::IsNullOrEmpty($script:originalSettings.TaskbarGroupingMode)) {
+        $restoreSettings.TaskbarGroupingMode = $script:originalSettings.TaskbarGroupingMode
     }
     if ($null -ne $script:originalSettings.NotifyOnUsbErrors) {
         $restoreSettings.NotifyOnUsbErrors = $script:originalSettings.NotifyOnUsbErrors
@@ -1046,6 +1051,67 @@ Describe 'WindowsSettings - DesktopTaskbarBadges' {
         $settings.DesktopTaskbarBadges = -not $currentState.DesktopTaskbarBadges
         
         $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - TaskbarGroupingMode' {
+    It 'Gets current TaskbarGroupingMode' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either Always, WhenFull, Never, or null
+        $currentState.TaskbarGroupingMode | Should -BeIn @('Always', 'WhenFull', 'Never', $null)
+    }
+    
+    It 'Sets TaskbarGroupingMode to Always' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarGroupingMode = 'Always'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarGroupingMode | Should -Be 'Always'
+    }
+    
+    It 'Sets TaskbarGroupingMode to WhenFull' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarGroupingMode = 'WhenFull'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarGroupingMode | Should -Be 'WhenFull'
+    }
+    
+    It 'Sets TaskbarGroupingMode to Never' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarGroupingMode = 'Never'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarGroupingMode | Should -Be 'Never'
+    }
+    
+    It 'Tests TaskbarGroupingMode when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.TaskbarGroupingMode = $currentState.TaskbarGroupingMode
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Throws error for invalid TaskbarGroupingMode' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarGroupingMode = 'InvalidValue'
+        
+        { $settings.Set() } | Should -Throw '*Invalid TaskbarGroupingMode*'
     }
 }
 

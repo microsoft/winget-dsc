@@ -38,4 +38,7 @@ properties:
         TaskbarBadges: true
         # DesktopTaskbarBadges: Enable badges for apps on the desktop taskbar
         DesktopTaskbarBadges: true
+        # TaskbarGroupingMode: Control how taskbar buttons are grouped
+        # Valid values: Always, WhenFull, Never
+        TaskbarGroupingMode: Always
   configurationVersion: 0.2.0
