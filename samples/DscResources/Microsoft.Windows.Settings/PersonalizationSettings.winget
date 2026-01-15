@@ -41,4 +41,8 @@ properties:
         # TaskbarGroupingMode: Control how taskbar buttons are grouped
         # Valid values: Always, WhenFull, Never
         TaskbarGroupingMode: Always
+        # TaskbarMultiMon: Show taskbar on multiple displays
+        TaskbarMultiMon: true
+        # DesktopTaskbarMultiMon: Show taskbar on multiple displays (desktop)
+        DesktopTaskbarMultiMon: true
   configurationVersion: 0.2.0

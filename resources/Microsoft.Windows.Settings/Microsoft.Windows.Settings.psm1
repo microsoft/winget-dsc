@@ -16,8 +16,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:USBRegistryPath = 'HKCU:\Software\Microsoft\Shell\USB\'
     $global:TaskbarBadgesRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarBadges\'
     $global:TaskbarGlomLevelRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarGlomLevel\'
+    $global:TaskbarMultiMonRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarEnabled\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $global:TaskbarGlomLevelRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $global:TaskbarGlomLevelRegistryPath = $global:TaskbarMultiMonRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -80,6 +81,13 @@ class WindowsSettings {
     [DscProperty()]
     [string] $TaskbarGroupingMode
 
+    # Taskbar - Multi-Monitor
+    [DscProperty()]
+    [Nullable[bool]] $TaskbarMultiMon
+
+    [DscProperty()]
+    [Nullable[bool]] $DesktopTaskbarMultiMon
+
     [DscProperty()]
     [Nullable[bool]]
     $NotifyOnUsbErrors
@@ -105,6 +113,8 @@ class WindowsSettings {
     hidden [string] $TaskbarBadgingPropertyName = 'SystemSettings_Taskbar_Badging'
     hidden [string] $DesktopTaskbarBadgingPropertyName = 'SystemSettings_DesktopTaskbar_Badging'
     hidden [string] $TaskbarGroupingModePropertyName = 'SystemSettings_DesktopTaskbar_GroupingMode'
+    hidden [string] $TaskbarMultiMonPropertyName = 'SystemSettings_Taskbar_MultiMon'
+    hidden [string] $DesktopTaskbarMultiMonPropertyName = 'SystemSettings_DesktopTaskbar_MultiMon'
     hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
     hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
     
@@ -155,6 +165,8 @@ class WindowsSettings {
         $currentState.TaskbarBadges = $this.GetTaskbarBadges()
         $currentState.DesktopTaskbarBadges = $this.GetDesktopTaskbarBadges()
         $currentState.TaskbarGroupingMode = $this.GetTaskbarGroupingMode()
+        $currentState.TaskbarMultiMon = $this.GetTaskbarMultiMon()
+        $currentState.DesktopTaskbarMultiMon = $this.GetDesktopTaskbarMultiMon()
 
         # Get USB settings
         $currentState.NotifyOnUsbErrors = $this.GetNotifyOnUsbErrors()
@@ -181,6 +193,8 @@ class WindowsSettings {
         $this.TestTaskbarBadges($currentState) -and
         $this.TestDesktopTaskbarBadges($currentState) -and
         $this.TestTaskbarGroupingMode($currentState) -and
+        $this.TestTaskbarMultiMon($currentState) -and
+        $this.TestDesktopTaskbarMultiMon($currentState) -and
         $this.TestNotifyOnUsbErrors($currentState) -and
         $this.TestNotifyOnWeakCharger($currentState)
     }
@@ -335,6 +349,24 @@ class WindowsSettings {
                 default { throw "Invalid TaskbarGroupingMode: $($this.TaskbarGroupingMode). Valid values are: Always, WhenFull, Never" }
             }
             Set-ItemProperty -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName -Value $value -Type String
+        }
+
+        # Set TaskbarMultiMon
+        if (!$this.TestTaskbarMultiMon($currentState)) {
+            if (-not (Test-Path $global:TaskbarMultiMonRegistryPath)) {
+                New-Item -Path $global:TaskbarMultiMonRegistryPath -Force | Out-Null
+            }
+            $value = $this.TaskbarMultiMon ? '1' : '0'
+            Set-ItemProperty -Path $global:TaskbarMultiMonRegistryPath -Name $this.TaskbarMultiMonPropertyName -Value $value -Type String
+        }
+
+        # Set DesktopTaskbarMultiMon
+        if (!$this.TestDesktopTaskbarMultiMon($currentState)) {
+            if (-not (Test-Path $global:TaskbarMultiMonRegistryPath)) {
+                New-Item -Path $global:TaskbarMultiMonRegistryPath -Force | Out-Null
+            }
+            $value = $this.DesktopTaskbarMultiMon ? '1' : '0'
+            Set-ItemProperty -Path $global:TaskbarMultiMonRegistryPath -Name $this.DesktopTaskbarMultiMonPropertyName -Value $value -Type String
         }
 
         # Set USB settings
@@ -669,6 +701,36 @@ class WindowsSettings {
             return $true
         }
         return $currentState.TaskbarGroupingMode -eq $this.TaskbarGroupingMode
+    }
+
+    [Nullable[bool]] GetTaskbarMultiMon() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonRegistryPath -Name $this.TaskbarMultiMonPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonRegistryPath -Name $this.TaskbarMultiMonPropertyName
+        return $value -eq '1'
+    }
+
+    [bool] TestTaskbarMultiMon([WindowsSettings] $currentState) {
+        if ($null -eq $this.TaskbarMultiMon) {
+            return $true
+        }
+        return $currentState.TaskbarMultiMon -eq $this.TaskbarMultiMon
+    }
+
+    [Nullable[bool]] GetDesktopTaskbarMultiMon() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonRegistryPath -Name $this.DesktopTaskbarMultiMonPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonRegistryPath -Name $this.DesktopTaskbarMultiMonPropertyName
+        return $value -eq '1'
+    }
+
+    [bool] TestDesktopTaskbarMultiMon([WindowsSettings] $currentState) {
+        if ($null -eq $this.DesktopTaskbarMultiMon) {
+            return $true
+        }
+        return $currentState.DesktopTaskbarMultiMon -eq $this.DesktopTaskbarMultiMon
     }
 
     [bool] TestNotifyOnUsbErrors([WindowsSettings] $currentState) {
