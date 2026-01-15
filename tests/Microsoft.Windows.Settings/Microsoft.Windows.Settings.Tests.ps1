@@ -37,6 +37,7 @@ BeforeAll {
     $script:originalSettings.AutoColorization = $currentState.AutoColorization
     $script:originalSettings.StartFolders = $currentState.StartFolders
     $script:originalSettings.ShowRecentList = $currentState.ShowRecentList
+    $script:originalSettings.ShowRecommendedList = $currentState.ShowRecommendedList
     $script:originalSettings.NotifyOnUsbErrors = $currentState.NotifyOnUsbErrors
     $script:originalSettings.NotifyOnWeakCharger = $currentState.NotifyOnWeakCharger
     
@@ -53,6 +54,7 @@ BeforeAll {
     Write-Host "  AutoColorization: $($script:originalSettings.AutoColorization)"
     Write-Host "  StartFolders: $($script:originalSettings.StartFolders -join ', ')"
     Write-Host "  ShowRecentList: $($script:originalSettings.ShowRecentList)"
+    Write-Host "  ShowRecommendedList: $($script:originalSettings.ShowRecommendedList)"
     Write-Host "  NotifyOnUsbErrors: $($script:originalSettings.NotifyOnUsbErrors)"
     Write-Host "  NotifyOnWeakCharger: $($script:originalSettings.NotifyOnWeakCharger)"
 }
@@ -96,6 +98,9 @@ AfterAll {
     }
     if ($null -ne $script:originalSettings.ShowRecentList) {
         $restoreSettings.ShowRecentList = $script:originalSettings.ShowRecentList
+    }
+    if ($null -ne $script:originalSettings.ShowRecommendedList) {
+        $restoreSettings.ShowRecommendedList = $script:originalSettings.ShowRecommendedList
     }
     if ($null -ne $script:originalSettings.NotifyOnUsbErrors) {
         $restoreSettings.NotifyOnUsbErrors = $script:originalSettings.NotifyOnUsbErrors
@@ -872,6 +877,59 @@ Describe 'WindowsSettings - ShowRecentList' {
         
         # Set opposite value
         $settings.ShowRecentList = -not $currentState.ShowRecentList
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - ShowRecommendedList' {
+    It 'Gets current ShowRecommendedList' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.ShowRecommendedList | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets ShowRecommendedList to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.ShowRecommendedList = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.ShowRecommendedList | Should -Be $true
+    }
+    
+    It 'Sets ShowRecommendedList to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.ShowRecommendedList = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.ShowRecommendedList | Should -Be $false
+    }
+    
+    It 'Tests ShowRecommendedList when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.ShowRecommendedList = $currentState.ShowRecommendedList
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests ShowRecommendedList when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.ShowRecommendedList = -not $currentState.ShowRecommendedList
         
         $settings.Test() | Should -Be $false
     }

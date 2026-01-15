@@ -30,4 +30,6 @@ properties:
         # Start Layout Settings
         # ShowRecentList: Show recently installed apps in Start
         ShowRecentList: true
+        # ShowRecommendedList: Show recommended files in Start, recent files in File Explorer, and items in Jump Lists
+        ShowRecommendedList: true
   configurationVersion: 0.2.0

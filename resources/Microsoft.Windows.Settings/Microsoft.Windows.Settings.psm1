@@ -63,6 +63,10 @@ class WindowsSettings {
     [DscProperty()]
     [Nullable[bool]] $ShowRecentList
 
+    # Personalization - Recommended files
+    [DscProperty()]
+    [Nullable[bool]] $ShowRecommendedList
+
     [DscProperty()]
     [Nullable[bool]]
     $NotifyOnUsbErrors
@@ -84,6 +88,7 @@ class WindowsSettings {
     hidden [string] $AutoColorizationPropertyName = 'AutoColorization'
     hidden [string] $VisiblePlacesPropertyName = 'VisiblePlaces'
     hidden [string] $ShowRecentListPropertyName = 'ShowRecentList'
+    hidden [string] $StartTrackDocsPropertyName = 'Start_TrackDocs'
     hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
     hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
     
@@ -128,6 +133,7 @@ class WindowsSettings {
 
         # Get Start Layout settings
         $currentState.ShowRecentList = $this.GetShowRecentList()
+        $currentState.ShowRecommendedList = $this.GetShowRecommendedList()
 
         # Get USB settings
         $currentState.NotifyOnUsbErrors = $this.GetNotifyOnUsbErrors()
@@ -150,6 +156,7 @@ class WindowsSettings {
         $this.TestAutoColorization($currentState) -and
         $this.TestStartFolders($currentState) -and
         $this.TestShowRecentList($currentState) -and
+        $this.TestShowRecommendedList($currentState) -and
         $this.TestNotifyOnUsbErrors($currentState) -and
         $this.TestNotifyOnWeakCharger($currentState)
     }
@@ -267,6 +274,12 @@ class WindowsSettings {
             }
             $value = $this.ShowRecentList ? 1 : 0
             Set-ItemProperty -Path $global:StartRegistryPath -Name $this.ShowRecentListPropertyName -Value $value -Type DWord
+        }
+
+        # Set ShowRecommendedList (Start_TrackDocs)
+        if (!$this.TestShowRecommendedList($currentState)) {
+            $value = $this.ShowRecommendedList ? 1 : 0
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.StartTrackDocsPropertyName -Value $value -Type DWord
         }
 
         # Set USB settings
@@ -535,6 +548,21 @@ class WindowsSettings {
             return $true
         }
         return $currentState.ShowRecentList -eq $this.ShowRecentList
+    }
+
+    [Nullable[bool]] GetShowRecommendedList() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.StartTrackDocsPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.StartTrackDocsPropertyName
+        return $value -eq 1
+    }
+
+    [bool] TestShowRecommendedList([WindowsSettings] $currentState) {
+        if ($null -eq $this.ShowRecommendedList) {
+            return $true
+        }
+        return $currentState.ShowRecommendedList -eq $this.ShowRecommendedList
     }
 
     [bool] TestNotifyOnUsbErrors([WindowsSettings] $currentState) {
