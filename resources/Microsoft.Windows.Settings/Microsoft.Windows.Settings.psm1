@@ -14,8 +14,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:DWMRegistryPath = 'HKCU:\Software\Microsoft\Windows\DWM\'
     $global:StartRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Start\'
     $global:USBRegistryPath = 'HKCU:\Software\Microsoft\Shell\USB\'
+    $global:TaskbarBadgesRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarBadges\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -67,6 +68,13 @@ class WindowsSettings {
     [DscProperty()]
     [Nullable[bool]] $ShowRecommendedList
 
+    # Taskbar - Badges
+    [DscProperty()]
+    [Nullable[bool]] $TaskbarBadges
+
+    [DscProperty()]
+    [Nullable[bool]] $DesktopTaskbarBadges
+
     [DscProperty()]
     [Nullable[bool]]
     $NotifyOnUsbErrors
@@ -89,6 +97,8 @@ class WindowsSettings {
     hidden [string] $VisiblePlacesPropertyName = 'VisiblePlaces'
     hidden [string] $ShowRecentListPropertyName = 'ShowRecentList'
     hidden [string] $StartTrackDocsPropertyName = 'Start_TrackDocs'
+    hidden [string] $TaskbarBadgingPropertyName = 'SystemSettings_Taskbar_Badging'
+    hidden [string] $DesktopTaskbarBadgingPropertyName = 'SystemSettings_DesktopTaskbar_Badging'
     hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
     hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
     
@@ -135,6 +145,10 @@ class WindowsSettings {
         $currentState.ShowRecentList = $this.GetShowRecentList()
         $currentState.ShowRecommendedList = $this.GetShowRecommendedList()
 
+        # Get Taskbar settings
+        $currentState.TaskbarBadges = $this.GetTaskbarBadges()
+        $currentState.DesktopTaskbarBadges = $this.GetDesktopTaskbarBadges()
+
         # Get USB settings
         $currentState.NotifyOnUsbErrors = $this.GetNotifyOnUsbErrors()
         $currentState.NotifyOnWeakCharger = $this.GetNotifyOnWeakCharger()
@@ -157,6 +171,8 @@ class WindowsSettings {
         $this.TestStartFolders($currentState) -and
         $this.TestShowRecentList($currentState) -and
         $this.TestShowRecommendedList($currentState) -and
+        $this.TestTaskbarBadges($currentState) -and
+        $this.TestDesktopTaskbarBadges($currentState) -and
         $this.TestNotifyOnUsbErrors($currentState) -and
         $this.TestNotifyOnWeakCharger($currentState)
     }
@@ -268,7 +284,6 @@ class WindowsSettings {
 
         # Set Start Layout settings
         if (!$this.TestShowRecentList($currentState)) {
-            # Ensure registry path exists
             if (-not (Test-Path $global:StartRegistryPath)) {
                 New-Item -Path $global:StartRegistryPath -Force | Out-Null
             }
@@ -280,6 +295,24 @@ class WindowsSettings {
         if (!$this.TestShowRecommendedList($currentState)) {
             $value = $this.ShowRecommendedList ? 1 : 0
             Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.StartTrackDocsPropertyName -Value $value -Type DWord
+        }
+
+        # Set TaskbarBadges
+        if (!$this.TestTaskbarBadges($currentState)) {
+            if (-not (Test-Path $global:TaskbarBadgesRegistryPath)) {
+                New-Item -Path $global:TaskbarBadgesRegistryPath -Force | Out-Null
+            }
+            $value = $this.TaskbarBadges ? '1' : '0'
+            Set-ItemProperty -Path $global:TaskbarBadgesRegistryPath -Name $this.TaskbarBadgingPropertyName -Value $value -Type String
+        }
+
+        # Set DesktopTaskbarBadges
+        if (!$this.TestDesktopTaskbarBadges($currentState)) {
+            if (-not (Test-Path $global:TaskbarBadgesRegistryPath)) {
+                New-Item -Path $global:TaskbarBadgesRegistryPath -Force | Out-Null
+            }
+            $value = $this.DesktopTaskbarBadges ? '1' : '0'
+            Set-ItemProperty -Path $global:TaskbarBadgesRegistryPath -Name $this.DesktopTaskbarBadgingPropertyName -Value $value -Type String
         }
 
         # Set USB settings
@@ -563,6 +596,37 @@ class WindowsSettings {
             return $true
         }
         return $currentState.ShowRecommendedList -eq $this.ShowRecommendedList
+    }
+
+    # Taskbar Helper Methods
+    [Nullable[bool]] GetTaskbarBadges() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarBadgesRegistryPath -Name $this.TaskbarBadgingPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarBadgesRegistryPath -Name $this.TaskbarBadgingPropertyName
+        return $value -eq '1'
+    }
+
+    [bool] TestTaskbarBadges([WindowsSettings] $currentState) {
+        if ($null -eq $this.TaskbarBadges) {
+            return $true
+        }
+        return $currentState.TaskbarBadges -eq $this.TaskbarBadges
+    }
+
+    [Nullable[bool]] GetDesktopTaskbarBadges() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarBadgesRegistryPath -Name $this.DesktopTaskbarBadgingPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarBadgesRegistryPath -Name $this.DesktopTaskbarBadgingPropertyName
+        return $value -eq '1'
+    }
+
+    [bool] TestDesktopTaskbarBadges([WindowsSettings] $currentState) {
+        if ($null -eq $this.DesktopTaskbarBadges) {
+            return $true
+        }
+        return $currentState.DesktopTaskbarBadges -eq $this.DesktopTaskbarBadges
     }
 
     [bool] TestNotifyOnUsbErrors([WindowsSettings] $currentState) {

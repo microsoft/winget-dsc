@@ -38,6 +38,8 @@ BeforeAll {
     $script:originalSettings.StartFolders = $currentState.StartFolders
     $script:originalSettings.ShowRecentList = $currentState.ShowRecentList
     $script:originalSettings.ShowRecommendedList = $currentState.ShowRecommendedList
+    $script:originalSettings.TaskbarBadges = $currentState.TaskbarBadges
+    $script:originalSettings.DesktopTaskbarBadges = $currentState.DesktopTaskbarBadges
     $script:originalSettings.NotifyOnUsbErrors = $currentState.NotifyOnUsbErrors
     $script:originalSettings.NotifyOnWeakCharger = $currentState.NotifyOnWeakCharger
     
@@ -55,6 +57,8 @@ BeforeAll {
     Write-Host "  StartFolders: $($script:originalSettings.StartFolders -join ', ')"
     Write-Host "  ShowRecentList: $($script:originalSettings.ShowRecentList)"
     Write-Host "  ShowRecommendedList: $($script:originalSettings.ShowRecommendedList)"
+    Write-Host "  TaskbarBadges: $($script:originalSettings.TaskbarBadges)"
+    Write-Host "  DesktopTaskbarBadges: $($script:originalSettings.DesktopTaskbarBadges)"
     Write-Host "  NotifyOnUsbErrors: $($script:originalSettings.NotifyOnUsbErrors)"
     Write-Host "  NotifyOnWeakCharger: $($script:originalSettings.NotifyOnWeakCharger)"
 }
@@ -101,6 +105,12 @@ AfterAll {
     }
     if ($null -ne $script:originalSettings.ShowRecommendedList) {
         $restoreSettings.ShowRecommendedList = $script:originalSettings.ShowRecommendedList
+    }
+    if ($null -ne $script:originalSettings.TaskbarBadges) {
+        $restoreSettings.TaskbarBadges = $script:originalSettings.TaskbarBadges
+    }
+    if ($null -ne $script:originalSettings.DesktopTaskbarBadges) {
+        $restoreSettings.DesktopTaskbarBadges = $script:originalSettings.DesktopTaskbarBadges
     }
     if ($null -ne $script:originalSettings.NotifyOnUsbErrors) {
         $restoreSettings.NotifyOnUsbErrors = $script:originalSettings.NotifyOnUsbErrors
@@ -888,7 +898,6 @@ Describe 'WindowsSettings - ShowRecommendedList' {
         $settings.SID = 'TestSID'
         $currentState = $settings.Get()
         
-        # Should be either $true, $false, or $null
         $currentState.ShowRecommendedList | Should -BeIn @($true, $false, $null)
     }
     
@@ -930,6 +939,111 @@ Describe 'WindowsSettings - ShowRecommendedList' {
         
         # Set opposite value
         $settings.ShowRecommendedList = -not $currentState.ShowRecommendedList
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - TaskbarBadges' {
+    It 'Gets current TaskbarBadges' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        $currentState.TaskbarBadges | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets TaskbarBadges to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarBadges = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarBadges | Should -Be $true
+    }
+    
+    It 'Sets TaskbarBadges to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarBadges = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarBadges | Should -Be $false
+    }
+    
+    It 'Tests TaskbarBadges when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.TaskbarBadges = $currentState.TaskbarBadges
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests TaskbarBadges when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.TaskbarBadges = -not $currentState.TaskbarBadges
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - DesktopTaskbarBadges' {
+    It 'Gets current DesktopTaskbarBadges' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.DesktopTaskbarBadges | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets DesktopTaskbarBadges to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarBadges = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarBadges | Should -Be $true
+    }
+    
+    It 'Sets DesktopTaskbarBadges to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarBadges = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarBadges | Should -Be $false
+    }
+    
+    It 'Tests DesktopTaskbarBadges when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.DesktopTaskbarBadges = $currentState.DesktopTaskbarBadges
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests DesktopTaskbarBadges when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.DesktopTaskbarBadges = -not $currentState.DesktopTaskbarBadges
         
         $settings.Test() | Should -Be $false
     }
