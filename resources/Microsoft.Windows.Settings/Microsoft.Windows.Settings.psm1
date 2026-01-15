@@ -14,8 +14,12 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:DWMRegistryPath = 'HKCU:\Software\Microsoft\Windows\DWM\'
     $global:StartRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Start\'
     $global:USBRegistryPath = 'HKCU:\Software\Microsoft\Shell\USB\'
+    $global:TaskbarBadgesRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarBadges\'
+    $global:TaskbarGlomLevelRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarGlomLevel\'
+    $global:TaskbarMultiMonRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarEnabled\'
+    $global:TaskbarMultiMonModeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarMode\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $global:TaskbarGlomLevelRegistryPath = $global:TaskbarMultiMonRegistryPath = $global:TaskbarMultiMonModeRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -59,6 +63,39 @@ class WindowsSettings {
     [DscProperty()]
     [string[]] $StartFolders
 
+    # Personalization - Start Layout
+    [DscProperty()]
+    [Nullable[bool]] $ShowRecentList
+
+    # Personalization - Recommended files
+    [DscProperty()]
+    [Nullable[bool]] $ShowRecommendedList
+
+    # Taskbar - Badges
+    [DscProperty()]
+    [Nullable[bool]] $TaskbarBadges
+
+    [DscProperty()]
+    [Nullable[bool]] $DesktopTaskbarBadges
+
+    # Taskbar - Grouping Mode (not making enum to allow if user does not want to set)
+    [DscProperty()]
+    [string] $TaskbarGroupingMode
+
+    # Taskbar - Multi-Monitor
+    [DscProperty()]
+    [Nullable[bool]] $TaskbarMultiMon
+
+    [DscProperty()]
+    [Nullable[bool]] $DesktopTaskbarMultiMon
+
+    # Taskbar - Multi-Monitor Mode
+    [DscProperty()]
+    [string] $TaskbarMultiMonMode
+
+    [DscProperty()]
+    [string] $DesktopTaskbarMultiMonMode
+
     [DscProperty()]
     [Nullable[bool]]
     $NotifyOnUsbErrors
@@ -79,6 +116,15 @@ class WindowsSettings {
     hidden [string] $ColorPrevalenceDWMPropertyName = 'ColorPrevalence'
     hidden [string] $AutoColorizationPropertyName = 'AutoColorization'
     hidden [string] $VisiblePlacesPropertyName = 'VisiblePlaces'
+    hidden [string] $ShowRecentListPropertyName = 'ShowRecentList'
+    hidden [string] $StartTrackDocsPropertyName = 'Start_TrackDocs'
+    hidden [string] $TaskbarBadgingPropertyName = 'SystemSettings_Taskbar_Badging'
+    hidden [string] $DesktopTaskbarBadgingPropertyName = 'SystemSettings_DesktopTaskbar_Badging'
+    hidden [string] $TaskbarGroupingModePropertyName = 'SystemSettings_DesktopTaskbar_GroupingMode'
+    hidden [string] $TaskbarMultiMonPropertyName = 'SystemSettings_Taskbar_MultiMon'
+    hidden [string] $DesktopTaskbarMultiMonPropertyName = 'SystemSettings_DesktopTaskbar_MultiMon'
+    hidden [string] $TaskbarMultiMonModePropertyName = 'SystemSettings_Taskbar_MultiMonTaskbarMode'
+    hidden [string] $DesktopTaskbarMultiMonModePropertyName = 'SystemSettings_DesktopTaskbar_MultiMonTaskbarMode'
     hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
     hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
     
@@ -121,6 +167,19 @@ class WindowsSettings {
         # Get Start Folders
         $currentState.StartFolders = $this.GetStartFolders()
 
+        # Get Start Layout settings
+        $currentState.ShowRecentList = $this.GetShowRecentList()
+        $currentState.ShowRecommendedList = $this.GetShowRecommendedList()
+
+        # Get Taskbar settings
+        $currentState.TaskbarBadges = $this.GetTaskbarBadges()
+        $currentState.DesktopTaskbarBadges = $this.GetDesktopTaskbarBadges()
+        $currentState.TaskbarGroupingMode = $this.GetTaskbarGroupingMode()
+        $currentState.TaskbarMultiMon = $this.GetTaskbarMultiMon()
+        $currentState.DesktopTaskbarMultiMon = $this.GetDesktopTaskbarMultiMon()
+        $currentState.TaskbarMultiMonMode = $this.GetTaskbarMultiMonMode()
+        $currentState.DesktopTaskbarMultiMonMode = $this.GetDesktopTaskbarMultiMonMode()
+
         # Get USB settings
         $currentState.NotifyOnUsbErrors = $this.GetNotifyOnUsbErrors()
         $currentState.NotifyOnWeakCharger = $this.GetNotifyOnWeakCharger()
@@ -130,7 +189,28 @@ class WindowsSettings {
 
     [bool] Test() {
         $currentState = $this.Get()
-        return $this.TestTaskbarAlignment($currentState) -and $this.TestAppColorMode($currentState) -and $this.TestSystemColorMode($currentState) -and $this.TestDeveloperMode($currentState) -and $this.TestSetTimeZoneAutomatically($currentState) -and $this.TestTimeZone($currentState) -and $this.TestEnableTransparency($currentState) -and $this.TestShowAccentColorOnStartAndTaskbar($currentState) -and $this.TestShowAccentColorOnTitleBarsAndWindowBorders($currentState) -and $this.TestAutoColorization($currentState) -and $this.TestStartFolders($currentState) -and $this.TestNotifyOnUsbErrors($currentState) -and $this.TestNotifyOnWeakCharger($currentState)
+        return $this.TestTaskbarAlignment($currentState) -and
+        $this.TestAppColorMode($currentState) -and
+        $this.TestSystemColorMode($currentState) -and
+        $this.TestDeveloperMode($currentState) -and
+        $this.TestSetTimeZoneAutomatically($currentState) -and
+        $this.TestTimeZone($currentState) -and
+        $this.TestEnableTransparency($currentState) -and
+        $this.TestShowAccentColorOnStartAndTaskbar($currentState) -and
+        $this.TestShowAccentColorOnTitleBarsAndWindowBorders($currentState) -and
+        $this.TestAutoColorization($currentState) -and
+        $this.TestStartFolders($currentState) -and
+        $this.TestShowRecentList($currentState) -and
+        $this.TestShowRecommendedList($currentState) -and
+        $this.TestTaskbarBadges($currentState) -and
+        $this.TestDesktopTaskbarBadges($currentState) -and
+        $this.TestTaskbarGroupingMode($currentState) -and
+        $this.TestTaskbarMultiMon($currentState) -and
+        $this.TestDesktopTaskbarMultiMon($currentState) -and
+        $this.TestTaskbarMultiMonMode($currentState) -and
+        $this.TestDesktopTaskbarMultiMonMode($currentState) -and
+        $this.TestNotifyOnUsbErrors($currentState) -and
+        $this.TestNotifyOnWeakCharger($currentState)
     }
 
     [void] Set() {
@@ -236,6 +316,99 @@ class WindowsSettings {
         # Set Start Folders
         if (!$this.TestStartFolders($currentState)) {
             $this.SetStartFolders()
+        }
+
+        # Set Start Layout settings
+        if (!$this.TestShowRecentList($currentState)) {
+            if (-not (Test-Path $global:StartRegistryPath)) {
+                New-Item -Path $global:StartRegistryPath -Force | Out-Null
+            }
+            $value = $this.ShowRecentList ? 1 : 0
+            Set-ItemProperty -Path $global:StartRegistryPath -Name $this.ShowRecentListPropertyName -Value $value -Type DWord
+        }
+
+        # Set ShowRecommendedList (Start_TrackDocs)
+        if (!$this.TestShowRecommendedList($currentState)) {
+            $value = $this.ShowRecommendedList ? 1 : 0
+            Set-ItemProperty -Path $global:ExplorerRegistryPath -Name $this.StartTrackDocsPropertyName -Value $value -Type DWord
+        }
+
+        # Set TaskbarBadges
+        if (!$this.TestTaskbarBadges($currentState)) {
+            if (-not (Test-Path $global:TaskbarBadgesRegistryPath)) {
+                New-Item -Path $global:TaskbarBadgesRegistryPath -Force | Out-Null
+            }
+            $value = $this.TaskbarBadges ? '1' : '0'
+            Set-ItemProperty -Path $global:TaskbarBadgesRegistryPath -Name $this.TaskbarBadgingPropertyName -Value $value -Type String
+        }
+
+        # Set DesktopTaskbarBadges
+        if (!$this.TestDesktopTaskbarBadges($currentState)) {
+            if (-not (Test-Path $global:TaskbarBadgesRegistryPath)) {
+                New-Item -Path $global:TaskbarBadgesRegistryPath -Force | Out-Null
+            }
+            $value = $this.DesktopTaskbarBadges ? '1' : '0'
+            Set-ItemProperty -Path $global:TaskbarBadgesRegistryPath -Name $this.DesktopTaskbarBadgingPropertyName -Value $value -Type String
+        }
+
+        # Set TaskbarGroupingMode
+        if (!$this.TestTaskbarGroupingMode($currentState)) {
+            if (-not (Test-Path $global:TaskbarGlomLevelRegistryPath)) {
+                New-Item -Path $global:TaskbarGlomLevelRegistryPath -Force | Out-Null
+            }
+            $value = switch ($this.TaskbarGroupingMode) {
+                'Always' { '0' }
+                'WhenFull' { '1' }
+                'Never' { '2' }
+                default { throw "Invalid TaskbarGroupingMode: $($this.TaskbarGroupingMode). Valid values are: Always, WhenFull, Never" }
+            }
+            Set-ItemProperty -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName -Value $value -Type String
+        }
+
+        # Set TaskbarMultiMon
+        if (!$this.TestTaskbarMultiMon($currentState)) {
+            if (-not (Test-Path $global:TaskbarMultiMonRegistryPath)) {
+                New-Item -Path $global:TaskbarMultiMonRegistryPath -Force | Out-Null
+            }
+            $value = $this.TaskbarMultiMon ? '1' : '0'
+            Set-ItemProperty -Path $global:TaskbarMultiMonRegistryPath -Name $this.TaskbarMultiMonPropertyName -Value $value -Type String
+        }
+
+        # Set DesktopTaskbarMultiMon
+        if (!$this.TestDesktopTaskbarMultiMon($currentState)) {
+            if (-not (Test-Path $global:TaskbarMultiMonRegistryPath)) {
+                New-Item -Path $global:TaskbarMultiMonRegistryPath -Force | Out-Null
+            }
+            $value = $this.DesktopTaskbarMultiMon ? '1' : '0'
+            Set-ItemProperty -Path $global:TaskbarMultiMonRegistryPath -Name $this.DesktopTaskbarMultiMonPropertyName -Value $value -Type String
+        }
+
+        # Set TaskbarMultiMonMode
+        if (!$this.TestTaskbarMultiMonMode($currentState)) {
+            if (-not (Test-Path $global:TaskbarMultiMonModeRegistryPath)) {
+                New-Item -Path $global:TaskbarMultiMonModeRegistryPath -Force | Out-Null
+            }
+            $value = switch ($this.TaskbarMultiMonMode) {
+                'Duplicate' { '0' }
+                'PrimaryAndWindow' { '1' }
+                'WindowOnly' { '2' }
+                default { throw "Invalid TaskbarMultiMonMode: $($this.TaskbarMultiMonMode). Valid values are: Duplicate, PrimaryAndWindow, WindowOnly" }
+            }
+            Set-ItemProperty -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName -Value $value -Type String
+        }
+
+        # Set DesktopTaskbarMultiMonMode
+        if (!$this.TestDesktopTaskbarMultiMonMode($currentState)) {
+            if (-not (Test-Path $global:TaskbarMultiMonModeRegistryPath)) {
+                New-Item -Path $global:TaskbarMultiMonModeRegistryPath -Force | Out-Null
+            }
+            $value = switch ($this.DesktopTaskbarMultiMonMode) {
+                'Duplicate' { '0' }
+                'PrimaryAndWindow' { '1' }
+                'WindowOnly' { '2' }
+                default { throw "Invalid DesktopTaskbarMultiMonMode: $($this.DesktopTaskbarMultiMonMode). Valid values are: Duplicate, PrimaryAndWindow, WindowOnly" }
+            }
+            Set-ItemProperty -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName -Value $value -Type String
         }
 
         # Set USB settings
@@ -488,6 +661,158 @@ class WindowsSettings {
         }
 
         return $true
+    }
+
+    # Start Layout Helper Methods
+    [Nullable[bool]] GetShowRecentList() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:StartRegistryPath -Name $this.ShowRecentListPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:StartRegistryPath -Name $this.ShowRecentListPropertyName
+        return $value -eq 1
+    }
+
+    [bool] TestShowRecentList([WindowsSettings] $currentState) {
+        if ($null -eq $this.ShowRecentList) {
+            return $true
+        }
+        return $currentState.ShowRecentList -eq $this.ShowRecentList
+    }
+
+    [Nullable[bool]] GetShowRecommendedList() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:ExplorerRegistryPath -Name $this.StartTrackDocsPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:ExplorerRegistryPath -Name $this.StartTrackDocsPropertyName
+        return $value -eq 1
+    }
+
+    [bool] TestShowRecommendedList([WindowsSettings] $currentState) {
+        if ($null -eq $this.ShowRecommendedList) {
+            return $true
+        }
+        return $currentState.ShowRecommendedList -eq $this.ShowRecommendedList
+    }
+
+    # Taskbar Helper Methods
+    [Nullable[bool]] GetTaskbarBadges() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarBadgesRegistryPath -Name $this.TaskbarBadgingPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarBadgesRegistryPath -Name $this.TaskbarBadgingPropertyName
+        return $value -eq '1'
+    }
+
+    [bool] TestTaskbarBadges([WindowsSettings] $currentState) {
+        if ($null -eq $this.TaskbarBadges) {
+            return $true
+        }
+        return $currentState.TaskbarBadges -eq $this.TaskbarBadges
+    }
+
+    [Nullable[bool]] GetDesktopTaskbarBadges() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarBadgesRegistryPath -Name $this.DesktopTaskbarBadgingPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarBadgesRegistryPath -Name $this.DesktopTaskbarBadgingPropertyName
+        return $value -eq '1'
+    }
+
+    [bool] TestDesktopTaskbarBadges([WindowsSettings] $currentState) {
+        if ($null -eq $this.DesktopTaskbarBadges) {
+            return $true
+        }
+        return $currentState.DesktopTaskbarBadges -eq $this.DesktopTaskbarBadges
+    }
+
+    [string] GetTaskbarGroupingMode() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName
+        return switch ($value) {
+            '0' { 'Always' }
+            '1' { 'WhenFull' }
+            '2' { 'Never' }
+            default { $null }
+        }
+    }
+
+    [bool] TestTaskbarGroupingMode([WindowsSettings] $currentState) {
+        if ([string]::IsNullOrEmpty($this.TaskbarGroupingMode)) {
+            return $true
+        }
+        return $currentState.TaskbarGroupingMode -eq $this.TaskbarGroupingMode
+    }
+
+    [Nullable[bool]] GetTaskbarMultiMon() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonRegistryPath -Name $this.TaskbarMultiMonPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonRegistryPath -Name $this.TaskbarMultiMonPropertyName
+        return $value -eq '1'
+    }
+
+    [bool] TestTaskbarMultiMon([WindowsSettings] $currentState) {
+        if ($null -eq $this.TaskbarMultiMon) {
+            return $true
+        }
+        return $currentState.TaskbarMultiMon -eq $this.TaskbarMultiMon
+    }
+
+    [Nullable[bool]] GetDesktopTaskbarMultiMon() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonRegistryPath -Name $this.DesktopTaskbarMultiMonPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonRegistryPath -Name $this.DesktopTaskbarMultiMonPropertyName
+        return $value -eq '1'
+    }
+
+    [bool] TestDesktopTaskbarMultiMon([WindowsSettings] $currentState) {
+        if ($null -eq $this.DesktopTaskbarMultiMon) {
+            return $true
+        }
+        return $currentState.DesktopTaskbarMultiMon -eq $this.DesktopTaskbarMultiMon
+    }
+
+    [string] GetTaskbarMultiMonMode() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName
+        return switch ($value) {
+            '0' { 'Duplicate' }
+            '1' { 'PrimaryAndWindow' }
+            '2' { 'WindowOnly' }
+            default { $null }
+        }
+    }
+
+    [bool] TestTaskbarMultiMonMode([WindowsSettings] $currentState) {
+        if ([string]::IsNullOrEmpty($this.TaskbarMultiMonMode)) {
+            return $true
+        }
+        return $currentState.TaskbarMultiMonMode -eq $this.TaskbarMultiMonMode
+    }
+
+    [string] GetDesktopTaskbarMultiMonMode() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName
+        return switch ($value) {
+            '0' { 'Duplicate' }
+            '1' { 'PrimaryAndWindow' }
+            '2' { 'WindowOnly' }
+            default { $null }
+        }
+    }
+
+    [bool] TestDesktopTaskbarMultiMonMode([WindowsSettings] $currentState) {
+        if ([string]::IsNullOrEmpty($this.DesktopTaskbarMultiMonMode)) {
+            return $true
+        }
+        return $currentState.DesktopTaskbarMultiMonMode -eq $this.DesktopTaskbarMultiMonMode
     }
 
     [bool] TestNotifyOnUsbErrors([WindowsSettings] $currentState) {

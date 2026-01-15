@@ -26,4 +26,31 @@ properties:
           - Downloads
           - Settings
           - Explorer
+        
+        # Start Layout Settings
+        # ShowRecentList: Show recently installed apps in Start
+        ShowRecentList: true
+        # ShowRecommendedList: Show recommended files in Start, recent files in File Explorer, and items in Jump Lists
+        ShowRecommendedList: true
+        
+        # Taskbar Settings
+        # TaskbarBadges: Enable badges (unread message counts, etc.) for apps on the taskbar
+        TaskbarBadges: true
+        # DesktopTaskbarBadges: Enable badges for apps on the desktop taskbar
+        DesktopTaskbarBadges: true
+        # TaskbarGroupingMode: Control how taskbar buttons are grouped
+        # Valid values: Always, WhenFull, Never
+        TaskbarGroupingMode: Always
+        # TaskbarMultiMon: Show taskbar on multiple displays
+        TaskbarMultiMon: true
+        # DesktopTaskbarMultiMon: Show taskbar on multiple displays (desktop)
+        DesktopTaskbarMultiMon: true
+        # TaskbarMultiMonMode: Control how windows are shown on taskbars across monitors
+        # Valid values: Duplicate, PrimaryAndWindow, WindowOnly
+        # - Duplicate: Show all windows on all taskbars
+        # - PrimaryAndWindow: Show on main taskbar and on the taskbar where the window is open
+        # - WindowOnly: Show only on the taskbar where the window is open
+        TaskbarMultiMonMode: Duplicate
+        # DesktopTaskbarMultiMonMode: Control how windows are shown on taskbars across monitors (desktop)
+        DesktopTaskbarMultiMonMode: Duplicate
   configurationVersion: 0.2.0

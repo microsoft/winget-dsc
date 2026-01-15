@@ -36,6 +36,15 @@ BeforeAll {
     $script:originalSettings.ShowAccentColorOnTitleBarsAndWindowBorders = $currentState.ShowAccentColorOnTitleBarsAndWindowBorders
     $script:originalSettings.AutoColorization = $currentState.AutoColorization
     $script:originalSettings.StartFolders = $currentState.StartFolders
+    $script:originalSettings.ShowRecentList = $currentState.ShowRecentList
+    $script:originalSettings.ShowRecommendedList = $currentState.ShowRecommendedList
+    $script:originalSettings.TaskbarBadges = $currentState.TaskbarBadges
+    $script:originalSettings.DesktopTaskbarBadges = $currentState.DesktopTaskbarBadges
+    $script:originalSettings.TaskbarGroupingMode = $currentState.TaskbarGroupingMode
+    $script:originalSettings.TaskbarMultiMon = $currentState.TaskbarMultiMon
+    $script:originalSettings.DesktopTaskbarMultiMon = $currentState.DesktopTaskbarMultiMon
+    $script:originalSettings.TaskbarMultiMonMode = $currentState.TaskbarMultiMonMode
+    $script:originalSettings.DesktopTaskbarMultiMonMode = $currentState.DesktopTaskbarMultiMonMode
     $script:originalSettings.NotifyOnUsbErrors = $currentState.NotifyOnUsbErrors
     $script:originalSettings.NotifyOnWeakCharger = $currentState.NotifyOnWeakCharger
     
@@ -51,6 +60,15 @@ BeforeAll {
     Write-Host "  ShowAccentColorOnTitleBarsAndWindowBorders: $($script:originalSettings.ShowAccentColorOnTitleBarsAndWindowBorders)"
     Write-Host "  AutoColorization: $($script:originalSettings.AutoColorization)"
     Write-Host "  StartFolders: $($script:originalSettings.StartFolders -join ', ')"
+    Write-Host "  ShowRecentList: $($script:originalSettings.ShowRecentList)"
+    Write-Host "  ShowRecommendedList: $($script:originalSettings.ShowRecommendedList)"
+    Write-Host "  TaskbarBadges: $($script:originalSettings.TaskbarBadges)"
+    Write-Host "  DesktopTaskbarBadges: $($script:originalSettings.DesktopTaskbarBadges)"
+    Write-Host "  TaskbarGroupingMode: $($script:originalSettings.TaskbarGroupingMode)"
+    Write-Host "  TaskbarMultiMon: $($script:originalSettings.TaskbarMultiMon)"
+    Write-Host "  DesktopTaskbarMultiMon: $($script:originalSettings.DesktopTaskbarMultiMon)"
+    Write-Host "  TaskbarMultiMonMode: $($script:originalSettings.TaskbarMultiMonMode)"
+    Write-Host "  DesktopTaskbarMultiMonMode: $($script:originalSettings.DesktopTaskbarMultiMonMode)"
     Write-Host "  NotifyOnUsbErrors: $($script:originalSettings.NotifyOnUsbErrors)"
     Write-Host "  NotifyOnWeakCharger: $($script:originalSettings.NotifyOnWeakCharger)"
 }
@@ -91,6 +109,33 @@ AfterAll {
     }
     if ($null -ne $script:originalSettings.StartFolders -and $script:originalSettings.StartFolders.Count -gt 0) {
         $restoreSettings.StartFolders = $script:originalSettings.StartFolders
+    }
+    if ($null -ne $script:originalSettings.ShowRecentList) {
+        $restoreSettings.ShowRecentList = $script:originalSettings.ShowRecentList
+    }
+    if ($null -ne $script:originalSettings.ShowRecommendedList) {
+        $restoreSettings.ShowRecommendedList = $script:originalSettings.ShowRecommendedList
+    }
+    if ($null -ne $script:originalSettings.TaskbarBadges) {
+        $restoreSettings.TaskbarBadges = $script:originalSettings.TaskbarBadges
+    }
+    if ($null -ne $script:originalSettings.DesktopTaskbarBadges) {
+        $restoreSettings.DesktopTaskbarBadges = $script:originalSettings.DesktopTaskbarBadges
+    }
+    if (-not [string]::IsNullOrEmpty($script:originalSettings.TaskbarGroupingMode)) {
+        $restoreSettings.TaskbarGroupingMode = $script:originalSettings.TaskbarGroupingMode
+    }
+    if ($null -ne $script:originalSettings.TaskbarMultiMon) {
+        $restoreSettings.TaskbarMultiMon = $script:originalSettings.TaskbarMultiMon
+    }
+    if ($null -ne $script:originalSettings.DesktopTaskbarMultiMon) {
+        $restoreSettings.DesktopTaskbarMultiMon = $script:originalSettings.DesktopTaskbarMultiMon
+    }
+    if (-not [string]::IsNullOrEmpty($script:originalSettings.TaskbarMultiMonMode)) {
+        $restoreSettings.TaskbarMultiMonMode = $script:originalSettings.TaskbarMultiMonMode
+    }
+    if (-not [string]::IsNullOrEmpty($script:originalSettings.DesktopTaskbarMultiMonMode)) {
+        $restoreSettings.DesktopTaskbarMultiMonMode = $script:originalSettings.DesktopTaskbarMultiMonMode
     }
     if ($null -ne $script:originalSettings.NotifyOnUsbErrors) {
         $restoreSettings.NotifyOnUsbErrors = $script:originalSettings.NotifyOnUsbErrors
@@ -818,6 +863,548 @@ Describe 'WindowsSettings - Start Folders' {
         $settings.Test() | Should -Be $true
     }
 }
+
+Describe 'WindowsSettings - ShowRecentList' {
+    It 'Gets current ShowRecentList' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.ShowRecentList | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets ShowRecentList to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.ShowRecentList = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.ShowRecentList | Should -Be $true
+    }
+    
+    It 'Sets ShowRecentList to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.ShowRecentList = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.ShowRecentList | Should -Be $false
+    }
+    
+    It 'Tests ShowRecentList when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.ShowRecentList = $currentState.ShowRecentList
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests ShowRecentList when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.ShowRecentList = -not $currentState.ShowRecentList
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - ShowRecommendedList' {
+    It 'Gets current ShowRecommendedList' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        $currentState.ShowRecommendedList | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets ShowRecommendedList to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.ShowRecommendedList = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.ShowRecommendedList | Should -Be $true
+    }
+    
+    It 'Sets ShowRecommendedList to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.ShowRecommendedList = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.ShowRecommendedList | Should -Be $false
+    }
+    
+    It 'Tests ShowRecommendedList when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.ShowRecommendedList = $currentState.ShowRecommendedList
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests ShowRecommendedList when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.ShowRecommendedList = -not $currentState.ShowRecommendedList
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - TaskbarBadges' {
+    It 'Gets current TaskbarBadges' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        $currentState.TaskbarBadges | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets TaskbarBadges to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarBadges = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarBadges | Should -Be $true
+    }
+    
+    It 'Sets TaskbarBadges to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarBadges = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarBadges | Should -Be $false
+    }
+    
+    It 'Tests TaskbarBadges when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.TaskbarBadges = $currentState.TaskbarBadges
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests TaskbarBadges when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.TaskbarBadges = -not $currentState.TaskbarBadges
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - DesktopTaskbarBadges' {
+    It 'Gets current DesktopTaskbarBadges' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.DesktopTaskbarBadges | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets DesktopTaskbarBadges to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarBadges = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarBadges | Should -Be $true
+    }
+    
+    It 'Sets DesktopTaskbarBadges to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarBadges = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarBadges | Should -Be $false
+    }
+    
+    It 'Tests DesktopTaskbarBadges when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.DesktopTaskbarBadges = $currentState.DesktopTaskbarBadges
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests DesktopTaskbarBadges when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.DesktopTaskbarBadges = -not $currentState.DesktopTaskbarBadges
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - TaskbarGroupingMode' {
+    It 'Gets current TaskbarGroupingMode' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either Always, WhenFull, Never, or null
+        $currentState.TaskbarGroupingMode | Should -BeIn @('Always', 'WhenFull', 'Never', $null)
+    }
+    
+    It 'Sets TaskbarGroupingMode to Always' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarGroupingMode = 'Always'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarGroupingMode | Should -Be 'Always'
+    }
+    
+    It 'Sets TaskbarGroupingMode to WhenFull' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarGroupingMode = 'WhenFull'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarGroupingMode | Should -Be 'WhenFull'
+    }
+    
+    It 'Sets TaskbarGroupingMode to Never' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarGroupingMode = 'Never'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarGroupingMode | Should -Be 'Never'
+    }
+    
+    It 'Tests TaskbarGroupingMode when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.TaskbarGroupingMode = $currentState.TaskbarGroupingMode
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Throws error for invalid TaskbarGroupingMode' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarGroupingMode = 'InvalidValue'
+        
+        { $settings.Set() } | Should -Throw '*Invalid TaskbarGroupingMode*'
+    }
+}
+
+Describe 'WindowsSettings - TaskbarMultiMon' {
+    It 'Gets current TaskbarMultiMon' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.TaskbarMultiMon | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets TaskbarMultiMon to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarMultiMon = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarMultiMon | Should -Be $true
+    }
+    
+    It 'Sets TaskbarMultiMon to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarMultiMon = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarMultiMon | Should -Be $false
+    }
+    
+    It 'Tests TaskbarMultiMon when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.TaskbarMultiMon = $currentState.TaskbarMultiMon
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests TaskbarMultiMon when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.TaskbarMultiMon = -not $currentState.TaskbarMultiMon
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - DesktopTaskbarMultiMon' {
+    It 'Gets current DesktopTaskbarMultiMon' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.DesktopTaskbarMultiMon | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets DesktopTaskbarMultiMon to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarMultiMon = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarMultiMon | Should -Be $true
+    }
+    
+    It 'Sets DesktopTaskbarMultiMon to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarMultiMon = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarMultiMon | Should -Be $false
+    }
+    
+    It 'Tests DesktopTaskbarMultiMon when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.DesktopTaskbarMultiMon = $currentState.DesktopTaskbarMultiMon
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests DesktopTaskbarMultiMon when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.DesktopTaskbarMultiMon = -not $currentState.DesktopTaskbarMultiMon
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
+Describe 'WindowsSettings - TaskbarMultiMonMode' {
+    It 'Gets current TaskbarMultiMonMode' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be one of the valid values or null
+        $currentState.TaskbarMultiMonMode | Should -BeIn @('Duplicate', 'PrimaryAndWindow', 'WindowOnly', $null)
+    }
+    
+    It 'Sets TaskbarMultiMonMode to Duplicate' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarMultiMonMode = 'Duplicate'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarMultiMonMode | Should -Be 'Duplicate'
+    }
+    
+    It 'Sets TaskbarMultiMonMode to PrimaryAndWindow' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarMultiMonMode = 'PrimaryAndWindow'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarMultiMonMode | Should -Be 'PrimaryAndWindow'
+    }
+    
+    It 'Sets TaskbarMultiMonMode to WindowOnly' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarMultiMonMode = 'WindowOnly'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.TaskbarMultiMonMode | Should -Be 'WindowOnly'
+    }
+    
+    It 'Tests TaskbarMultiMonMode when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        
+        # First set a known value
+        $settings.TaskbarMultiMonMode = 'Duplicate'
+        $settings.Set()
+        
+        # Now test with same value
+        $testSettings = [WindowsSettings]::new()
+        $testSettings.SID = 'TestSID'
+        $testSettings.TaskbarMultiMonMode = 'Duplicate'
+        
+        $testSettings.Test() | Should -Be $true
+    }
+    
+    It 'Tests TaskbarMultiMonMode when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        
+        # First set a known value
+        $settings.TaskbarMultiMonMode = 'Duplicate'
+        $settings.Set()
+        
+        # Now test with different value
+        $testSettings = [WindowsSettings]::new()
+        $testSettings.SID = 'TestSID'
+        $testSettings.TaskbarMultiMonMode = 'WindowOnly'
+        
+        $testSettings.Test() | Should -Be $false
+    }
+    
+    It 'Throws error for invalid TaskbarMultiMonMode' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.TaskbarMultiMonMode = 'InvalidValue'
+        
+        { $settings.Set() } | Should -Throw '*Invalid TaskbarMultiMonMode*'
+    }
+}
+
+Describe 'WindowsSettings - DesktopTaskbarMultiMonMode' {
+    It 'Gets current DesktopTaskbarMultiMonMode' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be one of the valid values or null
+        $currentState.DesktopTaskbarMultiMonMode | Should -BeIn @('Duplicate', 'PrimaryAndWindow', 'WindowOnly', $null)
+    }
+    
+    It 'Sets DesktopTaskbarMultiMonMode to Duplicate' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarMultiMonMode = 'Duplicate'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarMultiMonMode | Should -Be 'Duplicate'
+    }
+    
+    It 'Sets DesktopTaskbarMultiMonMode to PrimaryAndWindow' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarMultiMonMode = 'PrimaryAndWindow'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarMultiMonMode | Should -Be 'PrimaryAndWindow'
+    }
+    
+    It 'Sets DesktopTaskbarMultiMonMode to WindowOnly' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarMultiMonMode = 'WindowOnly'
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.DesktopTaskbarMultiMonMode | Should -Be 'WindowOnly'
+    }
+    
+    It 'Tests DesktopTaskbarMultiMonMode when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        
+        $settings.DesktopTaskbarMultiMonMode = 'Duplicate'
+        $settings.Set()
+        
+        $testSettings = [WindowsSettings]::new()
+        $testSettings.SID = 'TestSID'
+        $testSettings.DesktopTaskbarMultiMonMode = 'Duplicate'
+        
+        $testSettings.Test() | Should -Be $true
+    }
+    
+    It 'Tests DesktopTaskbarMultiMonMode when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        
+        $settings.DesktopTaskbarMultiMonMode = 'Duplicate'
+        $settings.Set()
+        
+        $testSettings = [WindowsSettings]::new()
+        $testSettings.SID = 'TestSID'
+        $testSettings.DesktopTaskbarMultiMonMode = 'WindowOnly'
+        
+        $testSettings.Test() | Should -Be $false
+    }
+    
+    It 'Throws error for invalid DesktopTaskbarMultiMonMode' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.DesktopTaskbarMultiMonMode = 'InvalidValue'
+        
+        { $settings.Set() } | Should -Throw '*Invalid DesktopTaskbarMultiMonMode*'
+    }
+}
+
 Describe 'WindowsSettings - USB' {
     It 'Gets current NotifyOnUsbErrors' {
         $settings = [WindowsSettings]::new()
@@ -842,7 +1429,6 @@ Describe 'WindowsSettings - USB' {
         $settings.SID = 'TestSID'
         $currentState = $settings.Get()
         
-        # Set opposite value to ensure change
         $settings.NotifyOnUsbErrors = -not $currentState.NotifyOnUsbErrors
         
         $settings.Test() | Should -Be $false
@@ -857,7 +1443,6 @@ Describe 'WindowsSettings - USB' {
         $settings.SID = 'TestSID'
         $currentState = $settings.Get()
         
-        # Set opposite value to ensure change
         $settings.NotifyOnWeakCharger = -not $currentState.NotifyOnWeakCharger
         
         $settings.Test() | Should -Be $false
