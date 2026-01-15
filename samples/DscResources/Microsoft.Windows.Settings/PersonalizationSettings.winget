@@ -45,4 +45,12 @@ properties:
         TaskbarMultiMon: true
         # DesktopTaskbarMultiMon: Show taskbar on multiple displays (desktop)
         DesktopTaskbarMultiMon: true
+        # TaskbarMultiMonMode: Control how windows are shown on taskbars across monitors
+        # Valid values: Duplicate, PrimaryAndWindow, WindowOnly
+        # - Duplicate: Show all windows on all taskbars
+        # - PrimaryAndWindow: Show on main taskbar and on the taskbar where the window is open
+        # - WindowOnly: Show only on the taskbar where the window is open
+        TaskbarMultiMonMode: Duplicate
+        # DesktopTaskbarMultiMonMode: Control how windows are shown on taskbars across monitors (desktop)
+        DesktopTaskbarMultiMonMode: Duplicate
   configurationVersion: 0.2.0

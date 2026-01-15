@@ -17,8 +17,9 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:TaskbarBadgesRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarBadges\'
     $global:TaskbarGlomLevelRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarGlomLevel\'
     $global:TaskbarMultiMonRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarEnabled\'
+    $global:TaskbarMultiMonModeRegistryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\MMTaskbarMode\'
 } else {
-    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $global:TaskbarGlomLevelRegistryPath = $global:TaskbarMultiMonRegistryPath = $env:TestRegistryPath
+    $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $global:TaskbarGlomLevelRegistryPath = $global:TaskbarMultiMonRegistryPath = $global:TaskbarMultiMonModeRegistryPath = $env:TestRegistryPath
 }
 
 [DSCResource()]
@@ -88,6 +89,13 @@ class WindowsSettings {
     [DscProperty()]
     [Nullable[bool]] $DesktopTaskbarMultiMon
 
+    # Taskbar - Multi-Monitor Mode
+    [DscProperty()]
+    [string] $TaskbarMultiMonMode
+
+    [DscProperty()]
+    [string] $DesktopTaskbarMultiMonMode
+
     [DscProperty()]
     [Nullable[bool]]
     $NotifyOnUsbErrors
@@ -115,6 +123,8 @@ class WindowsSettings {
     hidden [string] $TaskbarGroupingModePropertyName = 'SystemSettings_DesktopTaskbar_GroupingMode'
     hidden [string] $TaskbarMultiMonPropertyName = 'SystemSettings_Taskbar_MultiMon'
     hidden [string] $DesktopTaskbarMultiMonPropertyName = 'SystemSettings_DesktopTaskbar_MultiMon'
+    hidden [string] $TaskbarMultiMonModePropertyName = 'SystemSettings_Taskbar_MultiMonTaskbarMode'
+    hidden [string] $DesktopTaskbarMultiMonModePropertyName = 'SystemSettings_DesktopTaskbar_MultiMonTaskbarMode'
     hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
     hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
     
@@ -167,6 +177,8 @@ class WindowsSettings {
         $currentState.TaskbarGroupingMode = $this.GetTaskbarGroupingMode()
         $currentState.TaskbarMultiMon = $this.GetTaskbarMultiMon()
         $currentState.DesktopTaskbarMultiMon = $this.GetDesktopTaskbarMultiMon()
+        $currentState.TaskbarMultiMonMode = $this.GetTaskbarMultiMonMode()
+        $currentState.DesktopTaskbarMultiMonMode = $this.GetDesktopTaskbarMultiMonMode()
 
         # Get USB settings
         $currentState.NotifyOnUsbErrors = $this.GetNotifyOnUsbErrors()
@@ -195,6 +207,8 @@ class WindowsSettings {
         $this.TestTaskbarGroupingMode($currentState) -and
         $this.TestTaskbarMultiMon($currentState) -and
         $this.TestDesktopTaskbarMultiMon($currentState) -and
+        $this.TestTaskbarMultiMonMode($currentState) -and
+        $this.TestDesktopTaskbarMultiMonMode($currentState) -and
         $this.TestNotifyOnUsbErrors($currentState) -and
         $this.TestNotifyOnWeakCharger($currentState)
     }
@@ -367,6 +381,34 @@ class WindowsSettings {
             }
             $value = $this.DesktopTaskbarMultiMon ? '1' : '0'
             Set-ItemProperty -Path $global:TaskbarMultiMonRegistryPath -Name $this.DesktopTaskbarMultiMonPropertyName -Value $value -Type String
+        }
+
+        # Set TaskbarMultiMonMode
+        if (!$this.TestTaskbarMultiMonMode($currentState)) {
+            if (-not (Test-Path $global:TaskbarMultiMonModeRegistryPath)) {
+                New-Item -Path $global:TaskbarMultiMonModeRegistryPath -Force | Out-Null
+            }
+            $value = switch ($this.TaskbarMultiMonMode) {
+                'Duplicate' { '0' }
+                'PrimaryAndWindow' { '1' }
+                'WindowOnly' { '2' }
+                default { throw "Invalid TaskbarMultiMonMode: $($this.TaskbarMultiMonMode). Valid values are: Duplicate, PrimaryAndWindow, WindowOnly" }
+            }
+            Set-ItemProperty -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName -Value $value -Type String
+        }
+
+        # Set DesktopTaskbarMultiMonMode
+        if (!$this.TestDesktopTaskbarMultiMonMode($currentState)) {
+            if (-not (Test-Path $global:TaskbarMultiMonModeRegistryPath)) {
+                New-Item -Path $global:TaskbarMultiMonModeRegistryPath -Force | Out-Null
+            }
+            $value = switch ($this.DesktopTaskbarMultiMonMode) {
+                'Duplicate' { '0' }
+                'PrimaryAndWindow' { '1' }
+                'WindowOnly' { '2' }
+                default { throw "Invalid DesktopTaskbarMultiMonMode: $($this.DesktopTaskbarMultiMonMode). Valid values are: Duplicate, PrimaryAndWindow, WindowOnly" }
+            }
+            Set-ItemProperty -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName -Value $value -Type String
         }
 
         # Set USB settings
@@ -731,6 +773,46 @@ class WindowsSettings {
             return $true
         }
         return $currentState.DesktopTaskbarMultiMon -eq $this.DesktopTaskbarMultiMon
+    }
+
+    [string] GetTaskbarMultiMonMode() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName
+        return switch ($value) {
+            '0' { 'Duplicate' }
+            '1' { 'PrimaryAndWindow' }
+            '2' { 'WindowOnly' }
+            default { $null }
+        }
+    }
+
+    [bool] TestTaskbarMultiMonMode([WindowsSettings] $currentState) {
+        if ([string]::IsNullOrEmpty($this.TaskbarMultiMonMode)) {
+            return $true
+        }
+        return $currentState.TaskbarMultiMonMode -eq $this.TaskbarMultiMonMode
+    }
+
+    [string] GetDesktopTaskbarMultiMonMode() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName
+        return switch ($value) {
+            '0' { 'Duplicate' }
+            '1' { 'PrimaryAndWindow' }
+            '2' { 'WindowOnly' }
+            default { $null }
+        }
+    }
+
+    [bool] TestDesktopTaskbarMultiMonMode([WindowsSettings] $currentState) {
+        if ([string]::IsNullOrEmpty($this.DesktopTaskbarMultiMonMode)) {
+            return $true
+        }
+        return $currentState.DesktopTaskbarMultiMonMode -eq $this.DesktopTaskbarMultiMonMode
     }
 
     [bool] TestNotifyOnUsbErrors([WindowsSettings] $currentState) {
