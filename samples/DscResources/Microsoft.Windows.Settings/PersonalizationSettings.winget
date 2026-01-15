@@ -26,4 +26,8 @@ properties:
           - Downloads
           - Settings
           - Explorer
+        
+        # Start Layout Settings
+        # ShowRecentList: Show recently installed apps in Start
+        ShowRecentList: true
   configurationVersion: 0.2.0

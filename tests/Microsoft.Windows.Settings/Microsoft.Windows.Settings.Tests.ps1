@@ -36,6 +36,7 @@ BeforeAll {
     $script:originalSettings.ShowAccentColorOnTitleBarsAndWindowBorders = $currentState.ShowAccentColorOnTitleBarsAndWindowBorders
     $script:originalSettings.AutoColorization = $currentState.AutoColorization
     $script:originalSettings.StartFolders = $currentState.StartFolders
+    $script:originalSettings.ShowRecentList = $currentState.ShowRecentList
     $script:originalSettings.NotifyOnUsbErrors = $currentState.NotifyOnUsbErrors
     $script:originalSettings.NotifyOnWeakCharger = $currentState.NotifyOnWeakCharger
     
@@ -51,6 +52,7 @@ BeforeAll {
     Write-Host "  ShowAccentColorOnTitleBarsAndWindowBorders: $($script:originalSettings.ShowAccentColorOnTitleBarsAndWindowBorders)"
     Write-Host "  AutoColorization: $($script:originalSettings.AutoColorization)"
     Write-Host "  StartFolders: $($script:originalSettings.StartFolders -join ', ')"
+    Write-Host "  ShowRecentList: $($script:originalSettings.ShowRecentList)"
     Write-Host "  NotifyOnUsbErrors: $($script:originalSettings.NotifyOnUsbErrors)"
     Write-Host "  NotifyOnWeakCharger: $($script:originalSettings.NotifyOnWeakCharger)"
 }
@@ -91,6 +93,9 @@ AfterAll {
     }
     if ($null -ne $script:originalSettings.StartFolders -and $script:originalSettings.StartFolders.Count -gt 0) {
         $restoreSettings.StartFolders = $script:originalSettings.StartFolders
+    }
+    if ($null -ne $script:originalSettings.ShowRecentList) {
+        $restoreSettings.ShowRecentList = $script:originalSettings.ShowRecentList
     }
     if ($null -ne $script:originalSettings.NotifyOnUsbErrors) {
         $restoreSettings.NotifyOnUsbErrors = $script:originalSettings.NotifyOnUsbErrors
@@ -818,6 +823,60 @@ Describe 'WindowsSettings - Start Folders' {
         $settings.Test() | Should -Be $true
     }
 }
+
+Describe 'WindowsSettings - ShowRecentList' {
+    It 'Gets current ShowRecentList' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Should be either $true, $false, or $null
+        $currentState.ShowRecentList | Should -BeIn @($true, $false, $null)
+    }
+    
+    It 'Sets ShowRecentList to enabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.ShowRecentList = $true
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.ShowRecentList | Should -Be $true
+    }
+    
+    It 'Sets ShowRecentList to disabled' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $settings.ShowRecentList = $false
+        
+        $settings.Set()
+        
+        $newState = $settings.Get()
+        $newState.ShowRecentList | Should -Be $false
+    }
+    
+    It 'Tests ShowRecentList when values match' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        $settings.ShowRecentList = $currentState.ShowRecentList
+        
+        $settings.Test() | Should -Be $true
+    }
+    
+    It 'Tests ShowRecentList when values differ' {
+        $settings = [WindowsSettings]::new()
+        $settings.SID = 'TestSID'
+        $currentState = $settings.Get()
+        
+        # Set opposite value
+        $settings.ShowRecentList = -not $currentState.ShowRecentList
+        
+        $settings.Test() | Should -Be $false
+    }
+}
+
 Describe 'WindowsSettings - USB' {
     It 'Gets current NotifyOnUsbErrors' {
         $settings = [WindowsSettings]::new()

@@ -59,6 +59,10 @@ class WindowsSettings {
     [DscProperty()]
     [string[]] $StartFolders
 
+    # Personalization - Start Layout
+    [DscProperty()]
+    [Nullable[bool]] $ShowRecentList
+
     [DscProperty()]
     [Nullable[bool]]
     $NotifyOnUsbErrors
@@ -79,6 +83,7 @@ class WindowsSettings {
     hidden [string] $ColorPrevalenceDWMPropertyName = 'ColorPrevalence'
     hidden [string] $AutoColorizationPropertyName = 'AutoColorization'
     hidden [string] $VisiblePlacesPropertyName = 'VisiblePlaces'
+    hidden [string] $ShowRecentListPropertyName = 'ShowRecentList'
     hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
     hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
     
@@ -121,6 +126,9 @@ class WindowsSettings {
         # Get Start Folders
         $currentState.StartFolders = $this.GetStartFolders()
 
+        # Get Start Layout settings
+        $currentState.ShowRecentList = $this.GetShowRecentList()
+
         # Get USB settings
         $currentState.NotifyOnUsbErrors = $this.GetNotifyOnUsbErrors()
         $currentState.NotifyOnWeakCharger = $this.GetNotifyOnWeakCharger()
@@ -130,7 +138,20 @@ class WindowsSettings {
 
     [bool] Test() {
         $currentState = $this.Get()
-        return $this.TestTaskbarAlignment($currentState) -and $this.TestAppColorMode($currentState) -and $this.TestSystemColorMode($currentState) -and $this.TestDeveloperMode($currentState) -and $this.TestSetTimeZoneAutomatically($currentState) -and $this.TestTimeZone($currentState) -and $this.TestEnableTransparency($currentState) -and $this.TestShowAccentColorOnStartAndTaskbar($currentState) -and $this.TestShowAccentColorOnTitleBarsAndWindowBorders($currentState) -and $this.TestAutoColorization($currentState) -and $this.TestStartFolders($currentState) -and $this.TestNotifyOnUsbErrors($currentState) -and $this.TestNotifyOnWeakCharger($currentState)
+        return $this.TestTaskbarAlignment($currentState) -and
+        $this.TestAppColorMode($currentState) -and
+        $this.TestSystemColorMode($currentState) -and
+        $this.TestDeveloperMode($currentState) -and
+        $this.TestSetTimeZoneAutomatically($currentState) -and
+        $this.TestTimeZone($currentState) -and
+        $this.TestEnableTransparency($currentState) -and
+        $this.TestShowAccentColorOnStartAndTaskbar($currentState) -and
+        $this.TestShowAccentColorOnTitleBarsAndWindowBorders($currentState) -and
+        $this.TestAutoColorization($currentState) -and
+        $this.TestStartFolders($currentState) -and
+        $this.TestShowRecentList($currentState) -and
+        $this.TestNotifyOnUsbErrors($currentState) -and
+        $this.TestNotifyOnWeakCharger($currentState)
     }
 
     [void] Set() {
@@ -236,6 +257,16 @@ class WindowsSettings {
         # Set Start Folders
         if (!$this.TestStartFolders($currentState)) {
             $this.SetStartFolders()
+        }
+
+        # Set Start Layout settings
+        if (!$this.TestShowRecentList($currentState)) {
+            # Ensure registry path exists
+            if (-not (Test-Path $global:StartRegistryPath)) {
+                New-Item -Path $global:StartRegistryPath -Force | Out-Null
+            }
+            $value = $this.ShowRecentList ? 1 : 0
+            Set-ItemProperty -Path $global:StartRegistryPath -Name $this.ShowRecentListPropertyName -Value $value -Type DWord
         }
 
         # Set USB settings
@@ -488,6 +519,22 @@ class WindowsSettings {
         }
 
         return $true
+    }
+
+    # Start Layout Helper Methods
+    [Nullable[bool]] GetShowRecentList() {
+        if (-not(DoesRegistryKeyPropertyExist -Path $global:StartRegistryPath -Name $this.ShowRecentListPropertyName)) {
+            return $null
+        }
+        $value = Get-ItemPropertyValue -Path $global:StartRegistryPath -Name $this.ShowRecentListPropertyName
+        return $value -eq 1
+    }
+
+    [bool] TestShowRecentList([WindowsSettings] $currentState) {
+        if ($null -eq $this.ShowRecentList) {
+            return $true
+        }
+        return $currentState.ShowRecentList -eq $this.ShowRecentList
     }
 
     [bool] TestNotifyOnUsbErrors([WindowsSettings] $currentState) {
