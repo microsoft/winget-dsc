@@ -730,12 +730,13 @@ class WindowsSettings {
             return $null
         }
         $value = Get-ItemPropertyValue -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName
-        return switch ($value) {
+        $returnValue = switch ($value) {
             '0' { 'Always' }
             '1' { 'WhenFull' }
             '2' { 'Never' }
             default { $null }
         }
+        return $returnValue
     }
 
     [bool] TestTaskbarGroupingMode([WindowsSettings] $currentState) {
@@ -780,12 +781,13 @@ class WindowsSettings {
             return $null
         }
         $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName
-        return switch ($value) {
+        $returnValue = switch ($value) {
             '0' { 'Duplicate' }
             '1' { 'PrimaryAndWindow' }
             '2' { 'WindowOnly' }
             default { $null }
         }
+        return $returnValue
     }
 
     [bool] TestTaskbarMultiMonMode([WindowsSettings] $currentState) {
@@ -800,12 +802,13 @@ class WindowsSettings {
             return $null
         }
         $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName
-        return switch ($value) {
+        $returnValue = switch ($value) {
             '0' { 'Duplicate' }
             '1' { 'PrimaryAndWindow' }
             '2' { 'WindowOnly' }
             default { $null }
         }
+        return $returnValue
     }
 
     [bool] TestDesktopTaskbarMultiMonMode([WindowsSettings] $currentState) {
