@@ -725,18 +725,17 @@ class WindowsSettings {
         return $currentState.DesktopTaskbarBadges -eq $this.DesktopTaskbarBadges
     }
 
-    [string] GetTaskbarGroupingMode() {
+    [object] GetTaskbarGroupingMode() {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName)) {
             return $null
         }
         $value = Get-ItemPropertyValue -Path $global:TaskbarGlomLevelRegistryPath -Name $this.TaskbarGroupingModePropertyName
-        $returnValue = switch ($value) {
-            '0' { 'Always' }
-            '1' { 'WhenFull' }
-            '2' { 'Never' }
-            default { $null }
+        switch ($value) {
+            '0' { return 'Always' }
+            '1' { return 'WhenFull' }
+            '2' { return 'Never' }
         }
-        return $returnValue
+        return $null
     }
 
     [bool] TestTaskbarGroupingMode([WindowsSettings] $currentState) {
@@ -776,18 +775,17 @@ class WindowsSettings {
         return $currentState.DesktopTaskbarMultiMon -eq $this.DesktopTaskbarMultiMon
     }
 
-    [string] GetTaskbarMultiMonMode() {
+    [object] GetTaskbarMultiMonMode() {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName)) {
             return $null
         }
         $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName
-        $returnValue = switch ($value) {
-            '0' { 'Duplicate' }
-            '1' { 'PrimaryAndWindow' }
-            '2' { 'WindowOnly' }
-            default { $null }
+        switch ($value) {
+            '0' { return 'Duplicate' }
+            '1' { return 'PrimaryAndWindow' }
+            '2' { return 'WindowOnly' }
         }
-        return $returnValue
+        return $null
     }
 
     [bool] TestTaskbarMultiMonMode([WindowsSettings] $currentState) {
@@ -797,18 +795,17 @@ class WindowsSettings {
         return $currentState.TaskbarMultiMonMode -eq $this.TaskbarMultiMonMode
     }
 
-    [string] GetDesktopTaskbarMultiMonMode() {
+    [object] GetDesktopTaskbarMultiMonMode() {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName)) {
             return $null
         }
         $value = Get-ItemPropertyValue -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName
-        $returnValue = switch ($value) {
-            '0' { 'Duplicate' }
-            '1' { 'PrimaryAndWindow' }
-            '2' { 'WindowOnly' }
-            default { $null }
+        switch ($value) {
+            '0' { return 'Duplicate' }
+            '1' { return 'PrimaryAndWindow' }
+            '2' { return 'WindowOnly' }
         }
-        return $returnValue
+        return $null
     }
 
     [bool] TestDesktopTaskbarMultiMonMode([WindowsSettings] $currentState) {
