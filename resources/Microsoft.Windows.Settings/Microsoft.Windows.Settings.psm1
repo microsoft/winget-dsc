@@ -775,7 +775,7 @@ class WindowsSettings {
         return $currentState.DesktopTaskbarMultiMon -eq $this.DesktopTaskbarMultiMon
     }
 
-    [object] GetTaskbarMultiMonMode() {
+    [string] GetTaskbarMultiMonMode() {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.TaskbarMultiMonModePropertyName)) {
             return $null
         }
@@ -795,7 +795,7 @@ class WindowsSettings {
         return $currentState.TaskbarMultiMonMode -eq $this.TaskbarMultiMonMode
     }
 
-    [object] GetDesktopTaskbarMultiMonMode() {
+    [string] GetDesktopTaskbarMultiMonMode() {
         if (-not(DoesRegistryKeyPropertyExist -Path $global:TaskbarMultiMonModeRegistryPath -Name $this.DesktopTaskbarMultiMonModePropertyName)) {
             return $null
         }

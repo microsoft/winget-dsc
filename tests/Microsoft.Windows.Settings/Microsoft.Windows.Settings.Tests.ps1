@@ -1080,8 +1080,8 @@ Describe 'WindowsSettings - TaskbarGroupingMode' {
         $settings.SID = 'TestSID'
         $currentState = $settings.Get()
         
-        # Should be either Always, WhenFull, Never, or null
-        $currentState.TaskbarGroupingMode | Should -BeIn @('Always', 'WhenFull', 'Never', $null)
+        # Should be either Always, WhenFull, Never, null, or empty string
+        $currentState.TaskbarGroupingMode | Should -BeIn @('Always', 'WhenFull', 'Never', $null, '')
     }
     
     It 'Sets TaskbarGroupingMode to Always' {
@@ -1247,8 +1247,8 @@ Describe 'WindowsSettings - TaskbarMultiMonMode' {
         $settings.SID = 'TestSID'
         $currentState = $settings.Get()
         
-        # Should be one of the valid values or null
-        $currentState.TaskbarMultiMonMode | Should -BeIn @('Duplicate', 'PrimaryAndWindow', 'WindowOnly', $null)
+        # Should be one of the valid values, null, or empty string
+        $currentState.TaskbarMultiMonMode | Should -BeIn @('Duplicate', 'PrimaryAndWindow', 'WindowOnly', $null, '')
     }
     
     It 'Sets TaskbarMultiMonMode to Duplicate' {
@@ -1331,8 +1331,8 @@ Describe 'WindowsSettings - DesktopTaskbarMultiMonMode' {
         $settings.SID = 'TestSID'
         $currentState = $settings.Get()
         
-        # Should be one of the valid values or null
-        $currentState.DesktopTaskbarMultiMonMode | Should -BeIn @('Duplicate', 'PrimaryAndWindow', 'WindowOnly', $null)
+        # Should be one of the valid values, null, or empty string
+        $currentState.DesktopTaskbarMultiMonMode | Should -BeIn @('Duplicate', 'PrimaryAndWindow', 'WindowOnly', $null, '')
     }
     
     It 'Sets DesktopTaskbarMultiMonMode to Duplicate' {
