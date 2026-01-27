@@ -450,7 +450,7 @@ class VSCodeExtension {
 
             return $finalState
         }
-        Write-Verbose -Message "Extension '$($this.Name)' with version '$($this.Version)' and pre-release '$($this.PreRelease)' does not exist." -Verbose
+        Write-Verbose -Message "Extension '$($this.Name)' with version '$($this.Version)' and pre-release '$($this.PreRelease)' does not exist."
         return [VSCodeExtension]@{
             Name       = $this.Name
             Version    = $this.Version
