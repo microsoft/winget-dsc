@@ -24,6 +24,10 @@ Repositories that make use of a WinGet configuration file are documented in [Git
 
 Sample configurations in the [Learn Tutorials](./Configuration%20files/Learn%20tutorials/) directory are directly related to the [Windows development paths](https://learn.microsoft.com/windows/dev-environment/#development-paths). These configurations will allow you to automatically set up your device and begin developing in your preferred language quickly.
 
+### Virtual Machines 
+
+The VirtualMachines folder contains a script that will create two Virtual Machines. A Dev Tools Image VM, and a MSIX Packaging Toolkit VM. For more information see the [Virtual Machines README.md](./virtualmachines/readme.md)
+
 ### Sample DSC Resources (DscResources)
 
 Examples for a few specific DSC Resources are under the [DscResources](./DscResources/) directory.
