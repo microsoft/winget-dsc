@@ -99,6 +99,7 @@ wildcards
 winappdev
 Windo
 winget
+winui
 Wnd
 workaround
 workflows
