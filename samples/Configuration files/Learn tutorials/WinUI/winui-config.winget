@@ -47,5 +47,5 @@ properties:
         components:
           - Microsoft.VisualStudio.Workload.ManagedDesktop
           - Microsoft.VisualStudio.Workload.Universal
-          - Microsoft.VisualStudio.ComponentGroup.WindowsAppSDK.Cs
+          - Microsoft.VisualStudio.Component.WindowsAppSdkSupport.CSharp
   configurationVersion: 0.2.0
