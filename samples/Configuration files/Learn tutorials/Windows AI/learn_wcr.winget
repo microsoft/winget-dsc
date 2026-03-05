@@ -29,7 +29,7 @@ properties:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: Visual Studio
       directives:
-        description: Install Visual Studio 2022 Community
+        description: Install Visual Studio Community
         securityContext: elevated
       settings:
         id: Microsoft.VisualStudio.Community
