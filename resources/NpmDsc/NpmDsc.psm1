@@ -343,6 +343,14 @@ class NpmPackage {
         $inDesiredState = $this.Test()
         if ($this.Ensure -eq [Ensure]::Present) {
             if (-not $inDesiredState) {
+                # TODO: Handling owner/repo package references pointing to GH repositories requires accounting
+                #       for git errors (missing git, failed authentication, etc.).
+                #
+                # See: https://docs.npmjs.com/cli/v11/commands/npm-install#description
+                if (($this.Name -notmatch '^git(?:\+(?:ssh|https?|file))?://') -and $this.Name.Contains('/') -and -not $this.Name.StartsWith('@')) {
+                    throw "The Set operation currently only supports packages specified as [<@scope>/]<name>. The given package looks like a GitHub repository: $($this.Name)."
+                }
+
                 Install-NpmPackage -PackageName $this.Name -Arguments $this.Arguments -Global $this.Global
             }
         } else {
