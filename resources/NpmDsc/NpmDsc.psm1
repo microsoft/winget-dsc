@@ -341,6 +341,12 @@ class NpmPackage {
 
     [void] Set() {
         if (-not $this.Test()) {
+            $installParams = @{
+                PackageName = $this.Name
+                Arguments   = $this.Arguments
+                Global      = $this.Global
+            }
+
             if ($this.Ensure -eq [Ensure]::Present) {
                 # TODO: Handling owner/repo package references pointing to GH repositories requires accounting
                 #       for git errors (missing git, failed authentication, etc.).
@@ -350,9 +356,9 @@ class NpmPackage {
                     throw "The Set operation currently only supports packages specified as [<@scope>/]<name>. The given package looks like a GitHub repository: $($this.Name)."
                 }
 
-                Install-NpmPackage -PackageName $this.Name -Arguments $this.Arguments -Global $this.Global
+                Install-NpmPackage @installParams
             } else {
-                Uninstall-NpmPackage -PackageName $this.Name -Arguments $this.Arguments -Global $this.Global
+                Uninstall-NpmPackage @installParams
             }
         }
     }
