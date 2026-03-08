@@ -351,17 +351,20 @@ class NpmPackage {
         }
 
         if ($this.Ensure -eq [Ensure]::Present) {
-            # TODO: Handling owner/repo package references pointing to GH repositories requires accounting
-            #       for git errors (missing git, failed authentication, etc.).
-            #
-            # See: https://docs.npmjs.com/cli/v11/commands/npm-install#description
-            if (($this.Name -notmatch '^git(?:\+(?:ssh|https?|file))?://') -and $this.Name.Contains('/') -and -not $this.Name.StartsWith('@')) {
-                throw "The Set operation currently only supports packages specified as [<@scope>/]<name>. The given package looks like a GitHub repository: $($this.Name)."
-            }
-
+            [NpmPackage]::EnsureValidPackageName($this.Name)
             Install-NpmPackage @installParams
         } else {
             Uninstall-NpmPackage @installParams
+        }
+    }
+
+    hidden static [void] EnsureValidPackageName($name) {
+        # TODO: Handling owner/repo package references pointing to GH repositories requires accounting
+        #       for git errors (missing git, failed authentication, etc.).
+        #
+        # See: https://docs.npmjs.com/cli/v11/commands/npm-install#description
+        if (($name -notmatch '^git(?:\+(?:ssh|https?|file))?://') -and $name.Contains('/') -and -not $name.StartsWith('@')) {
+            throw "The Set operation currently only supports packages specified as [<@scope>/]<name>. The given package looks like a GitHub repository: $($name)."
         }
     }
 
