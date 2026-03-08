@@ -340,9 +340,8 @@ class NpmPackage {
     }
 
     [void] Set() {
-        $inDesiredState = $this.Test()
-        if ($this.Ensure -eq [Ensure]::Present) {
-            if (-not $inDesiredState) {
+        if (-not $this.Test()) {
+            if ($this.Ensure -eq [Ensure]::Present) {
                 # TODO: Handling owner/repo package references pointing to GH repositories requires accounting
                 #       for git errors (missing git, failed authentication, etc.).
                 #
@@ -352,9 +351,7 @@ class NpmPackage {
                 }
 
                 Install-NpmPackage -PackageName $this.Name -Arguments $this.Arguments -Global $this.Global
-            }
-        } else {
-            if (-not $inDesiredState) {
+            } else {
                 Uninstall-NpmPackage -PackageName $this.Name -Arguments $this.Arguments -Global $this.Global
             }
         }
