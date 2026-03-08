@@ -340,26 +340,28 @@ class NpmPackage {
     }
 
     [void] Set() {
-        if (-not $this.Test()) {
-            $installParams = @{
-                PackageName = $this.Name
-                Arguments   = $this.Arguments
-                Global      = $this.Global
+        if ($this.Test()) {
+            return
+        }
+
+        $installParams = @{
+            PackageName = $this.Name
+            Arguments   = $this.Arguments
+            Global      = $this.Global
+        }
+
+        if ($this.Ensure -eq [Ensure]::Present) {
+            # TODO: Handling owner/repo package references pointing to GH repositories requires accounting
+            #       for git errors (missing git, failed authentication, etc.).
+            #
+            # See: https://docs.npmjs.com/cli/v11/commands/npm-install#description
+            if (($this.Name -notmatch '^git(?:\+(?:ssh|https?|file))?://') -and $this.Name.Contains('/') -and -not $this.Name.StartsWith('@')) {
+                throw "The Set operation currently only supports packages specified as [<@scope>/]<name>. The given package looks like a GitHub repository: $($this.Name)."
             }
 
-            if ($this.Ensure -eq [Ensure]::Present) {
-                # TODO: Handling owner/repo package references pointing to GH repositories requires accounting
-                #       for git errors (missing git, failed authentication, etc.).
-                #
-                # See: https://docs.npmjs.com/cli/v11/commands/npm-install#description
-                if (($this.Name -notmatch '^git(?:\+(?:ssh|https?|file))?://') -and $this.Name.Contains('/') -and -not $this.Name.StartsWith('@')) {
-                    throw "The Set operation currently only supports packages specified as [<@scope>/]<name>. The given package looks like a GitHub repository: $($this.Name)."
-                }
-
-                Install-NpmPackage @installParams
-            } else {
-                Uninstall-NpmPackage @installParams
-            }
+            Install-NpmPackage @installParams
+        } else {
+            Uninstall-NpmPackage @installParams
         }
     }
 
