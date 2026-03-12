@@ -85,6 +85,47 @@ Describe 'NpmPackage' {
         $finalState.InDesiredState | Should -Be $true
     }
 
+    Context 'Package names' {
+        BeforeEach {
+            npm uninstall babel/helpers 2>$null | Out-Null || $(throw 'npm uninstall failed')
+            npm uninstall --global babel/helpers 2>$null | Out-Null || $(throw 'npm uninstall failed')
+        }
+
+        Context 'Present' {
+            It 'Unsupported if package name points to VCS repository (scope/name)' -Skip:(!$IsWindows) -ForEach @(
+                @{ isGlobal = $false }
+                @{ isGlobal = $true }
+            ) {
+                $desiredState = @{
+                    Name   = 'babel/helpers'
+                    Global = $isGlobal
+                    Ensure = 'Present'
+                }
+
+                $message = 'The Set operation currently only supports packages specified as `[<@scope>/`]<name>. The given package looks like a GitHub repository: babel/helpers.'
+
+                { Invoke-DscResource -Name NpmPackage -ModuleName NpmDsc -Method Set -Property $desiredState } | Should -Throw $message
+            }
+        }
+
+        Context 'Absent' {
+            It 'Supports any package name' -Skip:(!$IsWindows) -ForEach @(
+                @{ isGlobal = $false }
+                @{ isGlobal = $true }
+            ) {
+                $desiredState = @{
+                    Name   = 'babel/helpers'
+                    Global = $isGlobal
+                    Ensure = 'Absent'
+                }
+
+                Invoke-DscResource -Name NpmPackage -ModuleName NpmDsc -Method Set -Property $desiredState
+                $desiredState = Invoke-DscResource -Name NpmPackage -ModuleName NpmDsc -Method Test -Property $desiredState
+                $desiredState.InDesiredState | Should -Be $true
+            }
+        }
+    }
+
     It 'Performs whatif operation successfully' -Skip:(!$IsWindows) {
         $whatIfState = @{
             Name   = 'react'
