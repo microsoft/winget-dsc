@@ -85,6 +85,10 @@ Describe 'NpmPackage' {
         $finalState.InDesiredState | Should -Be $true
     }
 
+    It 'Throws if npm returns non-zero exit code' -Skip:(!$IsWindows) {
+        { Invoke-Npm '!' } | Should -Throw "Command 'npm !' failed:*"
+    }
+
     It 'Performs whatif operation successfully' -Skip:(!$IsWindows) {
         $whatIfState = @{
             Name   = 'react'
