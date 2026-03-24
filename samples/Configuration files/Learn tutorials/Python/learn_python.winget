@@ -14,9 +14,9 @@
 properties:
   resources:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: Python 3.13
+      id: Python 3.14
       directives:
-        description: Install Python 3.13
+        description: Install Python 3.14
       settings:
         id: 9PNRBTZXMB4Z
         source: msstore
