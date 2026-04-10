@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+############################################################################################################
+# This configuration will install Visual Studio 2022 and the workloads/components commonly required to     #
+# build React Native for Windows applications.                                                             #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/react-native-for-windows #
+#                                                                                                          #
+# This will:                                                                                               #
+#     * Enable developer mode                                                                              #
+#     * Install Visual Studio 2022 Enterprise                                                               #
+#     * Install Visual Studio workloads and components for React Native desktop app debugging              #
+#                                                                                                          #
+############################################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.Windows.Settings/WindowsSettings
+      directives:
+        description: Enable Developer Mode
+        securityContext: elevated
+      settings:
+        DeveloperMode: true
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: VisualStudio
+      directives:
+        description: Install Visual Studio 2022 Enterprise
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudio.2022.Enterprise
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.VisualStudio.DSC/VSComponents
+      id: VSWorkloads
+      dependsOn:
+        - VisualStudio
+      directives:
+        description: Install required Visual Studio workloads and components for React Native for Windows
+        securityContext: elevated
+      settings:
+        productId: Microsoft.VisualStudio.Product.Enterprise
+        channelId: VisualStudio.17.Release
+        components:
+          - Microsoft.VisualStudio.Workload.Node
+        includeRecommended: true
+
+  configurationVersion: 0.2.0

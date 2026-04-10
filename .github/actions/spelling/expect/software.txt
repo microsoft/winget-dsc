@@ -6,3 +6,12 @@ NUnit
 reportgenerator
 markdownlint
 msiexec
+winget
+msrustup
+exa
+ripgrep
+rustup
+tokio
+lldb
+Rustlang
+vadimcn

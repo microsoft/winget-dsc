@@ -1,10 +1,16 @@
 # Install C and C++ support in Visual Studio
 
-This folder contains a [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration File](https://learn.microsoft.com/windows/package-manager/configuration/) ([_learn_cpp.winget_](./learn_cpp.winget)) that will work with the WinGet command line interface (`winget configure --file [path: learn_cpp.winget]`) or can be run directly by double-clicking on the file.
+This folder contains [Windows Package Manager](https://learn.microsoft.com/windows/package-manager/winget/) (WinGet) [Configuration Files](https://learn.microsoft.com/windows/package-manager/configuration/) for three different Visual Studio 2022 distributions. These configuration files will work with the WinGet command line interface (i.e. `winget configure --file [path: learn_cpp_vs_community.winget]`) or can be run directly by double-clicking on the file.
 
-When run, the [learn_cpp.winget](./learn_cpp.winget) file will install the following list of applications:
+Choose the configuration file that matches your Visual Studio license:
 
-- Microsoft Visual Studio Community 2022
+- Community: Free for individual use
+- Professional: For small teams and organizations
+- Enterprise: For large organizations, advanced feature
+
+When run, the configuration file will install the following list of applications:
+
+- Visual Studio 2022 (Community, Professional, or Enterprise)
 - Required Visual Studio Workloads (NativeDesktop) along with the recommended components for C++ development
 
 The `configuration.winget` file will also enable [Developer Mode](https://learn.microsoft.com/windows/apps/get-started/developer-mode-features-and-debugging) on your device.
