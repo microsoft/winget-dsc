@@ -36,18 +36,18 @@ name: Spell Checking
 on:
   push:
     branches:
-      - '**'
+      - "**"
     tags-ignore:
-      - '**'
+      - "**"
   pull_request_target:
     branches:
-      - '**'
+      - "**"
     tags-ignore:
-      - '**'
+      - "**"
     types:
-      - 'opened'
-      - 'reopened'
-      - 'synchronize'
+      - "opened"
+      - "reopened"
+      - "synchronize"
 
 jobs:
   spelling:
@@ -67,7 +67,7 @@ jobs:
     steps:
       - name: check-spelling
         id: spelling
-        uses: check-spelling/check-spelling@v0.0.24
+        uses: check-spelling/check-spelling@v0.0.26
         with:
           suppress_push_for_open_pull_request: 1
           checkout: true
@@ -82,7 +82,7 @@ jobs:
             https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/powershell/src/powershell.txt
             https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/win32/src/generator/win32.txt
             https://raw.githubusercontent.com/streetsidesoftware/cspell-dicts/098e323325a389a5d1cebcd7770807b9d11d0a17/dictionaries/python/src/common_packages.txt
-          check_extra_dictionaries: ''
+          check_extra_dictionaries: ""
 
   comment-push:
     name: Report (Push)
@@ -94,7 +94,7 @@ jobs:
     if: (success() || failure()) && needs.spelling.outputs.followup && github.event_name == 'push'
     steps:
       - name: comment
-        uses: check-spelling/check-spelling@v0.0.24
+        uses: check-spelling/check-spelling@v0.0.26
         with:
           checkout: true
           spell_check_this: check-spelling/spell-check-this@prerelease
@@ -110,7 +110,7 @@ jobs:
     if: (success() || failure()) && needs.spelling.outputs.followup && contains(github.event_name, 'pull_request')
     steps:
       - name: comment
-        uses: check-spelling/check-spelling@v0.0.24
+        uses: check-spelling/check-spelling@v0.0.26
         with:
           checkout: true
           spell_check_this: check-spelling/spell-check-this@prerelease
