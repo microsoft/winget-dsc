@@ -4,7 +4,7 @@ This folder contains a [Windows Package Manager](https://learn.microsoft.com/win
 
 When run, the [learn_python.winget](./learn_python.winget) file will install the following list of applications:
 
-- Python 3.13
+- Python 3.14
 - Visual Studio Code
 - Visual Studio Code extension for Python
 
