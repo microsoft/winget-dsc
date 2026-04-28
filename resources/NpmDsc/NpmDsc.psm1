@@ -17,8 +17,14 @@ function Invoke-Npm {
         [Parameter(Mandatory = $true)]
         [string]$Command
     )
+        $value = Invoke-Expression -Command "npm $Command"
 
-    return Invoke-Expression -Command "npm $Command"
+        if ($LASTEXITCODE -ne 0) {
+            $errors = Get-NpmErrorMessages -LogPath (GetNpmPath)
+            throw "Command 'npm $($Command.Trim())' failed: $($errors -join '; ')"
+        }
+
+        return $value
 }
 
 function Set-PackageDirectory {
