@@ -1,3 +1,4 @@
+adaptedresource
 ADDLOCAL
 Amd
 Authenticode
