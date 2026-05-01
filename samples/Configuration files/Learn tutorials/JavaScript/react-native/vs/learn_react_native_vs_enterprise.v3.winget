@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+############################################################################################################
+# This configuration will install Visual Studio 2022 and the workloads/components commonly required to     #
+# build React Native for Windows applications.                                                             #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/react-native-for-windows #
+#                                                                                                          #
+# This will:                                                                                               #
+#     * Enable developer mode                                                                              #
+#     * Install Visual Studio 2022 Enterprise                                                               #
+#     * Install Visual Studio workloads and components for React Native desktop app debugging              #
+#                                                                                                          #
+############################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: EnsureMicrosoftWindowsSettingsModule
+    properties:
+      executable: 'C:\Program Files\PowerShell\7\pwsh.exe'
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Settings))
+          { Install-PSResource -Name Microsoft.Windows.Settings -Prerelease
+          -TrustRepository -AcceptLicense }
+      treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.Windows.Settings module is installed
+
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: EnsureMicrosoftVisualStudioDscModule
+    properties:
+      executable: 'C:\Program Files\PowerShell\7\pwsh.exe'
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.VisualStudio.DSC))
+          { Install-PSResource -Name Microsoft.VisualStudio.DSC -Prerelease
+          -TrustRepository -AcceptLicense }
+      treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.VisualStudio.DSC module is installed
+
+  - type: Microsoft.Windows.Settings/WindowsSettings
+    name: EnableDeveloperMode
+    dependsOn:
+      - EnsureMicrosoftWindowsSettingsModule
+    properties:
+      DeveloperMode: true
+    metadata:
+      description: Enable Developer Mode
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.WinGet/Package
+    name: InstallVisualStudio2022Enterprise
+    properties:
+      id: Microsoft.VisualStudio.2022.Enterprise
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Visual Studio 2022 Enterprise
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.VisualStudio.DSC/VSComponents
+    name: InstallReactNativeWorkloads
+    dependsOn:
+      - InstallVisualStudio2022Enterprise
+      - EnsureMicrosoftVisualStudioDscModule
+    properties:
+      productId: Microsoft.VisualStudio.Product.Enterprise
+      channelId: VisualStudio.17.Release
+      components:
+        - Microsoft.VisualStudio.Workload.Node
+      includeRecommended: true
+    metadata:
+      description: Install required Visual Studio workloads and components for React Native for Windows
+      winget:
+        securityContext: elevated

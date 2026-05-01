@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+#################################################################################################################
+# This v3 configuration will install dependencies for running PWA or hybrid web apps on an Android emulator        #
+# Reference: https://learn.microsoft.com/en-us/windows/android/pwa#test-your-ionic-app-on-a-device-or-emulator  #                                  #
+#                                                                                                               #
+# This will:                                                                                                    #
+#     * Install Android Studio                                                                                  #
+#     * Install OpenJDK 17                                                                                      #
+#     * Install Windows Terminal                                                                                #
+#                                                                                                               #
+#################################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: InstallAndroidStudio
+    properties:
+      id: Google.AndroidStudio
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Android Studio (includes emulator and AVD manager)
+
+  - type: Microsoft.WinGet/Package
+    name: InstallOpenJDK17
+    properties:
+      id: Microsoft.OpenJDK.17
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install OpenJDK 17 (required for Android builds)
+
+  - type: Microsoft.WinGet/Package
+    name: InstallWindowsTerminal
+    properties:
+      id: Microsoft.WindowsTerminal
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Windows Terminal (optional for CLI tools)

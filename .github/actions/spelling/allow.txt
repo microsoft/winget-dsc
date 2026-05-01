@@ -33,6 +33,7 @@ Hmmss
 https
 Icm
 inaries
+JSLTS
 ionide
 JDK
 jquery

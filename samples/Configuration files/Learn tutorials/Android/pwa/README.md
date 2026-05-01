@@ -25,6 +25,10 @@ winget configure --file .\learn_android_pwa.winget
 
 If anything is already installed the configuration will skip it.
 
+## v3 Samples
+
+A v3 version of each configuration is also available (e.g., `learn_android_pwa.v3.winget`) using the dscv3 processor syntax with explicit module installs.
+
 Issues:
 
 If you encounter problems running these configuration files, submit a new issue: [Submit a new issue](https://github.com/microsoft/winget-dsc/issues/new/choose) or search existing issues: [Search issues](https://github.com/microsoft/winget-dsc/issues)

@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+# Reference: https://learn.microsoft.com/cpp/build/vscpp-step-0-installation?view=msvc-170
+
+##########################################################################################################
+# This v3 configuration will install the tools necessary to get started with C++ development on Windows. #
+# This configuration requires administrative privileges to install Visual Studio and workloads.           #
+#                                                                                                        #
+# This will:                                                                                             #
+#     * Install Visual Studio Enterprise 2022                                                            #
+#     * Install the NativeDesktop workload to Visual Studio Enterprise 2022                              #
+#                                                                                                        #
+##########################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+- type: Microsoft.DSC.Transitional/RunCommandOnSet
+  name: Microsoft.VisualStudio.DSC.Module
+  properties:
+    executable: C:\Program Files\PowerShell\7\pwsh.exe
+    arguments:
+      "0": -NoProfile
+      "1": -NoLogo
+      "2": -Command
+      "3": >-
+        if (-not (Get-Module -ListAvailable -Name Microsoft.VisualStudio.DSC))
+        { Install-PSResource -Name Microsoft.VisualStudio.DSC -Prerelease
+        -TrustRepository -AcceptLicense }
+      treatAsArray: true
+  metadata:
+    description: Ensure Microsoft.VisualStudio.DSC module is installed
+- type: Microsoft.WinGet/Package
+  name: VisualStudio2022Enterprise
+  properties:
+    id: Microsoft.VisualStudio.2022.Enterprise
+    source: winget
+    useLatest: true
+  metadata:
+    description: Install Visual Studio 2022 Enterprise
+    winget:
+      securityContext: elevated
+- type: Microsoft.VisualStudio.DSC/VSComponents
+  name: NativeDesktopWorkload
+  dependsOn:
+    - VisualStudio2022Enterprise
+    - Microsoft.VisualStudio.DSC.Module
+  properties:
+    productId: Microsoft.VisualStudio.Product.Enterprise
+    channelId: VisualStudio.17.Release
+    components:
+      - Microsoft.VisualStudio.Workload.NativeDesktop
+    includeRecommended: true
+  metadata:
+    description: Install Desktop development with C++ workload
+    winget:
+      securityContext: elevated
