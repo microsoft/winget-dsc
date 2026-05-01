@@ -76,6 +76,37 @@ enum Direction {
 }
 
 #region DSCResources
+<#
+    .SYNOPSIS
+        The `DeveloperMode` DSC resource is used to enable or disable Windows Developer Mode.
+
+    .DESCRIPTION
+        The `DeveloperMode` DSC resource configures the Windows Developer Mode setting, which
+        allows sideloading of apps and other developer-focused features.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+        * This resource must be run as an Administrator.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Ensure
+        Specifies whether Developer Mode should be enabled (`Present`) or disabled (`Absent`).
+        Defaults to `Present`.
+
+    .PARAMETER IsEnabled
+        A read-only property indicating whether Developer Mode is currently enabled.
+        This property is not configurable.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name DeveloperMode -Method Set -Property @{
+            Ensure = 'Present'
+        }
+
+        This example enables Windows Developer Mode.
+#>
 [DSCResource()]
 class DeveloperMode {
     # Key required. Do not set.
@@ -132,6 +163,36 @@ class DeveloperMode {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `OsVersion` DSC resource is used to assert a minimum Windows operating system version requirement.
+
+    .DESCRIPTION
+        The `OsVersion` DSC resource validates that the target machine is running at least the
+        specified minimum version of Windows. This resource is read-only and does not modify
+        any system settings.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER MinVersion
+        The minimum required version of the operating system. This is a mandatory property.
+
+    .PARAMETER OsVersion
+        A read-only property indicating the current operating system version.
+        This property is not configurable.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name OsVersion -Method Test -Property @{
+            MinVersion = '10.0.19041.0'
+        }
+
+        This example asserts that the machine is running Windows 10 version 2004 or later.
+#>
 [DSCResource()]
 class OsVersion {
     # Key required. Do not set.
@@ -179,6 +240,52 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:SearchRegistryPath = $global:UACRegistryPath = $global:RemoteDesktopRegistryPath = $global:LongPathsRegistryPath = $env:TestRegistryPath
 }
 
+<#
+    .SYNOPSIS
+        The `Taskbar` DSC resource is used to manage Windows taskbar settings.
+
+    .DESCRIPTION
+        The `Taskbar` DSC resource configures taskbar properties including alignment,
+        label hide behavior, search box mode, the Task View button, and the Widgets button.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Alignment
+        Sets the taskbar alignment. Accepted values are `Left` or `Middle`.
+        Defaults to `KeepCurrentValue`.
+
+    .PARAMETER HideLabelsMode
+        Sets the taskbar button label hide behavior. Accepted values are `Always`, `WhenFull`, or `Never`.
+        Defaults to `KeepCurrentValue`.
+
+    .PARAMETER SearchboxMode
+        Sets the search box display mode. Accepted values are `Hide`, `ShowIconOnly`, `SearchBox`, or `ShowIconAndLabel`.
+        Defaults to `KeepCurrentValue`.
+
+    .PARAMETER TaskViewButton
+        Shows or hides the Task View button on the taskbar.
+        Defaults to `KeepCurrentValue`.
+
+    .PARAMETER WidgetsButton
+        Shows or hides the Widgets button on the taskbar.
+        Defaults to `KeepCurrentValue`.
+
+    .PARAMETER RestartExplorer
+        Specifies whether to restart Windows Explorer to apply changes. Defaults to `$false`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name Taskbar -Method Set -Property @{
+            Alignment     = 'Left'
+            SearchboxMode = 'Hide'
+        }
+
+        This example aligns the taskbar to the left and hides the search box.
+#>
 [DSCResource()]
 class Taskbar {
     [DscProperty()] [Alignment] $Alignment = [Alignment]::KeepCurrentValue
@@ -325,6 +432,41 @@ class Taskbar {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `WindowsExplorer` DSC resource is used to manage Windows Explorer settings.
+
+    .DESCRIPTION
+        The `WindowsExplorer` DSC resource configures Windows Explorer settings including
+        the visibility of file extensions, hidden files, and item checkboxes in File Explorer.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER FileExtensions
+        Shows or hides file extensions in File Explorer. Defaults to `KeepCurrentValue`.
+
+    .PARAMETER HiddenFiles
+        Shows or hides hidden files and folders in File Explorer. Defaults to `KeepCurrentValue`.
+
+    .PARAMETER ItemCheckBoxes
+        Shows or hides item checkboxes in File Explorer. Defaults to `KeepCurrentValue`.
+
+    .PARAMETER RestartExplorer
+        Specifies whether to restart Windows Explorer to apply changes. Defaults to `$false`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name WindowsExplorer -Method Set -Property @{
+            FileExtensions = 'Show'
+            HiddenFiles    = 'Show'
+        }
+
+        This example configures File Explorer to show file extensions and hidden files.
+#>
 [DSCResource()]
 class WindowsExplorer {
     [DscProperty()] [ShowHideFeature] $FileExtensions = [ShowHideFeature]::KeepCurrentValue
@@ -412,6 +554,33 @@ class WindowsExplorer {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `UserAccessControl` DSC resource is used to manage the User Account Control (UAC) prompt behavior.
+
+    .DESCRIPTION
+        The `UserAccessControl` DSC resource configures the administrator consent prompt behavior
+        for User Account Control (UAC) on Windows.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER AdminConsentPromptBehavior
+        Specifies the UAC admin consent prompt behavior. Accepted values are `NoCredOrConsentRequired`,
+        `RequireCredOnSecureDesktop`, `RequireConsentOnSecureDesktop`, `RequireCred`,
+        `RequireConsent`, or `RequireConsentForNonWindowsBinaries`. Defaults to `KeepCurrentValue`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name UserAccessControl -Method Set -Property @{
+            AdminConsentPromptBehavior = 'RequireConsentForNonWindowsBinaries'
+        }
+
+        This example sets the UAC prompt to require consent for non-Windows binaries.
+#>
 [DSCResource()]
 class UserAccessControl {
     # Key required. Do not set.
@@ -471,6 +640,35 @@ class UserAccessControl {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `EnableDarkMode` DSC resource is used to enable or disable Windows dark mode.
+
+    .DESCRIPTION
+        The `EnableDarkMode` DSC resource sets both the app and system color mode to dark or
+        light by configuring the corresponding Windows registry keys.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Ensure
+        Specifies whether dark mode should be enabled (`Present`) or disabled (`Absent`).
+        Defaults to `Present`.
+
+    .PARAMETER RestartExplorer
+        Specifies whether to restart Windows Explorer to apply changes. Defaults to `$false`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name EnableDarkMode -Method Set -Property @{
+            Ensure = 'Present'
+        }
+
+        This example enables Windows dark mode for both apps and the system.
+#>
 [DSCResource()]
 class EnableDarkMode {
     # Key required. Do not set.
@@ -521,6 +719,32 @@ class EnableDarkMode {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `ShowSecondsInClock` DSC resource is used to show or hide seconds in the taskbar clock.
+
+    .DESCRIPTION
+        The `ShowSecondsInClock` DSC resource configures the Windows registry to include or
+        exclude the seconds display in the system clock on the taskbar.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Ensure
+        Specifies whether seconds should be shown (`Present`) or hidden (`Absent`) in the clock.
+        Defaults to `Present`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name ShowSecondsInClock -Method Set -Property @{
+            Ensure = 'Present'
+        }
+
+        This example enables showing seconds in the Windows taskbar clock.
+#>
 [DSCResource()]
 class ShowSecondsInClock {
     # Key required. Do not set.
@@ -558,6 +782,32 @@ class ShowSecondsInClock {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `EnableRemoteDesktop` DSC resource is used to enable or disable Remote Desktop connections.
+
+    .DESCRIPTION
+        The `EnableRemoteDesktop` DSC resource configures the Windows registry to allow or
+        deny Remote Desktop Protocol (RDP) connections to the target machine.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Ensure
+        Specifies whether Remote Desktop should be enabled (`Present`) or disabled (`Absent`).
+        Defaults to `Present`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name EnableRemoteDesktop -Method Set -Property @{
+            Ensure = 'Present'
+        }
+
+        This example enables Remote Desktop connections on the target machine.
+#>
 [DSCResource()]
 class EnableRemoteDesktop {
     # Key required. Do not set.
@@ -597,6 +847,32 @@ class EnableRemoteDesktop {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `EnableLongPathSupport` DSC resource is used to enable or disable Windows long path support.
+
+    .DESCRIPTION
+        The `EnableLongPathSupport` DSC resource configures the Windows registry to enable or
+        disable support for file and directory paths longer than 260 characters (MAX_PATH).
+
+        ## Requirements
+
+        * Target machine must be running Windows 10 version 1607 or later.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Ensure
+        Specifies whether long path support should be enabled (`Present`) or disabled (`Absent`).
+        Defaults to `Present`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name EnableLongPathSupport -Method Set -Property @{
+            Ensure = 'Present'
+        }
+
+        This example enables long path support on Windows.
+#>
 [DSCResource()]
 class EnableLongPathSupport {
     # Key required. Do not set.
@@ -638,6 +914,45 @@ class EnableLongPathSupport {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `PowerPlanSetting` DSC resource is used to manage Windows power plan settings.
+
+    .DESCRIPTION
+        The `PowerPlanSetting` DSC resource configures timeout values for the active Windows
+        power plan, such as the display timeout and sleep timeout for plugged-in or battery
+        power sources.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER Name
+        The name of the power plan setting to configure. Accepted values are `DisplayTimeout`
+        or `SleepTimeout`. This is a key and mandatory property.
+
+    .PARAMETER PowerSource
+        The power source for the setting. Accepted values are `PluggedIn`, `Battery`, or `All`.
+        This is a mandatory property.
+
+    .PARAMETER SettingValue
+        The timeout value in seconds. This is a mandatory property.
+
+    .PARAMETER PluggedInValue
+        A read-only property indicating the current plugged-in timeout value. This property is not configurable.
+
+    .PARAMETER BatteryValue
+        A read-only property indicating the current battery timeout value. This property is not configurable.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name PowerPlanSetting -Method Set -Property @{
+            Name         = 'DisplayTimeout'
+            PowerSource  = 'PluggedIn'
+            SettingValue = 300
+        }
+
+        This example sets the display timeout to 300 seconds (5 minutes) when the machine is plugged in.
+#>
 [DSCResource()]
 class PowerPlanSetting {
     [DscProperty(Key, Mandatory)]
@@ -658,7 +973,7 @@ class PowerPlanSetting {
     [PowerPlanSetting] Get() {
 
         function Get-PowerPlanSetting ([PowerPlanSettingName] $SettingName) {
-            Begin {
+            begin {
                 # If a power plan group policy is set, the power settings cannot be obtained, so temporarily disable it.
                 $GPReg = Backup-GroupPolicyPowerPlanSetting
                 if ($GPReg) {
@@ -666,7 +981,7 @@ class PowerPlanSetting {
                 }
             }
 
-            Process {
+            process {
                 $SettingGUID = ($SettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? $DisplayTimeoutSettingGUID : $SleepTimeoutSettingGUID
                 $PowerPlan = Get-ActivePowerPlan
                 $planID = $PowerPlan.InstanceId.Split('\')[1] -replace '[{}]'
@@ -690,7 +1005,7 @@ class PowerPlanSetting {
                 return $ReturnValue
             }
 
-            End {
+            end {
                 if ($GPReg) {
                     # Restore the group policies
                     Restore-GroupPolicyPowerPlanSetting -GPRegArray $GPReg
@@ -728,14 +1043,14 @@ class PowerPlanSetting {
 
     [void] Set() {
         function Set-PowerPlanSetting ([PowerPlanSettingName] $PowerPlanSettingName, [PowerSource]$PowerSource, [int]$Value) {
-            Begin {
+            begin {
                 # If a power plan group policy is set, the power settings cannot be obtained, so temporarily disable it.
                 $GPReg = Backup-GroupPolicyPowerPlanSetting
                 if ($GPReg) {
                     Disable-GroupPolicyPowerPlanSetting
                 }
             }
-            Process {
+            process {
                 $SettingGUID = ($PowerPlanSettingName -eq [PowerPlanSettingName]::DisplayTimeout) ? $DisplayTimeoutSettingGUID : $SleepTimeoutSettingGUID
                 $PowerPlan = Get-ActivePowerPlan
                 $planID = $PowerPlan.InstanceId.Split('\')[1] -replace '[{}]'
@@ -757,7 +1072,7 @@ class PowerPlanSetting {
                     Set-CimInstance -CimInstance $Instance
                 }
             }
-            End {
+            end {
                 if ($GPReg) {
                     # Restore the group policies
                     Restore-GroupPolicyPowerPlanSetting -GPRegArray $GPReg
@@ -771,6 +1086,34 @@ class PowerPlanSetting {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `WindowsCapability` DSC resource is used to install or remove Windows optional features.
+
+    .DESCRIPTION
+        The `WindowsCapability` DSC resource adds or removes Windows optional features by name
+        using the `Add-WindowsCapability` and `Remove-WindowsCapability` cmdlets.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+        * This resource may require Administrator privileges.
+
+    .PARAMETER Name
+        The name of the Windows capability to manage. This is a key and mandatory property.
+
+    .PARAMETER Ensure
+        Specifies whether the capability should be installed (`Present`) or removed (`Absent`).
+        Defaults to `Present`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name WindowsCapability -Method Set -Property @{
+            Name   = 'OpenSSH.Client~~~~0.0.1.0'
+            Ensure = 'Present'
+        }
+
+        This example installs the OpenSSH Client Windows capability.
+#>
 [DSCResource()]
 class WindowsCapability {
     [DscProperty(Key, Mandatory)]
@@ -816,6 +1159,36 @@ class WindowsCapability {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `NetConnectionProfile` DSC resource is used to manage the network connection profile for a network adapter.
+
+    .DESCRIPTION
+        The `NetConnectionProfile` DSC resource sets the network category (e.g., `Public`, `Private`,
+        or `DomainAuthenticated`) for the specified network interface.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER InterfaceAlias
+        The alias of the network interface to configure. This is a mandatory property.
+
+    .PARAMETER NetworkCategory
+        The network category to assign. Accepted values are `Public`, `Private`, or `DomainAuthenticated`.
+        This is a mandatory property.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name NetConnectionProfile -Method Set -Property @{
+            InterfaceAlias  = 'Ethernet'
+            NetworkCategory = 'Private'
+        }
+
+        This example sets the Ethernet adapter's network profile to Private.
+#>
 [DSCResource()]
 class NetConnectionProfile {
     # Key required. Do not set.
@@ -853,6 +1226,38 @@ class NetConnectionProfile {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `AdvancedNetworkSharingSetting` DSC resource is used to manage Windows advanced network sharing settings.
+
+    .DESCRIPTION
+        The `AdvancedNetworkSharingSetting` DSC resource enables or disables Network Discovery
+        and File and Printer Sharing for the specified network profiles by managing the
+        corresponding Windows Firewall rules.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER Name
+        The advanced sharing setting to configure. Accepted values are `NetworkDiscovery`
+        or `FileAndPrinterSharing`. This is a key and mandatory property.
+
+    .PARAMETER Profiles
+        The network profiles for which the setting should be enabled (e.g., `Domain`, `Private`, `Public`).
+
+    .PARAMETER EnabledProfiles
+        A read-only property listing the profiles for which the setting is currently enabled.
+        This property is not configurable.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name AdvancedNetworkSharingSetting -Method Set -Property @{
+            Name     = 'NetworkDiscovery'
+            Profiles = @('Private', 'Domain')
+        }
+
+        This example enables Network Discovery for Private and Domain network profiles.
+#>
 [DSCResource()]
 class AdvancedNetworkSharingSetting {
     [DscProperty(Key, Mandatory)]
@@ -918,7 +1323,7 @@ class AdvancedNetworkSharingSetting {
             }
 
             #Disable needed if at least one profile is enabled
-            $profilesToDisable = Get-NetFirewallRule -Group $group | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles -Contains $_.Profile ) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
+            $profilesToDisable = Get-NetFirewallRule -Group $group | Where-Object { ($_.Enabled -eq 'True') -and (-not $this.Profiles -contains $_.Profile ) } | Select-Object -Unique -CaseInsensitive -ExpandProperty Profile
             foreach ($profile in $profilesToDisable) {
                 Set-NetFirewallRule -Group $group -Profile $profile -Enabled False
             }
@@ -926,6 +1331,61 @@ class AdvancedNetworkSharingSetting {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `FirewallRule` DSC resource is used to create, modify, or remove Windows Firewall rules.
+
+    .DESCRIPTION
+        The `FirewallRule` DSC resource manages Windows Firewall rules by name, allowing you to
+        configure the action, direction, ports, protocols, and profiles for each rule.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER Name
+        The unique name of the firewall rule. This is a key and mandatory property.
+
+    .PARAMETER Ensure
+        Specifies whether the firewall rule should be present or absent. Defaults to `Present`.
+
+    .PARAMETER DisplayName
+        The display name of the firewall rule.
+
+    .PARAMETER Action
+        The action for the firewall rule. Accepted values are `NotConfigured`, `Allow`, or `Block`.
+
+    .PARAMETER Description
+        A description for the firewall rule.
+
+    .PARAMETER Direction
+        The direction of the firewall rule. Accepted values are `Inbound` or `Outbound`.
+
+    .PARAMETER Enabled
+        Specifies whether the firewall rule is enabled.
+
+    .PARAMETER LocalPort
+        The local ports to which the rule applies.
+
+    .PARAMETER Profiles
+        The network profiles to which the rule applies (e.g., `Domain`, `Private`, `Public`).
+
+    .PARAMETER Protocol
+        The protocol for the firewall rule (e.g., `TCP`, `UDP`).
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Developer -Name FirewallRule -Method Set -Property @{
+            Name      = 'MyApp-Inbound-TCP-8080'
+            Ensure    = 'Present'
+            Action    = 'Allow'
+            Direction = 'Inbound'
+            LocalPort = @('8080')
+            Protocol  = 'TCP'
+            Enabled   = $true
+        }
+
+        This example creates a firewall rule to allow inbound TCP traffic on port 8080.
+#>
 [DSCResource()]
 class FirewallRule {
     [DscProperty(Key, Mandatory)]

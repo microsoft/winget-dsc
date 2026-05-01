@@ -1,0 +1,107 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "NpmDsc/NpmInstall",
+      "author": "DscSamples",
+      "description": "The `NpmInstall` DSC resource is used to install all npm packages listed in a `package.json` file.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the npm packages should be present or absent. Defaults to `Present`."
+            },
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "Global": {
+              "type": "boolean",
+              "title": "Global",
+              "description": "Indicates whether to install packages globally."
+            },
+            "PackageDirectory": {
+              "type": "string",
+              "title": "PackageDirectory",
+              "description": "The directory containing the `package.json` file. If not specified, the current directory is used."
+            },
+            "Arguments": {
+              "type": "string",
+              "title": "Arguments",
+              "description": "Additional arguments to pass to `npm install`."
+            }
+          },
+          "description": "The `NpmInstall` DSC resource is used to install all npm packages listed in a `package.json` file.",
+          "title": "NpmDsc/NpmInstall"
+        }
+      },
+      "path": "NpmDsc.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "NpmDsc/NpmPackage",
+      "author": "DscSamples",
+      "description": "The `NpmPackage` DSC Resource allows you to manage the installation, update, and removal of npm packages. This resource ensures that the specified npm package is in the desired state.",
+      "capabilities": ["get", "test", "set", "export", "whatIf"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["Name"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the npm package should be present or absent. The default value is `Present`."
+            },
+            "Name": {
+              "type": "string",
+              "title": "Name",
+              "description": "The name of the npm package to manage. This is a key property."
+            },
+            "Version": {
+              "type": "string",
+              "title": "Version",
+              "description": "The version of the npm package to install. If not specified, the latest version will be installed."
+            },
+            "PackageDirectory": {
+              "type": "string",
+              "title": "PackageDirectory",
+              "description": "The directory where the npm package should be installed. If not specified, the package will be installed in the current directory."
+            },
+            "Global": {
+              "type": "boolean",
+              "title": "Global",
+              "description": "Indicates whether the npm package should be installed globally."
+            },
+            "Arguments": {
+              "type": "string",
+              "title": "Arguments",
+              "description": "Additional arguments to pass to `npm install` or `npm uninstall`."
+            }
+          },
+          "description": "The `NpmPackage` DSC Resource allows you to manage the installation, update, and removal of npm packages. This resource ensures that the specified npm package is in the desired state.",
+          "title": "NpmDsc/NpmPackage"
+        }
+      },
+      "path": "NpmDsc.psd1"
+    }
+  ]
+}

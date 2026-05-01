@@ -17,14 +17,14 @@ function Invoke-Npm {
         [Parameter(Mandatory = $true)]
         [string]$Command
     )
-        $value = Invoke-Expression -Command "npm $Command"
+    $value = Invoke-Expression -Command "npm $Command"
 
-        if ($LASTEXITCODE -ne 0) {
-            $errors = Get-NpmErrorMessages -LogPath (GetNpmPath)
-            throw "Command 'npm $($Command.Trim())' failed: $($errors -join '; ')"
-        }
+    if ($LASTEXITCODE -ne 0) {
+        $errors = Get-NpmErrorMessages -LogPath (GetNpmPath)
+        throw "Command 'npm $($Command.Trim())' failed: $($errors -join '; ')"
+    }
 
-        return $value
+    return $value
 }
 
 function Set-PackageDirectory {
@@ -190,6 +190,41 @@ enum Ensure {
 #endRegion Enums
 
 #region DSCResources
+<#
+    .SYNOPSIS
+        The `NpmInstall` DSC resource is used to install all npm packages listed in a `package.json` file.
+
+    .DESCRIPTION
+        The `NpmInstall` DSC resource invokes `npm install` to install all packages defined in a
+        `package.json` file in the specified directory or globally. It is inherently idempotent
+        as npm will resolve all package dependencies on each run.
+
+        ## Requirements
+
+        * Target machine must have Node.js and npm installed.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Ensure
+        Specifies whether the npm packages should be present or absent. Defaults to `Present`.
+
+    .PARAMETER Global
+        Indicates whether to install packages globally.
+
+    .PARAMETER PackageDirectory
+        The directory containing the `package.json` file. If not specified, the current directory is used.
+
+    .PARAMETER Arguments
+        Additional arguments to pass to `npm install`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName NpmDsc -Name NpmInstall -Method Set -Property @{
+            PackageDirectory = 'C:\repos\my-project'
+        }
+
+        This example installs all npm packages defined in `C:\repos\my-project\package.json`.
+#>
 [DSCResource()]
 class NpmInstall {
     [DscProperty()]
@@ -271,6 +306,9 @@ class NpmInstall {
 
 .PARAMETER Global
     Indicates whether the npm package should be installed globally.
+
+.PARAMETER Arguments
+    Additional arguments to pass to `npm install` or `npm uninstall`.
 
 .EXAMPLE
     PS C:\> Invoke-DscResource -ModuleName NpmDsc -Name NpmPackage -Method Set -Property @{ Name = 'react' }
