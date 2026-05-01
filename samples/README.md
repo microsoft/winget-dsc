@@ -28,6 +28,10 @@ Sample configurations in the [Learn Tutorials](./Configuration%20files/Learn%20t
 
 Examples for a few specific DSC Resources are under the [DscResources](./DscResources/) directory.
 
+### Converting v2 to v3
+
+If you have existing v2 configuration files and want to convert them to the dscv3 processor syntax, see the [Convert to v3](./Convert%20to%20v3/) guide. It includes a step-by-step conversion reference, a checklist, and a [GitHub Copilot CLI](https://docs.github.com/copilot/github-copilot-in-the-cli) skill that automates the conversion process.
+
 ### Create your own
 
 Writing YAML is a pain. To help you get started creating your own, there is a [sample tool](https://github.com/microsoft/winget-create/blob/main/Tools/WingetCreateMakeDSC.ps1) for authoring in the winget-create repo. It currently only supports adding apps, but give it a try and contribute to make it better!
