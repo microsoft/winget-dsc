@@ -3,6 +3,53 @@
 
 using namespace System.Collections.Generic
 
+#region Functions
+function Assert-Yarn {
+    # Refresh session $path value before invoking 'npm'
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    try {
+        Invoke-Yarn -Command 'help'
+        return
+    } catch {
+        throw 'Yarn is not installed'
+    }
+}
+
+function Invoke-YarnInfo {
+    param(
+        [Parameter()]
+        [string]$Arguments
+    )
+
+    $command = [List[string]]::new()
+    $command.Add('info')
+    $command.Add($Arguments)
+    return Invoke-Yarn -Command $command
+}
+
+function Invoke-YarnInstall {
+    param (
+        [Parameter()]
+        [string]$Arguments
+    )
+
+    $command = [List[string]]::new()
+    $command.Add('install')
+    $command.Add($Arguments)
+    return Invoke-Yarn -Command $command
+}
+
+function Invoke-Yarn {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Command
+    )
+
+    return Invoke-Expression -Command "yarn $Command"
+}
+
+#endregion Functions
+
 # Assert once that Yarn is already installed on the system.
 Assert-Yarn
 
@@ -50,50 +97,3 @@ class YarnInstall {
 }
 
 #endregion DSCResources
-
-#region Functions
-function Assert-Yarn {
-    # Refresh session $path value before invoking 'npm'
-    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
-    try {
-        Invoke-Yarn -Command 'help'
-        return
-    } catch {
-        throw 'Yarn is not installed'
-    }
-}
-
-function Invoke-YarnInfo {
-    param(
-        [Parameter()]
-        [string]$Arguments
-    )
-
-    $command = [List[string]]::new()
-    $command.Add('info')
-    $command.Add($Arguments)
-    return Invoke-Yarn -Command $command
-}
-
-function Invoke-YarnInstall {
-    param (
-        [Parameter()]
-        [string]$Arguments
-    )
-
-    $command = [List[string]]::new()
-    $command.Add('install')
-    $command.Add($Arguments)
-    return Invoke-Yarn -Command $command
-}
-
-function Invoke-Yarn {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Command
-    )
-
-    return Invoke-Expression -Command "yarn $Command"
-}
-
-#endregion Functions
