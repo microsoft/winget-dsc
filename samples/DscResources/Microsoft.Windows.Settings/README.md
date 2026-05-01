@@ -1,6 +1,6 @@
-# Microsoft.WindowsSandbox.DSC
+# Microsoft.Windows.Settings
 
-The [Microsoft.Windows.settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings) PowerShell module contains the Windows Settings DSC Resource.
+The [Microsoft.Windows.Settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings) PowerShell module contains the Windows Settings DSC Resource.
 
 > [!IMPORTANT]
 > Changing some Windows Settings requires elevation.
@@ -25,6 +25,10 @@ The following two options are available for running a WinGet Configuration file 
 2. Open your Windows Start Menu, search and launch "_Windows Terminal_".
 3. Type the following: `CD <C:\Users\User\Download>`
 4. Type the following: `winget configure --file .\<filename>.winget` (replace `<filename>` with the downloaded file, e.g., `DateTimeSettings`)
+
+## v3 Samples
+
+Each configuration is also available in a v3 version using the dscv3 processor syntax (e.g., `ChangeWindowsSettings.v3.winget`). The v3 versions include an explicit `Microsoft.Windows.Settings` module install resource and use the updated field names (`type`, `name`, `properties`, `metadata`).
 
 ## Configuration Files
 

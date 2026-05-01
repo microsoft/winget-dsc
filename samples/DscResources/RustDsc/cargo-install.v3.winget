@@ -1,0 +1,73 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: RustDsc.Module
+    properties:
+      executable: C:\Program Files\PowerShell\7\pwsh.exe
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name RustDsc))
+          { Install-PSResource -Name RustDsc -Prerelease
+          -TrustRepository -AcceptLicense }
+        treatAsArray: true
+    metadata:
+      description: Ensure RustDsc module is installed
+  - type: RustDsc/CargoToolInstall
+    name: InstallBat
+    dependsOn:
+      - RustDsc.Module
+    properties:
+      CrateName: bat
+    metadata:
+      description: Install Rust bat tool globally
+  - type: RustDsc/CargoToolInstall
+    name: InstallRipgrep
+    dependsOn:
+      - RustDsc.Module
+    properties:
+      CrateName: ripgrep
+      Version: "13.0.0"
+    metadata:
+      description: Install specific version of ripgrep tool globally
+  - type: RustDsc/CargoToolInstall
+    name: InstallFdFind
+    dependsOn:
+      - RustDsc.Module
+    properties:
+      CrateName: fd-find
+    metadata:
+      description: Install fd-find tool globally
+  - type: RustDsc/CargoToolInstall
+    name: InstallExa
+    dependsOn:
+      - RustDsc.Module
+    properties:
+      CrateName: exa
+    metadata:
+      description: Install exa tool globally
+  - type: RustDsc/CargoToolInstall
+    name: InstallBatMinimalApplication
+    dependsOn:
+      - RustDsc.Module
+    properties:
+      CrateName: bat
+      Features:
+        - minimal_application
+    metadata:
+      description: Install bat with specific features
+  - type: RustDsc/CargoToolInstall
+    name: ForceInstallTokio
+    dependsOn:
+      - RustDsc.Module
+    properties:
+      CrateName: tokio
+      Force: true
+    metadata:
+      description: Force install tokio tool (overwrite if exists)

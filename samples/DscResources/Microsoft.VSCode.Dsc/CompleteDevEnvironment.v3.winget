@@ -1,0 +1,226 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+- type: Microsoft.WinGet/Package
+  name: MicrosoftVisualStudioCode
+  properties:
+    id: Microsoft.VisualStudioCode
+    source: winget
+    useLatest: true
+  metadata:
+    description: Install Visual Studio Code
+- type: Microsoft.WinGet/Package
+  name: GitGit
+  properties:
+    id: Git.Git
+    source: winget
+    useLatest: true
+  metadata:
+    description: Install Git
+    winget:
+      securityContext: elevated
+- type: Microsoft.WinGet/Package
+  name: OpenJSNodeJS
+  properties:
+    id: OpenJS.NodeJS
+    source: winget
+    useLatest: true
+  metadata:
+    description: Install Node.js
+- type: Microsoft.WinGet/Package
+  name: PythonPython312
+  properties:
+    id: Python.Python.3.12
+    source: winget
+    useLatest: true
+  metadata:
+    description: Install Python
+- type: Microsoft.DSC.Transitional/RunCommandOnSet
+  name: Microsoft.VSCode.Dsc.Module
+  properties:
+    executable: C:\Program Files\PowerShell\7\pwsh.exe
+    arguments:
+      "0": -NoProfile
+      "1": -NoLogo
+      "2": -Command
+      "3": >-
+        if (-not (Get-Module -ListAvailable -Name Microsoft.VSCode.Dsc))
+        { Install-PSResource -Name Microsoft.VSCode.Dsc -Prerelease
+        -TrustRepository -AcceptLicense }
+      treatAsArray: true
+  metadata:
+    description: Ensure Microsoft.VSCode.Dsc module is installed
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: EamodioGitlens
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: eamodio.gitlens
+  metadata:
+    description: Install GitLens for enhanced Git integration
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MhutchieGitGraph
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: mhutchie.git-graph
+  metadata:
+    description: Install Git Graph for visual Git history
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: EsbenpPrettierVscode
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: esbenp.prettier-vscode
+  metadata:
+    description: Install Prettier for code formatting
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: CoenraadsBracketPairColorizer
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: coenraads.bracket-pair-colorizer
+  metadata:
+    description: Install Bracket Pair Colorizer
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsPythonPython
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-python.python
+  metadata:
+    description: Install Python extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsPythonVscodePylance
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-python.vscode-pylance
+  metadata:
+    description: Install Pylance for Python IntelliSense
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsPythonDebugpy
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-python.debugpy
+  metadata:
+    description: Install Python Debugger
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsVscodeVscodeTypescriptNext
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-vscode.vscode-typescript-next
+  metadata:
+    description: Install JavaScript/TypeScript extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: DbaeumerVscodeEslint
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: dbaeumer.vscode-eslint
+  metadata:
+    description: Install ESLint for JavaScript linting
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: ChristianKohlerNpmIntellisense
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: christian-kohler.npm-intellisense
+  metadata:
+    description: Install npm IntelliSense
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: EcmelVscodeHtmlCss
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ecmel.vscode-html-css
+  metadata:
+    description: Install HTML CSS Support
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: RitwickdeyLiveserver
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ritwickdey.liveserver
+  metadata:
+    description: Install Live Server for local development
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: FormulahendryAutoRenameTag
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: formulahendry.auto-rename-tag
+  metadata:
+    description: Install Auto Rename Tag
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsDotnettoolsCsharp
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-dotnettools.csharp
+  metadata:
+    description: Install C# extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsDotnettoolsVscodeDotnetRuntime
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-dotnettools.vscode-dotnet-runtime
+  metadata:
+    description: Install .NET Install Tool
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsVscodePowershell
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-vscode.powershell
+  metadata:
+    description: Install PowerShell extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsAzuretoolsVscodeDocker
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-azuretools.vscode-docker
+  metadata:
+    description: Install Docker extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: PkiefMaterialIconTheme
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: pkief.material-icon-theme
+  metadata:
+    description: Install Material Icon Theme
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: ZhuangtongfaMaterialTheme
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: zhuangtongfa.material-theme
+  metadata:
+    description: Install One Dark Pro theme
