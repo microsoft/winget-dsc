@@ -21,7 +21,7 @@ By placing a `configuration.winget` file in the `.config` directory at the root 
 
 Below are known GitHub projects that use a WinGet configuration file that one can use to set up their environment for building the project. The projects are listed in alphabetical order by their GitHub repository identifier. The list is not exhaustive and is meant to be a starting point for finding projects that use a WinGet configuration file. If you know of any other projects that use a WinGet configuration file, feel free to add them to the list.
 
-- [dev-fynn/Winget-Repo](https://github.com/dev-fYnn/Winget-Repo/blob/master/.config/Winget-Repo_Dev.winget)
+- [dev-fYnn/Winget-Repo](https://github.com/dev-fYnn/Winget-Repo/blob/master/.config/Winget-Repo_Dev.winget)
 - [dotnet/eShop](https://github.com/dotnet/eShop/blob/main/.config/configuration.vsCode.winget)
 - [JanDeDobbeleer/oh-my-posh](https://github.com/JanDeDobbeleer/oh-my-posh/blob/main/.config/configuration.winget)
 - [LibreOffice/core](https://github.com/LibreOffice/core/blob/master/.config/configuration.winget)
