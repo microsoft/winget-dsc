@@ -16,6 +16,10 @@ If anything is already installed, the configuration file will skip that item.
 
 This configuration file is based on the [Get started building an app with Windows AI APIs](https://learn.microsoft.com/windows/ai/apis/get-started) and [Get started with App Actions on Windows](https://learn.microsoft.com/en-us/windows/ai/app-actions/actions-get-started?tabs=winget) Microsoft Learn tutorials.
 
+## v3 Samples
+
+A v3 version of each configuration is also available (e.g., `learn_wcr.v3.winget`) using the dscv3 processor syntax with explicit module installs.
+
 ## Issues with Configuration file
 
 If you experience an issue with running the provided WinGet Configuration file, you can submit a [new issue report](https://github.com/microsoft/winget-dsc/issues/new/choose), or [search existing issues](https://github.com/microsoft/winget-dsc/issues) for a preexisting issue filed by another user.

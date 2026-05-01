@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+#################################################################################################################
+# This v3 configuration will install the tools necessary to develop PWA or hybrid web apps for Android             #
+# Reference: https://learn.microsoft.com/en-us/windows/android/pwa                                              #
+#                                                                                                               #
+# This will:                                                                                                    #
+#     * Install Node.js LTS                                                                                     #
+#     * Install Git                                                                                             #
+#     * Install Visual Studio Code                                                                              #
+#     * Install Windows Terminal                                                                                #
+#                                                                                                               #
+#################################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: InstallNodeJSLTS
+    properties:
+      id: OpenJS.NodeJS.LTS
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Node.js LTS (required for Cordova, Capacitor, Ionic)
+
+  - type: Microsoft.WinGet/Package
+    name: InstallGit
+    properties:
+      id: Git.Git
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Git
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.WinGet/Package
+    name: InstallVisualStudioCode
+    properties:
+      id: Microsoft.VisualStudioCode
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Visual Studio Code
+
+  - type: Microsoft.WinGet/Package
+    name: InstallWindowsTerminal
+    properties:
+      id: Microsoft.WindowsTerminal
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Windows Terminal

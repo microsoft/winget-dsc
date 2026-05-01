@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+##########################################################################################################
+# This configuration will install the tools necessary to get started with Rust development on Windows    #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/rust/setup                        #
+#                                                                                                        #
+# This will:                                                                                             #
+#     * Install Visual Studio Code                                                                       #
+#     * Install rust-analyzer extension for Visual Studio Code                                           #
+#     * Install CodeLLDB extension for Visual Studio Code for debugging                                  #
+#     * Install Rustup toolchain                                                                         #
+#     * Install Microsoft C and C++ (MSVC) toolchain                                                     #
+#                                                                                                        #
+##########################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: InstallVisualStudioCode
+    properties:
+      id: Microsoft.VisualStudioCode
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Visual Studio Code
+
+  - type: Microsoft.WinGet/Package
+    name: InstallRustup
+    properties:
+      id: Rustlang.Rustup
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Rustup toolchain
+
+  - type: Microsoft.WinGet/Package
+    name: InstallRustMSVCToolchain
+    properties:
+      id: Rustlang.Rust.MSVC
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Microsoft C and C++ (MSVC) toolchain
+
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: EnsureMicrosoftVSCodeDscModule
+    properties:
+      executable: 'C:\Program Files\PowerShell\7\pwsh.exe'
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.VSCode.Dsc))
+          { Install-PSResource -Name Microsoft.VSCode.Dsc -Prerelease
+          -TrustRepository -AcceptLicense }
+      treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.VSCode.Dsc module is installed
+
+  - type: Microsoft.VSCode.Dsc/VSCodeExtension
+    name: InstallRustAnalyzerExtension
+    dependsOn:
+      - InstallVisualStudioCode
+      - EnsureMicrosoftVSCodeDscModule
+    properties:
+      Name: rust-lang.rust-analyzer
+      Exist: true
+    metadata:
+      description: Install rust-analyzer Visual Studio Code extension
+
+  - type: Microsoft.VSCode.Dsc/VSCodeExtension
+    name: InstallCodeLLDBExtension
+    dependsOn:
+      - InstallVisualStudioCode
+      - EnsureMicrosoftVSCodeDscModule
+    properties:
+      Name: vadimcn.vscode-lldb
+      Exist: true
+    metadata:
+      description: Install CodeLLDB Visual Studio Code extension
