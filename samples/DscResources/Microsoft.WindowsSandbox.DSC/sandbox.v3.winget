@@ -40,12 +40,12 @@ resources:
         cmd /c start powershell -NoExit -Command "$progressPreference = 'silentlyContinue';
         Write-Host 'Setting execution policy to remote signed...' `n;
         Set-ExecutionPolicy RemoteSigned -Force;
-        Write-Host "Installing WinGet PowerShell module from PSGallery...";
+        Write-Host 'Installing WinGet PowerShell module from PSGallery...';
         Install-PackageProvider -Name NuGet -Force | Out-Null;
         Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null;
-        Write-Host "Using Repair-WinGetPackageManager cmdlet to bootstrap WinGet...";
+        Write-Host 'Using Repair-WinGetPackageManager cmdlet to bootstrap WinGet...';
         Repair-WinGetPackageManager;
-        Write-Host "Done.";
+        Write-Host 'Done.';
       #HostFolder: <Absolute path to folder on host machine that will be shared into the Windows Sandbox>
       #SandboxFolder: <Absolute path to destination in the sandbox to map the Host Folder to>
       #ReadOnly: false
