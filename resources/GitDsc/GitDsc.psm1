@@ -266,11 +266,11 @@ class GitRemote {
 
     .EXAMPLE
         Invoke-DscResource -ModuleName GitDsc -Name GitConfigUserName -Method Set -Property @{
-            UserName       = 'John Doe'
+            UserName       = 'Demitrius Nelon'
             ConfigLocation = 'global'
         }
 
-        This example sets the global Git user name to 'John Doe'.
+        This example sets the global Git user name to 'Demitrius Nelon'.
 #>
 [DSCResource()]
 class GitConfigUserName {
@@ -362,11 +362,11 @@ class GitConfigUserName {
 
     .EXAMPLE
         Invoke-DscResource -ModuleName GitDsc -Name GitConfigUserEmail -Method Set -Property @{
-            UserEmail      = 'johndoe@example.com'
+            UserEmail      = 'demitrius.nelon@example.com'
             ConfigLocation = 'global'
         }
 
-        This example sets the global Git user email to 'johndoe@example.com'.
+        This example sets the global Git user email to 'demitrius.nelon@example.com'.
 #>
 [DSCResource()]
 class GitConfigUserEmail {
