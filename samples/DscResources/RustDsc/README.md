@@ -7,11 +7,15 @@ The [RustDsc](https://github.com/microsoft/winget-dsc/tree/main/resources/RustDs
 
 ## How to use the WinGet Configuration File
 
-To use this sample, save the YAML content to a file (e.g., `cargo-install.dsc.yaml`) and run the following command:
+To use this sample, save the YAML content to a file (e.g., `cargo-install.winget`) and run the following command:
 
 ```shell
-winget configure --file cargo-install.dsc.yaml
+winget configure --file cargo-install.winget
 ```
+
+## v3 Sample
+
+A dscv3 version of this sample is also available as `cargo-install.v3.winget`. It installs the `RustDsc` module first, then applies the same six `CargoToolInstall` resources using v3 syntax.
 
 ## Resources
 

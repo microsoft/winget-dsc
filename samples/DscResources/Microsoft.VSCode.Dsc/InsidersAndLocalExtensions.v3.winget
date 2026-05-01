@@ -1,0 +1,69 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+- type: Microsoft.WinGet/Package
+  name: MicrosoftVisualStudioCodeInsiders
+  properties:
+    id: Microsoft.VisualStudioCode.Insiders
+    source: winget
+    useLatest: true
+  metadata:
+    description: Install Visual Studio Code Insiders
+- type: Microsoft.DSC.Transitional/RunCommandOnSet
+  name: Microsoft.VSCode.Dsc.Module
+  properties:
+    executable: C:\Program Files\PowerShell\7\pwsh.exe
+    arguments:
+      "0": -NoProfile
+      "1": -NoLogo
+      "2": -Command
+      "3": >-
+        if (-not (Get-Module -ListAvailable -Name Microsoft.VSCode.Dsc))
+        { Install-PSResource -Name Microsoft.VSCode.Dsc -Prerelease
+        -TrustRepository -AcceptLicense }
+      treatAsArray: true
+  metadata:
+    description: Ensure Microsoft.VSCode.Dsc module is installed
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: CustomExtensionVsix
+  dependsOn:
+    - MicrosoftVisualStudioCodeInsiders
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: C:\SharedExtensions\custom-extension-1.0.0.vsix
+  metadata:
+    description: Install extension from local VSIX file
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsPythonPythonInsiders
+  dependsOn:
+    - MicrosoftVisualStudioCodeInsiders
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-python.python
+    Insiders: true
+  metadata:
+    description: Install Python extension for VS Code Insiders
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsDotnettoolsCsharpInsiders
+  dependsOn:
+    - MicrosoftVisualStudioCodeInsiders
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-dotnettools.csharp
+    Insiders: true
+  metadata:
+    description: Install C# extension for VS Code Insiders
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: EamodioGitlensInsidersPrerelease
+  dependsOn:
+    - MicrosoftVisualStudioCodeInsiders
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: eamodio.gitlens
+    PreRelease: true
+    Insiders: true
+  metadata:
+    description: Install pre-release GitLens for VS Code Insiders

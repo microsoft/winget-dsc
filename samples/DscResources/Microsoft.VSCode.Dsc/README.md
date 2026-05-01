@@ -66,7 +66,7 @@ The `VSCodeExtension` resource supports the following parameters:
 
 ## Usage Instructions
 
-1. **Prerequisites**: Ensure you have WinGet and DSC v2 installed on your system.
+1. **Prerequisites**: Ensure you have WinGet installed on your system. The v2 samples (`.winget`) use the default DSC processor. The v3 samples (`.v3.winget`) require DSC v3 and the dscv3 processor.
 
 2. **Running a Configuration**: Use the following command to apply a configuration:
 
@@ -81,9 +81,14 @@ The `VSCodeExtension` resource supports the following parameters:
 
 4. **Local VSIX Files**: When using local VSIX files, provide the full path to the file as the `Name` parameter.
 
+## v3 Samples
+
+Each configuration is also available in a v3 version using the dscv3 processor syntax (e.g., `InstallVSCodeExtensions.v3.winget`). The v3 versions include an explicit `Microsoft.VSCode.Dsc` module install resource and use the updated field names (`type`, `name`, `properties`, `metadata`).
+
 ## Notes
 
-- All configurations include `allowPrerelease: true` directive to support the alpha version of the Microsoft.VSCode.Dsc module (v0.1.5-alpha)
+- The v2 configurations include `allowPrerelease: true` directive to support the alpha version of the Microsoft.VSCode.Dsc module (v0.1.5-alpha)
+- The v3 configurations install the module explicitly via `Install-PSResource`
 - VS Code must be installed before extensions can be managed
 - Some configurations include both VS Code and VS Code Insiders installations
 - Extensions are installed globally for the current user
