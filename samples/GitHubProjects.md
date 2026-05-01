@@ -5,7 +5,7 @@
 WinGet configuration files enable a powerful onboarding pattern for open source projects: **Fork → Clone → Configure → F5**. Instead of following lengthy setup guides, new contributors can get a fully configured development environment with a single command:
 
 ```powershell
-winget configure --file .config\configuration.winget --accept-configuration-agreements --disable-interactivity
+winget configure --file .config\configuration.winget
 ```
 
 This approach benefits open source projects by:
