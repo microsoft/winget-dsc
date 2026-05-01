@@ -33,6 +33,7 @@ Hmmss
 https
 Icm
 inaries
+JSLTS
 ionide
 JDK
 jquery
@@ -61,7 +62,6 @@ pkief
 powertoys
 prerel
 pscustomobject
-psobject
 Ptr
 pwa
 PWAs
@@ -72,7 +72,6 @@ restsource
 ritwickdey
 tastejs
 todomvc
-tokio
 toolsai
 toolset
 UAC
@@ -98,7 +97,6 @@ whatif
 wildcards
 winappdev
 Windo
-winget
 winui
 Wnd
 workaround
