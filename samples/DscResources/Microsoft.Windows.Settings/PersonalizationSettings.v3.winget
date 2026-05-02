@@ -1,0 +1,73 @@
+###########################################################################
+# This configuration will modify Personalization Settings.                #
+# PowerShell module: Microsoft.Windows.Settings (v0.1.0-alpha)            #
+###########################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: Microsoft.Windows.Settings.Module
+    properties:
+      executable: C:\Program Files\PowerShell\7\pwsh.exe
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Settings))
+          { Install-PSResource -Name Microsoft.Windows.Settings -Prerelease
+          -TrustRepository -AcceptLicense }
+        treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.Windows.Settings module is installed
+  - type: Microsoft.Windows.Settings/WindowsSettings
+    name: PersonalizationSettings
+    dependsOn:
+      - Microsoft.Windows.Settings.Module
+    properties:
+      # Color Settings
+      EnableTransparency: true
+      ShowAccentColorOnStartAndTaskbar: true
+      ShowAccentColorOnTitleBarsAndWindowBorders: true
+      AutoColorization: true
+
+      # Start Menu Folders
+      # Valid folder names: Documents, Downloads, Music, Pictures, Videos, Network, UserProfile, Explorer, Settings
+      StartFolders:
+        - Documents
+        - Downloads
+        - Settings
+        - Explorer
+
+      # Start Layout Settings
+      # ShowRecentList: Show recently installed apps in Start
+      ShowRecentList: true
+      # ShowRecommendedList: Show recommended files in Start, recent files in File Explorer, and items in Jump Lists
+      ShowRecommendedList: true
+
+      # Taskbar Settings
+      # TaskbarBadges: Enable badges (unread message counts, etc.) for apps on the taskbar
+      TaskbarBadges: true
+      # DesktopTaskbarBadges: Enable badges for apps on the desktop taskbar
+      DesktopTaskbarBadges: true
+      # TaskbarGroupingMode: Control how taskbar buttons are grouped
+      # Valid values: Always, WhenFull, Never
+      TaskbarGroupingMode: Always
+      # TaskbarMultiMon: Show taskbar on multiple displays
+      TaskbarMultiMon: true
+      # DesktopTaskbarMultiMon: Show taskbar on multiple displays (desktop)
+      DesktopTaskbarMultiMon: true
+      # TaskbarMultiMonMode: Control how windows are shown on taskbars across monitors
+      # Valid values: Duplicate, PrimaryAndWindow, WindowOnly
+      # - Duplicate: Show all windows on all taskbars
+      # - PrimaryAndWindow: Show on main taskbar and on the taskbar where the window is open
+      # - WindowOnly: Show only on the taskbar where the window is open
+      TaskbarMultiMonMode: Duplicate
+      # DesktopTaskbarMultiMonMode: Control how windows are shown on taskbars across monitors (desktop)
+      DesktopTaskbarMultiMonMode: Duplicate
+    metadata:
+      description: Configure Personalization Settings

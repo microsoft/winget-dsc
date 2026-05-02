@@ -14,9 +14,7 @@ When set to `elevated`, WinGet will prompt for **one** UAC approval at the start
 
 If the configuration is leveraging the [WinGet DSC resource](https://www.powershellgallery.com/packages/Microsoft.WinGet.DSC) to install packages, there are also limitations in some cases specific to the installers that may either require or prohibit installation in administrative context.
 
-### GitHub projects (Repositories)
-
-Samples for popular repositories are included in the [Repositories](./Repositories/) directory. They are organized as `<Organization>\<Repository Name>\configuration.winget`. These samples are designed to help you quickly set up a development environment for building popular open-source projects. The configurations are tailored to the specific requirements of each project, ensuring that you have all the necessary tools and dependencies installed needed for the development process.
+### GitHub Projects
 
 Repositories that make use of a WinGet configuration file are documented in [GitHubProjects.md](./GitHubProjects.md).
 

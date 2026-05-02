@@ -11,7 +11,7 @@ taskkill
 dotnet
 LASTEXITCODE
 DWord
-PSobject
+psobject
 winuser
 psm
 msrc

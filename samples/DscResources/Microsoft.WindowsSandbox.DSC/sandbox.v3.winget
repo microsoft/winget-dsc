@@ -1,0 +1,61 @@
+###############################################################################
+# Create Windows Sandbox instance with WinGet installed.                      #
+# Run as Administrator                                                        #
+# Mount C:\Sandbox on the local filesystem into the Sandbox filesystem.       #
+# The Logon command performs the following steps in Windows PowerShell:       #
+# 1. Set the execution policy to RemoteSigned                                 #
+# 2. Download and install Microsoft.WinGet.Client PowerShell Module           #
+# 3. Use Repair-WinGetPackageManager cmdlet to bootstrap WinGet               #
+###############################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: Microsoft.WindowsSandbox.DSC.Module
+    properties:
+      executable: C:\Program Files\PowerShell\7\pwsh.exe
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.WindowsSandbox.DSC))
+          { Install-PSResource -Name Microsoft.WindowsSandbox.DSC -Prerelease
+          -TrustRepository -AcceptLicense }
+        treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.WindowsSandbox.DSC module is installed
+  - type: Microsoft.WindowsSandbox.DSC/WindowsSandbox
+    name: WindowsSandbox
+    dependsOn:
+      - Microsoft.WindowsSandbox.DSC.Module
+    properties:
+      Ensure: Present
+      #WsbFile: <Provide a custom .wsb file to open. The parameters below will override existing values in the wsb file>
+      LogonCommand: >
+        cmd /c start powershell -NoExit -Command "$progressPreference = 'silentlyContinue';
+        Write-Host 'Setting execution policy to remote signed...' `n;
+        Set-ExecutionPolicy RemoteSigned -Force;
+        Write-Host 'Installing WinGet PowerShell module from PSGallery...';
+        Install-PackageProvider -Name NuGet -Force | Out-Null;
+        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null;
+        Write-Host 'Using Repair-WinGetPackageManager cmdlet to bootstrap WinGet...';
+        Repair-WinGetPackageManager;
+        Write-Host 'Done.';
+      #HostFolder: <Absolute path to folder on host machine that will be shared into the Windows Sandbox>
+      #SandboxFolder: <Absolute path to destination in the sandbox to map the Host Folder to>
+      #ReadOnly: false
+      #MemoryInMB: 2048
+      #vGPU: true
+      #AudioInput: true
+      #ClipboardRedirection: true
+      #Networking: true
+      #PrinterRedirection: false
+      #ProtectedClient: false
+      #VideoInput: true
+    metadata:
+      description: Create Windows Sandbox with Winget installed

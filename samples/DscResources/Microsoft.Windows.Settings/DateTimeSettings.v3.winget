@@ -1,0 +1,48 @@
+###########################################################################
+# This configuration will modify Date and Time Settings.                  #
+# PowerShell module: Microsoft.Windows.Settings (v0.1.0-alpha)            #
+###########################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: Microsoft.Windows.Settings.Module
+    properties:
+      executable: C:\Program Files\PowerShell\7\pwsh.exe
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Settings))
+          { Install-PSResource -Name Microsoft.Windows.Settings -Prerelease
+          -TrustRepository -AcceptLicense }
+        treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.Windows.Settings module is installed
+  - type: Microsoft.Windows.Settings/WindowsSettings
+    name: DateTimeSettings
+    dependsOn:
+      - Microsoft.Windows.Settings.Module
+    properties:
+      # Set to automatically update timezone based on location (true) or disable automatic updates (false)
+      SetTimeZoneAutomatically: false
+      # Set the timezone - use Get-TimeZone -ListAvailable to see available timezone IDs
+      # Common examples:
+      #   - "Pacific Standard Time" (US West Coast)
+      #   - "Eastern Standard Time" (US East Coast)
+      #   - "Central Standard Time" (US Central)
+      #   - "Mountain Standard Time" (US Mountain)
+      #   - "GMT Standard Time" (London)
+      #   - "Central Europe Standard Time" (Paris, Berlin)
+      #   - "China Standard Time" (Beijing)
+      #   - "Tokyo Standard Time" (Japan)
+      TimeZone: "Pacific Standard Time"
+    metadata:
+      description: Configure Date and Time Settings
+      winget:
+        securityContext: elevated

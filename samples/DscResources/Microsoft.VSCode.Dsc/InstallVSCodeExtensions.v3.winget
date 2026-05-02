@@ -1,0 +1,83 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+- type: Microsoft.WinGet/Package
+  name: MicrosoftVisualStudioCode
+  properties:
+    id: Microsoft.VisualStudioCode
+    source: winget
+    useLatest: true
+  metadata:
+    description: Install Visual Studio Code
+- type: Microsoft.DSC.Transitional/RunCommandOnSet
+  name: Microsoft.VSCode.Dsc.Module
+  properties:
+    executable: C:\Program Files\PowerShell\7\pwsh.exe
+    arguments:
+      "0": -NoProfile
+      "1": -NoLogo
+      "2": -Command
+      "3": >-
+        if (-not (Get-Module -ListAvailable -Name Microsoft.VSCode.Dsc))
+        { Install-PSResource -Name Microsoft.VSCode.Dsc -Prerelease
+        -TrustRepository -AcceptLicense }
+      treatAsArray: true
+  metadata:
+    description: Ensure Microsoft.VSCode.Dsc module is installed
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsPythonPython
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-python.python
+  metadata:
+    description: Install Python extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsDotnettoolsCsharp
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-dotnettools.csharp
+  metadata:
+    description: Install C# extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: MsVscodeVscodeTypescriptNext
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-vscode.vscode-typescript-next
+  metadata:
+    description: Install JavaScript/TypeScript extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: EamodioGitlens
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: eamodio.gitlens
+  metadata:
+    description: Install GitLens extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: EsbenpPrettierVscode
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: esbenp.prettier-vscode
+  metadata:
+    description: Install Prettier extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: RitwickdeyLiveserver
+  dependsOn:
+    - MicrosoftVisualStudioCode
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ritwickdey.liveserver
+  metadata:
+    description: Install Live Server extension
