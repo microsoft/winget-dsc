@@ -1,4 +1,4 @@
-# DSC Samples
+# WinGet Configuration File Samples
 
 ## Understanding WinGet Configuration Files
 
