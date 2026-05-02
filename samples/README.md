@@ -1,4 +1,4 @@
-# DSC Samples
+# WinGet Configuration File Samples
 
 ## Understanding WinGet Configuration Files
 
@@ -28,4 +28,12 @@ Examples for a few specific DSC Resources are under the [DscResources](./DscReso
 
 ### Create your own
 
-Writing YAML is a pain. To help you get started creating your own, there is a [sample tool](https://github.com/microsoft/winget-create/blob/main/Tools/WingetCreateMakeDSC.ps1) for authoring in the winget-create repo. It currently only supports adding apps, but give it a try and contribute to make it better!
+[WinGet Studio](https://github.com/microsoft/winget-studio) is a graphical tool for creating, editing, and validating WinGet Configuration files. It provides a visual interface for adding DSC resources, configuring properties, and testing configurations without writing YAML by hand.
+
+To install WinGet Studio, run:
+
+```powershell
+winget install --id Microsoft.WinGetStudio.Experimental --source winget
+```
+
+For a step-by-step walkthrough, see the [Getting Started guide](https://github.com/microsoft/winget-studio/blob/main/docs/get-started/index.md).
