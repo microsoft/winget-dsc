@@ -1,0 +1,56 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "PythonPip3Dsc/Pip3Package",
+      "author": "DscSamples",
+      "description": "The `Pip3Package` DSC Resource allows you to install, update, and uninstall Python packages using pip3.",
+      "capabilities": ["get", "test", "set", "whatIf", "export"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["PackageName"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "PackageName": {
+              "type": "string",
+              "title": "PackageName",
+              "description": "The name of the Python package to manage. This is a key and mandatory property."
+            },
+            "Version": {
+              "type": "string",
+              "title": "Version",
+              "description": "The version of the Python package to manage. If not specified, the latest version will be used."
+            },
+            "Arguments": {
+              "type": "string",
+              "title": "Arguments",
+              "description": "Additional arguments to pass to pip3."
+            },
+            "Exist": {
+              "type": "boolean",
+              "title": "Exist",
+              "description": "Indicates whether the package should exist. Defaults to $true."
+            },
+            "InstalledPackages": {
+              "items": {
+                "type": "object"
+              },
+              "type": "array",
+              "title": "InstalledPackages",
+              "readOnly": true,
+              "description": "A list of installed packages. This property is not configurable."
+            }
+          },
+          "description": "The `Pip3Package` DSC Resource allows you to install, update, and uninstall Python packages using pip3.",
+          "title": "PythonPip3Dsc/Pip3Package"
+        }
+      },
+      "path": "PythonPip3Dsc.psd1"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+adaptedresource
 ADDLOCAL
 Amd
 Authenticode
@@ -9,6 +10,7 @@ liveserver
 ltsc
 onebranch
 screenshots
+scrollbars
 Scrollbars
 Searchbox
 Sdl

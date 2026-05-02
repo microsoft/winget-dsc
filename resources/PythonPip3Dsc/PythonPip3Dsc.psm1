@@ -313,6 +313,9 @@ Assert-Pip3
 .PARAMETER SID
     The security identifier. This is a key property and should not be set manually.
 
+.PARAMETER PackageName
+    The name of the Python package to manage. This is a key and mandatory property.
+
 .PARAMETER Exist
     Indicates whether the package should exist. Defaults to $true.
 

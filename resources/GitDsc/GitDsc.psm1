@@ -17,6 +17,46 @@ enum ConfigLocation {
 }
 
 #region DSCResources
+<#
+    .SYNOPSIS
+        The `GitClone` DSC resource is used to clone a Git repository to a local directory.
+
+    .DESCRIPTION
+        The `GitClone` DSC resource clones a remote Git repository specified by its HTTPS URL
+        into a local root directory. If the repository has already been cloned, the resource
+        will confirm the existing remote matches the specified URL.
+
+        ## Requirements
+
+        * Target machine must have Git installed.
+
+    .PARAMETER HttpsUrl
+        The HTTPS URL of the Git repository to clone. This is a key property.
+
+    .PARAMETER Ensure
+        Specifies whether the repository should be present or absent. Defaults to `Present`.
+        Removing a cloned repository is not supported by this resource.
+
+    .PARAMETER RemoteName
+        The name of the remote. Defaults to `origin`.
+
+    .PARAMETER RootDirectory
+        The root directory where the repository will be cloned into. This is a mandatory property.
+
+    .PARAMETER FolderName
+        The folder name for the cloned repository. If not specified, it is derived from the HTTPS URL.
+
+    .PARAMETER ExtraArgs
+        Additional arguments to pass to `git clone`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitClone -Method Set -Property @{
+            HttpsUrl      = 'https://github.com/microsoft/winget-dsc'
+            RootDirectory = 'C:\repos'
+        }
+
+        This example clones the winget-dsc repository into C:\repos.
+#>
 [DSCResource()]
 class GitClone {
     [DscProperty()]
@@ -90,7 +130,7 @@ class GitClone {
         }
 
         Set-Location $this.RootDirectory
-        
+
         if ($this.FolderName) {
             $cloneArgs = "$($this.HttpsUrl) $($this.FolderName)"
         } else {
@@ -100,11 +140,45 @@ class GitClone {
         if ($this.ExtraArgs) {
             $cloneArgs = "$($this.ExtraArgs) $cloneArgs"
         }
-        
+
         Invoke-GitClone($cloneArgs)
     }
 }
 
+<#
+    .SYNOPSIS
+        The `GitRemote` DSC resource is used to manage remote repository references in a Git project.
+
+    .DESCRIPTION
+        The `GitRemote` DSC resource adds or removes a named remote URL from an existing local
+        Git repository. The project directory must already exist as a valid Git repository.
+
+        ## Requirements
+
+        * Target machine must have Git installed.
+        * The project directory must be an existing Git repository.
+
+    .PARAMETER RemoteName
+        The name of the Git remote. This is a key property.
+
+    .PARAMETER RemoteUrl
+        The URL of the Git remote. This is a key property.
+
+    .PARAMETER Ensure
+        Specifies whether the remote should be present or absent. Defaults to `Present`.
+
+    .PARAMETER ProjectDirectory
+        The path to the local Git repository. This is a mandatory property.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitRemote -Method Set -Property @{
+            RemoteName       = 'upstream'
+            RemoteUrl        = 'https://github.com/microsoft/winget-dsc'
+            ProjectDirectory = 'C:\repos\winget-dsc'
+        }
+
+        This example adds an upstream remote to the specified local Git repository.
+#>
 [DSCResource()]
 class GitRemote {
     [DscProperty()]
@@ -165,6 +239,39 @@ class GitRemote {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `GitConfigUserName` DSC resource is used to manage the Git user name configuration.
+
+    .DESCRIPTION
+        The `GitConfigUserName` DSC resource sets or removes the `user.name` Git configuration
+        value at the specified configuration scope (local, global, system, or worktree).
+
+        ## Requirements
+
+        * Target machine must have Git installed.
+        * For system-level configuration, the resource must be run as an Administrator.
+
+    .PARAMETER UserName
+        The Git user name to configure. This is a key property.
+
+    .PARAMETER Ensure
+        Specifies whether the user name should be present or absent. Defaults to `Present`.
+
+    .PARAMETER ConfigLocation
+        The Git configuration scope to apply the setting to (e.g., `global`, `system`, `local`).
+
+    .PARAMETER ProjectDirectory
+        The path to the Git repository. Required for non-global and non-system configurations.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitConfigUserName -Method Set -Property @{
+            UserName       = 'Demitrius Nelon'
+            ConfigLocation = 'global'
+        }
+
+        This example sets the global Git user name to 'Demitrius Nelon'.
+#>
 [DSCResource()]
 class GitConfigUserName {
     [DscProperty()]
@@ -228,6 +335,39 @@ class GitConfigUserName {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `GitConfigUserEmail` DSC resource is used to manage the Git user email configuration.
+
+    .DESCRIPTION
+        The `GitConfigUserEmail` DSC resource sets or removes the `user.email` Git configuration
+        value at the specified configuration scope (local, global, system, or worktree).
+
+        ## Requirements
+
+        * Target machine must have Git installed.
+        * For system-level configuration, the resource must be run as an Administrator.
+
+    .PARAMETER UserEmail
+        The Git user email to configure. This is a key property.
+
+    .PARAMETER Ensure
+        Specifies whether the user email should be present or absent. Defaults to `Present`.
+
+    .PARAMETER ConfigLocation
+        The Git configuration scope to apply the setting to (e.g., `global`, `system`, `local`).
+
+    .PARAMETER ProjectDirectory
+        The path to the Git repository. Required for non-global and non-system configurations.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitConfigUserEmail -Method Set -Property @{
+            UserEmail      = 'demitrius.nelon@example.com'
+            ConfigLocation = 'global'
+        }
+
+        This example sets the global Git user email to 'demitrius.nelon@example.com'.
+#>
 [DSCResource()]
 class GitConfigUserEmail {
     [DscProperty()]

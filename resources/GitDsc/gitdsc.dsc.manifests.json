@@ -1,0 +1,192 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "GitDsc/GitClone",
+      "author": "DscSamples",
+      "description": "The `GitClone` DSC resource is used to clone a Git repository to a local directory.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["HttpsUrl", "RootDirectory"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the repository should be present or absent. Defaults to `Present`.\r\n        Removing a cloned repository is not supported by this resource."
+            },
+            "HttpsUrl": {
+              "type": "string",
+              "title": "HttpsUrl",
+              "description": "The HTTPS URL of the Git repository to clone. This is a key property."
+            },
+            "RemoteName": {
+              "type": "string",
+              "title": "RemoteName",
+              "description": "The name of the remote. Defaults to `origin`."
+            },
+            "RootDirectory": {
+              "type": "string",
+              "title": "RootDirectory",
+              "description": "The root directory where the repository will be cloned into. This is a mandatory property."
+            },
+            "FolderName": {
+              "type": "string",
+              "title": "FolderName",
+              "description": "The folder name for the cloned repository. If not specified, it is derived from the HTTPS URL."
+            },
+            "ExtraArgs": {
+              "type": "string",
+              "title": "ExtraArgs",
+              "description": "Additional arguments to pass to `git clone`."
+            }
+          },
+          "description": "The `GitClone` DSC resource is used to clone a Git repository to a local directory.",
+          "title": "GitDsc/GitClone"
+        }
+      },
+      "path": "GitDsc.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "GitDsc/GitRemote",
+      "author": "DscSamples",
+      "description": "The `GitRemote` DSC resource is used to manage remote repository references in a Git project.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["RemoteName", "RemoteUrl", "ProjectDirectory"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the remote should be present or absent. Defaults to `Present`."
+            },
+            "RemoteName": {
+              "type": "string",
+              "title": "RemoteName",
+              "description": "The name of the Git remote. This is a key property."
+            },
+            "RemoteUrl": {
+              "type": "string",
+              "title": "RemoteUrl",
+              "description": "The URL of the Git remote. This is a key property."
+            },
+            "ProjectDirectory": {
+              "type": "string",
+              "title": "ProjectDirectory",
+              "description": "The path to the local Git repository. This is a mandatory property."
+            }
+          },
+          "description": "The `GitRemote` DSC resource is used to manage remote repository references in a Git project.",
+          "title": "GitDsc/GitRemote"
+        }
+      },
+      "path": "GitDsc.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "GitDsc/GitConfigUserName",
+      "author": "DscSamples",
+      "description": "The `GitConfigUserName` DSC resource is used to manage the Git user name configuration.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["UserName"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the user name should be present or absent. Defaults to `Present`."
+            },
+            "UserName": {
+              "type": "string",
+              "title": "UserName",
+              "description": "The Git user name to configure. This is a key property."
+            },
+            "ConfigLocation": {
+              "type": "string",
+              "enum": ["none", "global", "system", "worktree", "local"],
+              "title": "ConfigLocation",
+              "description": "The Git configuration scope to apply the setting to (e.g., `global`, `system`, `local`)."
+            },
+            "ProjectDirectory": {
+              "type": "string",
+              "title": "ProjectDirectory",
+              "description": "The path to the Git repository. Required for non-global and non-system configurations."
+            }
+          },
+          "description": "The `GitConfigUserName` DSC resource is used to manage the Git user name configuration.",
+          "title": "GitDsc/GitConfigUserName"
+        }
+      },
+      "path": "GitDsc.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "GitDsc/GitConfigUserEmail",
+      "author": "DscSamples",
+      "description": "The `GitConfigUserEmail` DSC resource is used to manage the Git user email configuration.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["UserEmail"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the user email should be present or absent. Defaults to `Present`."
+            },
+            "UserEmail": {
+              "type": "string",
+              "title": "UserEmail",
+              "description": "The Git user email to configure. This is a key property."
+            },
+            "ConfigLocation": {
+              "type": "string",
+              "enum": ["none", "global", "system", "worktree", "local"],
+              "title": "ConfigLocation",
+              "description": "The Git configuration scope to apply the setting to (e.g., `global`, `system`, `local`)."
+            },
+            "ProjectDirectory": {
+              "type": "string",
+              "title": "ProjectDirectory",
+              "description": "The path to the Git repository. Required for non-global and non-system configurations."
+            }
+          },
+          "description": "The `GitConfigUserEmail` DSC resource is used to manage the Git user email configuration.",
+          "title": "GitDsc/GitConfigUserEmail"
+        }
+      },
+      "path": "GitDsc.psd1"
+    }
+  ]
+}

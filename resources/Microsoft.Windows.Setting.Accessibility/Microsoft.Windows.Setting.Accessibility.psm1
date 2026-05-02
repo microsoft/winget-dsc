@@ -88,6 +88,32 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:AccessibilityRegistryPath = $global:MagnifierRegistryPath = $global:PointerRegistryPath = $global:ControlPanelAccessibilityRegistryPath = $global:AudioRegistryPath = $global:PersonalizationRegistryPath = $global:NTAccessibilityRegistryPath = $global:CursorIndicatorAccessibilityRegistryPath = $global:ControlPanelDesktopRegistryPath = $global:StickyKeysRegistryPath = $global:ToggleKeysRegistryPath = $global:FilterKeysRegistryPath = $global:EyeControlRegistryPath = $env:TestRegistryPath
 }
 
+<#
+    .SYNOPSIS
+        The `Text` DSC resource is used to manage the Windows text size accessibility setting.
+
+    .DESCRIPTION
+        The `Text` DSC resource configures the Windows text scaling factor, which controls
+        the size of text across the system for accessibility purposes.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER Size
+        The desired text size. Accepted values are `Small`, `Medium`, `Large`, or `ExtraLarge`.
+        This is a key property. Defaults to `KeepCurrentValue`.
+
+    .PARAMETER SizeValue
+        A read-only property indicating the current numeric text scale factor. This property is not configurable.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name Text -Method Set -Property @{
+            Size = 'Large'
+        }
+
+        This example sets the Windows text size to Large.
+#>
 [DSCResource()]
 class Text {
     [DscProperty(Key)] [TextSize] $Size = [TextSize]::KeepCurrentValue
@@ -141,6 +167,42 @@ class Text {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `Magnifier` DSC resource is used to manage Windows Magnifier accessibility settings.
+
+    .DESCRIPTION
+        The `Magnifier` DSC resource configures the Windows Magnifier tool, including its
+        magnification level and zoom increment.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER Magnification
+        The magnification preset to apply. Accepted values are `None`, `Low`, `Medium`, or `High`.
+        This is a key property. Defaults to `KeepCurrentValue`.
+
+    .PARAMETER ZoomIncrement
+        The zoom increment percentage. This is a mandatory property. Defaults to `25`.
+
+    .PARAMETER StartMagnify
+        Specifies whether to start the Magnifier application after applying settings. Defaults to `$false`.
+
+    .PARAMETER MagnificationLevel
+        A read-only property indicating the current magnification level in percent. This property is not configurable.
+
+    .PARAMETER ZoomIncrementLevel
+        A read-only property indicating the current zoom increment value. This property is not configurable.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name Magnifier -Method Set -Property @{
+            Magnification = 'Medium'
+            ZoomIncrement = 25
+        }
+
+        This example sets the Windows Magnifier zoom to the Medium preset with 25% increments.
+#>
 [DSCResource()]
 class Magnifier {
     [DscProperty(Key)] [MagnificationValue] $Magnification = [MagnificationValue]::KeepCurrentValue
@@ -226,6 +288,32 @@ class Magnifier {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `MousePointer` DSC resource is used to manage the Windows mouse pointer size accessibility setting.
+
+    .DESCRIPTION
+        The `MousePointer` DSC resource configures the size of the Windows mouse cursor
+        for accessibility purposes.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER PointerSize
+        The desired mouse pointer size. Accepted values are `Normal`, `Medium`, `Large`, or `ExtraLarge`.
+        This is a key property. Defaults to `KeepCurrentValue`.
+
+    .PARAMETER PointerSizeValue
+        A read-only property indicating the current pointer size value. This property is not configurable.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name MousePointer -Method Set -Property @{
+            PointerSize = 'Large'
+        }
+
+        This example sets the Windows mouse pointer size to Large.
+#>
 [DSCResource()]
 class MousePointer {
     [DscProperty(Key)] [PointerSize] $PointerSize = [PointerSize]::KeepCurrentValue
@@ -282,6 +370,39 @@ class MousePointer {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `VisualEffect` DSC resource is used to manage Windows visual accessibility settings.
+
+    .DESCRIPTION
+        The `VisualEffect` DSC resource configures visual accessibility options including
+        always-visible scrollbars, transparency effects, and notification message duration.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER AlwaysShowScrollbars
+        Specifies whether scrollbars should always be visible.
+
+    .PARAMETER TransparencyEffects
+        Specifies whether transparency effects are disabled (set `$true` to disable transparency).
+
+    .PARAMETER MessageDurationInSeconds
+        The duration in seconds that notification messages are displayed. Must be between 5 and 300.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name VisualEffect -Method Set -Property @{
+            AlwaysShowScrollbars     = $true
+            TransparencyEffects      = $false
+            MessageDurationInSeconds = 5
+        }
+
+        This example enables always-visible scrollbars and sets the notification duration to 5 seconds.
+#>
 [DSCResource()]
 class VisualEffect {
     # Key required. Do not set.
@@ -374,6 +495,34 @@ class VisualEffect {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `Audio` DSC resource is used to manage Windows audio accessibility settings.
+
+    .DESCRIPTION
+        The `Audio` DSC resource configures the Windows mono audio accessibility setting,
+        which combines stereo audio into a single mono channel for users who are hard of hearing.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER EnableMonoAudio
+        Specifies whether mono audio should be enabled. Defaults to `$false`.
+
+    .PARAMETER RestartService
+        Specifies whether to restart the Windows Audio service after applying changes. Defaults to `$false`.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name Audio -Method Set -Property @{
+            EnableMonoAudio = $true
+        }
+
+        This example enables mono audio on Windows.
+#>
 [DSCResource()]
 class Audio {
     # Key required. Do not set.
@@ -425,6 +574,41 @@ class Audio {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `TextCursor` DSC resource is used to manage Windows text cursor accessibility settings.
+
+    .DESCRIPTION
+        The `TextCursor` DSC resource configures the Windows text cursor indicator, including
+        its visibility, size, color, and thickness.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER IndicatorStatus
+        Enables or disables the text cursor indicator accessibility feature.
+
+    .PARAMETER IndicatorSize
+        The size of the text cursor indicator. Must be between 1 and 20.
+
+    .PARAMETER IndicatorColor
+        The color of the text cursor indicator as an integer value.
+
+    .PARAMETER Thickness
+        The thickness of the text cursor. Must be between 1 and 20.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name TextCursor -Method Set -Property @{
+            IndicatorStatus = $true
+            Thickness       = 3
+        }
+
+        This example enables the text cursor indicator and sets the cursor thickness to 3.
+#>
 [DSCResource()]
 class TextCursor {
     # Key required. Do not set.
@@ -556,6 +740,57 @@ class TextCursor {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `StickyKeys` DSC resource is used to manage the Windows Sticky Keys accessibility feature.
+
+    .DESCRIPTION
+        The `StickyKeys` DSC resource configures the Sticky Keys accessibility feature, which
+        allows modifier keys (Shift, Ctrl, Alt) to remain active after being pressed once, enabling
+        users to type keyboard shortcuts one key at a time.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Active
+        Specifies whether Sticky Keys is currently active.
+
+    .PARAMETER Available
+        Specifies whether Sticky Keys is available to be toggled.
+
+    .PARAMETER HotkeyActive
+        Specifies whether the Sticky Keys keyboard shortcut (pressing Shift 5 times) is active.
+
+    .PARAMETER ConfirmOnHotkeyActivation
+        Specifies whether a confirmation dialog is shown when Sticky Keys is activated via hotkey.
+
+    .PARAMETER HotkeySound
+        Specifies whether a sound plays when Sticky Keys hotkey is used.
+
+    .PARAMETER VisualIndicator
+        Specifies whether a visual indicator is shown when Sticky Keys is active.
+
+    .PARAMETER AudibleFeedback
+        Specifies whether an audible tone plays when a modifier key is pressed.
+
+    .PARAMETER TriState
+        Specifies whether modifier keys can be locked by pressing them twice.
+
+    .PARAMETER TwoKeysOff
+        Specifies whether Sticky Keys is turned off when two keys are pressed simultaneously.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name StickyKeys -Method Set -Property @{
+            Active     = $true
+            TwoKeysOff = $true
+        }
+
+        This example enables Sticky Keys and configures it to turn off when two keys are pressed simultaneously.
+#>
 [DSCResource()]
 class StickyKeys {
     # Key required. Do not set.
@@ -688,6 +923,46 @@ class StickyKeys {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `ToggleKeys` DSC resource is used to manage the Windows Toggle Keys accessibility feature.
+
+    .DESCRIPTION
+        The `ToggleKeys` DSC resource configures the Toggle Keys accessibility feature, which
+        plays a sound when the Caps Lock, Num Lock, or Scroll Lock keys are pressed.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Active
+        Specifies whether Toggle Keys is currently active.
+
+    .PARAMETER Available
+        Specifies whether Toggle Keys is available to be toggled.
+
+    .PARAMETER HotkeyActive
+        Specifies whether the Toggle Keys keyboard shortcut (holding Num Lock for 5 seconds) is active.
+
+    .PARAMETER ConfirmOnHotkeyActivation
+        Specifies whether a confirmation dialog is shown when Toggle Keys is activated via hotkey.
+
+    .PARAMETER HotkeySound
+        Specifies whether a sound plays when Toggle Keys hotkey is used.
+
+    .PARAMETER VisualIndicator
+        Specifies whether a visual indicator is shown when Toggle Keys is active.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name ToggleKeys -Method Set -Property @{
+            Active = $true
+        }
+
+        This example enables the Toggle Keys feature.
+#>
 [DSCResource()]
 class ToggleKeys {
     # Key required. Do not set.
@@ -790,6 +1065,50 @@ class ToggleKeys {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `FilterKeys` DSC resource is used to manage the Windows Filter Keys accessibility feature.
+
+    .DESCRIPTION
+        The `FilterKeys` DSC resource configures the Filter Keys accessibility feature, which
+        ignores brief or repeated keystrokes and slows the repeat rate to help users with
+        hand tremors type more accurately.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Active
+        Specifies whether Filter Keys is currently active.
+
+    .PARAMETER Available
+        Specifies whether Filter Keys is available to be toggled.
+
+    .PARAMETER HotkeyActive
+        Specifies whether the Filter Keys keyboard shortcut (holding Right Shift for 8 seconds) is active.
+
+    .PARAMETER ConfirmOnHotkeyActivation
+        Specifies whether a confirmation dialog is shown when Filter Keys is activated via hotkey.
+
+    .PARAMETER HotkeySound
+        Specifies whether a sound plays when Filter Keys hotkey is used.
+
+    .PARAMETER VisualIndicator
+        Specifies whether a visual indicator is shown when Filter Keys is active.
+
+    .PARAMETER AudibleFeedback
+        Specifies whether an audible tone plays when a key is pressed or accepted.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name FilterKeys -Method Set -Property @{
+            Active = $true
+        }
+
+        This example enables the Filter Keys feature.
+#>
 [DSCResource()]
 class FilterKeys {
     # Key required. Do not set.
@@ -902,6 +1221,29 @@ class FilterKeys {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `EyeControl` DSC resource is used to enable or disable the Windows Eye Control accessibility feature.
+
+    .DESCRIPTION
+        The `EyeControl` DSC resource configures the Windows Eye Control accessibility feature,
+        which enables users to control Windows using only their eyes with a supported eye tracking device.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+
+    .PARAMETER Ensure
+        Specifies whether Eye Control should be enabled (`Present`) or disabled (`Absent`).
+        This is a key property.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Setting.Accessibility -Name EyeControl -Method Set -Property @{
+            Ensure = 'Present'
+        }
+
+        This example enables the Windows Eye Control accessibility feature.
+#>
 [DscResource()]
 class EyeControl {
     [DscProperty(Key)] [Ensure] $Ensure

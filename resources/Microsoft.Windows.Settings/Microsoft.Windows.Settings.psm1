@@ -22,6 +22,98 @@ if ([string]::IsNullOrEmpty($env:TestRegistryPath)) {
     $global:ExplorerRegistryPath = $global:PersonalizeRegistryPath = $global:AppModelUnlockRegistryPath = $global:TimeZoneAutoUpdateRegistryPath = $global:TimeZoneInformationRegistryPath = $global:DesktopRegistryPath = $global:DWMRegistryPath = $global:StartRegistryPath = $global:USBRegistryPath = $global:TaskbarBadgesRegistryPath = $global:TaskbarGlomLevelRegistryPath = $global:TaskbarMultiMonRegistryPath = $global:TaskbarMultiMonModeRegistryPath = $env:TestRegistryPath
 }
 
+<#
+    .SYNOPSIS
+        The `WindowsSettings` DSC resource is used to manage common Windows settings.
+
+    .DESCRIPTION
+        The `WindowsSettings` DSC resource configures a wide range of Windows settings
+        including taskbar alignment, color mode, time zone, transparency, Start menu folders,
+        taskbar badges, multi-monitor taskbar behavior, and USB notification settings.
+
+        ## Requirements
+
+        * Target machine must be running Windows.
+        * Some settings (DeveloperMode, TimeZone) require the resource to be run as an Administrator.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER TaskbarAlignment
+        Sets the taskbar alignment. Accepted values are `Left` or `Center`.
+
+    .PARAMETER AppColorMode
+        Sets the color mode for applications. Accepted values are `Dark` or `Light`.
+
+    .PARAMETER SystemColorMode
+        Sets the color mode for the Windows system UI. Accepted values are `Dark` or `Light`.
+
+    .PARAMETER DeveloperMode
+        Enables or disables Developer Mode. Requires Administrator privileges.
+
+    .PARAMETER SetTimeZoneAutomatically
+        Enables or disables automatic time zone detection. Requires Administrator privileges.
+
+    .PARAMETER TimeZone
+        Sets the system time zone. Requires Administrator privileges.
+
+    .PARAMETER EnableTransparency
+        Enables or disables transparency effects in Windows.
+
+    .PARAMETER ShowAccentColorOnStartAndTaskbar
+        Enables or disables showing the accent color on the Start menu and taskbar.
+
+    .PARAMETER ShowAccentColorOnTitleBarsAndWindowBorders
+        Enables or disables showing the accent color on title bars and window borders.
+
+    .PARAMETER AutoColorization
+        Enables or disables automatic colorization based on the desktop background.
+
+    .PARAMETER StartFolders
+        Specifies the folders to show in the Start menu.
+
+    .PARAMETER ShowRecentList
+        Enables or disables the recently opened items list in the Start menu.
+
+    .PARAMETER ShowRecommendedList
+        Enables or disables the recommended files list in the Start menu.
+
+    .PARAMETER TaskbarBadges
+        Enables or disables taskbar button badges.
+
+    .PARAMETER DesktopTaskbarBadges
+        Enables or disables taskbar button badges on the desktop taskbar.
+
+    .PARAMETER TaskbarGroupingMode
+        Sets the taskbar grouping mode. Accepted values are `Always`, `WhenFull`, or `Never`.
+
+    .PARAMETER TaskbarMultiMon
+        Enables or disables the taskbar on multiple monitors.
+
+    .PARAMETER DesktopTaskbarMultiMon
+        Enables or disables the desktop taskbar on multiple monitors.
+
+    .PARAMETER TaskbarMultiMonMode
+        Sets the multi-monitor taskbar mode.
+
+    .PARAMETER DesktopTaskbarMultiMonMode
+        Sets the desktop multi-monitor taskbar mode.
+
+    .PARAMETER NotifyOnUsbErrors
+        Enables or disables USB error notifications.
+
+    .PARAMETER NotifyOnWeakCharger
+        Enables or disables weak charger notifications.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.Windows.Settings -Name WindowsSettings -Method Set -Property @{
+            TaskbarAlignment = 'Left'
+            AppColorMode     = 'Dark'
+            SystemColorMode  = 'Dark'
+        }
+
+        This example sets the taskbar to left-aligned and enables dark mode for apps and the system.
+#>
 [DSCResource()]
 class WindowsSettings {
     # Key required. Do not set.
@@ -127,7 +219,7 @@ class WindowsSettings {
     hidden [string] $DesktopTaskbarMultiMonModePropertyName = 'SystemSettings_DesktopTaskbar_MultiMonTaskbarMode'
     hidden [string] $NotifyOnUsbErrorsPropertyName = 'NotifyOnUsbErrors'
     hidden [string] $NotifyOnWeakChargerPropertyName = 'NotifyOnWeakCharger'
-    
+
     # Start folder GUIDs
     hidden [hashtable] $StartFolderGuids = @{
         'Documents'   = '{2D34D5CE-FA5A-4543-82F2-22E6EAF7773C}'
@@ -577,11 +669,11 @@ class WindowsSettings {
         try {
             $binaryData = Get-ItemPropertyValue -Path $global:StartRegistryPath -Name $this.VisiblePlacesPropertyName
             $folders = [System.Collections.ArrayList]@()
-            
+
             # Parse binary data to extract GUIDs
             $guidPattern = '([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})'
             $guidMatches = [regex]::Matches([System.Text.Encoding]::Unicode.GetString($binaryData), $guidPattern)
-            
+
             foreach ($match in $guidMatches) {
                 $guid = '{' + $match.Value.ToUpper() + '}'
                 # Find folder name from GUID
@@ -592,7 +684,7 @@ class WindowsSettings {
                     }
                 }
             }
-            
+
             return [string[]]$folders.ToArray()
         } catch {
             return [string[]]@()

@@ -12,6 +12,70 @@ if (-not(Test-Path -Path $global:WindowsSandboxExePath)) {
 }
 
 #region DSCResources
+<#
+    .SYNOPSIS
+        The `WindowsSandbox` DSC resource is used to manage a Windows Sandbox instance.
+
+    .DESCRIPTION
+        The `WindowsSandbox` DSC resource starts or stops a Windows Sandbox session. It supports
+        loading configuration from an existing `.wsb` file or generating a new configuration
+        with the specified settings.
+
+        ## Requirements
+
+        * Target machine must have the Windows Sandbox feature enabled.
+
+    .PARAMETER Ensure
+        Specifies whether the Windows Sandbox should be running or not. This is a key property.
+        Defaults to `Present`.
+
+    .PARAMETER WsbFilePath
+        The path to an existing `.wsb` configuration file to load.
+
+    .PARAMETER HostFolder
+        The path to a host folder to map into the sandbox.
+
+    .PARAMETER SandboxFolder
+        The path inside the sandbox to map the host folder to.
+
+    .PARAMETER ReadOnly
+        Specifies whether the mapped folder should be read-only.
+
+    .PARAMETER LogonCommand
+        A command to run when the sandbox starts.
+
+    .PARAMETER MemoryInMB
+        The amount of memory in megabytes to allocate to the sandbox.
+
+    .PARAMETER vGPU
+        Enables or disables virtual GPU support.
+
+    .PARAMETER AudioInput
+        Enables or disables audio input in the sandbox.
+
+    .PARAMETER ClipboardRedirection
+        Enables or disables clipboard sharing between host and sandbox.
+
+    .PARAMETER Networking
+        Enables or disables networking in the sandbox.
+
+    .PARAMETER PrinterRedirection
+        Enables or disables printer access in the sandbox.
+
+    .PARAMETER ProtectedClient
+        Enables or disables protected client mode.
+
+    .PARAMETER VideoInput
+        Enables or disables video input in the sandbox.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName Microsoft.WindowsSandbox.DSC -Name WindowsSandbox -Method Set -Property @{
+            Ensure     = 'Present'
+            Networking = $true
+        }
+
+        This example starts a Windows Sandbox instance with networking enabled.
+#>
 [DSCResource()]
 class WindowsSandbox {
     [DscProperty(Key)]

@@ -1,0 +1,52 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.VSCode.Dsc/VSCodeExtension",
+      "author": "Microsoft Corporation",
+      "description": "The `VSCodeExtension` DSC Resource allows you to install, update, and remove Visual Studio Code extensions. This resource ensures that the specified Visual Studio Code extension is in the desired state.",
+      "capabilities": ["export", "get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["Name"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": "string",
+              "title": "Name",
+              "description": "The name of the Visual Studio Code extension to manage. This is a required parameter."
+            },
+            "Version": {
+              "type": "string",
+              "title": "Version",
+              "description": "The version of the Visual Studio Code extension to install. If not specified, the latest version will be installed."
+            },
+            "Exist": {
+              "type": "boolean",
+              "title": "Exist",
+              "description": "Indicates whether the extension should exist. The default value is `$true`."
+            },
+            "PreRelease": {
+              "type": "boolean",
+              "title": "PreRelease",
+              "description": "Indicates whether to install the pre-release version of the extension. The default value is `$false`.\r\n\r\n    When PreRelease is set to `$true`, the extension will be installed from the Visual Studio Code marketplace. If the extension is already installed, it will be updated to the pre-release version.\r\n    If there is no prerelease version available, the extension will be installed."
+            },
+            "Insiders": {
+              "type": "boolean",
+              "title": "Insiders",
+              "description": "Indicates whether to manage the extension for the Insiders version of Visual Studio Code. The default value is `$false`."
+            }
+          },
+          "description": "The `VSCodeExtension` DSC Resource allows you to install, update, and remove Visual Studio Code extensions. This resource ensures that the specified Visual Studio Code extension is in the desired state.",
+          "title": "Microsoft.VSCode.Dsc/VSCodeExtension"
+        }
+      },
+      "path": "Microsoft.VSCode.Dsc.psd1"
+    }
+  ]
+}

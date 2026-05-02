@@ -185,6 +185,9 @@ function Test-CrateInstalled {
 .PARAMETER Force
     Force overwriting existing crates or binaries. The default value is $false.
 
+.PARAMETER InstalledVersion
+    A read-only property indicating the currently installed version of the crate. This property is not configurable.
+
 .EXAMPLE
     PS C:\> Invoke-DscResource -ModuleName RustDsc -Name CargoToolInstall -Method Set -Property @{ CrateName = 'bat' }
 

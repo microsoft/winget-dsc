@@ -7,6 +7,38 @@ using namespace System.Collections.Generic
 Assert-Yarn
 
 #region DSCResources
+<#
+    .SYNOPSIS
+        The `YarnInstall` DSC resource is used to install all Yarn packages listed in a `package.json` file.
+
+    .DESCRIPTION
+        The `YarnInstall` DSC resource invokes `yarn install` to install all packages defined in a
+        `package.json` file in the specified directory. It is inherently idempotent as Yarn will
+        resolve all package dependencies on each run.
+
+        ## Requirements
+
+        * Target machine must have Yarn installed.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Arguments
+        Additional arguments to pass to `yarn install`.
+
+    .PARAMETER PackageDirectory
+        The directory containing the `package.json` file. If not specified, the current directory is used.
+
+    .PARAMETER Dependencies
+        A read-only list of currently installed package dependencies. This property is not configurable.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName YarnDsc -Name YarnInstall -Method Set -Property @{
+            PackageDirectory = 'C:\repos\my-project'
+        }
+
+        This example installs all Yarn packages defined in `C:\repos\my-project\package.json`.
+#>
 [DSCResource()]
 class YarnInstall {
     # DSCResource requires a key. Do not set.

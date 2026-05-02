@@ -2,6 +2,9 @@ vscode
 Linux
 dotnet
 dotnettool
+microsoftdotnet
+microsoftvscode
+pythonpip
 NUnit
 reportgenerator
 markdownlint
