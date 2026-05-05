@@ -21,3 +21,12 @@ usr
 versioning
 VGpu
 vse
+debian
+euo
+linux
+pipefail
+sudoer
+tarball
+utf
+vendored
+versioned

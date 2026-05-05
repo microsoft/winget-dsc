@@ -74,3 +74,6 @@ name\:\s+.+$
 
 # Store ID
 9PNRBTZXMB4Z
+
+# set arguments
+\bset(?:\s+-[abefimouxE]{1,2})*\s+-[abefimouxE]{3,}(?:\s+-[abefimouxE]+)*

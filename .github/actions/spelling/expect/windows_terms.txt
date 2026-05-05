@@ -19,3 +19,11 @@ cursorindicator
 packagetype
 BSODs
 Audiosrv
+ADMX
+chcp
+conhost
+MDM
+PATHEXT
+Redist
+sideloaded
+UWP
