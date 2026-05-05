@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+#
+# Core artifact for the .NET developer flow on Windows.
+#
+# This is a winget DSC configuration file: a declarative, idempotent, and
+# non-interactive description of the machine state required to do .NET
+# development. Apply it directly with:
+#
+#     winget configure --file scripts/windows/dotnet/configuration.winget `
+#         --accept-configuration-agreements `
+#         --disable-interactivity
+#
+# `--accept-package-agreements` is intentionally NOT in the canonical
+# invocation above: each `Microsoft.WinGet/Package` resource below sets
+# `acceptAgreements: true`, which causes the dscv3 resource to internally
+# pass both `--accept-source-agreements` and `--accept-package-agreements`
+# to its own winget install call. See AGENTS.md section 4.
+#
+# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
+# command above, rehydrates PATH in the caller's session, and emits an
+# `INSTALL_OK: <id>` sentinel for the test harness. All install logic lives
+# here.
+#
+# Resources:
+#   - DotNetSdk: installs the .NET 10 SDK via winget. The SDK ships the
+#                cross-platform runtimes plus the `dotnet` CLI used to build
+#                and run the hello-world. The WinForms and WinUI flows use
+#                the same package id and pair it with workload-specific
+#                project settings (UseWindowsForms=true, the Windows App
+#                SDK targeting pack); this flow installs only the core SDK
+#                so it can serve as a foundation for cross-platform
+#                scenarios (e.g. web-api-csharp).
+#
+# Note on the package id:
+#   winget's community repo does NOT publish an unversioned `Microsoft.DotNet`
+#   meta package; `WinGetPackage` uses `--exact` resolution, so a versioned id
+#   is required. `Microsoft.DotNet.SDK.10` tracks the .NET 10 LTS line — bump
+#   this when the next LTS ships and .NET 10 reaches EOL.
+#
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor: dscv3
+resources:
+  - name: DotNetSdk
+    type: Microsoft.WinGet/Package
+    metadata:
+      securityContext: elevated
+    properties:
+      id: Microsoft.DotNet.SDK.10
+      source: winget
+      acceptAgreements: true
