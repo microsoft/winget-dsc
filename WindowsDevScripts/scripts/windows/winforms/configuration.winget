@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+#
+# Core artifact for the WinForms developer flow on Windows.
+#
+# This is a winget DSC configuration file: a declarative, idempotent, and
+# non-interactive description of the machine state required to build and run
+# a minimal Windows Forms (.NET) application. Apply it directly with:
+#
+#     winget configure --file scripts/windows/winforms/configuration.winget `
+#         --accept-configuration-agreements `
+#         --disable-interactivity
+#
+# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
+# command above, rehydrates PATH in the caller's session, and emits an
+# `INSTALL_OK: <id>` sentinel for the test harness. All install logic lives
+# here.
+#
+# Resources:
+#   - DotNetSdk: installs the .NET 10 SDK via winget. The SDK ships the Windows
+#                Desktop targeting pack needed by `UseWindowsForms=true`
+#                projects, so no separate workload install is required.
+#
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor: dscv3
+resources:
+  - name: DotNetSdk
+    type: Microsoft.WinGet/Package
+    metadata:
+      securityContext: elevated
+    properties:
+      id: Microsoft.DotNet.SDK.10
+      source: winget
