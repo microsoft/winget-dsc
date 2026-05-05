@@ -18,3 +18,17 @@ tokio
 lldb
 Rustlang
 vadimcn
+CPython
+gofmt
+gradlew
+javac
+Jdk
+mojibake
+mvnw
+rustc
+tsc
+uvx
+winappcli
+winbuild
+wincreate
+winforms
