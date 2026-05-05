@@ -1,0 +1,160 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+#
+# Core artifact for the WinUI 3 (Windows App SDK) developer flow on Windows.
+#
+# This is a winget DSC configuration file: a declarative, idempotent, and
+# non-interactive description of the machine state required to build and run
+# modern WinUI 3 / Windows App SDK applications. Apply it directly with:
+#
+#     winget configure --file scripts/windows/winui/configuration.winget `
+#         --accept-configuration-agreements `
+#         --disable-interactivity
+#
+# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
+# command above (through `_common/apply-configuration.ps1`), rehydrates PATH
+# in the caller's session, and emits an `INSTALL_OK: <id>` sentinel for the
+# test harness. All install logic lives here.
+#
+# Onboarding source:
+#   https://learn.microsoft.com/windows/apps/get-started/start-here
+#
+# Why dscv3 with v2 class-based resources:
+#   The WinUI onboarding needs three PowerShell DSC v2 class-based modules
+#   (`Microsoft.Windows.Developer`, `Microsoft.Windows.Settings`,
+#   `Microsoft.VisualStudio.DSC`) that are not exposed as native dscv3
+#   resources. The dscv3 processor hosts v2 class-based resources through its
+#   PowerShell adapter, so the preferred v3 document shape still applies — we
+#   just need each adapter module installed before its consumer runs. We do
+#   that with `Microsoft.DSC.Transitional/RunCommandOnSet` + `dependsOn`.
+#   Package install uses native `Microsoft.WinGet/Package` (see AGENTS.md §3).
+#
+# Package-agreement acceptance:
+#   `Microsoft.WinGet/Package` sets `acceptAgreements: true` per-resource
+#   (AGENTS.md §4). `--accept-configuration-agreements` (passed by the shim)
+#   consents to the configuration document itself.
+#
+# Resources (in application order, enforced by dependsOn):
+#   - Adapter modules: Install-Module on first Set for each v2 class-based
+#     module so its resource type is resolvable by the adapter.
+#   - OsVersion assertion: fail fast on pre-Win10 1809 (minimum supported by
+#     the Windows App SDK).
+#   - DeveloperMode: required for unpackaged/sideloaded Windows App SDK apps
+#     and for a normal WinUI inner-loop (F5 deploy).
+#   - Visual Studio: installs VS 2026 Community (channelId VisualStudio.18.Release
+#     → productId Microsoft.VisualStudio.Product.Community); the IDE is what
+#     a human onboarding to WinUI is expected to use for design, debugging,
+#     and XAML hot reload.
+#   - WinAppCLI: installs the Windows App SDK CLI (`winappcli`), which
+#     provides `wincreate` / `winbuild` helpers used in the Windows App SDK
+#     onboarding for project scaffolding and template-driven builds.
+#   - VSComponents: adds the workloads/components the WinUI C# onboarding doc
+#     calls out: .NET Desktop Development (ManagedDesktop), Universal Windows
+#     Platform Development (Universal), and the Windows App SDK C# component
+#     group (WindowsAppSDK.Cs). These pull in MSBuild targets, the Windows SDK
+#     ref pack, and the WinUI 3 project templates.
+#
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor: dscv3
+resources:
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: Microsoft.Windows.Developer.Module
+    properties:
+      executable: pwsh
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Developer)) { Install-Module -Name Microsoft.Windows.Developer -Confirm:$False -Force -AllowPrerelease -AllowClobber }
+        treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.Windows.Developer module is installed
+
+  - type: Microsoft.Windows.Developer/OsVersion
+    name: OsVersion
+    dependsOn:
+      - Microsoft.Windows.Developer.Module
+    properties:
+      MinVersion: '10.0.17763'
+    metadata:
+      description: Verify min OS version (Windows 10 1809+)
+      allowPrerelease: true
+
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: Microsoft.Windows.Settings.Module
+    properties:
+      executable: pwsh
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Settings)) { Install-Module -Name Microsoft.Windows.Settings -Confirm:$False -Force -AllowPrerelease -AllowClobber }
+        treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.Windows.Settings module is installed
+
+  - type: Microsoft.Windows.Settings/WindowsSettings
+    name: DeveloperMode
+    dependsOn:
+      - Microsoft.Windows.Settings.Module
+    properties:
+      DeveloperMode: true
+    metadata:
+      description: Enable Developer Mode
+      allowPrerelease: true
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.WinGet/Package
+    name: VisualStudio
+    properties:
+      id: Microsoft.VisualStudio.Community
+      source: winget
+      acceptAgreements: true
+    metadata:
+      description: Install Visual Studio 2026 Community
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.WinGet/Package
+    name: WinAppCLI
+    properties:
+      id: Microsoft.WinAppCLI
+      source: winget
+      acceptAgreements: true
+    metadata:
+      description: Install Windows App SDK CLI (winappcli)
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: Microsoft.VisualStudio.DSC.Module
+    properties:
+      executable: pwsh
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": if (-not (Get-Module -ListAvailable -Name Microsoft.VisualStudio.DSC)) { Install-Module -Name Microsoft.VisualStudio.DSC -Confirm:$False -Force -AllowPrerelease -AllowClobber }
+        treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.VisualStudio.DSC module is installed
+
+  - type: Microsoft.VisualStudio.DSC/VSComponents
+    name: VSWorkloads
+    dependsOn:
+      - VisualStudio
+      - Microsoft.VisualStudio.DSC.Module
+    properties:
+      productId: Microsoft.VisualStudio.Product.Community
+      channelId: VisualStudio.18.Release
+      components:
+        - Microsoft.VisualStudio.Workload.ManagedDesktop
+        - Microsoft.VisualStudio.Workload.Universal
+        - Microsoft.VisualStudio.ComponentGroup.WindowsAppSDK.Cs
+    metadata:
+      description: Install required VS workloads (ManagedDesktop, Universal, WindowsAppSDK.Cs)
+      allowPrerelease: true
+      winget:
+        securityContext: elevated
