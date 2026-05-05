@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+#
+# Core artifact for the PHP developer flow on Windows.
+#
+# This is a winget DSC configuration file: a declarative, idempotent, and
+# non-interactive description of the machine state required to do PHP
+# development. Apply it directly with:
+#
+#     winget configure --file scripts/windows/php/configuration.winget `
+#         --accept-configuration-agreements `
+#         --disable-interactivity
+#
+# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
+# command above, rehydrates PATH in the caller's session, and emits an
+# `INSTALL_OK: <id>` sentinel for the test harness. All install logic lives
+# here.
+#
+# Note on the package id:
+#   winget's community repo does NOT publish an unversioned `PHP.PHP` meta
+#   package; `WinGetPackage` uses `--exact` resolution, so a versioned id is
+#   required. `PHP.PHP.8.5` is the current stable line — bump this when
+#   upstream ships a new supported minor and the old one reaches EOL. (We had
+#   briefly pinned 8.4 but its manifest's installer URL started returning 404;
+#   8.5 matches the build pre-installed on `windows-latest` runners anyway.)
+#
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor: dscv3
+resources:
+  - name: Php
+    type: Microsoft.WinGet/Package
+    metadata:
+      securityContext: elevated
+    properties:
+      id: PHP.PHP.8.5
+      source: winget
