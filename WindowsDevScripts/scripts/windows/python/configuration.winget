@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+#
+# Core artifact for the Python developer flow on Windows.
+#
+# This is a winget DSC configuration file: a declarative, idempotent, and
+# non-interactive description of the machine state required to do Python
+# development. Apply it directly with:
+#
+#     winget configure --file scripts/windows/python/configuration.winget `
+#         --accept-configuration-agreements `
+#         --disable-interactivity
+#
+# `--accept-package-agreements` is intentionally NOT in the canonical
+# invocation above: each `Microsoft.WinGet/Package` resource below sets
+# `acceptAgreements: true`, which causes the dscv3 resource to internally
+# pass both `--accept-source-agreements` and `--accept-package-agreements`
+# to its own winget install call. See AGENTS.md §4.
+#
+# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
+# command above, rehydrates PATH in the caller's session, and emits an
+# `INSTALL_OK: <id>` sentinel for the test harness. All install logic lives
+# here.
+#
+# Resources:
+#   - Python: installs CPython 3.13 via winget. The installer adds `python`,
+#             `python3`, and `pip` to the user PATH.
+#   - Uv:     installs uv (Astral's fast Python package / project manager) via
+#             winget. Adds `uv` and `uvx` to the user PATH. Kept as a sibling
+#             resource — uv is standalone and does not require Python to be
+#             installed first, but developers of this flow will almost always
+#             want both, so they ship together.
+#
+# Note on the Python package id:
+#   winget's community repo does NOT publish an unversioned `Python.Python`
+#   meta package; `WinGetPackage` uses `--exact` resolution, so a versioned id
+#   is required. `Python.Python.3.13` is the current stable line — bump this
+#   when upstream ships a new supported minor and the old one reaches EOL.
+#
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor: dscv3
+resources:
+  - name: Python
+    type: Microsoft.WinGet/Package
+    metadata:
+      securityContext: elevated
+    properties:
+      id: Python.Python.3.13
+      source: winget
+      acceptAgreements: true
+
+  - name: Uv
+    type: Microsoft.WinGet/Package
+    metadata:
+      securityContext: elevated
+    properties:
+      id: astral-sh.uv
+      source: winget
+      acceptAgreements: true
