@@ -25,7 +25,7 @@ resources:
     dependsOn:
       - Rustup
     properties:
-      executable: pwsh
+      executable: powershell
       arguments:
         "0": -NoProfile
         "1": -NoLogo
