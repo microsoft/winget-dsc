@@ -80,32 +80,18 @@ resources:
         securityContext: elevated
 
   - type: Microsoft.DSC.Transitional/RunCommandOnSet
-    name: Microsoft.VisualStudio.DSC.Module
+    name: VSWorkloads
+    dependsOn:
+      - VisualStudio
     properties:
       executable: pwsh
       arguments:
         "0": -NoProfile
         "1": -NoLogo
         "2": -Command
-        "3": if (-not (Get-Module -ListAvailable -Name Microsoft.VisualStudio.DSC)) { Install-Module -Name Microsoft.VisualStudio.DSC -Confirm:$False -Force -AllowPrerelease -AllowClobber }
+        "3": $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'; if (-not (Test-Path $vswhere)) { throw 'vswhere.exe not found.' }; $setup = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\setup.exe'; if (-not (Test-Path $setup)) { throw 'Visual Studio setup.exe not found.' }; $installPath = & $vswhere -latest -products * -property installationPath; if (-not $installPath) { throw 'Visual Studio installation path could not be determined.' }; & $setup modify --installPath $installPath --channelId VisualStudio.18.Release --productId Microsoft.VisualStudio.Product.Community --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.Universal --add Microsoft.VisualStudio.ComponentGroup.WindowsAppSDK.Cs --quiet --norestart --wait; if ($LASTEXITCODE -ne 0) { throw "Visual Studio workload installation failed with exit code $LASTEXITCODE." }
         treatAsArray: true
     metadata:
-      description: Ensure Microsoft.VisualStudio.DSC module is installed
-
-  - type: Microsoft.VisualStudio.DSC/VSComponents
-    name: VSWorkloads
-    dependsOn:
-      - VisualStudio
-      - Microsoft.VisualStudio.DSC.Module
-    properties:
-      productId: Microsoft.VisualStudio.Product.Community
-      channelId: VisualStudio.18.Release
-      components:
-        - Microsoft.VisualStudio.Workload.ManagedDesktop
-        - Microsoft.VisualStudio.Workload.Universal
-        - Microsoft.VisualStudio.ComponentGroup.WindowsAppSDK.Cs
-    metadata:
-      description: Install required VS workloads (ManagedDesktop, Universal, WindowsAppSDK.Cs)
-      allowPrerelease: true
+      description: Install required VS workloads with Visual Studio Installer
       winget:
         securityContext: elevated
