@@ -9,8 +9,21 @@ metadata:
   winget:
     processor: dscv3
 resources:
+  - type: Microsoft.WinGet/Package
+    name: PowerShell7
+    properties:
+      id: Microsoft.PowerShell
+      source: winget
+      acceptAgreements: true
+    metadata:
+      description: Install PowerShell 7
+      winget:
+        securityContext: elevated
+
   - type: Microsoft.DSC.Transitional/RunCommandOnSet
     name: Microsoft.Windows.Developer.Module
+    dependsOn:
+      - PowerShell7
     properties:
       executable: pwsh
       arguments:
@@ -34,6 +47,8 @@ resources:
 
   - type: Microsoft.DSC.Transitional/RunCommandOnSet
     name: Microsoft.Windows.Settings.Module
+    dependsOn:
+      - PowerShell7
     properties:
       executable: pwsh
       arguments:
@@ -83,6 +98,7 @@ resources:
     name: VSWorkloads
     dependsOn:
       - VisualStudio
+      - PowerShell7
     properties:
       executable: pwsh
       arguments:
