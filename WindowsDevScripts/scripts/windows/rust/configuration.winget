@@ -1,50 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 #
-# Core artifact for the Rust developer flow on Windows.
-#
-# This is a winget DSC configuration file: a declarative, idempotent, and
-# non-interactive description of the machine state required to do Rust
-# development. Apply it directly with:
-#
 #     winget configure --file scripts/windows/rust/configuration.winget `
 #         --accept-configuration-agreements `
 #         --disable-interactivity
-#
-# `--accept-package-agreements` is intentionally NOT in the canonical
-# invocation above: the `Microsoft.WinGet/Package` resource below sets
-# `acceptAgreements: true`, which causes the dscv3 resource to internally
-# pass both `--accept-source-agreements` and `--accept-package-agreements`
-# to its own winget install call. See AGENTS.md section 4.
-#
-# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
-# command above, rehydrates PATH in the caller's session, and emits an
-# `INSTALL_OK: <id>` sentinel for the test harness. All install logic lives
-# here.
-#
-# Why two resources (Rustup + post-install command):
-#   `Rustlang.Rustup` is the canonical Rust install path — it ships
-#   `rustup-init.exe`, which places `rustup` on PATH but does not by
-#   itself guarantee the actual toolchain (rustc, cargo, ...) is
-#   installed. The follow-up `rustup default stable` step does the heavy
-#   lifting: on first run it downloads and installs the stable toolchain
-#   for the host triple (x86_64-pc-windows-msvc by default) and sets it
-#   as the active toolchain; on subsequent runs it is a no-op. This is
-#   the dscv3-native way to express that step — `RunCommandOnSet` is the
-#   same escape hatch the winui flow uses to install adapter modules.
-#   AGENTS.md section 3's hint about falling back to v0.2 + `Script`
-#   only applies to v2 class-based `PSDscResources/Script`; native
-#   dscv3 `Microsoft.DSC.Transitional/RunCommandOnSet` is preferred.
-#
-# Resources (in application order, enforced by dependsOn):
-#   - Rustup:                 installs `Rustlang.Rustup` via winget,
-#                             which gives us the `rustup` toolchain
-#                             manager on user PATH.
-#   - InstallStableToolchain: invokes `pwsh` to refresh PATH from the
-#                             registry (winget updates the registry but
-#                             not running processes) and then runs
-#                             `rustup default stable`. Idempotent: on
-#                             first run installs + defaults stable;
-#                             on subsequent runs a no-op.
 #
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:

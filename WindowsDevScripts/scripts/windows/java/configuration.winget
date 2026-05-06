@@ -1,46 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 #
-# Core artifact for the Java developer flow on Windows.
-#
-# This is a winget DSC configuration file: a declarative, idempotent, and
-# non-interactive description of the machine state required to do Java
-# development. Apply it directly with:
-#
 #     winget configure --file scripts/windows/java/configuration.winget `
 #         --accept-configuration-agreements `
 #         --disable-interactivity
-#
-# `--accept-package-agreements` is intentionally NOT in the canonical
-# invocation above: the `Microsoft.WinGet/Package` resource below sets
-# `acceptAgreements: true`, which causes the dscv3 resource to internally
-# pass both `--accept-source-agreements` and `--accept-package-agreements`
-# to its own winget install call. See AGENTS.md section 4.
-#
-# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
-# command above, rehydrates PATH in the caller's session, and emits an
-# `INSTALL_OK: <id>` sentinel for the test harness. All install logic lives
-# here.
-#
-# Resources:
-#   - OpenJdk: installs the Microsoft Build of OpenJDK 21 (LTS) via winget.
-#              Adds `java`, `javac`, `jar`, and friends to PATH.
-#
-# Note on the package id:
-#   `Microsoft.OpenJDK.21` is the current LTS line. Microsoft also publishes
-#   `Microsoft.OpenJDK.11`, `.17`, and `.25` — bump when a new LTS ships and
-#   21 reaches Microsoft's documented end-of-support window.
-#
-# Note on Maven / Gradle (deliberately omitted):
-#   The original plan called for installing Maven alongside the JDK, but
-#   `Apache.Maven` is NOT published in the winget community repo
-#   (`winget search maven` returns only forks for unrelated projects).
-#   Rather than wrap an apache.org tarball-download in a `Script` resource,
-#   this flow installs only the JDK and relies on the modern Java
-#   convention: each project ships its own pinned build tool via the
-#   `mvnw` (Maven Wrapper) or `gradlew` (Gradle Wrapper) script in its
-#   root. The `web-api-java` scenario flow that builds on top of this one
-#   will use `mvnw` from a vendored start.spring.io output, so no
-#   system-wide Maven install is required.
 #
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:

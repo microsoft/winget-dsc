@@ -1,42 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 #
-# Core artifact for the Go developer flow on Windows.
-#
-# This is a winget DSC configuration file: a declarative, idempotent, and
-# non-interactive description of the machine state required to do Go
-# development. Apply it directly with:
-#
 #     winget configure --file scripts/windows/go/configuration.winget `
 #         --accept-configuration-agreements `
 #         --disable-interactivity
-#
-# `--accept-package-agreements` is intentionally NOT in the canonical
-# invocation above: the `Microsoft.WinGet/Package` resource below sets
-# `acceptAgreements: true`, which causes the dscv3 resource to internally
-# pass both `--accept-source-agreements` and `--accept-package-agreements`
-# to its own winget install call. See AGENTS.md section 4.
-#
-# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
-# command above, rehydrates PATH in the caller's session, and emits an
-# `INSTALL_OK: <id>` sentinel for the test harness. All install logic lives
-# here.
-#
-# Resources:
-#   - Go: installs the Go toolchain via winget. Includes the `go` CLI
-#         (which fronts `go build`, `go run`, `go test`, `go fmt`, etc.)
-#         plus the standard library. The hello-world is exercised with
-#         `go run` so no separate build step is required.
-#
-# Note on the package id (deliberate exception to AGENTS.md section 6):
-#   AGENTS.md section 6 directs new flows to use minor-versioned ids
-#   (e.g. `Python.Python.3.13`). Go is the deliberate exception:
-#   winget's community repo publishes Go *only* as the unversioned
-#   meta-package `GoLang.Go`, which is a rolling pointer at the latest
-#   stable release (currently 1.26.x). There is no `GoLang.Go.1.26`
-#   equivalent — `winget show --id GoLang.Go.1.26 --exact` returns
-#   "no package found". Using `GoLang.Go` here is the only way to
-#   resolve under `--exact`. When upstream begins publishing
-#   minor-versioned ids, swap this for the pinned form.
 #
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:

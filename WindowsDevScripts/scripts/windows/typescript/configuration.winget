@@ -1,70 +1,35 @@
-# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
-#
-# Core artifact for the TypeScript developer flow on Windows.
-#
-# This is a winget DSC configuration file: a declarative, idempotent, and
-# non-interactive description of the machine state required to do TypeScript
-# development. Apply it directly with:
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 #
 #     winget configure --file scripts/windows/typescript/configuration.winget `
 #         --accept-configuration-agreements `
 #         --disable-interactivity
 #
-# The `install.ps1` alongside this file is a thin CI/dev shim that invokes the
-# command above, rehydrates PATH in the caller's session, and emits an
-# `INSTALL_OK: <id>` sentinel for the test harness. All install logic lives
-# here.
-#
-# Resources:
-#   - Node:             installs Node.js LTS via winget.
-#   - InstallTypeScript: runs `npm install --global typescript` so that `tsc`
-#                        ends up on PATH. DSC `Script` resources execute
-#                        PowerShell, which is the idiomatic way to express
-#                        "do something winget alone can't" inside a DSC config.
-#
-properties:
-  configurationVersion: 0.2.0
-  resources:
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: Node
-      directives:
-        description: Install Node.js LTS (provides node + npm)
-        allowPrerelease: false
-      settings:
-        id: OpenJS.NodeJS.LTS
-        source: winget
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor: dscv3
+resources:
+  - name: Node
+    type: Microsoft.WinGet/Package
+    metadata:
+      securityContext: elevated
+      description: Install Node.js LTS (provides node + npm)
+    properties:
+      id: OpenJS.NodeJS.LTS
+      source: winget
+      acceptAgreements: true
 
-    - resource: PSDscResources/Script
-      id: InstallTypeScript
-      dependsOn:
-        - Node
-      directives:
-        description: Install the TypeScript compiler globally via npm
-      settings:
-        # DSC contract:
-        #   TestScript  -> $true  means "already in desired state, skip SetScript"
-        #   SetScript   -> bring the system into desired state
-        #   GetScript   -> return a hashtable describing current state (unused here)
-        #
-        # We refresh PATH from the registry at the top of each script because
-        # the Node resource above updates machine PATH in the registry, but the
-        # PowerShell process evaluating this resource inherited its PATH at
-        # launch and will not otherwise see the freshly-installed npm.exe.
-        GetScript: |
-          return @{ Result = '' }
-        TestScript: |
-          $machine = [Environment]::GetEnvironmentVariable('Path','Machine')
-          $user    = [Environment]::GetEnvironmentVariable('Path','User')
-          $env:Path = (($machine, $user) | Where-Object { $_ }) -join ';'
-          return [bool](Get-Command tsc -ErrorAction SilentlyContinue)
-        SetScript: |
-          $machine = [Environment]::GetEnvironmentVariable('Path','Machine')
-          $user    = [Environment]::GetEnvironmentVariable('Path','User')
-          $env:Path = (($machine, $user) | Where-Object { $_ }) -join ';'
-          if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-              throw 'npm not found on PATH after Node install; cannot install typescript.'
-          }
-          & npm install --global --no-fund --no-audit typescript
-          if ($LASTEXITCODE -ne 0) {
-              throw "npm install --global typescript failed with exit code $LASTEXITCODE"
-          }
+  - name: InstallTypeScript
+    type: Microsoft.DSC.Transitional/RunCommandOnSet
+    dependsOn:
+      - Node
+    metadata:
+      description: Install the TypeScript compiler globally via npm
+    properties:
+      executable: pwsh
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": $machine = [Environment]::GetEnvironmentVariable('Path','Machine'); $user = [Environment]::GetEnvironmentVariable('Path','User'); $env:Path = (($machine, $user) | Where-Object { $_ }) -join ';'; if (Get-Command tsc -ErrorAction SilentlyContinue) { exit 0 }; if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { throw 'npm not found on PATH after Node install; cannot install typescript.' }; & npm install --global --no-fund --no-audit typescript; if ($LASTEXITCODE -ne 0) { throw "npm install --global typescript failed with exit code $LASTEXITCODE" }
+        treatAsArray: true
