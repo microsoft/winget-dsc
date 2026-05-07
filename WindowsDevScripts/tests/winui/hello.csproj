@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Minimal WinUI 3 (Windows App SDK) project used only as a hello-world probe
+    for CI. The `Microsoft.WindowsAppSDK` NuGet carries the WinUI build
+    targets and the `Microsoft.WinUI` projection assembly; the
+    `net10.0-windows10.0.19041.0` TFM pulls in the matching Windows SDK ref
+    pack. `WindowsPackageType=None` builds an unpackaged EXE so CI runners
+    can invoke it directly without needing to deploy an MSIX.
+
+    `AppxGeneratePriEnabled=false` skips WindowsAppSDK's `MrtCore.PriGen`
+    `AddPriPayloadFilesToCopyToOutputDirectoryItems` target, which otherwise
+    runs the `ExpandPriContent` MSBuild task. That task lives in
+    `Microsoft.Build.Packaging.Pri.Tasks.dll` under the .NET SDK's
+    `Microsoft\VisualStudio\v18.0\AppxPackage` path — not populated on
+    SDK-only builds (even with VS installed alongside, `dotnet build` uses
+    the SDK's own MSBuild directory, not VS's). Since this is an unpackaged
+    hello-world probe that doesn't emit or consume any .pri resources,
+    skipping PRI work is safe and keeps the command-line build green.
+
+    Program.cs references `Microsoft.UI.Xaml.Application` to prove the WinUI
+    projection actually loads before printing the expected stdout.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <RootNamespace>HelloWinUI</RootNamespace>
+    <AssemblyName>hello</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <WindowsPackageType>None</WindowsPackageType>
+    <AppxGeneratePriEnabled>false</AppxGeneratePriEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
+  </ItemGroup>
+
+</Project>

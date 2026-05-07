@@ -1,0 +1,15 @@
+[package]
+# Minimal cargo manifest for the Rust hello-world probe.
+#
+# The cli-rust scenario flow (forthcoming) layers `clap` on top of this
+# shape; this language flow stays dependency-free so a missing or partial
+# Rust install fails the build/run pair before any third-party crate is
+# even fetched.
+name = "hello"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "hello"
+path = "src/main.rs"

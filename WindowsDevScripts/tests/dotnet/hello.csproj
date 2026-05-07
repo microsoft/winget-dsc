@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Minimal cross-platform .NET console project used as a hello-world probe
+    for CI. TargetFramework is `net10.0` (no `-windows` suffix) on purpose:
+    the dotnet flow installs only the core SDK with no desktop workloads.
+    If the SDK install was incomplete, even a plain console
+    `Console.WriteLine` would fail to build/run, and the harness would flag
+    the flow broken.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>HelloDotNet</RootNamespace>
+    <AssemblyName>hello</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Minimal Windows Forms project used only as a hello-world probe for CI.
+    `UseWindowsForms=true` pulls in the WinForms assemblies, and the matching
+    `net10.0-windows` TFM ensures the Windows Desktop targeting pack is used.
+    Program.cs constructs (but does not display) a Form and reads back its
+    properties to prove the WinForms runtime actually loads before printing the
+    expected stdout.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>HelloWinForms</RootNamespace>
+    <AssemblyName>hello</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>
