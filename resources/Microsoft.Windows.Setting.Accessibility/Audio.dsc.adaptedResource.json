@@ -1,0 +1,38 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Setting.Accessibility/Audio",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `Audio` DSC resource is used to manage Windows audio accessibility settings.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Setting.Accessibility.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `Audio` DSC resource is used to manage Windows audio accessibility settings.",
+      "type": "object",
+      "required": ["SID"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "SID": {
+          "type": "string",
+          "title": "SID",
+          "description": "The security identifier. This is a key property and should not be set manually."
+        },
+        "EnableMonoAudio": {
+          "type": "boolean",
+          "title": "EnableMonoAudio",
+          "description": "Specifies whether mono audio should be enabled. Defaults to `$false`."
+        },
+        "RestartService": {
+          "type": "boolean",
+          "title": "RestartService",
+          "description": "Specifies whether to restart the Windows Audio service after applying changes. Defaults to `$false`."
+        }
+      },
+      "title": "Microsoft.Windows.Setting.Accessibility/Audio"
+    }
+  }
+}

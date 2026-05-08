@@ -1,0 +1,39 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Developer/EnableDarkMode",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `EnableDarkMode` DSC resource is used to enable or disable Windows dark mode.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Developer.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `EnableDarkMode` DSC resource is used to enable or disable Windows dark mode.",
+      "type": "object",
+      "required": ["SID"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "SID": {
+          "type": "string",
+          "title": "SID",
+          "description": "The security identifier. This is a key property and should not be set manually."
+        },
+        "Ensure": {
+          "type": "string",
+          "enum": ["Absent", "Present"],
+          "title": "Ensure",
+          "description": "Specifies whether dark mode should be enabled (`Present`) or disabled (`Absent`).\r\n        Defaults to `Present`."
+        },
+        "RestartExplorer": {
+          "type": "boolean",
+          "title": "RestartExplorer",
+          "description": "Specifies whether to restart Windows Explorer to apply changes. Defaults to `$false`."
+        }
+      },
+      "title": "Microsoft.Windows.Developer/EnableDarkMode"
+    }
+  }
+}

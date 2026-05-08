@@ -1,0 +1,54 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "NpmDsc/NpmPackage",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set", "export", "whatIf"],
+  "description": "The `NpmPackage` DSC Resource allows you to manage the installation, update, and removal of npm packages. This resource ensures that the specified npm package is in the desired state.",
+  "author": "DscSamples",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "NpmDsc.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `NpmPackage` DSC Resource allows you to manage the installation, update, and removal of npm packages. This resource ensures that the specified npm package is in the desired state.",
+      "type": "object",
+      "required": ["Name"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Ensure": {
+          "type": "string",
+          "enum": ["Absent", "Present"],
+          "title": "Ensure",
+          "description": "Specifies whether the npm package should be present or absent. The default value is `Present`."
+        },
+        "Name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The name of the npm package to manage. This is a key property."
+        },
+        "Version": {
+          "type": "string",
+          "title": "Version",
+          "description": "The version of the npm package to install. If not specified, the latest version will be installed."
+        },
+        "PackageDirectory": {
+          "type": "string",
+          "title": "PackageDirectory",
+          "description": "The directory where the npm package should be installed. If not specified, the package will be installed in the current directory."
+        },
+        "Global": {
+          "type": "boolean",
+          "title": "Global",
+          "description": "Indicates whether the npm package should be installed globally."
+        },
+        "Arguments": {
+          "type": "string",
+          "title": "Arguments",
+          "description": "Additional arguments to pass to `npm install` or `npm uninstall`."
+        }
+      },
+      "title": "NpmDsc/NpmPackage"
+    }
+  }
+}

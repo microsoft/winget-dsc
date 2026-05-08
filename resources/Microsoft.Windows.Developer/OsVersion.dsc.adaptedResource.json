@@ -1,0 +1,39 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Developer/OsVersion",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `OsVersion` DSC resource is used to assert a minimum Windows operating system version requirement.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Developer.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `OsVersion` DSC resource is used to assert a minimum Windows operating system version requirement.",
+      "type": "object",
+      "required": ["SID", "MinVersion"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "SID": {
+          "type": "string",
+          "title": "SID",
+          "description": "The security identifier. This is a key property and should not be set manually."
+        },
+        "MinVersion": {
+          "type": "string",
+          "title": "MinVersion",
+          "description": "The minimum required version of the operating system. This is a mandatory property."
+        },
+        "OsVersion": {
+          "type": "string",
+          "title": "OsVersion",
+          "readOnly": true,
+          "description": "A read-only property indicating the current operating system version.\r\n        This property is not configurable."
+        }
+      },
+      "title": "Microsoft.Windows.Developer/OsVersion"
+    }
+  }
+}

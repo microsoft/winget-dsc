@@ -1,0 +1,43 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Setting.Accessibility/VisualEffect",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `VisualEffect` DSC resource is used to manage Windows visual accessibility settings.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Setting.Accessibility.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `VisualEffect` DSC resource is used to manage Windows visual accessibility settings.",
+      "type": "object",
+      "required": ["SID"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "SID": {
+          "type": "string",
+          "title": "SID",
+          "description": "The security identifier. This is a key property and should not be set manually."
+        },
+        "AlwaysShowScrollbars": {
+          "type": "string",
+          "title": "AlwaysShowScrollbars",
+          "description": "Specifies whether scrollbars should always be visible."
+        },
+        "TransparencyEffects": {
+          "type": "string",
+          "title": "TransparencyEffects",
+          "description": "Specifies whether transparency effects are disabled (set `$true` to disable transparency)."
+        },
+        "MessageDurationInSeconds": {
+          "type": "integer",
+          "title": "MessageDurationInSeconds",
+          "description": "The duration in seconds that notification messages are displayed. Must be between 5 and 300."
+        }
+      },
+      "title": "Microsoft.Windows.Setting.Accessibility/VisualEffect"
+    }
+  }
+}

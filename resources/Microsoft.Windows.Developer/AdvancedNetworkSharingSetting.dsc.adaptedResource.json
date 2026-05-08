@@ -1,0 +1,46 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Developer/AdvancedNetworkSharingSetting",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `AdvancedNetworkSharingSetting` DSC resource is used to manage Windows advanced network sharing settings.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Developer.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `AdvancedNetworkSharingSetting` DSC resource is used to manage Windows advanced network sharing settings.",
+      "type": "object",
+      "required": ["Name"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Name": {
+          "type": "string",
+          "enum": ["NetworkDiscovery", "FileAndPrinterSharing"],
+          "title": "Name",
+          "description": "The advanced sharing setting to configure. Accepted values are `NetworkDiscovery`\r\n        or `FileAndPrinterSharing`. This is a key and mandatory property."
+        },
+        "Profiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Profiles",
+          "description": "The network profiles for which the setting should be enabled (e.g., `Domain`, `Private`, `Public`)."
+        },
+        "EnabledProfiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "EnabledProfiles",
+          "readOnly": true,
+          "description": "A read-only property listing the profiles for which the setting is currently enabled.\r\n        This property is not configurable."
+        }
+      },
+      "title": "Microsoft.Windows.Developer/AdvancedNetworkSharingSetting"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Setting.Accessibility/MousePointer",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `MousePointer` DSC resource is used to manage the Windows mouse pointer size accessibility setting.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Setting.Accessibility.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `MousePointer` DSC resource is used to manage the Windows mouse pointer size accessibility setting.",
+      "type": "object",
+      "required": ["PointerSize"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "PointerSize": {
+          "type": "string",
+          "enum": [
+            "KeepCurrentValue",
+            "Normal",
+            "Medium",
+            "Large",
+            "ExtraLarge"
+          ],
+          "title": "PointerSize",
+          "description": "The desired mouse pointer size. Accepted values are `Normal`, `Medium`, `Large`, or `ExtraLarge`.\r\n        This is a key property. Defaults to `KeepCurrentValue`."
+        },
+        "PointerSizeValue": {
+          "type": "string",
+          "title": "PointerSizeValue",
+          "readOnly": true,
+          "description": "A read-only property indicating the current pointer size value. This property is not configurable."
+        }
+      },
+      "title": "Microsoft.Windows.Setting.Accessibility/MousePointer"
+    }
+  }
+}

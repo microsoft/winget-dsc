@@ -1,0 +1,52 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Developer/PowerPlanSetting",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `PowerPlanSetting` DSC resource is used to manage Windows power plan settings.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Developer.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `PowerPlanSetting` DSC resource is used to manage Windows power plan settings.",
+      "type": "object",
+      "required": ["Name", "PowerSource", "SettingValue"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Name": {
+          "type": "string",
+          "enum": ["DisplayTimeout", "SleepTimeout"],
+          "title": "Name",
+          "description": "The name of the power plan setting to configure. Accepted values are `DisplayTimeout`\r\n        or `SleepTimeout`. This is a key and mandatory property."
+        },
+        "PowerSource": {
+          "type": "string",
+          "enum": ["PluggedIn", "Battery", "All"],
+          "title": "PowerSource",
+          "description": "The power source for the setting. Accepted values are `PluggedIn`, `Battery`, or `All`.\r\n        This is a mandatory property."
+        },
+        "SettingValue": {
+          "type": "integer",
+          "title": "SettingValue",
+          "description": "The timeout value in seconds. This is a mandatory property."
+        },
+        "PluggedInValue": {
+          "type": "integer",
+          "title": "PluggedInValue",
+          "readOnly": true,
+          "description": "A read-only property indicating the current plugged-in timeout value. This property is not configurable."
+        },
+        "BatteryValue": {
+          "type": "integer",
+          "title": "BatteryValue",
+          "readOnly": true,
+          "description": "A read-only property indicating the current battery timeout value. This property is not configurable."
+        }
+      },
+      "title": "Microsoft.Windows.Developer/PowerPlanSetting"
+    }
+  }
+}

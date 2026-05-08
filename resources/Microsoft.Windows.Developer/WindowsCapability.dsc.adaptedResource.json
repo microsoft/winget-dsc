@@ -1,0 +1,34 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Developer/WindowsCapability",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `WindowsCapability` DSC resource is used to install or remove Windows optional features.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Developer.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `WindowsCapability` DSC resource is used to install or remove Windows optional features.",
+      "type": "object",
+      "required": ["Name"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The name of the Windows capability to manage. This is a key and mandatory property."
+        },
+        "Ensure": {
+          "type": "string",
+          "enum": ["Absent", "Present"],
+          "title": "Ensure",
+          "description": "Specifies whether the capability should be installed (`Present`) or removed (`Absent`).\r\n        Defaults to `Present`."
+        }
+      },
+      "title": "Microsoft.Windows.Developer/WindowsCapability"
+    }
+  }
+}

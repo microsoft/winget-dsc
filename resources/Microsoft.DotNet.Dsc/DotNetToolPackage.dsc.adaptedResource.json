@@ -1,0 +1,56 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.DotNet.Dsc/DotNetToolPackage",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "set", "test", "export"],
+  "description": "The `DotNetToolPackage` DSC Resource allows you to install, update, and uninstall .NET tool packages using the dotnet CLI.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.DotNet.Dsc.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `DotNetToolPackage` DSC Resource allows you to install, update, and uninstall .NET tool packages using the dotnet CLI.",
+      "type": "object",
+      "required": ["PackageId"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "PackageId": {
+          "type": "string",
+          "title": "PackageId",
+          "description": "The ID of the .NET tool package to manage. This is a required parameter.\r\n\r\n    For a list of available .NET tool packages, see the following link: https://www.nuget.org/packages?q=&includeComputedFrameworks=true&packagetype=dotnettool&prerel=true&sortby=relevance"
+        },
+        "Version": {
+          "type": "string",
+          "title": "Version",
+          "description": "The version of the .NET tool package to install. If not specified, the latest version will be installed."
+        },
+        "Commands": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Commands",
+          "description": "An array of commands provided by the .NET tool package. This parameter is optional."
+        },
+        "Prerelease": {
+          "type": "boolean",
+          "title": "Prerelease",
+          "description": "Indicates whether to include prerelease versions of the .NET tool package. The default value is $false."
+        },
+        "ToolPathDirectory": {
+          "type": "string",
+          "title": "ToolPathDirectory",
+          "description": "The directory where the .NET tool package will be installed. If not specified, the package will be installed globally."
+        },
+        "Exist": {
+          "type": "boolean",
+          "title": "Exist",
+          "description": "Indicates whether the package should exist. Defaults to $true."
+        }
+      },
+      "title": "Microsoft.DotNet.Dsc/DotNetToolPackage"
+    }
+  }
+}

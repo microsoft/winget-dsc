@@ -1,0 +1,82 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Developer/FirewallRule",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `FirewallRule` DSC resource is used to create, modify, or remove Windows Firewall rules.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Developer.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `FirewallRule` DSC resource is used to create, modify, or remove Windows Firewall rules.",
+      "type": "object",
+      "required": ["Name"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The unique name of the firewall rule. This is a key and mandatory property."
+        },
+        "DisplayName": {
+          "type": "string",
+          "title": "DisplayName",
+          "description": "The display name of the firewall rule."
+        },
+        "Action": {
+          "type": "string",
+          "enum": ["NotConfigured", "Allow", "Block"],
+          "title": "Action",
+          "description": "The action for the firewall rule. Accepted values are `NotConfigured`, `Allow`, or `Block`."
+        },
+        "Description": {
+          "type": "string",
+          "title": "Description",
+          "description": "A description for the firewall rule."
+        },
+        "Direction": {
+          "type": "string",
+          "enum": ["Inbound", "Outbound"],
+          "title": "Direction",
+          "description": "The direction of the firewall rule. Accepted values are `Inbound` or `Outbound`."
+        },
+        "Enabled": {
+          "type": "boolean",
+          "title": "Enabled",
+          "description": "Specifies whether the firewall rule is enabled."
+        },
+        "Ensure": {
+          "type": "string",
+          "enum": ["Absent", "Present"],
+          "title": "Ensure",
+          "description": "Specifies whether the firewall rule should be present or absent. Defaults to `Present`."
+        },
+        "LocalPort": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "LocalPort",
+          "description": "The local ports to which the rule applies."
+        },
+        "Profiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Profiles",
+          "description": "The network profiles to which the rule applies (e.g., `Domain`, `Private`, `Public`)."
+        },
+        "Protocol": {
+          "type": "string",
+          "title": "Protocol",
+          "description": "The protocol for the firewall rule (e.g., `TCP`, `UDP`)."
+        }
+      },
+      "title": "Microsoft.Windows.Developer/FirewallRule"
+    }
+  }
+}

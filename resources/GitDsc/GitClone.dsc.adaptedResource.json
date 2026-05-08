@@ -1,0 +1,54 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "GitDsc/GitClone",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `GitClone` DSC resource is used to clone a Git repository to a local directory.",
+  "author": "DscSamples",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "GitDsc.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `GitClone` DSC resource is used to clone a Git repository to a local directory.",
+      "type": "object",
+      "required": ["HttpsUrl", "RootDirectory"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Ensure": {
+          "type": "string",
+          "enum": ["Absent", "Present"],
+          "title": "Ensure",
+          "description": "Specifies whether the repository should be present or absent. Defaults to `Present`.\r\n        Removing a cloned repository is not supported by this resource."
+        },
+        "HttpsUrl": {
+          "type": "string",
+          "title": "HttpsUrl",
+          "description": "The HTTPS URL of the Git repository to clone. This is a key property."
+        },
+        "RemoteName": {
+          "type": "string",
+          "title": "RemoteName",
+          "description": "The name of the remote. Defaults to `origin`."
+        },
+        "RootDirectory": {
+          "type": "string",
+          "title": "RootDirectory",
+          "description": "The root directory where the repository will be cloned into. This is a mandatory property."
+        },
+        "FolderName": {
+          "type": "string",
+          "title": "FolderName",
+          "description": "The folder name for the cloned repository. If not specified, it is derived from the HTTPS URL."
+        },
+        "ExtraArgs": {
+          "type": "string",
+          "title": "ExtraArgs",
+          "description": "Additional arguments to pass to `git clone`."
+        }
+      },
+      "title": "GitDsc/GitClone"
+    }
+  }
+}

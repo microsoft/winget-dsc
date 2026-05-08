@@ -1,0 +1,73 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Setting.Accessibility/StickyKeys",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `StickyKeys` DSC resource is used to manage the Windows Sticky Keys accessibility feature.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Setting.Accessibility.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `StickyKeys` DSC resource is used to manage the Windows Sticky Keys accessibility feature.",
+      "type": "object",
+      "required": ["SID"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "SID": {
+          "type": "string",
+          "title": "SID",
+          "description": "The security identifier. This is a key property and should not be set manually."
+        },
+        "Active": {
+          "type": "string",
+          "title": "Active",
+          "description": "Specifies whether Sticky Keys is currently active."
+        },
+        "Available": {
+          "type": "string",
+          "title": "Available",
+          "description": "Specifies whether Sticky Keys is available to be toggled."
+        },
+        "HotkeyActive": {
+          "type": "string",
+          "title": "HotkeyActive",
+          "description": "Specifies whether the Sticky Keys keyboard shortcut (pressing Shift 5 times) is active."
+        },
+        "ConfirmOnHotkeyActivation": {
+          "type": "string",
+          "title": "ConfirmOnHotkeyActivation",
+          "description": "Specifies whether a confirmation dialog is shown when Sticky Keys is activated via hotkey."
+        },
+        "HotkeySound": {
+          "type": "string",
+          "title": "HotkeySound",
+          "description": "Specifies whether a sound plays when Sticky Keys hotkey is used."
+        },
+        "VisualIndicator": {
+          "type": "string",
+          "title": "VisualIndicator",
+          "description": "Specifies whether a visual indicator is shown when Sticky Keys is active."
+        },
+        "AudibleFeedback": {
+          "type": "string",
+          "title": "AudibleFeedback",
+          "description": "Specifies whether an audible tone plays when a modifier key is pressed."
+        },
+        "TriState": {
+          "type": "string",
+          "title": "TriState",
+          "description": "Specifies whether modifier keys can be locked by pressing them twice."
+        },
+        "TwoKeysOff": {
+          "type": "string",
+          "title": "TwoKeysOff",
+          "description": "Specifies whether Sticky Keys is turned off when two keys are pressed simultaneously."
+        }
+      },
+      "title": "Microsoft.Windows.Setting.Accessibility/StickyKeys"
+    }
+  }
+}

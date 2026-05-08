@@ -1,0 +1,45 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "GitDsc/GitConfigUserName",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `GitConfigUserName` DSC resource is used to manage the Git user name configuration.",
+  "author": "DscSamples",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "GitDsc.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `GitConfigUserName` DSC resource is used to manage the Git user name configuration.",
+      "type": "object",
+      "required": ["UserName"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Ensure": {
+          "type": "string",
+          "enum": ["Absent", "Present"],
+          "title": "Ensure",
+          "description": "Specifies whether the user name should be present or absent. Defaults to `Present`."
+        },
+        "UserName": {
+          "type": "string",
+          "title": "UserName",
+          "description": "The Git user name to configure. This is a key property."
+        },
+        "ConfigLocation": {
+          "type": "string",
+          "enum": ["none", "global", "system", "worktree", "local"],
+          "title": "ConfigLocation",
+          "description": "The Git configuration scope to apply the setting to (e.g., `global`, `system`, `local`)."
+        },
+        "ProjectDirectory": {
+          "type": "string",
+          "title": "ProjectDirectory",
+          "description": "The path to the Git repository. Required for non-global and non-system configurations."
+        }
+      },
+      "title": "GitDsc/GitConfigUserName"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Developer/NetConnectionProfile",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `NetConnectionProfile` DSC resource is used to manage the network connection profile for a network adapter.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Developer.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `NetConnectionProfile` DSC resource is used to manage the network connection profile for a network adapter.",
+      "type": "object",
+      "required": ["SID", "InterfaceAlias", "NetworkCategory"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "SID": {
+          "type": "string",
+          "title": "SID",
+          "description": "The security identifier. This is a key property and should not be set manually."
+        },
+        "InterfaceAlias": {
+          "type": "string",
+          "title": "InterfaceAlias",
+          "description": "The alias of the network interface to configure. This is a mandatory property."
+        },
+        "NetworkCategory": {
+          "type": "string",
+          "title": "NetworkCategory",
+          "description": "The network category to assign. Accepted values are `Public`, `Private`, or `DomainAuthenticated`.\r\n        This is a mandatory property."
+        }
+      },
+      "title": "Microsoft.Windows.Developer/NetConnectionProfile"
+    }
+  }
+}

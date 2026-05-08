@@ -1,0 +1,29 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Setting.Accessibility/EyeControl",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `EyeControl` DSC resource is used to enable or disable the Windows Eye Control accessibility feature.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Setting.Accessibility.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `EyeControl` DSC resource is used to enable or disable the Windows Eye Control accessibility feature.",
+      "type": "object",
+      "required": ["Ensure"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Ensure": {
+          "type": "string",
+          "enum": ["Absent", "Present"],
+          "title": "Ensure",
+          "description": "Specifies whether Eye Control should be enabled (`Present`) or disabled (`Absent`).\r\n        This is a key property."
+        }
+      },
+      "title": "Microsoft.Windows.Setting.Accessibility/EyeControl"
+    }
+  }
+}

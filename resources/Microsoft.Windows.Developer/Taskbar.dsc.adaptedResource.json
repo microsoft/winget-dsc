@@ -1,0 +1,69 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Developer/Taskbar",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `Taskbar` DSC resource is used to manage Windows taskbar settings.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Developer.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `Taskbar` DSC resource is used to manage Windows taskbar settings.",
+      "type": "object",
+      "required": ["SID"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Alignment": {
+          "type": "string",
+          "enum": ["KeepCurrentValue", "Left", "Middle"],
+          "title": "Alignment",
+          "description": "Sets the taskbar alignment. Accepted values are `Left` or `Middle`.\r\n        Defaults to `KeepCurrentValue`."
+        },
+        "HideLabelsMode": {
+          "type": "string",
+          "enum": ["KeepCurrentValue", "Always", "WhenFull", "Never"],
+          "title": "HideLabelsMode",
+          "description": "Sets the taskbar button label hide behavior. Accepted values are `Always`, `WhenFull`, or `Never`.\r\n        Defaults to `KeepCurrentValue`."
+        },
+        "SearchboxMode": {
+          "type": "string",
+          "enum": [
+            "KeepCurrentValue",
+            "Hide",
+            "ShowIconOnly",
+            "SearchBox",
+            "ShowIconAndLabel"
+          ],
+          "title": "SearchboxMode",
+          "description": "Sets the search box display mode. Accepted values are `Hide`, `ShowIconOnly`, `SearchBox`, or `ShowIconAndLabel`.\r\n        Defaults to `KeepCurrentValue`."
+        },
+        "TaskViewButton": {
+          "type": "string",
+          "enum": ["KeepCurrentValue", "Hide", "Show"],
+          "title": "TaskViewButton",
+          "description": "Shows or hides the Task View button on the taskbar.\r\n        Defaults to `KeepCurrentValue`."
+        },
+        "WidgetsButton": {
+          "type": "string",
+          "enum": ["KeepCurrentValue", "Hide", "Show"],
+          "title": "WidgetsButton",
+          "description": "Shows or hides the Widgets button on the taskbar.\r\n        Defaults to `KeepCurrentValue`."
+        },
+        "RestartExplorer": {
+          "type": "boolean",
+          "title": "RestartExplorer",
+          "description": "Specifies whether to restart Windows Explorer to apply changes. Defaults to `$false`."
+        },
+        "SID": {
+          "type": "string",
+          "title": "SID",
+          "description": "The security identifier. This is a key property and should not be set manually."
+        }
+      },
+      "title": "Microsoft.Windows.Developer/Taskbar"
+    }
+  }
+}

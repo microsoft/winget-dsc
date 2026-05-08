@@ -1,0 +1,44 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "GitDsc/GitRemote",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `GitRemote` DSC resource is used to manage remote repository references in a Git project.",
+  "author": "DscSamples",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "GitDsc.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `GitRemote` DSC resource is used to manage remote repository references in a Git project.",
+      "type": "object",
+      "required": ["RemoteName", "RemoteUrl", "ProjectDirectory"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Ensure": {
+          "type": "string",
+          "enum": ["Absent", "Present"],
+          "title": "Ensure",
+          "description": "Specifies whether the remote should be present or absent. Defaults to `Present`."
+        },
+        "RemoteName": {
+          "type": "string",
+          "title": "RemoteName",
+          "description": "The name of the Git remote. This is a key property."
+        },
+        "RemoteUrl": {
+          "type": "string",
+          "title": "RemoteUrl",
+          "description": "The URL of the Git remote. This is a key property."
+        },
+        "ProjectDirectory": {
+          "type": "string",
+          "title": "ProjectDirectory",
+          "description": "The path to the local Git repository. This is a mandatory property."
+        }
+      },
+      "title": "GitDsc/GitRemote"
+    }
+  }
+}

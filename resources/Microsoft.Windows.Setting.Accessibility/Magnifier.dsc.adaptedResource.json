@@ -1,0 +1,51 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Setting.Accessibility/Magnifier",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `Magnifier` DSC resource is used to manage Windows Magnifier accessibility settings.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Setting.Accessibility.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `Magnifier` DSC resource is used to manage Windows Magnifier accessibility settings.",
+      "type": "object",
+      "required": ["Magnification", "ZoomIncrement"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Magnification": {
+          "type": "string",
+          "enum": ["KeepCurrentValue", "None", "Low", "Medium", "High"],
+          "title": "Magnification",
+          "description": "The magnification preset to apply. Accepted values are `None`, `Low`, `Medium`, or `High`.\r\n        This is a key property. Defaults to `KeepCurrentValue`."
+        },
+        "ZoomIncrement": {
+          "type": "integer",
+          "title": "ZoomIncrement",
+          "description": "The zoom increment percentage. This is a mandatory property. Defaults to `25`."
+        },
+        "StartMagnify": {
+          "type": "boolean",
+          "title": "StartMagnify",
+          "description": "Specifies whether to start the Magnifier application after applying settings. Defaults to `$false`."
+        },
+        "MagnificationLevel": {
+          "type": "integer",
+          "title": "MagnificationLevel",
+          "readOnly": true,
+          "description": "A read-only property indicating the current magnification level in percent. This property is not configurable."
+        },
+        "ZoomIncrementLevel": {
+          "type": "integer",
+          "title": "ZoomIncrementLevel",
+          "readOnly": true,
+          "description": "A read-only property indicating the current zoom increment value. This property is not configurable."
+        }
+      },
+      "title": "Microsoft.Windows.Setting.Accessibility/Magnifier"
+    }
+  }
+}

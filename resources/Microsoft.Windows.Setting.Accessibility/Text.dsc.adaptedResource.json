@@ -1,0 +1,41 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+  "type": "Microsoft.Windows.Setting.Accessibility/Text",
+  "kind": "resource",
+  "version": "0.1.0",
+  "capabilities": ["get", "test", "set"],
+  "description": "The `Text` DSC resource is used to manage the Windows text size accessibility setting.",
+  "author": "Microsoft Corporation",
+  "requireAdapter": "Microsoft.Adapter/PowerShell",
+  "path": "Microsoft.Windows.Setting.Accessibility.psd1",
+  "schema": {
+    "embedded": {
+      "description": "The `Text` DSC resource is used to manage the Windows text size accessibility setting.",
+      "type": "object",
+      "required": ["Size"],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "Size": {
+          "type": "string",
+          "enum": [
+            "KeepCurrentValue",
+            "Small",
+            "Medium",
+            "Large",
+            "ExtraLarge"
+          ],
+          "title": "Size",
+          "description": "The desired text size. Accepted values are `Small`, `Medium`, `Large`, or `ExtraLarge`.\r\n        This is a key property. Defaults to `KeepCurrentValue`."
+        },
+        "SizeValue": {
+          "type": "integer",
+          "title": "SizeValue",
+          "readOnly": true,
+          "description": "A read-only property indicating the current numeric text scale factor. This property is not configurable."
+        }
+      },
+      "title": "Microsoft.Windows.Setting.Accessibility/Text"
+    }
+  }
+}
