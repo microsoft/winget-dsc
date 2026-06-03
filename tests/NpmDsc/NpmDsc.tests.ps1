@@ -107,7 +107,7 @@ Describe 'NpmPackage' {
         $whatIf = $npmPackage.WhatIf() | ConvertFrom-Json
 
         # Don't want to rely on version in parameters so we call npm view to get the remote version
-        $latestVersion = Invoke-Npm -Command "view $($whatIfState.Name) version"
+        $latestVersion = Invoke-Npm -Command @('view', $whatIfState.Name, 'version')
 
         $whatIf.Name | Should -Be 'react'
         $whatIf._metaData.whatIf | Should -Contain "add react $latestVersion"
