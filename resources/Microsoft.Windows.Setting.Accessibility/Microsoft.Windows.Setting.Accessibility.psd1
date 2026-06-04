@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 @{
     RootModule           = 'Microsoft.Windows.Setting.Accessibility.psm1'
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '1.0.0'
     GUID                 = '25cce770-4f0a-4387-a26b-4be692e229f9'
     Author               = 'Microsoft Corporation'
     CompanyName          = 'Microsoft Corporation'
@@ -37,10 +37,7 @@
                 'PSDscResource_EyeControl'
             )
 
-            # Prerelease string of this module
-            Prerelease = 'alpha'
-
-             # A URL to the license for this module.
+            # A URL to the license for this module.
             LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.

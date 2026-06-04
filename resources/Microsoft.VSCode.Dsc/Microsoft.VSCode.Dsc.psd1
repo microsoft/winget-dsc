@@ -1,6 +1,6 @@
 @{
     RootModule           = 'Microsoft.VSCode.Dsc.psm1'
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '1.0.0'
     GUID                 = 'baf2c585-d931-4089-8500-93a5b8de1741'
     Author               = 'Microsoft Corporation'
     CompanyName          = 'Microsoft Corporation'
@@ -17,10 +17,7 @@
                 'PSDscResource_VSCodeExtension'
             )
 
-            # Prerelease string of this module
-            Prerelease = 'alpha'
-
-             # A URL to the license for this module.
+            # A URL to the license for this module.
             LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.

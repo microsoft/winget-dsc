@@ -12,7 +12,7 @@
     RootModule           = 'NpmDsc.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '1.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -101,7 +101,7 @@
             Tags       = @('PSDscResource_DSC_NpmPackage', 'PSDscResource_DSC_NpmInstall')
 
             # A URL to the license for this module.
-            LicenseURI= 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
+            LicenseURI = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.
             ProjectUri = 'https://github.com/microsoft/winget-dsc/'
@@ -111,9 +111,6 @@
 
             # ReleaseNotes of this module
             # ReleaseNotes = ''
-
-            # Prerelease string of this module
-            Prerelease = 'alpha'
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false

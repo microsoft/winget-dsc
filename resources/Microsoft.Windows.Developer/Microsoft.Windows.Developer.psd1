@@ -1,6 +1,6 @@
 @{
     RootModule           = 'Microsoft.Windows.Developer.psm1'
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '1.0.0'
     GUID                 = '95b88c6a-1ebe-4c8d-aae5-c57368fa2b90'
     Author               = 'Microsoft Corporation'
     CompanyName          = 'Microsoft Corporation'
@@ -42,9 +42,6 @@
                 'PSDscResource_AdvancedNetworkSharingSetting',
                 'PSDscResource_FirewallRule'
             )
-
-            # Prerelease string of this module
-            Prerelease = 'alpha'
 
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'

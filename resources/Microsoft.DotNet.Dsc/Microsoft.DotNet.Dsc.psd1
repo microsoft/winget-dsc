@@ -1,6 +1,6 @@
 @{
     RootModule           = 'Microsoft.DotNet.Dsc.psm1'
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '1.0.0'
     GUID                 = '2e883e78-1d91-4d08-9fc1-2a968e31009d'
     Author               = 'Microsoft Corporation'
     CompanyName          = 'Microsoft Corporation'
@@ -16,9 +16,6 @@
             Tags       = @(
                 'PSDscResource_DotNetToolPackage'
             )
-
-            # Prerelease string of this module
-            Prerelease = 'alpha'
 
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'

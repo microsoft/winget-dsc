@@ -12,7 +12,7 @@
     RootModule           = 'PythonPip3Dsc.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '1.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -110,9 +110,6 @@
 
             # ReleaseNotes of this module
             # ReleaseNotes = ''
-
-            # Prerelease string of this module
-            Prerelease      = 'alpha'
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false
