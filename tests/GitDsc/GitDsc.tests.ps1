@@ -61,7 +61,7 @@ Describe 'GitDsc' {
         $desiredState = @{
             HttpsUrl      = 'https://github.com/microsoft/winget-dsc.git'
             RootDirectory = $env:TEMP
-            ExtraArgs     = '--filter=blob:none --no-checkout'
+            ExtraArgs     = @('--filter=blob:none', '--no-checkout')
         }
 
         Invoke-DscResource -Name GitClone -ModuleName GitDsc -Method Set -Property $desiredState

@@ -13,8 +13,7 @@ function Invoke-Process {
         [string]$FilePath,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [string]$ArgumentList
+        [string[]]$ArgumentList
     )
 
     try {
@@ -25,7 +24,9 @@ function Invoke-Process {
         $pinfo.UseShellExecute = $false
         $pinfo.WindowStyle = 'Hidden'
         $pinfo.CreateNoWindow = $true
-        $pinfo.Arguments = $ArgumentList
+        foreach ($arg in @($ArgumentList | Where-Object { $null -ne $_ })) {
+            [void]$pinfo.ArgumentList.Add([string]$arg)
+        }
         $p = New-Object System.Diagnostics.Process
         $p.StartInfo = $pinfo
         $p.Start() | Out-Null
@@ -54,7 +55,7 @@ function Invoke-Process {
 
         return $result
     } catch {
-        Write-Verbose -Message "Error occurred while executing the command: $FilePath $ArgumentList. Error:"
+        Write-Verbose -Message "Error occurred while executing the command: $FilePath $($ArgumentList -join ' '). Error:"
         Write-Verbose -Message $stErr
     }
 }
@@ -114,7 +115,7 @@ function Assert-Pip3 {
     # Try invoking pip3 help with the alias. If it fails, switch to calling npm.cmd directly.
     # This may occur if npm is installed in the same shell window and the alias is not updated until the shell window is restarted.
     try {
-        Invoke-Pip3 -command 'help'
+        Invoke-Pip3 -command @('help')
         return
     } catch {}
 
@@ -149,7 +150,7 @@ function Invoke-Pip3Install {
         [string]$PackageName,
 
         [Parameter()]
-        [string]$Arguments,
+        [string[]]$Arguments,
 
         [Parameter()]
         [string]$Version,
@@ -171,8 +172,10 @@ function Invoke-Pip3Install {
         $command.Add('--dry-run')
     }
 
-    $command.Add($Arguments)
-    Write-Verbose -Message "Executing 'pip' install with command: $command"
+    foreach ($a in ($Arguments | Where-Object { $_ })) {
+        $command.Add($a)
+    }
+    Write-Verbose -Message "Executing 'pip' install with command: $($command -join ' ')"
     $result = Invoke-Pip3 -command $command
 
     return $result
@@ -184,7 +187,7 @@ function Invoke-Pip3Uninstall {
         [string]$PackageName,
 
         [Parameter()]
-        [string]$Arguments,
+        [string[]]$Arguments,
 
         [Parameter()]
         [string]$Version
@@ -193,7 +196,9 @@ function Invoke-Pip3Uninstall {
     $command = [List[string]]::new()
     $command.Add('uninstall')
     $command.Add((Get-PackageNameWithVersion -PackageName $PackageName -Version $Version))
-    $command.Add($Arguments)
+    foreach ($a in ($Arguments | Where-Object { $_ })) {
+        $command.Add($a)
+    }
 
     # '--yes' is needed to ignore conformation required for uninstalls
     $command.Add('--yes')
@@ -242,17 +247,12 @@ function GetPip3CurrentState {
 }
 
 function GetInstalledPip3Packages {
-    $Arguments = [List[string]]::new()
-    $Arguments.Add('list')
-    $Arguments.Add('--format=json')
+    $arguments = @('list', '--format=json')
 
-    if ($global:usePip3Exe) {
-        $command = "& '$global:pip3ExePath' " + $Arguments
-    } else {
-        $command = '& pip3 ' + $Arguments
-    }
+    $pip3ExePath = $global:usePip3Exe ? $global:pip3ExePath : 'pip3'
+    $proc = Invoke-Process -FilePath $pip3ExePath -ArgumentList $arguments
 
-    $res = Invoke-Expression -Command $command | ConvertFrom-Json
+    $res = ($proc.StdOut -join "`n") | ConvertFrom-Json
 
     $result = $res | ForEach-Object {
         @{
@@ -267,7 +267,7 @@ function GetInstalledPip3Packages {
 function Invoke-Pip3 {
     param (
         [Parameter(Mandatory)]
-        [string]$command
+        [string[]]$command
     )
 
     if ($global:usePip3Exe) {
@@ -328,7 +328,8 @@ Assert-Pip3
     The version of the Python package to manage. If not specified, the latest version will be used.
 
 .PARAMETER Arguments
-    Additional arguments to pass to pip3.
+    Additional arguments to pass to pip3, provided as an array of strings where each element is a
+    separate argument.
 
 .PARAMETER InstalledPackages
     A list of installed packages. This property is not configurable.
@@ -357,7 +358,7 @@ class Pip3Package {
     [string]$Version
 
     [DscProperty()]
-    [string]$Arguments
+    [string[]]$Arguments
 
     [DscProperty()]
     [bool] $Exist = $true

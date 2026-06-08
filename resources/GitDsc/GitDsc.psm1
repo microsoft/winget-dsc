@@ -47,7 +47,8 @@ enum ConfigLocation {
         The folder name for the cloned repository. If not specified, it is derived from the HTTPS URL.
 
     .PARAMETER ExtraArgs
-        Additional arguments to pass to `git clone`.
+        Additional arguments to pass to `git clone`, provided as an array of strings where each
+        element is a separate argument.
 
     .EXAMPLE
         Invoke-DscResource -ModuleName GitDsc -Name GitClone -Method Set -Property @{
@@ -56,6 +57,15 @@ enum ConfigLocation {
         }
 
         This example clones the winget-dsc repository into C:\repos.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitClone -Method Set -Property @{
+            HttpsUrl      = 'https://github.com/microsoft/winget-dsc'
+            RootDirectory = 'C:\repos'
+            ExtraArgs     = @('--depth', '1')
+        }
+
+        This example performs a shallow clone of the winget-dsc repository into C:\repos.
 #>
 [DSCResource()]
 class GitClone {
@@ -77,7 +87,7 @@ class GitClone {
     [string]$FolderName
 
     [DscProperty()]
-    [string]$ExtraArgs
+    [string[]]$ExtraArgs
 
     [GitClone] Get() {
         Assert-Git
@@ -103,7 +113,7 @@ class GitClone {
         if (Test-Path $expectedDirectory) {
             Set-Location -Path $expectedDirectory
             try {
-                $gitRemoteValue = Invoke-GitRemote("get-url $($currentState.RemoteName)")
+                $gitRemoteValue = Invoke-GitRemote -Arguments @('get-url', $currentState.RemoteName)
                 if ($this.HttpsUrl.StartsWith($gitRemoteValue)) {
                     $currentState.Ensure = [Ensure]::Present
                 }
@@ -131,17 +141,18 @@ class GitClone {
 
         Set-Location $this.RootDirectory
 
-        if ($this.FolderName) {
-            $cloneArgs = "$($this.HttpsUrl) $($this.FolderName)"
-        } else {
-            $cloneArgs = $this.HttpsUrl
-        }
-
+        $cloneArgs = [List[string]]::new()
         if ($this.ExtraArgs) {
-            $cloneArgs = "$($this.ExtraArgs) $cloneArgs"
+            foreach ($a in ($this.ExtraArgs | Where-Object { $_ })) {
+                $cloneArgs.Add($a)
+            }
+        }
+        $cloneArgs.Add($this.HttpsUrl)
+        if ($this.FolderName) {
+            $cloneArgs.Add($this.FolderName)
         }
 
-        Invoke-GitClone($cloneArgs)
+        Invoke-GitClone -Arguments $cloneArgs
     }
 }
 
@@ -206,7 +217,7 @@ class GitRemote {
 
         Set-Location $this.ProjectDirectory
         try {
-            $gitRemoteValue = Invoke-GitRemote("get-url $($this.RemoteName)")
+            $gitRemoteValue = Invoke-GitRemote -Arguments @('get-url', $this.RemoteName)
             $currentState.Ensure = ($gitRemoteValue -like $this.RemoteUrl) ? [Ensure]::Present : [Ensure]::Absent
         } catch {
             $currentState.Ensure = [Ensure]::Absent
@@ -225,13 +236,13 @@ class GitRemote {
 
         if ($this.Ensure -eq [Ensure]::Present) {
             try {
-                Invoke-GitRemote("add $($this.RemoteName) $($this.RemoteUrl)")
+                Invoke-GitRemote -Arguments @('add', $this.RemoteName, $this.RemoteUrl)
             } catch {
                 throw 'Failed to add remote repository.'
             }
         } else {
             try {
-                Invoke-GitRemote("remove $($this.RemoteName)")
+                Invoke-GitRemote -Arguments @('remove', $this.RemoteName)
             } catch {
                 throw 'Failed to remove remote repository.'
             }
@@ -305,8 +316,8 @@ class GitConfigUserName {
             }
         }
 
-        $configArgs = ConstructGitConfigUserArguments -Arguments 'user.name' -ConfigLocation $this.ConfigLocation
-        $result = Invoke-GitConfig($configArgs)
+        $configArgs = ConstructGitConfigUserArguments -Arguments @('user.name') -ConfigLocation $this.ConfigLocation
+        $result = Invoke-GitConfig -Arguments $configArgs
         $currentState.Ensure = ($currentState.UserName -eq $result) ? [Ensure]::Present : [Ensure]::Absent
         return $currentState
     }
@@ -326,12 +337,12 @@ class GitConfigUserName {
         }
 
         if ($this.Ensure -eq [Ensure]::Present) {
-            $configArgs = ConstructGitConfigUserArguments -Arguments "user.name '$($this.UserName)'" -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments @('user.name', $this.UserName) -ConfigLocation $this.ConfigLocation
         } else {
-            $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.name' -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments @('--unset', 'user.name') -ConfigLocation $this.ConfigLocation
         }
 
-        Invoke-GitConfig($configArgs)
+        Invoke-GitConfig -Arguments $configArgs
     }
 }
 
@@ -401,8 +412,8 @@ class GitConfigUserEmail {
             }
         }
 
-        $configArgs = ConstructGitConfigUserArguments -Arguments 'user.email' -ConfigLocation $this.ConfigLocation
-        $result = Invoke-GitConfig($configArgs)
+        $configArgs = ConstructGitConfigUserArguments -Arguments @('user.email') -ConfigLocation $this.ConfigLocation
+        $result = Invoke-GitConfig -Arguments $configArgs
         $currentState.Ensure = ($currentState.UserEmail -eq $result) ? [Ensure]::Present : [Ensure]::Absent
         return $currentState
     }
@@ -422,12 +433,12 @@ class GitConfigUserEmail {
         }
 
         if ($this.Ensure -eq [Ensure]::Present) {
-            $configArgs = ConstructGitConfigUserArguments -Arguments "user.email $($this.UserEmail)" -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments @('user.email', $this.UserEmail) -ConfigLocation $this.ConfigLocation
         } else {
-            $configArgs = ConstructGitConfigUserArguments -Arguments '--unset user.email' -ConfigLocation $this.ConfigLocation
+            $configArgs = ConstructGitConfigUserArguments -Arguments @('--unset', 'user.email') -ConfigLocation $this.ConfigLocation
         }
 
-        Invoke-GitConfig($configArgs)
+        Invoke-GitConfig -Arguments $configArgs
     }
 }
 
@@ -458,63 +469,53 @@ function GetGitProjectName {
 function Invoke-GitConfig {
     param(
         [Parameter()]
-        [string]$Arguments
+        [string[]]$Arguments = @()
     )
 
-    $command = [List[string]]::new()
-    $command.Add('config')
-    $command.Add($Arguments)
-    return Invoke-Git -Command $command
+    return Invoke-Git -Command (@('config') + $Arguments)
 }
 
 function Invoke-GitRemote {
     param(
         [Parameter()]
-        [string]$Arguments
+        [string[]]$Arguments = @()
     )
 
-    $command = [List[string]]::new()
-    $command.Add('remote')
-    $command.Add($Arguments)
-    return Invoke-Git -Command $command
+    return Invoke-Git -Command (@('remote') + $Arguments)
 }
 
 function Invoke-GitClone {
     param(
         [Parameter()]
-        [string]$Arguments
+        [string[]]$Arguments = @()
     )
 
-    $command = [List[string]]::new()
-    $command.Add('clone')
-    $command.Add($Arguments)
-    return Invoke-Git -Command $command
+    return Invoke-Git -Command (@('clone') + $Arguments)
 }
 
 function Invoke-Git {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$Command
+        [string[]]$Command
     )
 
-    return Invoke-Expression -Command "git $Command"
+    $argList = @($Command | Where-Object { -not [string]::IsNullOrEmpty($_) })
+    return & git @argList
 }
 
 function ConstructGitConfigUserArguments {
     param(
         [Parameter(Mandatory)]
-        [string]$Arguments,
+        [string[]]$Arguments,
 
         [Parameter(Mandatory)]
         [ConfigLocation]$ConfigLocation
     )
 
-    $ConfigArguments = $Arguments
-    if ([ConfigLocation]::None -ne $this.ConfigLocation) {
-        $ConfigArguments = "--$($this.ConfigLocation) $($ConfigArguments)"
+    if ([ConfigLocation]::None -ne $ConfigLocation) {
+        return @("--$ConfigLocation") + $Arguments
     }
-
-    return $ConfigArguments
+    return $Arguments
 }
 
 function Assert-IsAdministrator {
@@ -534,7 +535,7 @@ function Assert-GitUrl {
         [string]$HttpsUrl
     )
 
-    $out = Invoke-Git -Command "ls-remote $HttpsUrl *" 2>&1
+    $out = Invoke-Git -Command @('ls-remote', $HttpsUrl, '*') 2>&1
 
     if ($LASTEXITCODE -ne 0) {
         throw "Invalid Git URL: $HttpsUrl. Error: $out"
