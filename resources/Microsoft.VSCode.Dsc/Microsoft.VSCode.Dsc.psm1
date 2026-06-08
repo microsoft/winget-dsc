@@ -146,7 +146,6 @@ function Invoke-VSCode {
 
     $stdErrTempFile = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath (New-Guid).Guid
     $stdOutTempFile = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath (New-Guid).Guid
-    $invocationSuccess = $true
 
     $processParams = @{
         FilePath               = $VSCodeCLIPath
@@ -160,14 +159,14 @@ function Invoke-VSCode {
 
     $invocation = Start-Process @processParams
     $invocationErrors = Get-Content $stdErrTempFile -Raw -ErrorAction SilentlyContinue
-    $invocationErrors = $invocationErrors -replace '\n', '\n '
     $invocationOutput = Get-Content $stdOutTempFile -ErrorAction SilentlyContinue
     Remove-Item -Path $stdErrTempFile -ErrorAction Ignore
     Remove-Item -Path $stdOutTempFile -ErrorAction Ignore
 
-    if (![string]::IsNullOrWhiteSpace($invocationErrors)) { $invocationSuccess = $false }
-    if ($invocation.ExitCode) { $invocationSuccess = $false }
-    if (!$invocationSuccess) { throw [System.Configuration.ConfigurationException]::new("Executing '$VSCodeCLIPath $Command' failed. Command Output: '$invocationErrors'") }
+    if ($invocation.ExitCode -ne 0) {
+        $details = if ([string]::IsNullOrWhiteSpace($invocationErrors)) { $invocationOutput -join [System.Environment]::NewLine } else { $invocationErrors.Trim() }
+        throw [System.Configuration.ConfigurationException]::new("Executing '$VSCodeCLIPath $Command' failed with exit code $($invocation.ExitCode). Command Output: '$details'")
+    }
 
     return $invocationOutput
 }

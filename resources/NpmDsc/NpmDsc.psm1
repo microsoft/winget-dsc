@@ -120,8 +120,9 @@ function GetNpmPath {
         } elseif (Test-Path $globalNpmCacheDir -ErrorAction SilentlyContinue) {
             return $globalNpmCacheDir
         } else {
-            $result = (Invoke-Npm -Command 'config list --json' | ConvertFrom-Json -ErrorAction SilentlyContinue).cache
-            if (Test-Path $result -ErrorAction SilentlyContinue) {
+            $cacheRoot = (Invoke-Npm -Command 'config list --json --logs-max=0' | ConvertFrom-Json -ErrorAction SilentlyContinue).cache
+            $result = if ($cacheRoot) { Join-Path $cacheRoot '_logs' } else { $null }
+            if ($result -and (Test-Path $result -ErrorAction SilentlyContinue)) {
                 return $result
             } else {
                 return $null
@@ -418,15 +419,19 @@ class NpmPackage {
 
     [string] WhatIf() {
         if ($this.Ensure -eq [Ensure]::Present) {
-            $whatIfState = Install-NpmPackage -PackageName $this.Name -Global $this.Global -Arguments '--dry-run'
-
             $out = @{
                 Name      = $this.Name
                 _metaData = @{
                     whatif = @()
                 }
             }
-            $out._metaData.whatif = $LASTEXITCODE -ne 0 ? (GetNpmWhatIfResponse) : ($whatIfState | Where-Object { $_.Trim() -ne '' }) # Removes empty lines from response
+
+            try {
+                $whatIfState = Install-NpmPackage -PackageName $this.Name -Global $this.Global -Arguments '--dry-run'
+                $out._metaData.whatif = $whatIfState | Where-Object { $_.Trim() -ne '' } # Removes empty lines from response
+            } catch {
+                $out._metaData.whatif = GetNpmWhatIfResponse
+            }
         } else {
             # Uninstall does not have --dry-run param
             $out = @{}
