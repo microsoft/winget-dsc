@@ -4,7 +4,7 @@
       "requireAdapter": "Microsoft.Adapter/PowerShell",
       "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
       "kind": "resource",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "type": "NpmDsc/NpmInstall",
       "author": "DscSamples",
       "description": "The `NpmInstall` DSC resource is used to install all npm packages listed in a `package.json` file.",
@@ -38,9 +38,12 @@
               "description": "The directory containing the `package.json` file. If not specified, the current directory is used."
             },
             "Arguments": {
-              "type": "string",
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
               "title": "Arguments",
-              "description": "Additional arguments to pass to `npm install`."
+              "description": "Additional arguments to pass to `npm install`, provided as an array of strings where each element is a separate argument."
             }
           },
           "description": "The `NpmInstall` DSC resource is used to install all npm packages listed in a `package.json` file.",
@@ -53,7 +56,7 @@
       "requireAdapter": "Microsoft.Adapter/PowerShell",
       "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
       "kind": "resource",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "type": "NpmDsc/NpmPackage",
       "author": "DscSamples",
       "description": "The `NpmPackage` DSC Resource allows you to manage the installation, update, and removal of npm packages. This resource ensures that the specified npm package is in the desired state.",
@@ -92,9 +95,12 @@
               "description": "Indicates whether the npm package should be installed globally."
             },
             "Arguments": {
-              "type": "string",
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
               "title": "Arguments",
-              "description": "Additional arguments to pass to `npm install` or `npm uninstall`."
+              "description": "Additional arguments to pass to `npm install` or `npm uninstall`, provided as an array of strings where each element is a separate argument."
             }
           },
           "description": "The `NpmPackage` DSC Resource allows you to manage the installation, update, and removal of npm packages. This resource ensures that the specified npm package is in the desired state.",

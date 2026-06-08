@@ -150,7 +150,7 @@ function Invoke-Pip3Install {
         [string]$PackageName,
 
         [Parameter()]
-        [string]$Arguments,
+        [string[]]$Arguments,
 
         [Parameter()]
         [string]$Version,
@@ -172,7 +172,7 @@ function Invoke-Pip3Install {
         $command.Add('--dry-run')
     }
 
-    foreach ($a in ($Arguments -split '\s+' | Where-Object { $_ })) {
+    foreach ($a in ($Arguments | Where-Object { $_ })) {
         $command.Add($a)
     }
     Write-Verbose -Message "Executing 'pip' install with command: $($command -join ' ')"
@@ -187,7 +187,7 @@ function Invoke-Pip3Uninstall {
         [string]$PackageName,
 
         [Parameter()]
-        [string]$Arguments,
+        [string[]]$Arguments,
 
         [Parameter()]
         [string]$Version
@@ -196,7 +196,7 @@ function Invoke-Pip3Uninstall {
     $command = [List[string]]::new()
     $command.Add('uninstall')
     $command.Add((Get-PackageNameWithVersion -PackageName $PackageName -Version $Version))
-    foreach ($a in ($Arguments -split '\s+' | Where-Object { $_ })) {
+    foreach ($a in ($Arguments | Where-Object { $_ })) {
         $command.Add($a)
     }
 
@@ -249,11 +249,8 @@ function GetPip3CurrentState {
 function GetInstalledPip3Packages {
     $arguments = @('list', '--format=json')
 
-    if ($global:usePip3Exe) {
-        $proc = Invoke-Process -FilePath $global:pip3ExePath -ArgumentList $arguments
-    } else {
-        $proc = Invoke-Process -FilePath 'pip3' -ArgumentList $arguments
-    }
+    $pip3ExePath = $global:usePip3Exe ? $global:pip3ExePath : 'pip3'
+    $proc = Invoke-Process -FilePath $pip3ExePath -ArgumentList $arguments
 
     $res = ($proc.StdOut -join "`n") | ConvertFrom-Json
 
@@ -331,7 +328,8 @@ Assert-Pip3
     The version of the Python package to manage. If not specified, the latest version will be used.
 
 .PARAMETER Arguments
-    Additional arguments to pass to pip3.
+    Additional arguments to pass to pip3, provided as an array of strings where each element is a
+    separate argument.
 
 .PARAMETER InstalledPackages
     A list of installed packages. This property is not configurable.
@@ -360,7 +358,7 @@ class Pip3Package {
     [string]$Version
 
     [DscProperty()]
-    [string]$Arguments
+    [string[]]$Arguments
 
     [DscProperty()]
     [bool] $Exist = $true

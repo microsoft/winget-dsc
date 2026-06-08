@@ -4,7 +4,7 @@
       "requireAdapter": "Microsoft.Adapter/PowerShell",
       "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
       "kind": "resource",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "type": "GitDsc/GitClone",
       "author": "DscSamples",
       "description": "The `GitClone` DSC resource is used to clone a Git repository to a local directory.",
@@ -43,9 +43,12 @@
               "description": "The folder name for the cloned repository. If not specified, it is derived from the HTTPS URL."
             },
             "ExtraArgs": {
-              "type": "string",
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
               "title": "ExtraArgs",
-              "description": "Additional arguments to pass to `git clone`."
+              "description": "Additional arguments to pass to `git clone`, provided as an array of strings where each element is a separate argument."
             }
           },
           "description": "The `GitClone` DSC resource is used to clone a Git repository to a local directory.",
@@ -58,7 +61,7 @@
       "requireAdapter": "Microsoft.Adapter/PowerShell",
       "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
       "kind": "resource",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "type": "GitDsc/GitRemote",
       "author": "DscSamples",
       "description": "The `GitRemote` DSC resource is used to manage remote repository references in a Git project.",
@@ -102,7 +105,7 @@
       "requireAdapter": "Microsoft.Adapter/PowerShell",
       "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
       "kind": "resource",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "type": "GitDsc/GitConfigUserName",
       "author": "DscSamples",
       "description": "The `GitConfigUserName` DSC resource is used to manage the Git user name configuration.",
@@ -147,7 +150,7 @@
       "requireAdapter": "Microsoft.Adapter/PowerShell",
       "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
       "kind": "resource",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "type": "GitDsc/GitConfigUserEmail",
       "author": "DscSamples",
       "description": "The `GitConfigUserEmail` DSC resource is used to manage the Git user email configuration.",

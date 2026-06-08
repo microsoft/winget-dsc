@@ -4,7 +4,7 @@
       "requireAdapter": "Microsoft.Adapter/PowerShell",
       "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
       "kind": "resource",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "type": "PythonPip3Dsc/Pip3Package",
       "author": "DscSamples",
       "description": "The `Pip3Package` DSC Resource allows you to install, update, and uninstall Python packages using pip3.",
@@ -27,9 +27,12 @@
               "description": "The version of the Python package to manage. If not specified, the latest version will be used."
             },
             "Arguments": {
-              "type": "string",
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
               "title": "Arguments",
-              "description": "Additional arguments to pass to pip3."
+              "description": "Additional arguments to pass to pip3, provided as an array of strings where each element is a separate argument."
             },
             "Exist": {
               "type": "boolean",

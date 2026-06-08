@@ -47,7 +47,8 @@ enum ConfigLocation {
         The folder name for the cloned repository. If not specified, it is derived from the HTTPS URL.
 
     .PARAMETER ExtraArgs
-        Additional arguments to pass to `git clone`.
+        Additional arguments to pass to `git clone`, provided as an array of strings where each
+        element is a separate argument.
 
     .EXAMPLE
         Invoke-DscResource -ModuleName GitDsc -Name GitClone -Method Set -Property @{
@@ -56,6 +57,15 @@ enum ConfigLocation {
         }
 
         This example clones the winget-dsc repository into C:\repos.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitClone -Method Set -Property @{
+            HttpsUrl      = 'https://github.com/microsoft/winget-dsc'
+            RootDirectory = 'C:\repos'
+            ExtraArgs     = @('--depth', '1')
+        }
+
+        This example performs a shallow clone of the winget-dsc repository into C:\repos.
 #>
 [DSCResource()]
 class GitClone {
@@ -77,7 +87,7 @@ class GitClone {
     [string]$FolderName
 
     [DscProperty()]
-    [string]$ExtraArgs
+    [string[]]$ExtraArgs
 
     [GitClone] Get() {
         Assert-Git
@@ -133,7 +143,7 @@ class GitClone {
 
         $cloneArgs = [List[string]]::new()
         if ($this.ExtraArgs) {
-            foreach ($a in ($this.ExtraArgs -split '\s+' | Where-Object { $_ })) {
+            foreach ($a in ($this.ExtraArgs | Where-Object { $_ })) {
                 $cloneArgs.Add($a)
             }
         }

@@ -68,7 +68,7 @@ function Install-NpmPackage {
         [bool]$Global,
 
         [Parameter()]
-        [string]$Arguments
+        [string[]]$Arguments
     )
 
     $command = [List[string]]::new()
@@ -81,7 +81,7 @@ function Install-NpmPackage {
         $command.Add('-g')
     }
 
-    foreach ($a in ($Arguments -split '\s+' | Where-Object { $_ })) {
+    foreach ($a in ($Arguments | Where-Object { $_ })) {
         $command.Add($a)
     }
 
@@ -99,7 +99,7 @@ function Uninstall-NpmPackage {
         [bool]$Global,
 
         [Parameter()]
-        [string]$Arguments
+        [string[]]$Arguments
     )
 
     $command = [List[string]]::new()
@@ -110,7 +110,7 @@ function Uninstall-NpmPackage {
         $command.Add('-g')
     }
 
-    foreach ($a in ($Arguments -split '\s+' | Where-Object { $_ })) {
+    foreach ($a in ($Arguments | Where-Object { $_ })) {
         $command.Add($a)
     }
 
@@ -224,7 +224,8 @@ enum Ensure {
         The directory containing the `package.json` file. If not specified, the current directory is used.
 
     .PARAMETER Arguments
-        Additional arguments to pass to `npm install`.
+        Additional arguments to pass to `npm install`, provided as an array of strings where each
+        element is a separate argument.
 
     .EXAMPLE
         Invoke-DscResource -ModuleName NpmDsc -Name NpmInstall -Method Set -Property @{
@@ -248,7 +249,7 @@ class NpmInstall {
     [string]$PackageDirectory
 
     [DscProperty()]
-    [string]$Arguments
+    [string[]]$Arguments
 
     [NpmInstall] Get() {
         Assert-Npm
@@ -316,7 +317,8 @@ class NpmInstall {
     Indicates whether the npm package should be installed globally.
 
 .PARAMETER Arguments
-    Additional arguments to pass to `npm install` or `npm uninstall`.
+    Additional arguments to pass to `npm install` or `npm uninstall`, provided as an array of strings
+    where each element is a separate argument.
 
 .EXAMPLE
     PS C:\> Invoke-DscResource -ModuleName NpmDsc -Name NpmPackage -Method Set -Property @{ Name = 'react' }
@@ -351,7 +353,7 @@ class NpmPackage {
     [bool]$Global
 
     [DscProperty()]
-    [string]$Arguments
+    [string[]]$Arguments
 
     [NpmPackage] Get() {
         Assert-Npm
@@ -426,7 +428,7 @@ class NpmPackage {
 
     [string] WhatIf() {
         if ($this.Ensure -eq [Ensure]::Present) {
-            $whatIfState = Install-NpmPackage -PackageName $this.Name -Global $this.Global -Arguments '--dry-run'
+            $whatIfState = Install-NpmPackage -PackageName $this.Name -Global $this.Global -Arguments @('--dry-run')
 
             $out = @{
                 Name      = $this.Name
