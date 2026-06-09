@@ -10,8 +10,13 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: string
 
 - name: moduleVersion
-  displayName: 'Version of the module'
+  displayName: 'Version of the module (e.g. 0.2.0)'
   type: string
+
+- name: prerelease
+  displayName: 'Prerelease/alpha suffix (e.g. alpha, beta2). Leave empty to publish a stable release.'
+  type: string
+  default: ''
 
 variables:
   # Docker image which is used to build the project
@@ -58,19 +63,31 @@ extends:
               versionSpec: 6.x
 
           - task: PowerShell@2
-            displayName: Replace module version
+            displayName: Replace module version and prerelease
             inputs:
               targetType: inline
               pwsh: true
               script: |
-                $manifestContent = (Get-Content -path $(Build.SourcesDirectory)\resources\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psd1 -Raw)
+                $manifestPath = "$(Build.SourcesDirectory)\resources\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psd1"
+                $manifestContent = Get-Content -Path $manifestPath -Raw
 
-                $newManifestContent = $manifestContent -replace "'0.1.0'", "'${{ parameters.moduleVersion }}'"
+                # Set the module version, regardless of the value currently in the manifest
+                $manifestContent = $manifestContent -replace "(?m)^(\s*ModuleVersion\s*=\s*)'[^']*'", "`$1'${{ parameters.moduleVersion }}'"
 
-                Set-Content -path $(Build.SourcesDirectory)\resources\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psd1 -Value $newManifestContent
+                # Set or clear the prerelease (alpha) suffix
+                $prerelease = '${{ parameters.prerelease }}'
+                if ([string]::IsNullOrWhiteSpace($prerelease)) {
+                    # Stable release: comment out the Prerelease entry so the module is not flagged as prerelease
+                    $manifestContent = $manifestContent -replace "(?m)^(\s*)Prerelease\s*=\s*'[^']*'", "`$1# Prerelease = ''"
+                }
+                else {
+                    $manifestContent = $manifestContent -replace "(?m)^(\s*)Prerelease\s*=\s*'[^']*'", "`$1Prerelease = '$prerelease'"
+                }
+
+                Set-Content -path $manifestPath -Value $manifestContent
 
                 New-Item ToSign -Type Directory
-                Set-Content -path ToSign\${{ parameters.moduleName }}.psd1 -Value $newManifestContent
+                Set-Content -path ToSign\${{ parameters.moduleName }}.psd1 -Value $manifestContent
                 Get-Content ToSign\${{ parameters.moduleName }}.psd1 -Raw
 
                 Copy-Item -Path "$(Build.SourcesDirectory)\resources\${{ parameters.moduleName }}\${{ parameters.moduleName }}.psm1" -Destination "ToSign\${{ parameters.moduleName }}.psm1" -Force
