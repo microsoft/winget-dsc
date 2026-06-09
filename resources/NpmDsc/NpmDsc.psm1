@@ -128,7 +128,9 @@ function GetNpmPath {
         } elseif (Test-Path $globalNpmCacheDir -ErrorAction SilentlyContinue) {
             return $globalNpmCacheDir
         } else {
-            $cacheRoot = (Invoke-Npm -Command @('config', 'list', '--json', '--logs-max=0') | ConvertFrom-Json -ErrorAction SilentlyContinue).cache
+            # Call 'npm' directly rather than through Invoke-Npm: this is an error-reporting helper
+            # and Invoke-Npm's failure path calls back into GetNpmPath, which would recurse indefinitely.
+            $cacheRoot = (& npm config list --json --logs-max=0 2>$null | ConvertFrom-Json -ErrorAction SilentlyContinue).cache
             $result = if ($cacheRoot) { Join-Path $cacheRoot '_logs' } else { $null }
             if ($result -and (Test-Path $result -ErrorAction SilentlyContinue)) {
                 return $result
