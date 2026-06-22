@@ -36,6 +36,7 @@ extends:
       - ES365AIMigrationTooling
     settings:
       skipBuildTagsForGitHubPullRequests: true
+      networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3
 
     stages:
       - stage: WinGet_DSC_Artifacts_Publish
