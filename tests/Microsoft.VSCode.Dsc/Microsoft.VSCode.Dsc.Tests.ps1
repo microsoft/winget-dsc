@@ -11,7 +11,8 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    if ((Get-Module -Name PSDesiredStateConfiguration -ListAvailable).Version -ne '2.0.7') {
+    $psDesiredStateConfigurationModule = Get-Module -Name PSDesiredStateConfiguration -ListAvailable
+    if (($null -eq $psDesiredStateConfigurationModule) -or ($psDesiredStateConfigurationModule.Version -notcontains '2.0.7')) {
         Write-Verbose -Message 'Installing PSDesiredStateConfiguration module.' -Verbose
         Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck -RequiredVersion '2.0.7'
     }

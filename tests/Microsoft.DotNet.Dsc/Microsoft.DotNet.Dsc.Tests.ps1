@@ -11,7 +11,10 @@ Set-StrictMode -Version Latest
 #>
 
 BeforeAll {
-    Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    if ($null -eq (Get-Module -Name PSDesiredStateConfiguration -ListAvailable)) {
+        Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+    }
+
     Import-Module Microsoft.DotNet.Dsc
 
     $script:toolsDir = Join-Path $env:USERPROFILE 'tools'

@@ -12,7 +12,10 @@ Set-StrictMode -Version Latest
 # InModuleScope ensures that all mocks are on the Microsoft.Windows.Developer module.
 InModuleScope Microsoft.Windows.Developer {
    BeforeAll {
-      Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+      if ($null -eq (Get-Module -Name PSDesiredStateConfiguration -ListAvailable)) {
+         Install-Module -Name PSDesiredStateConfiguration -Force -SkipPublisherCheck
+      }
+
       Import-Module Microsoft.Windows.Developer
 
       # Create test registry path.
