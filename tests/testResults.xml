@@ -1,8 +1,1075 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="0" errors="0" failures="0" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2026-06-23" time="15:55:54">
-  <environment platform="Linux" os-version="6.17.0-1018-azure" clr-version="10.0.8" user-domain="" machine-name="runnervm7b5n9" cwd="/home/runner/work/winget-dsc/winget-dsc/tests" user="runner" nunit-version="2.5.8.0" />
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="152" errors="0" failures="147" not-run="0" inconclusive="0" ignored="0" skipped="4" invalid="0" date="2026-06-23" time="15:56:07">
+  <environment machine-name="runnervm7b5n9" clr-version="10.0.8" nunit-version="2.5.8.0" os-version="6.17.0-1018-azure" platform="Linux" user="runner" user-domain="" cwd="/home/runner/work/winget-dsc/winget-dsc/tests" />
   <culture-info current-culture="" current-uiculture="" />
-  <test-suite type="TestFixture" name="Pester" executed="True" result="Success" success="True" time="0.9586" asserts="0" description="Pester">
-    <results />
+  <test-suite type="TestFixture" name="Pester" executed="True" result="Failure" success="False" time="6.8286" asserts="0" description="Pester">
+    <results>
+      <test-suite type="TestFixture" name="/home/runner/work/winget-dsc/winget-dsc/tests/GitDsc/GitDsc.tests.ps1" executed="True" result="Failure" success="False" time="6.0849" asserts="0" description="/home/runner/work/winget-dsc/winget-dsc/tests/GitDsc/GitDsc.tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="List available DSC resources" executed="True" result="Failure" success="False" time="1.4282" asserts="0" description="List available DSC resources">
+            <results>
+              <test-case description="Shows DSC Resources" name="List available DSC resources.Shows DSC Resources" time="1.3947" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>CommandNotFoundException: The term 'Get-DscResource' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.</message>
+                  <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/winget-dsc/winget-dsc/tests/GitDsc/GitDsc.tests.ps1:24</stack-trace>
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="GitDsc" executed="True" result="Failure" success="False" time="1.63" asserts="0" description="GitDsc">
+            <results>
+              <test-case description="Clones a repository" name="GitDsc.Clones a repository" time="0.0404" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>CommandNotFoundException: The term 'Invoke-DscResource' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.</message>
+                  <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/winget-dsc/winget-dsc/tests/GitDsc/GitDsc.tests.ps1:37</stack-trace>
+                </failure>
+              </test-case>
+              <test-case description="Clones a repository with a specific folder name" name="GitDsc.Clones a repository with a specific folder name" time="0.0388" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>CommandNotFoundException: The term 'Invoke-DscResource' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.</message>
+                  <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/winget-dsc/winget-dsc/tests/GitDsc/GitDsc.tests.ps1:52</stack-trace>
+                </failure>
+              </test-case>
+              <test-case description="Clones a repository without checkout and file contents" name="GitDsc.Clones a repository without checkout and file contents" time="0.0419" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>CommandNotFoundException: The term 'Invoke-DscResource' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.</message>
+                  <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/winget-dsc/winget-dsc/tests/GitDsc/GitDsc.tests.ps1:68</stack-trace>
+                </failure>
+              </test-case>
+              <test-case description="Should not clone a repository if an incorrect URL is provided" name="GitDsc.Should not clone a repository if an incorrect URL is provided" time="0.0746" asserts="0" success="True" result="Success" executed="True" />
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+      <test-suite type="TestFixture" name="/home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.DotNet.Dsc/Microsoft.DotNet.Dsc.Tests.ps1" executed="True" result="Failure" success="False" time="0.1444" asserts="0" description="/home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.DotNet.Dsc/Microsoft.DotNet.Dsc.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="List available DSC resources" executed="True" result="Failure" success="False" time="0" asserts="0" description="List available DSC resources">
+            <results>
+              <test-case description="Shows DSC Resources" name="List available DSC resources.Shows DSC Resources" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DSC operation capabilities" executed="True" result="Failure" success="False" time="0" asserts="0" description="DSC operation capabilities">
+            <results>
+              <test-case description="Sets desired package" name="DSC operation capabilities.Sets desired package" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Sets desired package with version" name="DSC operation capabilities.Sets desired package with version" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Updates desired package with latest version" name="DSC operation capabilities.Updates desired package with latest version" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Sets desired package with prerelease version" name="DSC operation capabilities.Sets desired package with prerelease version" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Exports resources" name="DSC operation capabilities.Exports resources" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Throws error when resource is not a tool" name="DSC operation capabilities.Throws error when resource is not a tool" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Installs in tool path location with version" name="DSC operation capabilities.Installs in tool path location with version" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Update in tool path location" name="DSC operation capabilities.Update in tool path location" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Uninstall a tool" name="DSC operation capabilities.Uninstall a tool" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Uninstall a tool from tool path location" name="DSC operation capabilities.Uninstall a tool from tool path location" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Downgrades a tool" name="DSC operation capabilities.Downgrades a tool" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DSC helper functions" executed="True" result="Failure" success="False" time="0" asserts="0" description="DSC helper functions">
+            <results>
+              <test-suite type="TestFixture" name="DSC helper functions.Semantic Versioning" executed="True" result="Failure" success="False" time="0" asserts="0" description="DSC helper functions.Semantic Versioning">
+                <results>
+                  <test-case description="Parses valid semantic version" name="DSC helper functions.Semantic Versioning.Parses valid semantic version" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Parses semantic version with alpha" name="DSC helper functions.Semantic Versioning.Parses semantic version with alpha" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Parses semantic version with alpha tag and version" name="DSC helper functions.Semantic Versioning.Parses semantic version with alpha tag and version" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Parses semantic version with beta tag and version" name="DSC helper functions.Semantic Versioning.Parses semantic version with beta tag and version" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Parses semantic version with rc and version" name="DSC helper functions.Semantic Versioning.Parses semantic version with rc and version" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+      <test-suite type="TestFixture" name="/home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.Windows.Developer/Microsoft.Windows.Developer.Tests.ps1" executed="True" result="Failure" success="False" time="0.2289" asserts="0" description="/home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.Windows.Developer/Microsoft.Windows.Developer.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="List available DSC resources" executed="True" result="Failure" success="False" time="0" asserts="0" description="List available DSC resources">
+            <results>
+              <test-case description="Shows DSC Resources" name="List available DSC resources.Shows DSC Resources" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DeveloperMode" executed="True" result="Failure" success="False" time="0" asserts="0" description="DeveloperMode">
+            <results>
+              <test-suite type="ParameterizedTest" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;">
+                <results>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(True,Present,SetTrue)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(True,Present,SetFalse)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(True,Present,NotSet)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(True,Absent,SetTrue)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(True,Absent,SetFalse)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(True,Absent,NotSet)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(False,Present,SetTrue)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(False,Present,SetFalse)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(False,Present,NotSet)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(False,Absent,SetTrue)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(False,Absent,SetFalse)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;" name="DeveloperMode.Set test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;, HasAdmin:&lt;HasAdmin&gt;(False,Absent,NotSet)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="DeveloperMode.Get test for RegistryValueState:&lt;RegistryValueState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Get test for RegistryValueState:&lt;RegistryValueState&gt;">
+                <results>
+                  <test-case description="Get test for RegistryValueState:&lt;RegistryValueState&gt;" name="DeveloperMode.Get test for RegistryValueState:&lt;RegistryValueState&gt;(SetTrue)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for RegistryValueState:&lt;RegistryValueState&gt;" name="DeveloperMode.Get test for RegistryValueState:&lt;RegistryValueState&gt;(SetFalse)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for RegistryValueState:&lt;RegistryValueState&gt;" name="DeveloperMode.Get test for RegistryValueState:&lt;RegistryValueState&gt;(SetFalse)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="DeveloperMode.Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;">
+                <results>
+                  <test-case description="Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;" name="DeveloperMode.Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;(SetTrue,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;" name="DeveloperMode.Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;(SetFalse,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;" name="DeveloperMode.Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;(NotSet,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;" name="DeveloperMode.Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;(SetTrue,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;" name="DeveloperMode.Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;(SetFalse,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;" name="DeveloperMode.Test test for RegistryValueState:&lt;RegistryValueState&gt;, EnsureState:&lt;EnsureState&gt;(NotSet,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Taskbar" executed="True" result="Failure" success="False" time="0" asserts="0" description="Taskbar">
+            <results>
+              <test-case description="Keeps current value." name="Taskbar.Keeps current value." time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Sets desired value" name="Taskbar.Sets desired value" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="WindowsExplorer" executed="True" result="Failure" success="False" time="0" asserts="0" description="WindowsExplorer">
+            <results>
+              <test-case description="Keeps current value." name="WindowsExplorer.Keeps current value." time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Sets desired value" name="WindowsExplorer.Sets desired value" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="UserAccessControl" executed="True" result="Failure" success="False" time="0" asserts="0" description="UserAccessControl">
+            <results>
+              <test-case description="Keeps current value." name="UserAccessControl.Keeps current value." time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Sets desired value." name="UserAccessControl.Sets desired value." time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="EnableRemoteDesktop" executed="True" result="Failure" success="False" time="0" asserts="0" description="EnableRemoteDesktop">
+            <results>
+              <test-case description="Sets Enabled" name="EnableRemoteDesktop.Sets Enabled" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Sets Disabled" name="EnableRemoteDesktop.Sets Disabled" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="EnableLongPathSupport" executed="True" result="Failure" success="False" time="0" asserts="0" description="EnableLongPathSupport">
+            <results>
+              <test-case description="Sets Enabled" name="EnableLongPathSupport.Sets Enabled" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+              <test-case description="Sets Disabled" name="EnableLongPathSupport.Sets Disabled" time="0" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                  <stack-trace />
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="PowerPlanSetting" executed="True" result="Failure" success="False" time="0" asserts="0" description="PowerPlanSetting">
+            <results>
+              <test-suite type="ParameterizedTest" name="PowerPlanSetting.Get test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Get test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;">
+                <results>
+                  <test-case description="Get test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;" name="PowerPlanSetting.Get test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;(DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;" name="PowerPlanSetting.Get test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;(SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;">
+                <results>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(All,True,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(PluggedIn,True,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(Battery,True,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(All,True,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(PluggedIn,True,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(Battery,True,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(All,False,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(PluggedIn,False,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(Battery,False,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(All,False,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(PluggedIn,False,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="PowerPlanSetting.Test test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, ExpectedValue:&lt;ExpectedValue&gt;(Battery,False,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;">
+                <results>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(All,True,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(PluggedIn,True,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(Battery,True,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(All,True,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(PluggedIn,True,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(Battery,True,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(All,False,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(PluggedIn,False,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(Battery,False,DisplayTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(All,False,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(PluggedIn,False,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="PowerPlanSetting.Set test for PowerPlanSettingName:&lt;PowerPlanSettingName&gt;, PowerSource:&lt;PowerSource&gt;, IsInTargetState:&lt;IsInTargetState&gt;(Battery,False,SleepTimeout)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="WindowsCapability" executed="True" result="Failure" success="False" time="0" asserts="0" description="WindowsCapability">
+            <results>
+              <test-suite type="ParameterizedTest" name="WindowsCapability.Get test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Get test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;">
+                <results>
+                  <test-case description="Get test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;" name="WindowsCapability.Get test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;(Nonexistent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;" name="WindowsCapability.Get test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;(NotInstalled)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;" name="WindowsCapability.Get test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;(Installed)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="WindowsCapability.Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;">
+                <results>
+                  <test-case description="Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Present,Nonexistent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Present,NotInstalled)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Present,Installed)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Absent,Nonexistent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Absent,NotInstalled)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Test test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Absent,Installed)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="WindowsCapability.Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;">
+                <results>
+                  <test-case description="Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Present,Nonexistent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Present,NotInstalled)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Present,Installed)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Absent,Nonexistent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Absent,NotInstalled)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;" name="WindowsCapability.Set test for WindowsCapabilityState:&lt;WindowsCapabilityState&gt;, EnsureState:&lt;EnsureState&gt;(Absent,Installed)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="NetConnectionProfile" executed="True" result="Failure" success="False" time="0" asserts="0" description="NetConnectionProfile">
+            <results>
+              <test-suite type="ParameterizedTest" name="NetConnectionProfile.Get test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ProfileExists:&lt;ProfileExists&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Get test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ProfileExists:&lt;ProfileExists&gt;">
+                <results>
+                  <test-case description="Get test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Get test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,&quot;Ethernet&quot;,True)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Get test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,&quot;Ethernet&quot;,False)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="NetConnectionProfile.Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;">
+                <results>
+                  <test-case description="Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,&quot;Ethernet&quot;,True,True)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,&quot;Ethernet&quot;,False,True)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,&quot;Ethernet&quot;,True,False)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Test test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, ExpectedResult:&lt;ExpectedResult&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,&quot;Ethernet&quot;,False,False)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="NetConnectionProfile.Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;">
+                <results>
+                  <test-case description="Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,True,&quot;Ethernet&quot;,True)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,False,&quot;Ethernet&quot;,True)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,True,&quot;Ethernet&quot;,False)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;" name="NetConnectionProfile.Set test for TargetInterfaceAlias:&lt;TargetInterfaceAlias&gt;, NetworkCategory:&lt;NetworkCategory&gt;, IsInTargetState:&lt;IsInTargetState&gt;, ProfileExists:&lt;ProfileExists&gt;(&quot;Private&quot;,False,&quot;Ethernet&quot;,False)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="AdvancedNetworkSharingSetting" executed="True" result="Failure" success="False" time="0" asserts="0" description="AdvancedNetworkSharingSetting">
+            <results>
+              <test-suite type="ParameterizedTest" name="AdvancedNetworkSharingSetting.Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;">
+                <results>
+                  <test-case description="Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;" name="AdvancedNetworkSharingSetting.Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;(System.Collections.Hashtable,Private,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;" name="AdvancedNetworkSharingSetting.Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;(System.Collections.Hashtable System.Collections.Hashtable,,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;" name="AdvancedNetworkSharingSetting.Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;(System.Collections.Hashtable,,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;" name="AdvancedNetworkSharingSetting.Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;(System.Collections.Hashtable,Private,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;" name="AdvancedNetworkSharingSetting.Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;(System.Collections.Hashtable System.Collections.Hashtable,,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;" name="AdvancedNetworkSharingSetting.Get test for NetworkSettingName:&lt;NetworkSettingName&gt;, ExpectedEnabledProfiles:&lt;ExpectedEnabledProfiles&gt;(System.Collections.Hashtable,,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;">
+                <results>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(True,System.Collections.Hashtable,Private,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(False,System.Collections.Hashtable System.Collections.Hashtable,Private,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(False,System.Collections.Hashtable,,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(True,System.Collections.Hashtable,,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(False,System.Collections.Hashtable,Private,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(True,System.Collections.Hashtable,Private,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(False,System.Collections.Hashtable System.Collections.Hashtable,Private,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(False,System.Collections.Hashtable,,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(True,System.Collections.Hashtable,,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;" name="AdvancedNetworkSharingSetting.Test test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, ExpectedValue:&lt;ExpectedValue&gt;(False,System.Collections.Hashtable,Private,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;">
+                <results>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable,Private,True,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable System.Collections.Hashtable,Private,False,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable,,False,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable,,True,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable,Private,False,NetworkDiscovery)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable,Private,True,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable System.Collections.Hashtable,Private,False,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable,,False,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable,,True,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;" name="AdvancedNetworkSharingSetting.Set test for NetworkSettingName:&lt;NetworkSettingName&gt;, Profiles:&lt;Profiles&gt;, IsInTargetState:&lt;IsInTargetState&gt;(System.Collections.Hashtable,Private,False,FileAndPrinterSharing)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="FirewallRule" executed="True" result="Failure" success="False" time="0" asserts="0" description="FirewallRule">
+            <results>
+              <test-suite type="ParameterizedTest" name="FirewallRule.Get test for FirewallRuleEnsureState:&lt;FireWallRuleState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Get test for FirewallRuleEnsureState:&lt;FireWallRuleState&gt;">
+                <results>
+                  <test-case description="Get test for FirewallRuleEnsureState:&lt;FireWallRuleState&gt;" name="FirewallRule.Get test for FirewallRuleEnsureState:&lt;FireWallRuleState&gt;(Nonexistent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Get test for FirewallRuleEnsureState:&lt;FireWallRuleState&gt;" name="FirewallRule.Get test for FirewallRuleEnsureState:&lt;FireWallRuleState&gt;(InDesiredState)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="FirewallRule.Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;">
+                <results>
+                  <test-case description="Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(Nonexistent,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(Nonexistent,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(InDesiredState,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(InDesiredState,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(NotinDesiredState,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Test test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(NotinDesiredState,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="ParameterizedTest" name="FirewallRule.Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" executed="True" result="Failure" success="False" time="0" asserts="0" description="Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;">
+                <results>
+                  <test-case description="Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(Nonexistent,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(Nonexistent,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(InDesiredState,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(InDesiredState,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(NotinDesiredState,Present)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                  <test-case description="Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;" name="FirewallRule.Set test for FirewallRule with FireWallRuleState:&lt;FireWallRuleState&gt;, EnsureState:&lt;EnsureState&gt;(NotinDesiredState,Absent)" time="0" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>This test should run but it did not. Most likely a setup in some parent block failed.</message>
+                      <stack-trace />
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+      <test-suite type="TestFixture" name="/home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.VSCode.Dsc/Microsoft.VSCode.Dsc.Tests.ps1" executed="True" result="Failure" success="False" time="0.3704" asserts="0" description="/home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.VSCode.Dsc/Microsoft.VSCode.Dsc.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="List available DSC resources" executed="True" result="Failure" success="False" time="0.0522" asserts="0" description="List available DSC resources">
+            <results>
+              <test-case description="Shows DSC Resources" name="List available DSC resources.Shows DSC Resources" time="0.0436" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>CommandNotFoundException: The term 'Get-DscResource' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.</message>
+                  <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.VSCode.Dsc/Microsoft.VSCode.Dsc.Tests.ps1:35</stack-trace>
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="VSCodeExtension" executed="True" result="Failure" success="False" time="0.2021" asserts="0" description="VSCodeExtension">
+            <results>
+              <test-case description="Keeps current extension." name="VSCodeExtension.Keeps current extension." time="0.0047" asserts="0" success="False" result="Ignored" executed="False" />
+              <test-case description="Sets desired extension" name="VSCodeExtension.Sets desired extension" time="0.0029" asserts="0" success="False" result="Ignored" executed="False" />
+              <test-case description="Sets desired extension from path" name="VSCodeExtension.Sets desired extension from path" time="0.0964" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>SocketException: Resource temporarily unavailable
+HttpRequestException: Resource temporarily unavailable (marketplace.visualstudio.com:443)</message>
+                  <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.VSCode.Dsc/Microsoft.VSCode.Dsc.Tests.ps1:79</stack-trace>
+                </failure>
+              </test-case>
+              <test-case description="Sets prerelease extension" name="VSCodeExtension.Sets prerelease extension" time="0.0409" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>CommandNotFoundException: The term 'Invoke-DscResource' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.</message>
+                  <stack-trace>at &lt;ScriptBlock&gt;, /home/runner/work/winget-dsc/winget-dsc/tests/Microsoft.VSCode.Dsc/Microsoft.VSCode.Dsc.Tests.ps1:100</stack-trace>
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="VSCodeExtension-Insiders" executed="True" result="Ignored" success="True" time="0.2098" asserts="0" description="VSCodeExtension-Insiders">
+            <results>
+              <test-case description="Keeps current extension in Insiders edition." name="VSCodeExtension-Insiders.Keeps current extension in Insiders edition." time="0.0019" asserts="0" success="False" result="Ignored" executed="False" />
+              <test-case description="Sets desired extension in Insiders edition" name="VSCodeExtension-Insiders.Sets desired extension in Insiders edition" time="0.0017" asserts="0" success="False" result="Ignored" executed="False" />
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
   </test-suite>
 </test-results>
