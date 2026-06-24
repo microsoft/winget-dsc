@@ -36,6 +36,9 @@ extends:
       - ES365AIMigrationTooling
     settings:
       skipBuildTagsForGitHubPullRequests: true
+      # CFSClean is omitted so NpmDsc can reach registry.npmjs.org. CFSClean2 (PowerShell Gallery)
+      # and CFSClean3 are enforced; PowerShell modules are sourced from an internal feed instead.
+      networkIsolationPolicy: Permissive,CFSClean2,CFSClean3
 
     stages:
       - stage: WinGet_DSC_Artifacts_Publish
@@ -93,6 +96,26 @@ extends:
               - checkout: self
                 clean: true
                 fetchTags: false
+
+              - task: PowerShell@2
+                displayName: "Install PSDesiredStateConfiguration from internal feed"
+                env:
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                inputs:
+                  pwsh: true
+                  targetType: "inline"
+                  # PowerShell Gallery is blocked by CFSClean2, so the module is pulled from an
+                  # internal Azure Artifacts feed that has PowerShell Gallery as an upstream source.
+                  script: |
+                    $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
+                    $credential = [System.Management.Automation.PSCredential]::new('AzureDevOps', $token)
+                    $feedUri = 'https://pkgs.dev.azure.com/shine-oss/winget-dsc/_packaging/WinGetDscDependencies/nuget/v3/index.json'
+                    $repoName = 'WinGetDscDependencies'
+                    if (-not (Get-PSResourceRepository -Name $repoName -ErrorAction SilentlyContinue)) {
+                        Register-PSResourceRepository -Name $repoName -Uri $feedUri -Trusted
+                    }
+                    Install-PSResource -Name PSDesiredStateConfiguration -Version '2.0.7' -Repository $repoName -Credential $credential -TrustRepository
+                    Get-Module -Name PSDesiredStateConfiguration -ListAvailable | Select-Object Name, Version
 
               - task: PowerShell@2
                 displayName: "Run Pester tests for DSC modules"
