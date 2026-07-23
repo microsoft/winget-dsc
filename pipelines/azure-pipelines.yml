@@ -123,8 +123,29 @@ extends:
                 inputs:
                   workingFile: $(Build.SourcesDirectory)\.npmrc
 
+              - task: PipAuthenticate@1
+                displayName: "Authenticate pip for internal feed (PythonPip3Dsc tests)"
+                inputs:
+                  artifactFeeds: "winget-dsc/WinGetDscDependencies"
+                  onlyAddExtraIndex: false
+
+              - task: CargoAuthenticate@0
+                displayName: "Authenticate cargo for internal feed (RustDsc tests)"
+                inputs:
+                  configFile: $(Build.SourcesDirectory)\.cargo\config.toml
+
+              - task: NuGetAuthenticate@1
+                displayName: "Authenticate NuGet for internal feed (Microsoft.DotNet.Dsc tests)"
+
               - task: PowerShell@2
                 displayName: "Run Pester tests for DSC modules"
+                env:
+                  # `npm install -g` does not read project-level .npmrc files, so global installs
+                  # (used by the NpmDsc tests) would otherwise fall back to the public npm
+                  # registry and get blocked by network isolation. Pointing NPM_CONFIG_GLOBALCONFIG
+                  # at the same .npmrc used by npmAuthenticate@0 routes global installs through the
+                  # internal feed as well.
+                  NPM_CONFIG_GLOBALCONFIG: $(Build.SourcesDirectory)\.npmrc
                 inputs:
                   pwsh: true
                   targetType: "inline"
