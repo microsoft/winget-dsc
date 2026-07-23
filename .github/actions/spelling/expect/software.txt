@@ -18,3 +18,4 @@ tokio
 lldb
 Rustlang
 vadimcn
+npmrc
