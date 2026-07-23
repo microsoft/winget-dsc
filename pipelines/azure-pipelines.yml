@@ -36,9 +36,10 @@ extends:
       - ES365AIMigrationTooling
     settings:
       skipBuildTagsForGitHubPullRequests: true
-      # CFSClean is omitted so NpmDsc can reach registry.npmjs.org. CFSClean2 (PowerShell Gallery)
-      # and CFSClean3 are enforced; PowerShell modules are sourced from an internal feed instead.
-      networkIsolationPolicy: Permissive,CFSClean2,CFSClean3
+      # CFSClean (NuGet/NPM/PyPI/etc.), CFSClean2 (PowerShell Gallery) and CFSClean3 are all
+      # enforced. Public registries are blocked; NpmDsc tests and PowerShell modules are sourced
+      # from the internal Azure Artifacts feed (WinGetDscDependencies) instead.
+      networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3
 
     stages:
       - stage: WinGet_DSC_Artifacts_Publish
@@ -116,6 +117,11 @@ extends:
                     }
                     Install-PSResource -Name PSDesiredStateConfiguration -Version '2.0.7' -Repository $repoName -Credential $credential -TrustRepository
                     Get-Module -Name PSDesiredStateConfiguration -ListAvailable | Select-Object Name, Version
+
+              - task: npmAuthenticate@0
+                displayName: "Authenticate npm for internal feed (NpmDsc tests)"
+                inputs:
+                  workingFile: $(Build.SourcesDirectory)\.npmrc
 
               - task: PowerShell@2
                 displayName: "Run Pester tests for DSC modules"
