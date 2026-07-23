@@ -140,12 +140,8 @@ extends:
               - task: PowerShell@2
                 displayName: "Run Pester tests for DSC modules"
                 env:
-                  # `npm install -g` does not read project-level .npmrc files, so global installs
-                  # (used by the NpmDsc tests) would otherwise fall back to the public npm
-                  # registry and get blocked by network isolation. Pointing NPM_CONFIG_GLOBALCONFIG
-                  # at the same .npmrc used by npmAuthenticate@0 routes global installs through the
-                  # internal feed as well.
                   NPM_CONFIG_GLOBALCONFIG: $(Build.SourcesDirectory)\.npmrc
+                  CARGO_HOME: $(Build.SourcesDirectory)\.cargo
                 inputs:
                   pwsh: true
                   targetType: "inline"
