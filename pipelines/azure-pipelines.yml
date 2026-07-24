@@ -131,6 +131,8 @@ extends:
 
               - task: CargoAuthenticate@0
                 displayName: "Authenticate cargo for internal feed (RustDsc tests)"
+                env:
+                  CARGO_HOME: $(Build.SourcesDirectory)\.cargo
                 inputs:
                   configFile: $(Build.SourcesDirectory)\.cargo\config.toml
 
