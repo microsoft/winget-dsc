@@ -36,9 +36,10 @@ extends:
       - ES365AIMigrationTooling
     settings:
       skipBuildTagsForGitHubPullRequests: true
-      # CFSClean is omitted so NpmDsc can reach registry.npmjs.org. CFSClean2 (PowerShell Gallery)
-      # and CFSClean3 are enforced; PowerShell modules are sourced from an internal feed instead.
-      networkIsolationPolicy: Permissive,CFSClean2,CFSClean3
+      # CFSClean (NuGet/NPM/PyPI/etc.), CFSClean2 (PowerShell Gallery) and CFSClean3 are all
+      # enforced. Public registries are blocked; NpmDsc tests and PowerShell modules are sourced
+      # from the internal Azure Artifacts feed (WinGetDscDependencies) instead.
+      networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3
 
     stages:
       - stage: WinGet_DSC_Artifacts_Publish
@@ -117,8 +118,32 @@ extends:
                     Install-PSResource -Name PSDesiredStateConfiguration -Version '2.0.7' -Repository $repoName -Credential $credential -TrustRepository
                     Get-Module -Name PSDesiredStateConfiguration -ListAvailable | Select-Object Name, Version
 
+              - task: npmAuthenticate@0
+                displayName: "Authenticate npm for internal feed (NpmDsc tests)"
+                inputs:
+                  workingFile: $(Build.SourcesDirectory)\.npmrc
+
+              - task: PipAuthenticate@1
+                displayName: "Authenticate pip for internal feed (PythonPip3Dsc tests)"
+                inputs:
+                  artifactFeeds: "winget-dsc/WinGetDscDependencies"
+                  onlyAddExtraIndex: false
+
+              - task: CargoAuthenticate@0
+                displayName: "Authenticate cargo for internal feed (RustDsc tests)"
+                env:
+                  CARGO_HOME: $(Build.SourcesDirectory)\.cargo
+                inputs:
+                  configFile: $(Build.SourcesDirectory)\.cargo\config.toml
+
+              - task: NuGetAuthenticate@1
+                displayName: "Authenticate NuGet for internal feed (Microsoft.DotNet.Dsc tests)"
+
               - task: PowerShell@2
                 displayName: "Run Pester tests for DSC modules"
+                env:
+                  NPM_CONFIG_GLOBALCONFIG: $(Build.SourcesDirectory)\.npmrc
+                  CARGO_HOME: $(Build.SourcesDirectory)\.cargo
                 inputs:
                   pwsh: true
                   targetType: "inline"

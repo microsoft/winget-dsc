@@ -125,7 +125,7 @@ Describe 'NpmPackage' {
         Write-Verbose -Message ($whatIf | ConvertTo-Json -Depth 5 | Out-String) -Verbose
 
         $whatIf.Name | Should -Be 'invalidPackageName'
-        $whatIf._metaData.whatIf | Should -Contain "error 404 Not Found - GET https://registry.npmjs.org/$($whatIfState.Name) - Not found"
+        ($whatIf._metaData.whatIf -join "`n") | Should -Match "error 404 Not Found - GET.*$([regex]::Escape($whatIfState.Name))"
     }
 
     It 'Returns empty result if ensure is absent' -Skip:(!$IsWindows) {
