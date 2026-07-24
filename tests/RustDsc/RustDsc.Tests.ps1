@@ -46,6 +46,9 @@ BeforeAll {
     Import-Module RustDsc -Force -ErrorAction SilentlyContinue
 }
 
+# NOTE: `cargo install` fails with 401 in this network-isolated
+$skipCargoAuth = $true
+
 Describe 'List available DSC resources' {
     It 'Shows DSC Resources' {
         $expectedDSCResources = 'CargoToolInstall'
@@ -56,7 +59,7 @@ Describe 'List available DSC resources' {
 }
 
 Describe 'CargoToolInstall' {
-    It 'Install bat tool globally' -Skip:(!$IsWindows) {
+    It 'Install bat tool globally' -Skip:(!$IsWindows -or $skipCargoAuth) {
         $desiredState = @{
             CrateName = 'bat'
         }
@@ -68,7 +71,7 @@ Describe 'CargoToolInstall' {
         $finalState.Exist | Should -Be $true
     }
 
-    It 'Install specific version of ripgrep tool globally' -Skip:(!$IsWindows) {
+    It 'Install specific version of ripgrep tool globally' -Skip:(!$IsWindows -or $skipCargoAuth) {
         $desiredState = @{
             CrateName = 'ripgrep'
             Version   = '13.0.0'
@@ -82,7 +85,7 @@ Describe 'CargoToolInstall' {
         $finalState.Exist | Should -Be $true
     }
 
-    It 'Downgrades a tool by specifying an older version' -Skip:(!$IsWindows) {
+    It 'Downgrades a tool by specifying an older version' -Skip:(!$IsWindows -or $skipCargoAuth) {
         $desiredState = @{
             CrateName = 'bat'
             Version   = '0.24.0'
@@ -96,7 +99,7 @@ Describe 'CargoToolInstall' {
         $finalState.Exist | Should -Be $true
     }
 
-    It 'Uninstall a tool' -Skip:(!$IsWindows) {
+    It 'Uninstall a tool' -Skip:(!$IsWindows -or $skipCargoAuth) {
         $desiredState = @{
             CrateName = 'bat'
             Exist     = $false
@@ -109,13 +112,13 @@ Describe 'CargoToolInstall' {
         $finalState.Exist | Should -Be $false
     }
 
-    It 'Export installed tools' -Skip:(!$IsWindows) {
+    It 'Export installed tools' -Skip:(!$IsWindows -or $skipCargoAuth) {
         $exportedCrates = [CargoToolInstall]::Export()
         $exportedCrates | Should -Not -BeNullOrEmpty
         $exportedCrates[0].CrateName | Should -Not -BeNullOrEmpty
     }
 
-    It 'Install tool with specific features' -Skip:(!$IsWindows) {
+    It 'Install tool with specific features' -Skip:(!$IsWindows -or $skipCargoAuth) {
         $desiredState = @{
             CrateName = 'bat'
             Features  = @('minimal-application')
