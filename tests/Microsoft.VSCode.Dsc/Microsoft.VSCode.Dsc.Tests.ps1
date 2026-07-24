@@ -92,7 +92,9 @@ Describe 'VSCodeExtension' {
 
     It 'Sets prerelease extension' {
         $desiredState = @{
+            # Pinning to a known pre-release version keeps the test deterministic.
             Name       = 'dbaeumer.vscode-eslint'
+            Version    = '3.0.33'
             PreRelease = $true
         }
 
