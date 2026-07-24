@@ -30,6 +30,7 @@ fYnn
 gdk
 github
 gitversion
+GLOBALCONFIG
 globaltool
 Hmmss
 Hmmss
@@ -90,6 +91,7 @@ uninstall
 uninstaller
 uninstalls
 upvote
+utf
 videojs
 vsconfig
 vscpp
