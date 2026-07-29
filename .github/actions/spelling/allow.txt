@@ -4,6 +4,7 @@ apps
 appwiz
 appx
 arp
+autodetect
 aspnetcore
 azp
 azurepipelines
@@ -16,6 +17,7 @@ cla
 codeowner
 codeowners
 coenraads
+curated
 dbaeumer
 devdocs
 eamodio
@@ -55,8 +57,10 @@ msjsdiag
 msstore
 msvc
 mubaidr
+NNN
 NOLOGO
 NOLOGO
+noop
 nonexistentpackage
 npmjs
 numpy
@@ -67,6 +71,7 @@ opensource
 oss
 pkief
 powertoys
+PreIndexedPackage
 prerel
 pscustomobject
 Ptr
@@ -83,6 +88,7 @@ tastejs
 todomvc
 toolsai
 toolset
+toolsets
 UAC
 ubuntu
 uilt

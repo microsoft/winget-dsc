@@ -61,5 +61,7 @@ ignore$
 \.zip$
 ^\.(?!github/)
 ^\.github/actions/spelling/
+^\.github/aw/
 ^\.github/policies/moderatorTriggers\.yml$
+^\.github/workflows/[^/]*\.lock\.yml$
 ^\.github/workflows/spellCheck\.yml$
