@@ -9,3 +9,4 @@ showFound: true
 ignores:
   - "PRIVACY.md"
   - ".github/*.md"
+  - ".github/workflows/*.md"
