@@ -1,0 +1,47 @@
+##################################################################################################
+# This configuration will set the global Git user email to a GitHub noreply address.           #
+# PowerShell module: GitDsc (v1.0.0)                                                           #
+##################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: Git
+    properties:
+      id: Git.Git
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Git
+      winget:
+        securityContext: elevated
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: GitDsc.Module
+    properties:
+      executable: C:\Program Files\PowerShell\7\pwsh.exe
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name GitDsc))
+          { Install-PSResource -Name GitDsc
+          -TrustRepository -AcceptLicense }
+        treatAsArray: true
+    metadata:
+      description: Ensure GitDsc module is installed
+  - type: GitDsc/GitConfig
+    name: SetGlobalUserEmail
+    dependsOn:
+      - Git
+      - GitDsc.Module
+    properties:
+      Name: user.email
+      Value: 12345678+username@users.noreply.github.com
+      ConfigLocation: global
+    metadata:
+      description: Set the global Git user email to a GitHub noreply address

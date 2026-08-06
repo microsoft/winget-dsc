@@ -86,7 +86,7 @@
         'GitRemote',
         'GitConfigUserName',
         'GitConfigUserEmail',
-        'GitConfigFile'
+        'GitConfig'
     )
 
     # List of all modules packaged with this module
@@ -101,10 +101,10 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags       = @('PSDscResource_GitClone', 'PSDscResource_GitRemote', 'PSDscResource_GitConfigUserName', 'PSDscResource_GitConfigUserEmail', 'PSDscResource_GitConfigFile')
+            Tags       = @('PSDscResource_GitClone', 'PSDscResource_GitRemote', 'PSDscResource_GitConfigUserName', 'PSDscResource_GitConfigUserEmail', 'PSDscResource_GitConfig')
 
             # A URL to the license for this module.
-            LicenseURI= 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
+            LicenseURI = 'https://github.com/microsoft/winget-dsc/blob/main/LICENSE'
 
             # A URL to the main website for this project.
             ProjectUri = 'https://github.com/microsoft/winget-dsc/'
