@@ -22,14 +22,14 @@ jobs:
     name: Check Markdown linting
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       with:
         fetch-depth: 0
-    - uses: tj-actions/changed-files@v45
+    - uses: tj-actions/changed-files@48d8f15b2aaa3d255ca5af3eba4870f807ce6b3c # v45.0.2
       id: changed-files
       with:
         files: '**/*.md'
-    - uses: DavidAnson/markdownlint-cli2-action@v17
+    - uses: DavidAnson/markdownlint-cli2-action@db43aef879112c3119a410d69f66701e0d530809 # v17.0.0
       if: steps.changed-files.outputs.any_changed == 'true'
       with:
         globs: ${{ steps.changed-files.outputs.all_changed_files }}
