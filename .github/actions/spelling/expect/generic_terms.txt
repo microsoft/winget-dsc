@@ -5,6 +5,7 @@ Authenticode
 automerge
 azurecr
 azuretools
+cooldown
 currentstate
 liveserver
 ltsc
