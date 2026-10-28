@@ -7,15 +7,16 @@ on:
       - '!main'
     tags-ignore:
       - '**'
-  pull_request_target:
+  pull_request:
     branches:
-      - '**'
-    tags-ignore:
       - '**'
     types:
       - 'opened'
       - 'reopened'
       - 'synchronize'
+
+permissions:
+  contents: read
 
 jobs:
   lint:
