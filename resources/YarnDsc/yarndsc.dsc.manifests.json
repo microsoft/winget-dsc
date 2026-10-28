@@ -1,0 +1,51 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "YarnDsc/YarnInstall",
+      "author": "DscSamples",
+      "description": "The `YarnInstall` DSC resource is used to install all Yarn packages listed in a `package.json` file.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "Arguments": {
+              "type": "string",
+              "title": "Arguments",
+              "description": "Additional arguments to pass to `yarn install`."
+            },
+            "PackageDirectory": {
+              "type": "string",
+              "title": "PackageDirectory",
+              "description": "The directory containing the `package.json` file. If not specified, the current directory is used."
+            },
+            "Dependencies": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "title": "Dependencies",
+              "readOnly": true,
+              "description": "A read-only list of currently installed package dependencies. This property is not configurable."
+            }
+          },
+          "description": "The `YarnInstall` DSC resource is used to install all Yarn packages listed in a `package.json` file.",
+          "title": "YarnDsc/YarnInstall"
+        }
+      },
+      "path": "YarnDsc.psd1"
+    }
+  ]
+}

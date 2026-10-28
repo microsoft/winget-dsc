@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+##################################################################################################################################
+# This configuration will install the tools necessary to get started with app actions on Windows                                 #
+#                                                                                                                                #
+# This will:                                                                                                                     #
+#     * Enables Developer Mode                                                                                                   #
+#     * Installs Visual Studio Community                                                                                         #
+#     * Include Windows App development workload and C++ Workload                                                                #
+#     * Include MSIX Packaging tools                                                                                             #
+##################################################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: InstallMicrosoftWindowsSettingsModule
+    properties:
+      executable: 'C:\Program Files\PowerShell\7\pwsh.exe'
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Settings))
+          { Install-PSResource -Name Microsoft.Windows.Settings -Prerelease
+          -TrustRepository -AcceptLicense }
+      treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.Windows.Settings module is installed
+
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: InstallMicrosoftVisualStudioDscModule
+    properties:
+      executable: 'C:\Program Files\PowerShell\7\pwsh.exe'
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.VisualStudio.DSC))
+          { Install-PSResource -Name Microsoft.VisualStudio.DSC -Prerelease
+          -TrustRepository -AcceptLicense }
+      treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.VisualStudio.DSC module is installed
+
+  - type: Microsoft.Windows.Settings/WindowsSettings
+    name: EnableDeveloperMode
+    dependsOn:
+      - InstallMicrosoftWindowsSettingsModule
+    properties:
+      DeveloperMode: true
+    metadata:
+      description: Enable Developer Mode
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.WinGet/Package
+    name: InstallVisualStudioCommunity
+    properties:
+      id: Microsoft.VisualStudio.2022.Community
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Visual Studio 2022 Community
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.VisualStudio.DSC/VSComponents
+    name: InstallNativeDesktopWorkloads
+    dependsOn:
+      - InstallMicrosoftVisualStudioDscModule
+      - InstallVisualStudioCommunity
+    properties:
+      productId: Microsoft.VisualStudio.Product.Community
+      channelId: VisualStudio.17.Release
+      components:
+        - Microsoft.VisualStudio.Workload.NativeDesktop
+        - Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging
+        - Microsoft.VisualStudio.Workload.Universal
+    metadata:
+      description: Install required VS Workloads (ManagedDesktop, Windows App SDK)
+      winget:
+        securityContext: elevated

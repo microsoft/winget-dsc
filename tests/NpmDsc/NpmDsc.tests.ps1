@@ -85,6 +85,10 @@ Describe 'NpmPackage' {
         $finalState.InDesiredState | Should -Be $true
     }
 
+    It 'Throws if npm returns non-zero exit code' -Skip:(!$IsWindows) {
+        { Invoke-Npm '!' } | Should -Throw "Command 'npm !' failed:*"
+    }
+
     It 'Performs whatif operation successfully' -Skip:(!$IsWindows) {
         $whatIfState = @{
             Name   = 'react'
@@ -103,7 +107,7 @@ Describe 'NpmPackage' {
         $whatIf = $npmPackage.WhatIf() | ConvertFrom-Json
 
         # Don't want to rely on version in parameters so we call npm view to get the remote version
-        $latestVersion = Invoke-Npm -Command "view $($whatIfState.Name) version"
+        $latestVersion = Invoke-Npm -Command @('view', $whatIfState.Name, 'version')
 
         $whatIf.Name | Should -Be 'react'
         $whatIf._metaData.whatIf | Should -Contain "add react $latestVersion"
@@ -121,7 +125,7 @@ Describe 'NpmPackage' {
         Write-Verbose -Message ($whatIf | ConvertTo-Json -Depth 5 | Out-String) -Verbose
 
         $whatIf.Name | Should -Be 'invalidPackageName'
-        $whatIf._metaData.whatIf | Should -Contain "error 404 Not Found - GET https://registry.npmjs.org/$($whatIfState.Name) - Not found"
+        ($whatIf._metaData.whatIf -join "`n") | Should -Match "error 404 Not Found - GET.*$([regex]::Escape($whatIfState.Name))"
     }
 
     It 'Returns empty result if ensure is absent' -Skip:(!$IsWindows) {

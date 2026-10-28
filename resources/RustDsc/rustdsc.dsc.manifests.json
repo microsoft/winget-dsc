@@ -1,0 +1,61 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "RustDsc/CargoToolInstall",
+      "author": "DscSamples",
+      "description": "The `CargoToolInstall` DSC Resource allows you to manage the installation and removal of Rust crates using Cargo. This resource ensures that the specified Rust crate is in the desired state.",
+      "capabilities": ["get", "test", "set", "export"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["CrateName"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Exist": {
+              "type": "boolean",
+              "title": "Exist",
+              "description": "Specifies whether the Rust crate should exist (be installed) or not. The default value is $true."
+            },
+            "CrateName": {
+              "type": "string",
+              "title": "CrateName",
+              "description": "The name of the Rust crate to manage. This is a key property."
+            },
+            "Version": {
+              "type": "string",
+              "title": "Version",
+              "description": "The version of the Rust crate to install. If not specified, the latest version will be installed."
+            },
+            "Features": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "title": "Features",
+              "description": "A list of features to enable when installing the crate. If not specified, all features will be enabled using --all-features."
+            },
+            "Force": {
+              "type": "boolean",
+              "title": "Force",
+              "description": "Force overwriting existing crates or binaries. The default value is $false."
+            },
+            "InstalledVersion": {
+              "type": "string",
+              "title": "InstalledVersion",
+              "readOnly": true,
+              "description": "A read-only property indicating the currently installed version of the crate. This property is not configurable."
+            }
+          },
+          "description": "The `CargoToolInstall` DSC Resource allows you to manage the installation and removal of Rust crates using Cargo. This resource ensures that the specified Rust crate is in the desired state.",
+          "title": "RustDsc/CargoToolInstall"
+        }
+      },
+      "path": "RustDsc.psd1"
+    }
+  ]
+}

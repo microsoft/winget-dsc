@@ -1,3 +1,8 @@
+microsoftwindowsdeveloper
+microsoftwindowssandbox
+microsoftwindowssettingaccessibility
+microsoftwindowssettings
+sideloading
 stickykeys
 filterkeys
 togglekeys
@@ -6,10 +11,11 @@ taskkill
 dotnet
 LASTEXITCODE
 DWord
-PSobject
+psobject
 winuser
 psm
 msrc
 cursorindicator
 packagetype
 BSODs
+Audiosrv

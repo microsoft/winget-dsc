@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+###########################################################################################################################################
+# This v3 configuration will install the tools necessary to get started with native Android development on Windows with native C/C++ support #
+# Reference: https://learn.microsoft.com/en-us/windows/android/native-android#use-c-or-c-for-android-game-development                     #
+#                                                                                                                                         #
+# This will:                                                                                                                              #
+#     * Install Android Studio                                                                                                            #
+#     * Install OpenJDK 17                                                                                                                #
+#     * Install Git                                                                                                                       #
+#     * Install CMake (required for native builds)                                                                                        #
+#     * Install LLVM/LLDB (debugger for native code)                                                                                      #
+#                                                                                                                                         #
+###########################################################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: InstallAndroidStudio
+    properties:
+      id: Google.AndroidStudio
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Android Studio
+
+  - type: Microsoft.WinGet/Package
+    name: InstallOpenJDK17
+    properties:
+      id: Microsoft.OpenJDK.17
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install OpenJDK 17
+
+  - type: Microsoft.WinGet/Package
+    name: InstallGit
+    properties:
+      id: Git.Git
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Git
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.WinGet/Package
+    name: InstallCMake
+    properties:
+      id: Kitware.CMake
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install CMake (required for native builds)
+
+  - type: Microsoft.WinGet/Package
+    name: InstallLLVM
+    properties:
+      id: LLVM.LLVM
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install LLVM (debugger for native code)

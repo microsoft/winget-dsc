@@ -70,21 +70,26 @@ function Get-DotNetToolArguments {
 
     # mapping table of command line arguments
     $mappingTable = @{
-        Version           = '--version {0}'
+        Version           = '--version'
         PreRelease        = '--prerelease'
-        ToolPathDirectory = '--tool-path {0}'
+        ToolPathDirectory = '--tool-path'
         Downgrade         = '--allow-downgrade'
     }
+
+    $valueArguments = @('Version', 'ToolPathDirectory')
 
     $PSBoundParameters.GetEnumerator() | ForEach-Object {
         if ($mappingTable.ContainsKey($_.Key)) {
             if ($_.Value -ne $false -and -not (([string]::IsNullOrEmpty($_.Value)))) {
-                $arguments += ($mappingTable[$_.Key] -f $_.Value)
+                $arguments += $mappingTable[$_.Key]
+                if ($valueArguments -contains $_.Key) {
+                    $arguments += [string]$_.Value
+                }
             }
         }
     }
 
-    return ($arguments -join ' ')
+    return , [string[]]$arguments
 }
 
 # TODO: when https://github.com/dotnet/sdk/pull/37394 is documented and version is released with option simple use --format=JSON
@@ -141,11 +146,11 @@ function Get-InstalledDotNetToolPackages {
     )
 
     $resultSet = [System.Collections.Generic.List[DotNetToolPackage]]::new()
-    $listCommand = 'tool list --global'
+    $listCommand = @('tool', 'list', '--global')
     $installDir = Join-Path -Path $env:USERPROFILE '.dotnet' 'tools'
 
     if ($PSBoundParameters.ContainsKey('ToolPathDirectory')) {
-        $listCommand = "tool list --tool-path $ToolPathDirectory"
+        $listCommand = @('tool', 'list', '--tool-path', $ToolPathDirectory)
         $installDir = $ToolPathDirectory
     }
 
@@ -226,8 +231,8 @@ function Install-DotNetToolPackage {
     )
 
     $installArgument = Get-DotNetToolArguments @PSBoundParameters
-    $arguments = "tool install $installArgument --ignore-failed-sources"
-    Write-Verbose -Message "Installing dotnet tool package with arguments: $arguments"
+    $arguments = @('tool', 'install') + $installArgument + @('--ignore-failed-sources')
+    Write-Verbose -Message "Installing dotnet tool package with arguments: $($arguments -join ' ')"
 
     Invoke-DotNet -Command $arguments
 }
@@ -244,8 +249,8 @@ function Update-DotNetToolPackage {
     )
 
     $installArgument = Get-DotNetToolArguments @PSBoundParameters
-    $arguments = "tool update $installArgument --ignore-failed-sources"
-    Write-Verbose -Message "update dotnet tool package with arguments: $arguments"
+    $arguments = @('tool', 'update') + $installArgument + @('--ignore-failed-sources')
+    Write-Verbose -Message "update dotnet tool package with arguments: $($arguments -join ' ')"
 
     Invoke-DotNet -Command $arguments
 }
@@ -269,8 +274,8 @@ function Uninstall-DotNetToolPackage {
     )
 
     $installArgument = Get-DotNetToolArguments @PSBoundParameters
-    $arguments = "tool uninstall $installArgument"
-    Write-Verbose -Message "Uninstalling dotnet tool package with arguments: $arguments"
+    $arguments = @('tool', 'uninstall') + $installArgument
+    Write-Verbose -Message "Uninstalling dotnet tool package with arguments: $($arguments -join ' ')"
 
     Invoke-DotNet -Command $arguments
 }
@@ -278,13 +283,15 @@ function Uninstall-DotNetToolPackage {
 function Invoke-DotNet {
     param (
         [Parameter(Mandatory = $true)]
-        [string] $Command
+        [string[]] $Command
     )
 
+    $argList = @($Command | Where-Object { -not [string]::IsNullOrEmpty($_) })
+
     try {
-        Invoke-Expression "& `"$DotNetCliPath`" $Command"
+        & $DotNetCliPath @argList
     } catch {
-        throw "Executing dotnet.exe with {$Command} failed."
+        throw "Executing dotnet.exe with {$($argList -join ' ')} failed."
     }
 }
 

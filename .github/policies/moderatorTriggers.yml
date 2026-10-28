@@ -41,7 +41,7 @@ configuration:
               # Area-Bots
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[aA]rea[\s-][bB]ots'
+                      pattern: '(?in)\[Policy\]\s+Area[\s-]Bots'
                       isRegex: True
                 then:
                   - addLabel:
@@ -49,7 +49,7 @@ configuration:
               # Area-Validation-Pipeline
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[aA]rea[\s-][vV]alidation[\s-][pP]ipeline'
+                      pattern: '(?in)\[Policy\]\s+Area[\s-]Validation[\s-]Pipeline'
                       isRegex: True
                 then:
                   - addLabel:
@@ -57,7 +57,7 @@ configuration:
               # Blocking-Issue
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[bB]locking[\s-][iI]ssue'
+                      pattern: '(?in)\[Policy\]\s+Blocking[\s-]Issue'
                       isRegex: True
                 then:
                   - removeLabel:
@@ -69,7 +69,7 @@ configuration:
               # GitDsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Gg]it[Dd][Ss][Cc]'
+                      pattern: '(?in)\[Policy\]\s+GitDsc'
                       isRegex: True
                 then:
                   - addLabel:
@@ -77,7 +77,7 @@ configuration:
               # Help-Wanted
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[hH]elp[\s-][wW]anted'
+                      pattern: '(?in)\[Policy\]\s+Help[\s-]Wanted'
                       isRegex: True
                 then:
                   - addLabel:
@@ -85,7 +85,7 @@ configuration:
               # In-PR
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Ii]n[\s-][Pp][Rr]'
+                      pattern: '(?in)\[Policy\]\s+In[\s-]PR'
                       isRegex: True
                 then:
                   - addLabel:
@@ -93,7 +93,7 @@ configuration:
               # Issue-Bug
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[iI]ssue[\s-][bB]ug'
+                      pattern: '(?in)\[Policy\]\s+Issue[\s-]Bug'
                       isRegex: True
                 then:
                   - addLabel:
@@ -101,7 +101,7 @@ configuration:
               # Issue-Docs
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[iI]ssue[\s-][dD]ocs'
+                      pattern: '(?in)\[Policy\]\s+Issue[\s-]Docs'
                       isRegex: True
                 then:
                   - addLabel:
@@ -109,7 +109,7 @@ configuration:
               # Issue-Feature
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[iI]ssue[\s-][fF]eature'
+                      pattern: '(?in)\[Policy\]\s+Issue[\s-]Feature'
                       isRegex: True
                 then:
                   - addLabel:
@@ -117,7 +117,7 @@ configuration:
               # Microsoft.DotNet.Dsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Dd]ot[Nn]et\.[Dd][Ss][Cc]'
+                      pattern: '(?in)\[Policy\]\s+Microsoft\.DotNet\.Dsc'
                       isRegex: True
                 then:
                   - addLabel:
@@ -125,7 +125,7 @@ configuration:
               # Microsoft.VSCode.Dsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Vv][Ss][Cc]ode\.[Dd][Ss][Cc]'
+                      pattern: '(?in)\[Policy\]\s+Microsoft\.VSCode\.Dsc'
                       isRegex: True
                 then:
                   - addLabel:
@@ -133,7 +133,7 @@ configuration:
               # Microsoft.Windows.Developer
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Dd]eveloper'
+                      pattern: '(?in)\[Policy\]\s+Microsoft\.Windows\.Developer'
                       isRegex: True
                 then:
                   - addLabel:
@@ -141,15 +141,23 @@ configuration:
               # Microsoft.Windows.Setting.Accessibility
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings?\.[Aa]ccessibility'
+                      pattern: '(?in)\[Policy\]\s+Microsoft\.Windows\.Settings?\.Accessibility'
                       isRegex: True
                 then:
                   - addLabel:
                       label: Microsoft.Windows.Setting.Accessibility
+              # Microsoft.Windows.Settings
+              - if:
+                  - commentContains:
+                      pattern: '(?in)\[Policy\]\s+Microsoft\.Windows\.Settings'
+                      isRegex: True
+                then:
+                  - addLabel:
+                      label: Microsoft.Windows.Settings
               # Microsoft.Windows.Setting.Language
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings?\.[Ll]anguage'
+                      pattern: '(?in)\[Policy\]\s+Microsoft\.Windows\.Settings?\.Language'
                       isRegex: True
                 then:
                   - addLabel:
@@ -157,7 +165,7 @@ configuration:
               # Microsoft.Windows.Setting.System
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings?\.[Ss]ystem'
+                      pattern: '(?in)\[Policy\]\s+Microsoft\.Windows\.Settings?\.System'
                       isRegex: True
                 then:
                   - addLabel:
@@ -165,7 +173,7 @@ configuration:
               # Microsoft.Windows.Setting
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Mm]icrosoft\.[Ww]indows\.[Ss]ettings?'
+                      pattern: '(?in)\[Policy\]\s+Microsoft\.Windows\.Settings?'
                       isRegex: True
                 then:
                   - addLabel:
@@ -173,7 +181,7 @@ configuration:
               # Moderator-Approved
               # - if:
               #       - commentContains:
-              #             pattern: '\[[Pp]olicy\]\s+[mM]oderator[\s-][Aa]pproved'
+              #             pattern: '(?in)\[Policy\]\s+Moderator[\s-]Approved'
               #             isRegex: True
               #   then:
               #       - addLabel:
@@ -181,7 +189,7 @@ configuration:
               # Needs-Attention
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Nn]eeds[\s-][Aa]ttention'
+                      pattern: '(?in)\[Policy\]\s+Needs[\s-]Attention'
                       isRegex: True
                 then:
                   - addLabel:
@@ -198,7 +206,7 @@ configuration:
               # Needs-Author-Feedback
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Nn]eeds[\s-][Aa]uthor[\s-][fF]eedback'
+                      pattern: '(?in)\[Policy\]\s+Needs[\s-]Author[\s-]Feedback'
                       isRegex: True
                 then:
                   - addLabel:
@@ -206,7 +214,7 @@ configuration:
               # Needs-CLA
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Nn]eeds[\s-][Cc][Ll][Aa]'
+                      pattern: '(?in)\[Policy\]\s+Needs[\s-]CLA'
                       isRegex: True
                 then:
                   - addLabel:
@@ -214,7 +222,7 @@ configuration:
               # New-DSC-Resource
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Nn]ew[\s-][Dd][Ss][Cc][\s-][Rr]esource'
+                      pattern: '(?in)\[Policy\]\s+New[\s-]DSC[\s-]Resource'
                       isRegex: True
                 then:
                   - addLabel:
@@ -222,7 +230,7 @@ configuration:
               # NpmDsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Nn][Pp][Mm]\.[Dd][Ss][Cc]'
+                      pattern: '(?in)\[Policy\]\s+Npm\.Dsc'
                       isRegex: True
                 then:
                   - addLabel:
@@ -230,7 +238,7 @@ configuration:
               # PythonPip3Dsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Pp]ython[Pp]ip3?[Dd][Ss][Cc]'
+                      pattern: '(?in)\[Policy\]\s+PythonPip3?Dsc'
                       isRegex: True
                 then:
                   - addLabel:
@@ -238,7 +246,7 @@ configuration:
               # PSA
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Pp][Ss][Aa]'
+                      pattern: '(?in)\[Policy\]\s+PSA'
                       isRegex: True
                 then:
                   - addLabel:
@@ -246,7 +254,7 @@ configuration:
               # YarnDsc
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[Yy]arn[Dd][Ss][Cc]'
+                      pattern: '(?in)\[Policy\]\s+YarnDsc'
                       isRegex: True
                 then:
                   - addLabel:
@@ -254,7 +262,7 @@ configuration:
               # Unblocked
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[uU]nblocked'
+                      pattern: '(?in)\[Policy\]\s+Unblocked'
                       isRegex: True
                 then:
                   - removeLabel:
@@ -262,7 +270,7 @@ configuration:
               # Reset-Feedback
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[rR]eset\s+[fF]eedback'
+                      pattern: '(?in)\[Policy\]\s+Reset\s+Feedback'
                       isRegex: True
                 then:
                   - removeLabel:
@@ -276,7 +284,7 @@ configuration:
               # Reset-Labels
               - if:
                   - commentContains:
-                      pattern: '\[[Pp]olicy\]\s+[rR]eset[\s-]+[lL]abels'
+                      pattern: '(?in)\[Policy\]\s+Reset[\s-]+Labels'
                       isRegex: True
                 then:
                   - removeLabel:
@@ -311,6 +319,8 @@ configuration:
                       label: Microsoft.Windows.Setting.Language
                   - removeLabel:
                       label: Microsoft.Windows.Setting.System
+                  - removeLabel:
+                      label: Microsoft.Windows.Settings
                   - removeLabel:
                       label: Microsoft.Windows.Setting
                   #   - removeLabel:
@@ -337,7 +347,7 @@ configuration:
               # Duplicate of #
               - if:
                   - commentContains:
-                      pattern: Duplicate\s+of\s+\#?\s*\d+
+                      pattern: Duplicate\s+Of\s+\#?\s*\d+
                       isRegex: True
                 then:
                   - addReply:
@@ -361,7 +371,7 @@ configuration:
               # Close with reason <>;
               - if:
                   - commentContains:
-                      pattern: "[cC]lose\\s+[wW]ith\\s+[rR]eason\\s*:[\\w\\s\\-\\(\\)\\[\\]\\{\\}\\\\\\/.+=@\\#$%&^*`~|'\",<>?]*(?=;)"
+                      pattern: '(?sin)Close\s+with\s+Reason\s*:.+;'
                       isRegex: True
                 then:
                   - closeIssue
@@ -374,7 +384,7 @@ configuration:
               # Reopen with reason <>;
               - if:
                   - commentContains:
-                      pattern: "[rR]eopen\\s+[wW]ith\\s+[rR]eason\\s*:[\\w\\s\\-\\(\\)\\[\\]\\{\\}\\\\\\/.+=@\\#$%&^*`~|'\",<>?]*(?=;)"
+                      pattern: '(?sin)Reopen\s+with\s+Reason\s*:.+;'
                       isRegex: True
                 then:
                   - reopenIssue

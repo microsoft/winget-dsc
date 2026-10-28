@@ -1,6 +1,6 @@
 @{
     RootModule           = 'Microsoft.DotNet.Dsc.psm1'
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '0.2.0'
     GUID                 = '2e883e78-1d91-4d08-9fc1-2a968e31009d'
     Author               = 'Microsoft Corporation'
     CompanyName          = 'Microsoft Corporation'

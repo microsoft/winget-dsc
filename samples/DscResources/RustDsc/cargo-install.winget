@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+properties:
+  resources:
+    - resource: RustDsc/CargoToolInstall
+      directives:
+        description: Install Rust bat tool globally
+      settings:
+        CrateName: bat
+    - resource: RustDsc/CargoToolInstall
+      directives:
+        description: Install specific version of ripgrep tool globally
+      settings:
+        CrateName: ripgrep
+        Version: "13.0.0"
+    - resource: RustDsc/CargoToolInstall
+      directives:
+        description: Install fd-find tool globally
+      settings:
+        CrateName: fd-find
+    - resource: RustDsc/CargoToolInstall
+      directives:
+        description: Install exa tool globally
+      settings:
+        CrateName: exa
+    - resource: RustDsc/CargoToolInstall
+      directives:
+        description: Install bat with specific features
+      settings:
+        CrateName: bat
+        Features:
+          - minimal_application
+    - resource: RustDsc/CargoToolInstall
+      directives:
+        description: Force install tokio tool (overwrite if exists)
+      settings:
+        CrateName: tokio
+        Force: true
+  configurationVersion: 0.2.0

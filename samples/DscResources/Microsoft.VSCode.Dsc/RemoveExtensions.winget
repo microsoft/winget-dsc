@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration demonstrates removing Visual Studio Code extensions. #
+# PowerShell module: Microsoft.VSCode.Dsc (v0.1.5-alpha)                  #
+###########################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Remove Python extension
+        allowPrerelease: true
+      settings:
+        Name: ms-python.python
+        Exist: false
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Remove C# extension
+        allowPrerelease: true
+      settings:
+        Name: ms-dotnettools.csharp
+        Exist: false
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Remove GitLens extension
+        allowPrerelease: true
+      settings:
+        Name: eamodio.gitlens
+        Exist: false
+  configurationVersion: 0.2.0

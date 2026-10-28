@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+#################################################################################################################
+# This configuration will install dependencies for running PWA or hybrid web apps on an Android emulator        #
+# Reference: https://learn.microsoft.com/en-us/windows/android/pwa#test-your-ionic-app-on-a-device-or-emulator  #                                  #
+#                                                                                                               #
+# This will:                                                                                                    #
+#     * Install Android Studio                                                                                  #
+#     * Install OpenJDK 17                                                                                      #
+#     * Install Windows Terminal                                                                                #
+#                                                                                                               #
+#################################################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Android Studio (includes emulator and AVD manager)
+      settings:
+        id: Google.AndroidStudio
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install OpenJDK 17 (required for Android builds)
+      settings:
+        id: Microsoft.OpenJDK.17
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Windows Terminal (optional for CLI tools)
+      settings:
+        id: Microsoft.WindowsTerminal
+        source: winget
+        ensure: Present
+  configurationVersion: 0.2.0

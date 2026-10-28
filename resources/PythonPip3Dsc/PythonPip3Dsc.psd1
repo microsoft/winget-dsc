@@ -12,7 +12,7 @@
     RootModule           = 'PythonPip3Dsc.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '0.2.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -119,7 +119,7 @@
 
             # External dependent modules of this module
             # ExternalModuleDependencies = @()
-            DscCapabilities = @('Get', 'Set', 'Test', 'Export', 'WhatIf')
+            DscCapabilities = @('get', 'set', 'test', 'export', 'whatIf')
 
         } # End of PSData hashtable
 

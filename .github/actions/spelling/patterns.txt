@@ -51,9 +51,6 @@
 # Variations on DSC
 [Dd][Ss][Cc]
 
-# Variations on DSC
-[Dd][Ss][Cc]
-
 # Variations on URI
 [Ui][Rr][IiLl]
 

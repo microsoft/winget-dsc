@@ -1,5 +1,5 @@
 # winget-dsc pipeline to publish artifacts
-name: '$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(Date:yyyyMMdd)-$(Rev:r)'
+name: "$(Build.DefinitionName)-$(Build.DefinitionVersion)-$(Date:yyyyMMdd)-$(Rev:r)"
 
 # Commit triggers
 trigger:
@@ -36,50 +36,62 @@ extends:
       - ES365AIMigrationTooling
     settings:
       skipBuildTagsForGitHubPullRequests: true
+      # CFSClean (NuGet/NPM/PyPI/etc.), CFSClean2 (PowerShell Gallery) and CFSClean3 are all
+      # enforced. Public registries are blocked; NpmDsc tests and PowerShell modules are sourced
+      # from the internal Azure Artifacts feed (WinGetDscDependencies) instead.
+      networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3
 
     stages:
       - stage: WinGet_DSC_Artifacts_Publish
         jobs:
           - job: Publish_WinGet_DSC_Resources
-            displayName: 'Publish WinGet DSC Resources'
+            displayName: "Publish WinGet DSC Resources"
             templateContext:
               outputs:
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.Windows.Developer'
+                  displayName: "Publish Pipeline Microsoft.Windows.Developer"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Developer\
                   artifactName: Microsoft.Windows.Developer
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.Windows.Setting.Accessibility'
+                  displayName: "Publish Pipeline Microsoft.Windows.Setting.Accessibility"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Setting.Accessibility\
                   artifactName: Microsoft.Windows.Setting.Accessibility
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline PythonPip3Dsc'
+                  displayName: "Publish Pipeline PythonPip3Dsc"
                   targetPath: $(Build.SourcesDirectory)\resources\PythonPip3Dsc\
                   artifactName: PythonPip3Dsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline YarnDsc'
+                  displayName: "Publish Pipeline YarnDsc"
                   targetPath: $(Build.SourcesDirectory)\resources\YarnDsc\
                   artifactName: YarnDsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline NpmDsc'
+                  displayName: "Publish Pipeline NpmDsc"
                   targetPath: $(Build.SourcesDirectory)\resources\NpmDsc\
                   artifactName: NpmDsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.WindowsSandbox.DSC'
+                  displayName: "Publish Pipeline Microsoft.WindowsSandbox.DSC"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.WindowsSandbox.DSC\
                   artifactName: Microsoft.WindowsSandbox.DSC
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline GitDsc'
+                  displayName: "Publish Pipeline GitDsc"
                   targetPath: $(Build.SourcesDirectory)\resources\GitDsc\
                   artifactName: GitDsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.VSCode.Dsc'
+                  displayName: "Publish Pipeline Microsoft.VSCode.Dsc"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.VSCode.Dsc\
                   artifactName: Microsoft.VSCode.Dsc
                 - output: pipelineArtifact
-                  displayName: 'Publish Pipeline Microsoft.DotNet.Dsc'
+                  displayName: "Publish Pipeline Microsoft.DotNet.Dsc"
                   targetPath: $(Build.SourcesDirectory)\resources\Microsoft.DotNet.Dsc\
                   artifactName: Microsoft.DotNet.Dsc
+                - output: pipelineArtifact
+                  displayName: "Publish Pipeline Microsoft.Windows.Settings"
+                  targetPath: $(Build.SourcesDirectory)\resources\Microsoft.Windows.Settings\
+                  artifactName: Microsoft.Windows.Settings
+                - output: pipelineArtifact
+                  displayName: "Publish Pipeline RustDsc"
+                  targetPath: $(Build.SourcesDirectory)\resources\RustDsc\
+                  artifactName: RustDsc
 
             steps:
               - checkout: self
@@ -87,10 +99,54 @@ extends:
                 fetchTags: false
 
               - task: PowerShell@2
-                displayName: 'Run Pester tests for DSC modules'
+                displayName: "Install PSDesiredStateConfiguration from internal feed"
+                env:
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
                 inputs:
                   pwsh: true
-                  targetType: 'inline'
+                  targetType: "inline"
+                  # PowerShell Gallery is blocked by CFSClean2, so the module is pulled from an
+                  # internal Azure Artifacts feed that has PowerShell Gallery as an upstream source.
+                  script: |
+                    $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
+                    $credential = [System.Management.Automation.PSCredential]::new('AzureDevOps', $token)
+                    $feedUri = 'https://pkgs.dev.azure.com/shine-oss/winget-dsc/_packaging/WinGetDscDependencies/nuget/v3/index.json'
+                    $repoName = 'WinGetDscDependencies'
+                    if (-not (Get-PSResourceRepository -Name $repoName -ErrorAction SilentlyContinue)) {
+                        Register-PSResourceRepository -Name $repoName -Uri $feedUri -Trusted
+                    }
+                    Install-PSResource -Name PSDesiredStateConfiguration -Version '2.0.7' -Repository $repoName -Credential $credential -TrustRepository
+                    Get-Module -Name PSDesiredStateConfiguration -ListAvailable | Select-Object Name, Version
+
+              - task: npmAuthenticate@0
+                displayName: "Authenticate npm for internal feed (NpmDsc tests)"
+                inputs:
+                  workingFile: $(Build.SourcesDirectory)\.npmrc
+
+              - task: PipAuthenticate@1
+                displayName: "Authenticate pip for internal feed (PythonPip3Dsc tests)"
+                inputs:
+                  artifactFeeds: "winget-dsc/WinGetDscDependencies"
+                  onlyAddExtraIndex: false
+
+              - task: CargoAuthenticate@0
+                displayName: "Authenticate cargo for internal feed (RustDsc tests)"
+                env:
+                  CARGO_HOME: $(Build.SourcesDirectory)\.cargo
+                inputs:
+                  configFile: $(Build.SourcesDirectory)\.cargo\config.toml
+
+              - task: NuGetAuthenticate@1
+                displayName: "Authenticate NuGet for internal feed (Microsoft.DotNet.Dsc tests)"
+
+              - task: PowerShell@2
+                displayName: "Run Pester tests for DSC modules"
+                env:
+                  NPM_CONFIG_GLOBALCONFIG: $(Build.SourcesDirectory)\.npmrc
+                  CARGO_HOME: $(Build.SourcesDirectory)\.cargo
+                inputs:
+                  pwsh: true
+                  targetType: "inline"
                   script: |
                     $env:PSModulePath += ";$(Build.SourcesDirectory)\resources"
                     Invoke-Pester -CI
@@ -99,6 +155,6 @@ extends:
 
               - task: PublishTestResults@2
                 inputs:
-                  testResultsFormat: 'NUnit'
-                  testResultsFiles: '**/Test*.xml'
+                  testResultsFormat: "NUnit"
+                  testResultsFiles: "**/Test*.xml"
                   failTaskOnFailedTests: true

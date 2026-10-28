@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration will modify Date and Time Settings.                  #
+# PowerShell module: Microsoft.Windows.Settings (v0.1.0-alpha)            #
+###########################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.Windows.Settings/WindowsSettings
+      directives:
+        allowPrerelease: true
+        description: Configure Date and Time Settings
+        securityContext: elevated
+      settings:
+        # Set to automatically update timezone based on location (true) or disable automatic updates (false)
+        SetTimeZoneAutomatically: false
+        # Set the timezone - use Get-TimeZone -ListAvailable to see available timezone IDs
+        # Common examples:
+        #   - "Pacific Standard Time" (US West Coast)
+        #   - "Eastern Standard Time" (US East Coast)
+        #   - "Central Standard Time" (US Central)
+        #   - "Mountain Standard Time" (US Mountain)
+        #   - "GMT Standard Time" (London)
+        #   - "Central Europe Standard Time" (Paris, Berlin)
+        #   - "China Standard Time" (Beijing)
+        #   - "Tokyo Standard Time" (Japan)
+        TimeZone: "Pacific Standard Time"
+  configurationVersion: 0.2.0

@@ -1,0 +1,48 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+- type: Microsoft.DSC.Transitional/RunCommandOnSet
+  name: Microsoft.VSCode.Dsc.Module
+  properties:
+    executable: C:\Program Files\PowerShell\7\pwsh.exe
+    arguments:
+      "0": -NoProfile
+      "1": -NoLogo
+      "2": -Command
+      "3": >-
+        if (-not (Get-Module -ListAvailable -Name Microsoft.VSCode.Dsc))
+        { Install-PSResource -Name Microsoft.VSCode.Dsc -Prerelease
+        -TrustRepository -AcceptLicense }
+      treatAsArray: true
+  metadata:
+    description: Ensure Microsoft.VSCode.Dsc module is installed
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: RemoveMsPythonPython
+  dependsOn:
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-python.python
+    Exist: false
+  metadata:
+    description: Remove Python extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: RemoveMsDotnettoolsCsharp
+  dependsOn:
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: ms-dotnettools.csharp
+    Exist: false
+  metadata:
+    description: Remove C# extension
+- type: Microsoft.VSCode.Dsc/VSCodeExtension
+  name: RemoveEamodioGitlens
+  dependsOn:
+    - Microsoft.VSCode.Dsc.Module
+  properties:
+    Name: eamodio.gitlens
+    Exist: false
+  metadata:
+    description: Remove GitLens extension

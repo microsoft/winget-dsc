@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+##################################################################################################################################
+# This v3 configuration will install the tools necessary to get started with building an app with Windows Copilot Runtime APIs   #
+# Reference: https://learn.microsoft.com/windows/ai/apis/get-started                                                             #
+#                                                                                                                                #
+# This will:                                                                                                                     #
+#     * Enables Dev Developer Mode                                                                                               #
+#     * Installs Visual Studio Community 2026                                                                                    #
+#     * Installs the WinUI / Windows App SDK workloads                                                                           #
+##################################################################################################################################
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+- type: Microsoft.DSC.Transitional/RunCommandOnSet
+  name: Microsoft.Windows.Developer.Module
+  properties:
+    executable: C:\Program Files\PowerShell\7\pwsh.exe
+    arguments:
+      "0": -NoProfile
+      "1": -NoLogo
+      "2": -Command
+      "3": >-
+        if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Developer))
+        { Install-PSResource -Name Microsoft.Windows.Developer -Prerelease
+        -TrustRepository -AcceptLicense }
+      treatAsArray: true
+  metadata:
+    description: Ensure Microsoft.Windows.Developer module is installed
+- type: Microsoft.DSC.Transitional/RunCommandOnSet
+  name: Microsoft.Windows.Settings.Module
+  properties:
+    executable: C:\Program Files\PowerShell\7\pwsh.exe
+    arguments:
+      "0": -NoProfile
+      "1": -NoLogo
+      "2": -Command
+      "3": >-
+        if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Settings))
+        { Install-PSResource -Name Microsoft.Windows.Settings -Prerelease
+        -TrustRepository -AcceptLicense }
+      treatAsArray: true
+  metadata:
+    description: Ensure Microsoft.Windows.Settings module is installed
+- type: Microsoft.DSC.Transitional/RunCommandOnSet
+  name: Microsoft.VisualStudio.DSC.Module
+  properties:
+    executable: C:\Program Files\PowerShell\7\pwsh.exe
+    arguments:
+      "0": -NoProfile
+      "1": -NoLogo
+      "2": -Command
+      "3": >-
+        if (-not (Get-Module -ListAvailable -Name Microsoft.VisualStudio.DSC))
+        { Install-PSResource -Name Microsoft.VisualStudio.DSC -Prerelease
+        -TrustRepository -AcceptLicense }
+      treatAsArray: true
+  metadata:
+    description: Ensure Microsoft.VisualStudio.DSC module is installed
+- type: Microsoft.Windows.Developer/OsVersion
+  name: OsVersion
+  dependsOn:
+    - Microsoft.Windows.Developer.Module
+  properties:
+    MinVersion: '10.0.17763'
+  metadata:
+    description: Verify min OS version requirement
+- type: Microsoft.Windows.Settings/WindowsSettings
+  name: DeveloperMode
+  dependsOn:
+    - Microsoft.Windows.Settings.Module
+    - OsVersion
+  properties:
+    DeveloperMode: true
+  metadata:
+    description: Enable Developer Mode
+    winget:
+      securityContext: elevated
+- type: Microsoft.WinGet/Package
+  name: VisualStudioCommunity
+  dependsOn:
+    - OsVersion
+  properties:
+    id: Microsoft.VisualStudio.Community
+    source: winget
+    useLatest: true
+  metadata:
+    description: Install Visual Studio 2026 Community
+    winget:
+      securityContext: elevated
+- type: Microsoft.VisualStudio.DSC/VSComponents
+  name: WorkloadsManagedDesktop
+  dependsOn:
+    - VisualStudioCommunity
+    - Microsoft.VisualStudio.DSC.Module
+  properties:
+    productId: Microsoft.VisualStudio.Product.Community
+    channelId: VisualStudio.18.Release
+    components:
+      - Microsoft.VisualStudio.Workload.ManagedDesktop
+      - Microsoft.VisualStudio.Workload.Universal
+      - Microsoft.VisualStudio.ComponentGroup.WindowsAppSDK.Cs
+  metadata:
+    description: Install required VS Workloads (ManagedDesktop, Windows App SDK)
+    winget:
+      securityContext: elevated

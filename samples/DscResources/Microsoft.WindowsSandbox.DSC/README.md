@@ -22,6 +22,10 @@ Run the configuration in PowerShell 7 using:
 get-WinGetConfiguration -File full.sandbox.winget | Invoke-WinGetConfiguration
 ```
 
+## v3 Samples
+
+Each configuration is also available in a v3 version using the dscv3 processor syntax (`sandbox.v3.winget` and `full.sandbox.v3.winget`). The v3 versions include explicit module install resources and use the updated field names (`type`, `name`, `properties`, `metadata`).
+
 ## How to use the WinGet Configuration File
 
 The following two options are available for running a WinGet Configuration file on your device.

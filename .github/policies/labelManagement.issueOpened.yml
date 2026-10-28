@@ -47,6 +47,23 @@ configuration:
             then:
               - addLabel:
                   label: Needs-CLA
+      - description: Add Copilot-Instructions label to PRs modifying Copilot instruction files
+        if:
+          - payloadType: Pull_Request
+          - or:
+              - isAction:
+                  action: Opened
+              - isAction:
+                  action: Synchronize
+          - filesMatchPattern:
+              pattern: ^\.github/(copilot-instructions\.md|instructions/.+\.instructions\.md)$
+              matchAny: true
+          - not:
+              hasLabel:
+                label: Copilot-Instructions
+        then:
+          - addLabel:
+              label: Copilot-Instructions
       - description: Add Needs-Triage to new issues
         if:
           - payloadType: Issues
@@ -55,11 +72,6 @@ configuration:
         then:
           - addLabel:
               label: Needs-Triage
-      - description: >-
-          When a pull request is opened, if the files match DevOpsPipelineDefinitions/*
-          * Add a message to the author
-          * Assign to the author
-          * Add the "Needs-Author-Feedback" label
       - description: >-
           When a PR is opened/updated, if the content is in a project folder and user is not repo admin
           * Add Project-File label

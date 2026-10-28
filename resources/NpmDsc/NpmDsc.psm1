@@ -15,10 +15,18 @@ function Assert-Npm {
 function Invoke-Npm {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$Command
+        [string[]]$Command
     )
 
-    return Invoke-Expression -Command "npm $Command"
+    $argList = @($Command | Where-Object { -not [string]::IsNullOrEmpty($_) })
+    $value = & npm @argList
+
+    if ($LASTEXITCODE -ne 0) {
+        $errors = Get-NpmErrorMessages -LogPath (GetNpmPath)
+        throw "Command 'npm $($argList -join ' ')' failed: $($errors -join '; ')"
+    }
+
+    return $value
 }
 
 function Set-PackageDirectory {
@@ -60,20 +68,24 @@ function Install-NpmPackage {
         [bool]$Global,
 
         [Parameter()]
-        [string]$Arguments
+        [string[]]$Arguments
     )
 
     $command = [List[string]]::new()
     $command.Add('install')
-    $command.Add($PackageName)
+    if (-not [string]::IsNullOrEmpty($PackageName)) {
+        $command.Add($PackageName)
+    }
 
     if ($Global) {
         $command.Add('-g')
     }
 
-    $command.Add($Arguments)
+    foreach ($a in ($Arguments | Where-Object { $_ })) {
+        $command.Add($a)
+    }
 
-    Write-Verbose -Message "Executing 'npm $command'"
+    Write-Verbose -Message "Executing 'npm $($command -join ' ')'"
 
     return Invoke-Npm -Command $command
 }
@@ -87,7 +99,7 @@ function Uninstall-NpmPackage {
         [bool]$Global,
 
         [Parameter()]
-        [string]$Arguments
+        [string[]]$Arguments
     )
 
     $command = [List[string]]::new()
@@ -98,9 +110,11 @@ function Uninstall-NpmPackage {
         $command.Add('-g')
     }
 
-    $command.Add($Arguments)
+    foreach ($a in ($Arguments | Where-Object { $_ })) {
+        $command.Add($a)
+    }
 
-    Write-Verbose -Message "Executing 'npm $command'"
+    Write-Verbose -Message "Executing 'npm $($command -join ' ')'"
 
     return Invoke-Npm -Command $command
 }
@@ -114,8 +128,11 @@ function GetNpmPath {
         } elseif (Test-Path $globalNpmCacheDir -ErrorAction SilentlyContinue) {
             return $globalNpmCacheDir
         } else {
-            $result = (Invoke-Npm -Command 'config list --json' | ConvertFrom-Json -ErrorAction SilentlyContinue).cache
-            if (Test-Path $result -ErrorAction SilentlyContinue) {
+            # Call 'npm' directly rather than through Invoke-Npm: this is an error-reporting helper
+            # and Invoke-Npm's failure path calls back into GetNpmPath, which would recurse indefinitely.
+            $cacheRoot = (& npm config list --json --logs-max=0 2>$null | ConvertFrom-Json -ErrorAction SilentlyContinue).cache
+            $result = if ($cacheRoot) { Join-Path $cacheRoot '_logs' } else { $null }
+            if ($result -and (Test-Path $result -ErrorAction SilentlyContinue)) {
                 return $result
             } else {
                 return $null
@@ -184,6 +201,42 @@ enum Ensure {
 #endRegion Enums
 
 #region DSCResources
+<#
+    .SYNOPSIS
+        The `NpmInstall` DSC resource is used to install all npm packages listed in a `package.json` file.
+
+    .DESCRIPTION
+        The `NpmInstall` DSC resource invokes `npm install` to install all packages defined in a
+        `package.json` file in the specified directory or globally. It is inherently idempotent
+        as npm will resolve all package dependencies on each run.
+
+        ## Requirements
+
+        * Target machine must have Node.js and npm installed.
+
+    .PARAMETER SID
+        The security identifier. This is a key property and should not be set manually.
+
+    .PARAMETER Ensure
+        Specifies whether the npm packages should be present or absent. Defaults to `Present`.
+
+    .PARAMETER Global
+        Indicates whether to install packages globally.
+
+    .PARAMETER PackageDirectory
+        The directory containing the `package.json` file. If not specified, the current directory is used.
+
+    .PARAMETER Arguments
+        Additional arguments to pass to `npm install`, provided as an array of strings where each
+        element is a separate argument.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName NpmDsc -Name NpmInstall -Method Set -Property @{
+            PackageDirectory = 'C:\repos\my-project'
+        }
+
+        This example installs all npm packages defined in `C:\repos\my-project\package.json`.
+#>
 [DSCResource()]
 class NpmInstall {
     [DscProperty()]
@@ -199,7 +252,7 @@ class NpmInstall {
     [string]$PackageDirectory
 
     [DscProperty()]
-    [string]$Arguments
+    [string[]]$Arguments
 
     [NpmInstall] Get() {
         Assert-Npm
@@ -266,6 +319,10 @@ class NpmInstall {
 .PARAMETER Global
     Indicates whether the npm package should be installed globally.
 
+.PARAMETER Arguments
+    Additional arguments to pass to `npm install` or `npm uninstall`, provided as an array of strings
+    where each element is a separate argument.
+
 .EXAMPLE
     PS C:\> Invoke-DscResource -ModuleName NpmDsc -Name NpmPackage -Method Set -Property @{ Name = 'react' }
 
@@ -299,7 +356,7 @@ class NpmPackage {
     [bool]$Global
 
     [DscProperty()]
-    [string]$Arguments
+    [string[]]$Arguments
 
     [NpmPackage] Get() {
         Assert-Npm
@@ -355,7 +412,7 @@ class NpmPackage {
     static [NpmPackage[]] Export() {
         $packages = Get-InstalledNpmPackages -Global $true | ConvertFrom-Json -AsHashtable | Select-Object -ExpandProperty dependencies
         $out = [List[NpmPackage]]::new()
-        $globalDir = (Join-Path -Path (Invoke-Npm -Command 'config get prefix') -ChildPath 'node_modules')
+        $globalDir = (Join-Path -Path (Invoke-Npm -Command @('config', 'get', 'prefix')) -ChildPath 'node_modules')
         foreach ($package in $packages.GetEnumerator()) {
             $in = [NpmPackage]@{
                 Name             = $package.Name
@@ -374,15 +431,19 @@ class NpmPackage {
 
     [string] WhatIf() {
         if ($this.Ensure -eq [Ensure]::Present) {
-            $whatIfState = Install-NpmPackage -PackageName $this.Name -Global $this.Global -Arguments '--dry-run'
-
             $out = @{
                 Name      = $this.Name
                 _metaData = @{
                     whatif = @()
                 }
             }
-            $out._metaData.whatif = $LASTEXITCODE -ne 0 ? (GetNpmWhatIfResponse) : ($whatIfState | Where-Object { $_.Trim() -ne '' }) # Removes empty lines from response
+
+            try {
+                $whatIfState = Install-NpmPackage -PackageName $this.Name -Global $this.Global -Arguments @('--dry-run')
+                $out._metaData.whatif = $whatIfState | Where-Object { $_.Trim() -ne '' } # Removes empty lines from response
+            } catch {
+                $out._metaData.whatif = GetNpmWhatIfResponse
+            }
         } else {
             # Uninstall does not have --dry-run param
             $out = @{}

@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration will install common Visual Studio Code extensions.   #
+# PowerShell module: Microsoft.VSCode.Dsc (v0.1.5-alpha)                  #
+###########################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Visual Studio Code
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Python extension
+        allowPrerelease: true
+      settings:
+        Name: ms-python.python
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install C# extension
+        allowPrerelease: true
+      settings:
+        Name: ms-dotnettools.csharp
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install JavaScript/TypeScript extension
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode.vscode-typescript-next
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install GitLens extension
+        allowPrerelease: true
+      settings:
+        Name: eamodio.gitlens
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Prettier extension
+        allowPrerelease: true
+      settings:
+        Name: esbenp.prettier-vscode
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install Live Server extension
+        allowPrerelease: true
+      settings:
+        Name: ritwickdey.liveserver
+  configurationVersion: 0.2.0

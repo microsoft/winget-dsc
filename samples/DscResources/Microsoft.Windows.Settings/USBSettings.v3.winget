@@ -1,0 +1,59 @@
+# This configuration file enables USB notifications in Windows Settings.
+# It configures two settings:
+# 1. NotifyOnUsbErrors: Controls whether to show notifications when USB errors occur
+# 2. NotifyOnWeakCharger: Controls whether to show notifications when using a weak USB charger
+#
+# Registry path: HKCU:\Software\Microsoft\Shell\USB\
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: Microsoft.Windows.Developer.Module
+    properties:
+      executable: C:\Program Files\PowerShell\7\pwsh.exe
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Developer))
+          { Install-PSResource -Name Microsoft.Windows.Developer -Prerelease
+          -TrustRepository -AcceptLicense }
+        treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.Windows.Developer module is installed
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: Microsoft.Windows.Settings.Module
+    properties:
+      executable: C:\Program Files\PowerShell\7\pwsh.exe
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.Windows.Settings))
+          { Install-PSResource -Name Microsoft.Windows.Settings -Prerelease
+          -TrustRepository -AcceptLicense }
+        treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.Windows.Settings module is installed
+  - type: Microsoft.Windows.Developer/OsVersion
+    name: OsVersion
+    dependsOn:
+      - Microsoft.Windows.Developer.Module
+    metadata:
+      description: Verify OS version
+  - type: Microsoft.Windows.Settings/WindowsSettings
+    name: USBSettings
+    dependsOn:
+      - Microsoft.Windows.Settings.Module
+      - OsVersion
+    properties:
+      NotifyOnUsbErrors: true
+      NotifyOnWeakCharger: true
+    metadata:
+      description: Configure USB notification settings

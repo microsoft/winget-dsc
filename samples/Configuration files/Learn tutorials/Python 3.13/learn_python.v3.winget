@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+# Reference: https://learn.microsoft.com/windows/python/beginners
+
+##########################################################################################################
+# This configuration will install the tools necessary to get started with Python development on Windows  #
+#                                                                                                        #
+# This will:                                                                                             #
+#     * Install Python                                                                                   #
+#     * Install Visual Studio Code                                                                       #
+#     * Install Visual Studio Code extension for Python                                                  #
+#                                                                                                        #
+##########################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: InstallPython313
+    properties:
+      id: 9PNRBTZXMB4Z
+      source: msstore
+      useLatest: true
+    metadata:
+      description: Install Python 3.13
+
+  - type: Microsoft.WinGet/Package
+    name: InstallVisualStudioCode
+    properties:
+      id: Microsoft.VisualStudioCode
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Visual Studio Code
+
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: InstallMicrosoftVSCodeDscModule
+    properties:
+      executable: 'C:\Program Files\PowerShell\7\pwsh.exe'
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.VSCode.Dsc))
+          { Install-PSResource -Name Microsoft.VSCode.Dsc -Prerelease
+          -TrustRepository -AcceptLicense }
+      treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.VSCode.Dsc module is installed
+
+  - type: Microsoft.VSCode.Dsc/VSCodeExtension
+    name: InstallPythonExtension
+    dependsOn:
+      - InstallVisualStudioCode
+      - InstallMicrosoftVSCodeDscModule
+    properties:
+      Name: ms-python.python
+    metadata:
+      description: Install Python Visual Studio Code extension

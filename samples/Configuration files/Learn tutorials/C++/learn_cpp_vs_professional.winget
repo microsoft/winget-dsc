@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+# Reference: https://learn.microsoft.com/cpp/build/vscpp-step-0-installation?view=msvc-170
+
+##########################################################################################################
+# This configuration will install the tools necessary to get started with C++ development on Windows.    #
+# This configuration requires administrative privileges to install Visual Studio and workloads.          #
+#                                                                                                        #
+# This will:                                                                                             #
+#     * Install Visual Studio Professional 2022                                                             #
+#     * Install the NativeDesktop workload to Visual Studio Professional 2022                               #
+#                                                                                                        #
+##########################################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: VisualStudio
+      directives:
+        description: Install Visual Studio 2022 Professional
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudio.2022.Professional
+        source: winget
+    - resource: Microsoft.VisualStudio.DSC/VSComponents
+      dependsOn:
+        - VisualStudio
+      directives:
+        description: Install Desktop development with C++ workload
+        securityContext: elevated
+      settings:
+        productId: Microsoft.VisualStudio.Product.Professional
+        channelId: VisualStudio.17.Release
+        components: Microsoft.VisualStudio.Workload.NativeDesktop
+        includeRecommended: true
+  configurationVersion: 0.2.0

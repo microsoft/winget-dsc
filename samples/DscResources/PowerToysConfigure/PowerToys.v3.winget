@@ -1,0 +1,50 @@
+################################################################################
+# This DSC config file will install Microsoft.PowerToys, then configure, by:   #
+# Disabling the ShortcutGuide and setting it to full opacity, then enabling    #
+# Fancy Zones and setting the Fancy Zone Editor hotkey to Shift+Ctrl+Alt+F.    #
+#                                                                              #
+################################################################################
+#
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: PowerToys
+    properties:
+      id: Microsoft.PowerToys
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install PowerToys
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: PowerToysConfigure.Module
+    properties:
+      executable: C:\Program Files\PowerShell\7\pwsh.exe
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name PowerToysConfigure))
+          { Install-PSResource -Name PowerToysConfigure -Prerelease
+          -TrustRepository -AcceptLicense }
+        treatAsArray: true
+    metadata:
+      description: Ensure PowerToysConfigure module is installed
+  - type: PowerToysConfigure
+    name: ConfigurePowerToys
+    dependsOn:
+      - PowerToys
+      - PowerToysConfigure.Module
+    properties:
+      ShortcutGuide:
+        Enabled: false
+        OverlayOpacity: 1
+      FancyZones:
+        Enabled: true
+        FancyzonesEditorHotkey: "Shift+Ctrl+Alt+F"
+    metadata:
+      description: Configure PowerToys

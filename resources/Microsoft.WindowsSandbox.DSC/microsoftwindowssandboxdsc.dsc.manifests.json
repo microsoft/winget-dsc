@@ -1,0 +1,98 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.WindowsSandbox.DSC/WindowsSandbox",
+      "author": "DscSamples",
+      "description": "The `WindowsSandbox` DSC resource is used to manage a Windows Sandbox instance.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["Ensure"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the Windows Sandbox should be running or not. This is a key property.\r\n        Defaults to `Present`."
+            },
+            "WsbFilePath": {
+              "type": "string",
+              "title": "WsbFilePath",
+              "description": "The path to an existing `.wsb` configuration file to load."
+            },
+            "HostFolder": {
+              "type": "string",
+              "title": "HostFolder",
+              "description": "The path to a host folder to map into the sandbox."
+            },
+            "SandboxFolder": {
+              "type": "string",
+              "title": "SandboxFolder",
+              "description": "The path inside the sandbox to map the host folder to."
+            },
+            "ReadOnly": {
+              "type": "string",
+              "title": "ReadOnly",
+              "description": "Specifies whether the mapped folder should be read-only."
+            },
+            "LogonCommand": {
+              "type": "string",
+              "title": "LogonCommand",
+              "description": "A command to run when the sandbox starts."
+            },
+            "MemoryInMB": {
+              "type": "string",
+              "title": "MemoryInMB",
+              "description": "The amount of memory in megabytes to allocate to the sandbox."
+            },
+            "vGPU": {
+              "type": "string",
+              "title": "vGPU",
+              "description": "Enables or disables virtual GPU support."
+            },
+            "AudioInput": {
+              "type": "string",
+              "title": "AudioInput",
+              "description": "Enables or disables audio input in the sandbox."
+            },
+            "ClipboardRedirection": {
+              "type": "string",
+              "title": "ClipboardRedirection",
+              "description": "Enables or disables clipboard sharing between host and sandbox."
+            },
+            "Networking": {
+              "type": "string",
+              "title": "Networking",
+              "description": "Enables or disables networking in the sandbox."
+            },
+            "PrinterRedirection": {
+              "type": "string",
+              "title": "PrinterRedirection",
+              "description": "Enables or disables printer access in the sandbox."
+            },
+            "ProtectedClient": {
+              "type": "string",
+              "title": "ProtectedClient",
+              "description": "Enables or disables protected client mode."
+            },
+            "VideoInput": {
+              "type": "string",
+              "title": "VideoInput",
+              "description": "Enables or disables video input in the sandbox."
+            }
+          },
+          "description": "The `WindowsSandbox` DSC resource is used to manage a Windows Sandbox instance.",
+          "title": "Microsoft.WindowsSandbox.DSC/WindowsSandbox"
+        }
+      },
+      "path": "Microsoft.WindowsSandbox.DSC.psd1"
+    }
+  ]
+}

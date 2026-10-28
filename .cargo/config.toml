@@ -1,0 +1,8 @@
+[registries]
+WinGetDscDependencies = { index = "sparse+https://pkgs.dev.azure.com/shine-oss/winget-dsc/_packaging/WinGetDscDependencies/Cargo/index/" }
+
+[source.crates-io]
+replace-with = "WinGetDscDependencies"
+
+[registry]
+global-credential-providers = ["cargo:token", "cargo:wincred"]

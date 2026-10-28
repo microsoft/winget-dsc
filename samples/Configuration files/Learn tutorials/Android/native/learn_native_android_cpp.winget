@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################################################################################
+# This configuration will install the tools necessary to get started with native Android development on Windows with native C/C++ support #
+# Reference: https://learn.microsoft.com/en-us/windows/android/native-android#use-c-or-c-for-android-game-development                     #
+#                                                                                                                                         #
+# This will:                                                                                                                              #
+#     * Install Android Studio                                                                                                            #
+#     * Install OpenJDK 17                                                                                                                #
+#     * Install Git                                                                                                                       #
+#     * Install CMake (required for native builds)                                                                                        #
+#     * Install LLVM/LLDB (debugger for native code)                                                                                      #
+#                                                                                                                                         #
+###########################################################################################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Android Studio
+      settings:
+        id: Google.AndroidStudio
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install OpenJDK 17
+      settings:
+        id: Microsoft.OpenJDK.17
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Git
+      settings:
+        id: Git.Git
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install CMake (required for native builds)
+      settings:
+        id: Kitware.CMake
+        source: winget
+        ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install LLVM (debugger for native code)
+      settings:
+        id: LLVM.LLVM
+        source: winget
+        ensure: Present
+
+  configurationVersion: 0.2.0

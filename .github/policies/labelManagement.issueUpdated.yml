@@ -119,10 +119,10 @@ configuration:
           - payloadType: Issue_Comment
           - or:
               - commentContains:
-                  pattern: '\/[a|A][z|Z][p|P] [r|R][u|U][n|N]'
+                  pattern: '(?in)\/azp run'
                   isRegex: True
               - commentContains:
-                  pattern: '\/[a|A][z|Z][u|U][r|R][e|E][p|P][i|I][p|P][e|E][l|L][i|I][n|N][e|E][s|S] [r|R][u|U][n|N]'
+                  pattern: '(?in)\/azurepipelines run'
                   isRegex: True
           - not:
               isActivitySender:

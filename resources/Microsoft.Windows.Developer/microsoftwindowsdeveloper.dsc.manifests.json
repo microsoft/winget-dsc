@@ -1,0 +1,638 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/DeveloperMode",
+      "author": "Microsoft Corporation",
+      "description": "The `DeveloperMode` DSC resource is used to enable or disable Windows Developer Mode.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether Developer Mode should be enabled (`Present`) or disabled (`Absent`).\r\n        Defaults to `Present`."
+            },
+            "IsEnabled": {
+              "type": "boolean",
+              "title": "IsEnabled",
+              "readOnly": true,
+              "description": "A read-only property indicating whether Developer Mode is currently enabled.\r\n        This property is not configurable."
+            }
+          },
+          "description": "The `DeveloperMode` DSC resource is used to enable or disable Windows Developer Mode.",
+          "title": "Microsoft.Windows.Developer/DeveloperMode"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/OsVersion",
+      "author": "Microsoft Corporation",
+      "description": "The `OsVersion` DSC resource is used to assert a minimum Windows operating system version requirement.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID", "MinVersion"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "MinVersion": {
+              "type": "string",
+              "title": "MinVersion",
+              "description": "The minimum required version of the operating system. This is a mandatory property."
+            },
+            "OsVersion": {
+              "type": "string",
+              "title": "OsVersion",
+              "readOnly": true,
+              "description": "A read-only property indicating the current operating system version.\r\n        This property is not configurable."
+            }
+          },
+          "description": "The `OsVersion` DSC resource is used to assert a minimum Windows operating system version requirement.",
+          "title": "Microsoft.Windows.Developer/OsVersion"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/Taskbar",
+      "author": "Microsoft Corporation",
+      "description": "The `Taskbar` DSC resource is used to manage Windows taskbar settings.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Alignment": {
+              "type": "string",
+              "enum": ["KeepCurrentValue", "Left", "Middle"],
+              "title": "Alignment",
+              "description": "Sets the taskbar alignment. Accepted values are `Left` or `Middle`.\r\n        Defaults to `KeepCurrentValue`."
+            },
+            "HideLabelsMode": {
+              "type": "string",
+              "enum": ["KeepCurrentValue", "Always", "WhenFull", "Never"],
+              "title": "HideLabelsMode",
+              "description": "Sets the taskbar button label hide behavior. Accepted values are `Always`, `WhenFull`, or `Never`.\r\n        Defaults to `KeepCurrentValue`."
+            },
+            "SearchboxMode": {
+              "type": "string",
+              "enum": [
+                "KeepCurrentValue",
+                "Hide",
+                "ShowIconOnly",
+                "SearchBox",
+                "ShowIconAndLabel"
+              ],
+              "title": "SearchboxMode",
+              "description": "Sets the search box display mode. Accepted values are `Hide`, `ShowIconOnly`, `SearchBox`, or `ShowIconAndLabel`.\r\n        Defaults to `KeepCurrentValue`."
+            },
+            "TaskViewButton": {
+              "type": "string",
+              "enum": ["KeepCurrentValue", "Hide", "Show"],
+              "title": "TaskViewButton",
+              "description": "Shows or hides the Task View button on the taskbar.\r\n        Defaults to `KeepCurrentValue`."
+            },
+            "WidgetsButton": {
+              "type": "string",
+              "enum": ["KeepCurrentValue", "Hide", "Show"],
+              "title": "WidgetsButton",
+              "description": "Shows or hides the Widgets button on the taskbar.\r\n        Defaults to `KeepCurrentValue`."
+            },
+            "RestartExplorer": {
+              "type": "boolean",
+              "title": "RestartExplorer",
+              "description": "Specifies whether to restart Windows Explorer to apply changes. Defaults to `$false`."
+            },
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            }
+          },
+          "description": "The `Taskbar` DSC resource is used to manage Windows taskbar settings.",
+          "title": "Microsoft.Windows.Developer/Taskbar"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/WindowsExplorer",
+      "author": "Microsoft Corporation",
+      "description": "The `WindowsExplorer` DSC resource is used to manage Windows Explorer settings.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "FileExtensions": {
+              "type": "string",
+              "enum": ["KeepCurrentValue", "Hide", "Show"],
+              "title": "FileExtensions",
+              "description": "Shows or hides file extensions in File Explorer. Defaults to `KeepCurrentValue`."
+            },
+            "HiddenFiles": {
+              "type": "string",
+              "enum": ["KeepCurrentValue", "Hide", "Show"],
+              "title": "HiddenFiles",
+              "description": "Shows or hides hidden files and folders in File Explorer. Defaults to `KeepCurrentValue`."
+            },
+            "ItemCheckBoxes": {
+              "type": "string",
+              "enum": ["KeepCurrentValue", "Hide", "Show"],
+              "title": "ItemCheckBoxes",
+              "description": "Shows or hides item checkboxes in File Explorer. Defaults to `KeepCurrentValue`."
+            },
+            "RestartExplorer": {
+              "type": "boolean",
+              "title": "RestartExplorer",
+              "description": "Specifies whether to restart Windows Explorer to apply changes. Defaults to `$false`."
+            },
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            }
+          },
+          "description": "The `WindowsExplorer` DSC resource is used to manage Windows Explorer settings.",
+          "title": "Microsoft.Windows.Developer/WindowsExplorer"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/UserAccessControl",
+      "author": "Microsoft Corporation",
+      "description": "The `UserAccessControl` DSC resource is used to manage the User Account Control (UAC) prompt behavior.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "AdminConsentPromptBehavior": {
+              "type": "string",
+              "enum": [
+                "KeepCurrentValue",
+                "NoCredOrConsentRequired",
+                "RequireCredOnSecureDesktop",
+                "RequireConsentOnSecureDesktop",
+                "RequireCred",
+                "RequireConsent",
+                "RequireConsentForNonWindowsBinaries"
+              ],
+              "title": "AdminConsentPromptBehavior",
+              "description": "Specifies the UAC admin consent prompt behavior. Accepted values are `NoCredOrConsentRequired`,\r\n        `RequireCredOnSecureDesktop`, `RequireConsentOnSecureDesktop`, `RequireCred`,\r\n        `RequireConsent`, or `RequireConsentForNonWindowsBinaries`. Defaults to `KeepCurrentValue`."
+            }
+          },
+          "description": "The `UserAccessControl` DSC resource is used to manage the User Account Control (UAC) prompt behavior.",
+          "title": "Microsoft.Windows.Developer/UserAccessControl"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/EnableDarkMode",
+      "author": "Microsoft Corporation",
+      "description": "The `EnableDarkMode` DSC resource is used to enable or disable Windows dark mode.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether dark mode should be enabled (`Present`) or disabled (`Absent`).\r\n        Defaults to `Present`."
+            },
+            "RestartExplorer": {
+              "type": "boolean",
+              "title": "RestartExplorer",
+              "description": "Specifies whether to restart Windows Explorer to apply changes. Defaults to `$false`."
+            }
+          },
+          "description": "The `EnableDarkMode` DSC resource is used to enable or disable Windows dark mode.",
+          "title": "Microsoft.Windows.Developer/EnableDarkMode"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/ShowSecondsInClock",
+      "author": "Microsoft Corporation",
+      "description": "The `ShowSecondsInClock` DSC resource is used to show or hide seconds in the taskbar clock.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether seconds should be shown (`Present`) or hidden (`Absent`) in the clock.\r\n        Defaults to `Present`."
+            }
+          },
+          "description": "The `ShowSecondsInClock` DSC resource is used to show or hide seconds in the taskbar clock.",
+          "title": "Microsoft.Windows.Developer/ShowSecondsInClock"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/EnableRemoteDesktop",
+      "author": "Microsoft Corporation",
+      "description": "The `EnableRemoteDesktop` DSC resource is used to enable or disable Remote Desktop connections.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether Remote Desktop should be enabled (`Present`) or disabled (`Absent`).\r\n        Defaults to `Present`."
+            }
+          },
+          "description": "The `EnableRemoteDesktop` DSC resource is used to enable or disable Remote Desktop connections.",
+          "title": "Microsoft.Windows.Developer/EnableRemoteDesktop"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/EnableLongPathSupport",
+      "author": "Microsoft Corporation",
+      "description": "The `EnableLongPathSupport` DSC resource is used to enable or disable Windows long path support.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether long path support should be enabled (`Present`) or disabled (`Absent`).\r\n        Defaults to `Present`."
+            }
+          },
+          "description": "The `EnableLongPathSupport` DSC resource is used to enable or disable Windows long path support.",
+          "title": "Microsoft.Windows.Developer/EnableLongPathSupport"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/PowerPlanSetting",
+      "author": "Microsoft Corporation",
+      "description": "The `PowerPlanSetting` DSC resource is used to manage Windows power plan settings.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["Name", "PowerSource", "SettingValue"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": "string",
+              "enum": ["DisplayTimeout", "SleepTimeout"],
+              "title": "Name",
+              "description": "The name of the power plan setting to configure. Accepted values are `DisplayTimeout`\r\n        or `SleepTimeout`. This is a key and mandatory property."
+            },
+            "PowerSource": {
+              "type": "string",
+              "enum": ["PluggedIn", "Battery", "All"],
+              "title": "PowerSource",
+              "description": "The power source for the setting. Accepted values are `PluggedIn`, `Battery`, or `All`.\r\n        This is a mandatory property."
+            },
+            "SettingValue": {
+              "type": "integer",
+              "title": "SettingValue",
+              "description": "The timeout value in seconds. This is a mandatory property."
+            },
+            "PluggedInValue": {
+              "type": "integer",
+              "title": "PluggedInValue",
+              "readOnly": true,
+              "description": "A read-only property indicating the current plugged-in timeout value. This property is not configurable."
+            },
+            "BatteryValue": {
+              "type": "integer",
+              "title": "BatteryValue",
+              "readOnly": true,
+              "description": "A read-only property indicating the current battery timeout value. This property is not configurable."
+            }
+          },
+          "description": "The `PowerPlanSetting` DSC resource is used to manage Windows power plan settings.",
+          "title": "Microsoft.Windows.Developer/PowerPlanSetting"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/WindowsCapability",
+      "author": "Microsoft Corporation",
+      "description": "The `WindowsCapability` DSC resource is used to install or remove Windows optional features.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["Name"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": "string",
+              "title": "Name",
+              "description": "The name of the Windows capability to manage. This is a key and mandatory property."
+            },
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the capability should be installed (`Present`) or removed (`Absent`).\r\n        Defaults to `Present`."
+            }
+          },
+          "description": "The `WindowsCapability` DSC resource is used to install or remove Windows optional features.",
+          "title": "Microsoft.Windows.Developer/WindowsCapability"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/NetConnectionProfile",
+      "author": "Microsoft Corporation",
+      "description": "The `NetConnectionProfile` DSC resource is used to manage the network connection profile for a network adapter.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID", "InterfaceAlias", "NetworkCategory"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "InterfaceAlias": {
+              "type": "string",
+              "title": "InterfaceAlias",
+              "description": "The alias of the network interface to configure. This is a mandatory property."
+            },
+            "NetworkCategory": {
+              "type": "string",
+              "title": "NetworkCategory",
+              "description": "The network category to assign. Accepted values are `Public`, `Private`, or `DomainAuthenticated`.\r\n        This is a mandatory property."
+            }
+          },
+          "description": "The `NetConnectionProfile` DSC resource is used to manage the network connection profile for a network adapter.",
+          "title": "Microsoft.Windows.Developer/NetConnectionProfile"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/AdvancedNetworkSharingSetting",
+      "author": "Microsoft Corporation",
+      "description": "The `AdvancedNetworkSharingSetting` DSC resource is used to manage Windows advanced network sharing settings.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["Name"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": "string",
+              "enum": ["NetworkDiscovery", "FileAndPrinterSharing"],
+              "title": "Name",
+              "description": "The advanced sharing setting to configure. Accepted values are `NetworkDiscovery`\r\n        or `FileAndPrinterSharing`. This is a key and mandatory property."
+            },
+            "Profiles": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "title": "Profiles",
+              "description": "The network profiles for which the setting should be enabled (e.g., `Domain`, `Private`, `Public`)."
+            },
+            "EnabledProfiles": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "title": "EnabledProfiles",
+              "readOnly": true,
+              "description": "A read-only property listing the profiles for which the setting is currently enabled.\r\n        This property is not configurable."
+            }
+          },
+          "description": "The `AdvancedNetworkSharingSetting` DSC resource is used to manage Windows advanced network sharing settings.",
+          "title": "Microsoft.Windows.Developer/AdvancedNetworkSharingSetting"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    },
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Developer/FirewallRule",
+      "author": "Microsoft Corporation",
+      "description": "The `FirewallRule` DSC resource is used to create, modify, or remove Windows Firewall rules.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["Name"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": "string",
+              "title": "Name",
+              "description": "The unique name of the firewall rule. This is a key and mandatory property."
+            },
+            "DisplayName": {
+              "type": "string",
+              "title": "DisplayName",
+              "description": "The display name of the firewall rule."
+            },
+            "Action": {
+              "type": "string",
+              "enum": ["NotConfigured", "Allow", "Block"],
+              "title": "Action",
+              "description": "The action for the firewall rule. Accepted values are `NotConfigured`, `Allow`, or `Block`."
+            },
+            "Description": {
+              "type": "string",
+              "title": "Description",
+              "description": "A description for the firewall rule."
+            },
+            "Direction": {
+              "type": "string",
+              "enum": ["Inbound", "Outbound"],
+              "title": "Direction",
+              "description": "The direction of the firewall rule. Accepted values are `Inbound` or `Outbound`."
+            },
+            "Enabled": {
+              "type": "boolean",
+              "title": "Enabled",
+              "description": "Specifies whether the firewall rule is enabled."
+            },
+            "Ensure": {
+              "type": "string",
+              "enum": ["Absent", "Present"],
+              "title": "Ensure",
+              "description": "Specifies whether the firewall rule should be present or absent. Defaults to `Present`."
+            },
+            "LocalPort": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "title": "LocalPort",
+              "description": "The local ports to which the rule applies."
+            },
+            "Profiles": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "title": "Profiles",
+              "description": "The network profiles to which the rule applies (e.g., `Domain`, `Private`, `Public`)."
+            },
+            "Protocol": {
+              "type": "string",
+              "title": "Protocol",
+              "description": "The protocol for the firewall rule (e.g., `TCP`, `UDP`)."
+            }
+          },
+          "description": "The `FirewallRule` DSC resource is used to create, modify, or remove Windows Firewall rules.",
+          "title": "Microsoft.Windows.Developer/FirewallRule"
+        }
+      },
+      "path": "Microsoft.Windows.Developer.psd1"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+#################################################################################################################
+# This v3 configuration will install the tools necessary to develop Android apps with React Native                 #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/react-native-for-android      #
+#                                                                                                               #
+# This will:                                                                                                    #
+#     * Install Android Studio                                                                                  #
+#     * Install OpenJDK 17                                                                                      #
+#     * Install Node.js LTS                                                                                     #
+#     * Install Git                                                                                             #
+#     * Install Windows Terminal                                                                                #
+#     * Install Visual Studio Code                                                                              #
+#     * Updates the user's PATH environment variables via PowerShell                                            #
+#                                                                                                               #
+#################################################################################################################
+
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: InstallAndroidStudio
+    properties:
+      id: Google.AndroidStudio
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Android Studio
+
+  - type: Microsoft.WinGet/Package
+    name: InstallOpenJDK17
+    properties:
+      id: Microsoft.OpenJDK.17
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install OpenJDK 17
+
+  - type: Microsoft.WinGet/Package
+    name: InstallNodeJSLTS
+    properties:
+      id: OpenJS.NodeJS.LTS
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Node.js LTS
+
+  - type: Microsoft.WinGet/Package
+    name: InstallGit
+    properties:
+      id: Git.Git
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Git
+      winget:
+        securityContext: elevated
+
+  - type: Microsoft.WinGet/Package
+    name: InstallWindowsTerminal
+    properties:
+      id: Microsoft.WindowsTerminal
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Windows Terminal
+
+  - type: Microsoft.WinGet/Package
+    name: InstallVisualStudioCode
+    properties:
+      id: Microsoft.VisualStudioCode
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Visual Studio Code
+
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: SetAndroidHomeAndPath
+    properties:
+      executable: 'C:\Program Files\PowerShell\7\pwsh.exe'
+      arguments:
+        - -NoProfile
+        - -NoLogo
+        - -Command
+        - |
+            $androidHomePath = "$Env:LOCALAPPDATA\Android\Sdk"
+            $platformToolsPath = "$androidHomePath\platform-tools"
+            $currentAndroidHome = [Environment]::GetEnvironmentVariable("ANDROID_HOME", "User")
+            $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+
+            if ($currentAndroidHome -ne $androidHomePath) {
+                [Environment]::SetEnvironmentVariable("ANDROID_HOME", $androidHomePath, "User")
+                Write-Host "ANDROID_HOME set to $androidHomePath."
+            } else {
+                Write-Host "ANDROID_HOME already set to $androidHomePath."
+            }
+
+            $pathEntries = @()
+            if (-not [string]::IsNullOrWhiteSpace($currentPath)) {
+                $pathEntries = $currentPath -split ';' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+            }
+
+            if ($pathEntries -notcontains $platformToolsPath) {
+                $newPath = if ($pathEntries.Count -gt 0) { ($pathEntries + $platformToolsPath) -join ';' } else { $platformToolsPath }
+                [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+                Write-Host "platform-tools path added to PATH: $newPath."
+            } else {
+                Write-Host "platform-tools path already exists in PATH: $platformToolsPath."
+            }
+    metadata:
+      description: Set ANDROID_HOME and update PATH

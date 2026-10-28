@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+
+#####################################################################################################################
+# This configuration will install Visual Studio Code and recommended extensions/tools for React Native for Windows  #
+# Reference: https://learn.microsoft.com/en-us/windows/dev-environment/javascript/react-native-for-windows          #
+#                                                                                                                   #
+# This will:                                                                                                        #
+#     * Install Visual Studio Code                                                                                  #
+#     * Install Node.js LTS                                                                                         #
+#     * Install Windows Terminal                                                                                    #
+#     * Install React Native Tools extension for VS Code (msjsdiag.vscode-react-native)                             #
+#                                                                                                                   #
+#####################################################################################################################
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - type: Microsoft.WinGet/Package
+    name: InstallVisualStudioCode
+    properties:
+      id: Microsoft.VisualStudioCode
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Visual Studio Code
+
+  - type: Microsoft.WinGet/Package
+    name: InstallNodeJSLTS
+    properties:
+      id: OpenJS.NodeJS.LTS
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Node.js LTS
+
+  - type: Microsoft.WinGet/Package
+    name: InstallWindowsTerminal
+    properties:
+      id: Microsoft.WindowsTerminal
+      source: winget
+      useLatest: true
+    metadata:
+      description: Install Windows Terminal
+
+  - type: Microsoft.DSC.Transitional/RunCommandOnSet
+    name: EnsureMicrosoftVSCodeDscModule
+    properties:
+      executable: 'C:\Program Files\PowerShell\7\pwsh.exe'
+      arguments:
+        "0": -NoProfile
+        "1": -NoLogo
+        "2": -Command
+        "3": >-
+          if (-not (Get-Module -ListAvailable -Name Microsoft.VSCode.Dsc))
+          { Install-PSResource -Name Microsoft.VSCode.Dsc -Prerelease
+          -TrustRepository -AcceptLicense }
+      treatAsArray: true
+    metadata:
+      description: Ensure Microsoft.VSCode.Dsc module is installed
+
+  - type: Microsoft.VSCode.Dsc/VSCodeExtension
+    name: InstallReactNativeToolsExtension
+    dependsOn:
+      - InstallVisualStudioCode
+      - EnsureMicrosoftVSCodeDscModule
+    properties:
+      Name: msjsdiag.vscode-react-native
+    metadata:
+      description: Install React Native Tools extension for VS Code (msjsdiag.vscode-react-native)

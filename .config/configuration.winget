@@ -9,6 +9,7 @@ properties:
       id: install-git
       directives:
         description: Install Git # Although the user probably already has git installed, it's possible that they don't
+        securityContext: elevated
       settings:
         id: Git.Git
         source: winget

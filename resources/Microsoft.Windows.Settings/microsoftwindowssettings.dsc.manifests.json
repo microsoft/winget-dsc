@@ -1,0 +1,145 @@
+{
+  "adaptedResources": [
+    {
+      "requireAdapter": "Microsoft.Adapter/PowerShell",
+      "$schema": "https://aka.ms/dsc/schemas/v3/bundled/adaptedresource/manifest.json",
+      "kind": "resource",
+      "version": "0.1.0",
+      "type": "Microsoft.Windows.Settings/WindowsSettings",
+      "author": "Microsoft Corporation",
+      "description": "The `WindowsSettings` DSC resource is used to manage common Windows settings.",
+      "capabilities": ["get", "test", "set"],
+      "schema": {
+        "embedded": {
+          "type": "object",
+          "required": ["SID"],
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "SID": {
+              "type": "string",
+              "title": "SID",
+              "description": "The security identifier. This is a key property and should not be set manually."
+            },
+            "TaskbarAlignment": {
+              "type": "string",
+              "title": "TaskbarAlignment",
+              "description": "Sets the taskbar alignment. Accepted values are `Left` or `Center`."
+            },
+            "AppColorMode": {
+              "type": "string",
+              "title": "AppColorMode",
+              "description": "Sets the color mode for applications. Accepted values are `Dark` or `Light`."
+            },
+            "SystemColorMode": {
+              "type": "string",
+              "title": "SystemColorMode",
+              "description": "Sets the color mode for the Windows system UI. Accepted values are `Dark` or `Light`."
+            },
+            "DeveloperMode": {
+              "type": "string",
+              "title": "DeveloperMode",
+              "description": "Enables or disables Developer Mode. Requires Administrator privileges."
+            },
+            "SetTimeZoneAutomatically": {
+              "type": "string",
+              "title": "SetTimeZoneAutomatically",
+              "description": "Enables or disables automatic time zone detection. Requires Administrator privileges."
+            },
+            "TimeZone": {
+              "type": "string",
+              "title": "TimeZone",
+              "description": "Sets the system time zone. Requires Administrator privileges."
+            },
+            "EnableTransparency": {
+              "type": "string",
+              "title": "EnableTransparency",
+              "description": "Enables or disables transparency effects in Windows."
+            },
+            "ShowAccentColorOnStartAndTaskbar": {
+              "type": "string",
+              "title": "ShowAccentColorOnStartAndTaskbar",
+              "description": "Enables or disables showing the accent color on the Start menu and taskbar."
+            },
+            "ShowAccentColorOnTitleBarsAndWindowBorders": {
+              "type": "string",
+              "title": "ShowAccentColorOnTitleBarsAndWindowBorders",
+              "description": "Enables or disables showing the accent color on title bars and window borders."
+            },
+            "AutoColorization": {
+              "type": "string",
+              "title": "AutoColorization",
+              "description": "Enables or disables automatic colorization based on the desktop background."
+            },
+            "StartFolders": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "title": "StartFolders",
+              "description": "Specifies the folders to show in the Start menu."
+            },
+            "ShowRecentList": {
+              "type": "string",
+              "title": "ShowRecentList",
+              "description": "Enables or disables the recently opened items list in the Start menu."
+            },
+            "ShowRecommendedList": {
+              "type": "string",
+              "title": "ShowRecommendedList",
+              "description": "Enables or disables the recommended files list in the Start menu."
+            },
+            "TaskbarBadges": {
+              "type": "string",
+              "title": "TaskbarBadges",
+              "description": "Enables or disables taskbar button badges."
+            },
+            "DesktopTaskbarBadges": {
+              "type": "string",
+              "title": "DesktopTaskbarBadges",
+              "description": "Enables or disables taskbar button badges on the desktop taskbar."
+            },
+            "TaskbarGroupingMode": {
+              "type": "string",
+              "title": "TaskbarGroupingMode",
+              "description": "Sets the taskbar grouping mode. Accepted values are `Always`, `WhenFull`, or `Never`."
+            },
+            "TaskbarMultiMon": {
+              "type": "string",
+              "title": "TaskbarMultiMon",
+              "description": "Enables or disables the taskbar on multiple monitors."
+            },
+            "DesktopTaskbarMultiMon": {
+              "type": "string",
+              "title": "DesktopTaskbarMultiMon",
+              "description": "Enables or disables the desktop taskbar on multiple monitors."
+            },
+            "TaskbarMultiMonMode": {
+              "type": "string",
+              "title": "TaskbarMultiMonMode",
+              "description": "Sets the multi-monitor taskbar mode."
+            },
+            "DesktopTaskbarMultiMonMode": {
+              "type": "string",
+              "title": "DesktopTaskbarMultiMonMode",
+              "description": "Sets the desktop multi-monitor taskbar mode."
+            },
+            "NotifyOnUsbErrors": {
+              "type": "string",
+              "title": "NotifyOnUsbErrors",
+              "description": "Enables or disables USB error notifications."
+            },
+            "NotifyOnWeakCharger": {
+              "type": "string",
+              "title": "NotifyOnWeakCharger",
+              "description": "Enables or disables weak charger notifications."
+            }
+          },
+          "description": "The `WindowsSettings` DSC resource is used to manage common Windows settings.",
+          "title": "Microsoft.Windows.Settings/WindowsSettings"
+        }
+      },
+      "path": "Microsoft.Windows.Settings.psd1"
+    }
+  ]
+}

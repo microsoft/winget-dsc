@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+###########################################################################
+# This configuration demonstrates installing specific extension versions  #
+# and pre-release extensions for Visual Studio Code.                      #
+# PowerShell module: Microsoft.VSCode.Dsc (v0.1.5-alpha)                  #
+###########################################################################
+
+properties:
+  resources:
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Visual Studio Code
+        securityContext: elevated
+      settings:
+        id: Microsoft.VisualStudioCode
+        source: winget
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install specific version of Python extension
+        allowPrerelease: true
+      settings:
+        Name: ms-python.python
+        Version: "2024.0.1"
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install pre-release version of ESLint extension
+        allowPrerelease: true
+      settings:
+        Name: dbaeumer.vscode-eslint
+        PreRelease: true
+    - resource: Microsoft.VSCode.Dsc/VSCodeExtension
+      directives:
+        description: Install extension for VS Code Insiders
+        allowPrerelease: true
+      settings:
+        Name: ms-vscode.powershell
+        Insiders: true
+  configurationVersion: 0.2.0
