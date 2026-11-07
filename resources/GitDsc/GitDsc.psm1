@@ -442,6 +442,189 @@ class GitConfigUserEmail {
     }
 }
 
+<#
+    .SYNOPSIS
+        The `GitConfig` DSC resource is used to manage any Git configuration setting.
+
+    .DESCRIPTION
+        The `GitConfig` DSC resource sets or removes any `git config` key-value pair at
+        the specified configuration scope (local, global, system, or worktree). This is a
+        general-purpose resource that can manage any setting supported by `git config`.
+
+        ## Requirements
+
+        * Target machine must have Git installed.
+        * For system-level configuration, the resource must be run as an Administrator.
+
+    .PARAMETER Name
+        The Git configuration key to manage (e.g., `core.longpaths`, `user.name`, `init.defaultBranch`).
+        This is a key property.
+
+    .PARAMETER ConfigLocation
+        The Git configuration scope to apply the setting to (`global`, `system`, `local`, `worktree`,
+        or `none`). This is a key property.
+
+    .PARAMETER Value
+        The value to assign to the configuration key. Required when `Exist` is `$true`.
+
+    .PARAMETER Exist
+        Indicates whether the configuration key should exist with the specified value.
+        Defaults to `$true`.
+
+    .PARAMETER ProjectDirectory
+        The path to the Git repository. Required for `local` and `worktree` configurations.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitConfig -Method Set -Property @{
+            Name           = 'core.longpaths'
+            Value          = 'true'
+            ConfigLocation = 'global'
+        }
+
+        This example sets the global Git core.longpaths configuration to true.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitConfig -Method Set -Property @{
+            Name             = 'core.autocrlf'
+            Value            = 'input'
+            ConfigLocation   = 'local'
+            ProjectDirectory = 'C:\repos\MyProject'
+        }
+
+        This example sets the local Git core.autocrlf configuration to 'input'.
+
+    .EXAMPLE
+        Invoke-DscResource -ModuleName GitDsc -Name GitConfig -Method Set -Property @{
+            Name           = 'http.proxy'
+            ConfigLocation = 'global'
+            Exist          = $false
+        }
+
+        This example removes the global Git http.proxy configuration.
+#>
+[DSCResource()]
+class GitConfig {
+    [DscProperty(Key)]
+    [string] $Name
+
+    [DscProperty(Key)]
+    [ConfigLocation] $ConfigLocation
+
+    [DscProperty()]
+    [string] $Value
+
+    [DscProperty()]
+    [bool] $Exist = $true
+
+    [DscProperty()]
+    [string] $ProjectDirectory
+
+    [GitConfig] Get() {
+        Assert-Git
+
+        if ($this.Exist -and [string]::IsNullOrEmpty($this.Value)) {
+            throw 'Value must be specified when Exist is true.'
+        }
+
+        $currentState = [GitConfig]::new()
+        $currentState.Name = $this.Name
+        $currentState.ConfigLocation = $this.ConfigLocation
+        $currentState.Value = $this.Value
+        $currentState.ProjectDirectory = $this.ProjectDirectory
+
+        Invoke-GitWorkingDirectory -ConfigLocation $this.ConfigLocation -ProjectDirectory $this.ProjectDirectory
+
+        $gitArgs = Get-GitConfigArguments -ConfigLocation $this.ConfigLocation -Tail @($this.Name)
+        $result = & git @gitArgs 2>&1
+
+        if ($LASTEXITCODE -eq 0) {
+            $currentState.Exist = $true
+            $currentState.Value = ($result | Out-String).Trim()
+        } else {
+            $currentState.Exist = $false
+        }
+
+        return $currentState
+    }
+
+    [bool] Test() {
+        $currentState = $this.Get()
+
+        if ($currentState.Exist -ne $this.Exist) {
+            return $false
+        }
+
+        if ($this.Exist -and (-not [string]::IsNullOrEmpty($this.Value)) -and ($currentState.Value -ne $this.Value)) {
+            return $false
+        }
+
+        return $true
+    }
+
+    [void] Set() {
+        if ($this.Test()) {
+            return
+        }
+
+        if ($this.ConfigLocation -eq [ConfigLocation]::system) {
+            Assert-IsAdministrator
+        }
+
+        Invoke-GitWorkingDirectory -ConfigLocation $this.ConfigLocation -ProjectDirectory $this.ProjectDirectory
+
+        if ($this.Exist) {
+            $gitArgs = Get-GitConfigArguments -ConfigLocation $this.ConfigLocation -Tail @($this.Name, $this.Value)
+        } else {
+            $gitArgs = Get-GitConfigArguments -ConfigLocation $this.ConfigLocation -Tail @('--unset', $this.Name)
+        }
+
+        & git @gitArgs
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to configure git setting '$($this.Name)' at scope '$($this.ConfigLocation)'."
+        }
+    }
+
+    [GitConfig[]] Export([ConfigLocation]$ConfigLocation, [string]$ProjectDirectory) {
+        Assert-Git
+
+        Invoke-GitWorkingDirectory -ConfigLocation $ConfigLocation -ProjectDirectory $ProjectDirectory
+
+        # Use --null (-z) so each entry is NUL-terminated and key/value are separated by a newline.
+        $gitArgs = Get-GitConfigArguments -ConfigLocation $ConfigLocation -Tail @('--list', '--null')
+        $rawLines = & git @gitArgs 2>&1
+
+        if ($LASTEXITCODE -ne 0 -or $null -eq $rawLines) {
+            return @()
+        }
+
+        $rawOutput = $rawLines -join "`n"
+        $entries = $rawOutput.Split([char]0, [System.StringSplitOptions]::RemoveEmptyEntries)
+
+        $results = [System.Collections.Generic.List[GitConfig]]::new()
+
+        foreach ($entry in $entries) {
+            # Each entry is "key\newValue"; split on the first newline only
+            $separatorIndex = $entry.IndexOf("`n")
+            if ($separatorIndex -lt 0) { continue }
+
+            $gitEntry = [GitConfig]::new()
+            $gitEntry.Name = $entry.Substring(0, $separatorIndex)
+            $gitEntry.Value = $entry.Substring($separatorIndex + 1)
+            $gitEntry.ConfigLocation = $ConfigLocation
+            $gitEntry.ProjectDirectory = $ProjectDirectory
+            $gitEntry.Exist = $true
+
+            $results.Add($gitEntry)
+        }
+
+        return $results.ToArray()
+    }
+
+    [GitConfig[]] Export([ConfigLocation]$ConfigLocation) {
+        return $this.Export($ConfigLocation, '')
+    }
+}
+
 #endregion DSCResources
 
 #region Functions
@@ -540,5 +723,48 @@ function Assert-GitUrl {
     if ($LASTEXITCODE -ne 0) {
         throw "Invalid Git URL: $HttpsUrl. Error: $out"
     }
+}
+
+function Invoke-GitWorkingDirectory {
+    param (
+        [Parameter(Mandatory)]
+        [ConfigLocation] $ConfigLocation,
+
+        [Parameter()]
+        [string] $ProjectDirectory
+    )
+
+    if ($ConfigLocation -eq [ConfigLocation]::local -or $ConfigLocation -eq [ConfigLocation]::worktree) {
+        if ([string]::IsNullOrEmpty($ProjectDirectory)) {
+            throw 'ProjectDirectory must be specified for local and worktree configurations.'
+        }
+        if (-not (Test-Path -Path $ProjectDirectory)) {
+            throw "ProjectDirectory '$ProjectDirectory' does not exist."
+        }
+        Set-Location -Path $ProjectDirectory
+    }
+}
+
+function Get-GitConfigArguments {
+    param (
+        [Parameter(Mandatory)]
+        [ConfigLocation] $ConfigLocation,
+
+        [Parameter(Mandatory)]
+        [string[]] $Tail
+    )
+
+    $gitArgs = [System.Collections.Generic.List[string]]::new()
+    $gitArgs.Add('config')
+
+    if ($ConfigLocation -ne [ConfigLocation]::none) {
+        $gitArgs.Add("--$($ConfigLocation.ToString().ToLower())")
+    }
+
+    foreach ($item in $Tail) {
+        $gitArgs.Add($item)
+    }
+
+    return $gitArgs.ToArray()
 }
 #endregion Functions

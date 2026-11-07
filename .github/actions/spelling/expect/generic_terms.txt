@@ -22,3 +22,6 @@ usr
 versioning
 VGpu
 vse
+longpaths
+filemode
+
