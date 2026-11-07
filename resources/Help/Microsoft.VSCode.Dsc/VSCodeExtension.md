@@ -36,7 +36,7 @@ The `VSCodeExtension` DSC Resource allows you to install, update, and remove Vis
 $params = @{
     Name = 'ms-python.python'
 }
-Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+Invoke-DscResource -ModuleName Microsoft.VSCode.Dsc -Name VSCodeExtension -Method Set -Property $params
 ```
 
 ### EXAMPLE 2
@@ -47,7 +47,7 @@ $params = @{
     Name = 'ms-python.python'
     Version = '2021.5.842923320'
 }
-Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+Invoke-DscResource -ModuleName Microsoft.VSCode.Dsc -Name VSCodeExtension -Method Set -Property $params
 ```
 
 ### EXAMPLE 3
@@ -58,7 +58,7 @@ $params = @{
     Name = 'ms-python.python'
     Exist = $false
 }
-Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+Invoke-DscResource -ModuleName Microsoft.VSCode.Dsc -Name VSCodeExtension -Method Set -Property $params
 ```
 
 ### EXAMPLE 4
@@ -69,7 +69,7 @@ $params = @{
     Name = 'ms-python.python'
     Insiders = $true
 }
-Invoke-DscResource -Name VSCodeExtension -Method Set -Property $params -ModuleName Microsoft.VSCode.Dsc
+Invoke-DscResource -ModuleName Microsoft.VSCode.Dsc -Name VSCodeExtension -Method Set -Property $params
 ```
 
 ### EXAMPLE 5
